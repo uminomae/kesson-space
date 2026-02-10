@@ -1,393 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>秘される花 - pjdhiro Subjective Space</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #050510; font-family: 'Zen Old Mincho', serif; }
-        canvas { display: block; width: 100vw; height: 100vh; }
-        
-        #overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(220, 220, 230, 0.8);
-            text-align: center;
-            pointer-events: none; /* クリックをCanvasに通す */
-            mix-blend-mode: overlay;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 2rem;
-            letter-spacing: 0.8em;
-            font-weight: 300;
-            margin: 0;
-            opacity: 0;
-            animation: fadeIn 3s ease-in-out forwards 1s;
-            text-shadow: 0 0 10px rgba(100, 150, 255, 0.3);
-        }
-
-        p {
-            font-size: 0.8rem;
-            letter-spacing: 0.2em;
-            margin-top: 1.5em;
-            opacity: 0;
-            animation: fadeIn 3s ease-in-out forwards 2.5s;
-            color: #889;
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; filter: blur(10px); }
-            100% { opacity: 1; filter: blur(0px); }
-        }
-
-        /* ローディングオーバーレイ */
-        #loader {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 999;
-            transition: opacity 1s ease-out;
-            pointer-events: none;
-        }
-    </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秘される花 - Kesson Space</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+    body {
+      overflow: hidden;
+      background: #0a0a12;
+      font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    }
+    
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem;
+    }
+    
+    .title-area {
+      text-align: center;
+    }
+    
+    h1 {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: 0.5em;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.875rem;
+      letter-spacing: 0.2em;
+    }
+    
+    .bottom-area {
+      text-align: center;
+    }
+    
+    .hint {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+  </style>
 </head>
 <body>
-    <div id="loader"></div>
-    <div id="overlay">
-        <h1>秘される花</h1>
-        <p>Subjective World of pjdhiro</p>
+  <div id="canvas-container"></div>
+  
+  <div id="overlay">
+    <div class="title-area">
+      <h1>秘される花</h1>
+      <p class="subtitle">Kesson Space</p>
     </div>
+    <div class="bottom-area">
+      <p class="hint">光に触れる</p>
+    </div>
+  </div>
 
-    <script type="module">
-        import * as THREE from 'three';
-
-        // --- 設定 ---
-        const CONFIG = {
-            bgColor: 0x050510,
-            fogDensity: 0.03,
-            particleCount: 200, // L0 粒子
-            orbCount: 25,       // L1-L3 欠損（光）
-            cameraY: 6,
-            cameraZ: 8
-        };
-
-        // --- シーン構築 ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(CONFIG.bgColor);
-        scene.fog = new THREE.FogExp2(CONFIG.bgColor, CONFIG.fogDensity);
-
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.set(0, CONFIG.cameraY, CONFIG.cameraZ);
-        camera.lookAt(0, -1, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
-
-        const clock = new THREE.Clock();
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
-        // --- シェーダー定義 (GLSL) ---
-
-        // 共通: ノイズ関数
-        const noiseChunk = `
-            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
-            float snoise(vec2 v) {
-                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-                vec2 i  = floor(v + dot(v, C.yy) );
-                vec2 x0 = v -   i + dot(i, C.xx);
-                vec2 i1;
-                i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-                vec4 x12 = x0.xyxy + C.xxzz;
-                x12.xy -= i1;
-                i = mod289(i);
-                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
-                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-                m = m*m ;
-                return 105.0 * dot( m*m, vec3( dot(p.x,x0), dot(p.y,x12.xy), dot(p.z,x12.zw) ) );
-            }
-        `;
-
-        // 1. 光（欠損）シェーダー
-        // フラクタル的な滲み、呼吸する明滅
-        const orbVertexShader = `
-            varying vec2 vUv;
-            varying vec3 vPosition;
-            uniform float uTime;
-            
-            void main() {
-                vUv = uv;
-                vPosition = position;
-                // ビルボード処理（常にカメラを向く）
-                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `;
-
-        const orbFragmentShader = `
-            uniform float uTime;
-            uniform vec3 uColor;
-            uniform float uSpeed;
-            varying vec2 vUv;
-            
-            ${noiseChunk}
-
-            void main() {
-                vec2 center = vec2(0.5, 0.5);
-                float dist = distance(vUv, center);
-                
-                // 動的なノイズで輪郭を歪ませる
-                float n = snoise(vUv * 3.0 + uTime * uSpeed);
-                float n2 = snoise(vUv * 6.0 - uTime * uSpeed * 1.5);
-                
-                // コア部分
-                float alpha = smoothstep(0.5, 0.0, dist + n * 0.1 + n2 * 0.05);
-                
-                // 呼吸のような明滅
-                float breathe = 0.8 + 0.2 * sin(uTime * 1.5 + n * 5.0);
-                
-                // エッジを柔らかく
-                float glow = exp(-dist * 3.0);
-                
-                vec3 finalColor = uColor * (glow + alpha * 0.5);
-                
-                gl_FragColor = vec4(finalColor, alpha * breathe);
-            }
-        `;
-
-        // 2. 水面（縁）シェーダー
-        // 鏡面反射と深淵の表現
-        const waterVertexShader = `
-            varying vec2 vUv;
-            varying vec3 vPos;
-            uniform float uTime;
-            
-            ${noiseChunk}
-
-            void main() {
-                vUv = uv;
-                vec3 pos = position;
-                
-                // 穏やかな波
-                float wave = snoise(vec2(pos.x * 0.2, pos.z * 0.2 + uTime * 0.1));
-                pos.y += wave * 0.15;
-                
-                vPos = pos;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-            }
-        `;
-
-        const waterFragmentShader = `
-            uniform float uTime;
-            varying vec2 vUv;
-            varying vec3 vPos;
-            
-            ${noiseChunk}
-
-            void main() {
-                // 水面の模様
-                float n = snoise(vPos.xz * 0.5 + uTime * 0.05);
-                float n2 = snoise(vPos.xz * 2.0 - uTime * 0.1);
-                
-                // 深い色とハイライト
-                vec3 deepColor = vec3(0.02, 0.02, 0.05);
-                vec3 surfaceColor = vec3(0.1, 0.15, 0.25);
-                
-                float mixFactor = smoothstep(-1.0, 1.0, n + n2);
-                vec3 color = mix(deepColor, surfaceColor, mixFactor * 0.3);
-                
-                // 縁の光（フォールオフ）
-                float rim = 1.0 - smoothstep(0.0, 5.0, length(vPos.xz));
-                
-                gl_FragColor = vec4(color, 0.6 + rim * 0.2);
-            }
-        `;
-
-        // --- オブジェクト生成 ---
-
-        // 1. 水面 (L-1/Boundary)
-        const waterGeo = new THREE.PlaneGeometry(30, 30, 64, 64);
-        waterGeo.rotateX(-Math.PI / 2);
-        const waterMat = new THREE.ShaderMaterial({
-            vertexShader: waterVertexShader,
-            fragmentShader: waterFragmentShader,
-            uniforms: {
-                uTime: { value: 0 }
-            },
-            transparent: true,
-            side: THREE.DoubleSide
-        });
-        const water = new THREE.Mesh(waterGeo, waterMat);
-        water.position.y = -2;
-        scene.add(water);
-
-        // 2. 欠損の光 (L1-L3)
-        const orbs = [];
-        const orbGeo = new THREE.PlaneGeometry(1.5, 1.5);
-        
-        // 暖色系（F軸・緊張）と寒色系（O軸・安らぎ）のパレット
-        const colors = [
-            new THREE.Color(0xFF5533), // Warm
-            new THREE.Color(0xFF8844), // Warm light
-            new THREE.Color(0x33AAFF), // Cool
-            new THREE.Color(0x55FFFF), // Cyan
-            new THREE.Color(0xAA88FF)  // Mystic
-        ];
-
-        for (let i = 0; i < CONFIG.orbCount; i++) {
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const mat = new THREE.ShaderMaterial({
-                vertexShader: orbVertexShader,
-                fragmentShader: orbFragmentShader,
-                uniforms: {
-                    uTime: { value: Math.random() * 100 },
-                    uColor: { value: color },
-                    uSpeed: { value: 0.5 + Math.random() * 0.5 }
-                },
-                transparent: true,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending,
-                side: THREE.DoubleSide
-            });
-            
-            const orb = new THREE.Mesh(orbGeo, mat);
-            
-            // ランダム配置（中央付近に集める）
-            const r = Math.random() * 6;
-            const theta = Math.random() * Math.PI * 2;
-            orb.position.x = r * Math.cos(theta);
-            orb.position.z = r * Math.sin(theta);
-            orb.position.y = Math.random() * 3 - 1; // 水面より少し上
-            
-            // 固有の動きデータを持たせる
-            orb.userData = {
-                speedY: (Math.random() - 0.5) * 0.005,
-                initialY: orb.position.y,
-                phase: Math.random() * Math.PI * 2
-            };
-            
-            // 常にカメラの方を向く設定（ビルボード）はrender loopで簡易実装
-            scene.add(orb);
-            orbs.push(orb);
-        }
-
-        // 3. 浮遊粒子 (L0 Atmosphere)
-        const particlesGeo = new THREE.BufferGeometry();
-        const particlesPos = [];
-        for(let i=0; i<CONFIG.particleCount; i++){
-            particlesPos.push(
-                (Math.random() - 0.5) * 20,
-                (Math.random() - 0.5) * 10,
-                (Math.random() - 0.5) * 20
-            );
-        }
-        particlesGeo.setAttribute('position', new THREE.Float32BufferAttribute(particlesPos, 3));
-        const particlesMat = new THREE.PointsMaterial({
-            color: 0x8899aa,
-            size: 0.05,
-            transparent: true,
-            opacity: 0.4
-        });
-        const particles = new THREE.Points(particlesGeo, particlesMat);
-        scene.add(particles);
-
-        // --- インタラクション ---
-        
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        window.addEventListener('click', (event) => {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(orbs);
-            
-            if (intersects.length > 0) {
-                // クリック時の反応（例：色が変わる、ログ出力）
-                const target = intersects[0].object;
-                console.log("Kesson Identified:", target.uuid);
-                
-                // 一瞬明るくするアニメーション（簡易）
-                // 実際にはTweenライブラリなどを使うが、ここではuniformを直接操作
-                target.material.uniforms.uSpeed.value = 5.0;
-                setTimeout(() => {
-                    if(target) target.material.uniforms.uSpeed.value = 0.5;
-                }, 500);
-            }
-        });
-
-        // --- アニメーションループ ---
-        
-        // イントロダクション
-        setTimeout(() => {
-            document.getElementById('loader').style.opacity = 0;
-        }, 500);
-
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            const time = clock.getElapsedTime();
-            const delta = clock.getDelta();
-
-            // 1. 空間の呼吸 (L0 Interoception)
-            // FOVの微細な変化
-            const breathe = Math.sin(time * 0.5); // ゆっくりとした周期
-            camera.fov = 50 + breathe * 0.5;
-            camera.updateProjectionMatrix();
-            
-            // 背景色の微細な変化 (色温度の変化)
-            // HSLで色相をわずかに青〜紫に揺らす
-            const hue = 0.65 + breathe * 0.02; 
-            scene.background.setHSL(hue, 0.5, 0.05);
-            // 霧の色も同期
-            scene.fog.color.copy(scene.background);
-
-            // 2. 水面アニメーション
-            water.material.uniforms.uTime.value = time;
-
-            // 3. 欠損（光）のアニメーション
-            orbs.forEach(orb => {
-                orb.material.uniforms.uTime.value = time;
-                
-                // ビルボード（カメラの方を向く）
-                orb.lookAt(camera.position);
-                
-                // 浮遊
-                orb.position.y = orb.userData.initialY + Math.sin(time * 0.5 + orb.userData.phase) * 0.3;
-                orb.rotation.z += 0.001; // わずかに回転
-            });
-
-            // 4. 粒子のアニメーション（旋回）
-            particles.rotation.y = time * 0.02;
-
-            renderer.render(scene, camera);
-        }
-
-        animate();
-    </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>

@@ -1,140 +1,261 @@
 import * as THREE from 'three';
 
-// === 初期化 ===
+// --- 初期設定 ---
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a12);
-scene.fog = new THREE.FogExp2(0x0a0a12, 0.02);
 
-const camera = new THREE.PerspectiveCamera(
-  60,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.position.set(0, 5, 15);
-camera.lookAt(0, 0, 0);
+// 闇の表現 (FogExp2)
+const bgColor = new THREE.Color(0x0a0a12);
+scene.background = bgColor;
+scene.fog = new THREE.FogExp2(0x0a0a12, 0.012);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// L0 (内受容感覚): 意識の視点 (上空から見下ろす)
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 40, 20);
+camera.lookAt(0, -10, -20);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
-// === 光（欠損）のパーティクル ===
-const particleCount = 50;
-const particlesGeometry = new THREE.BufferGeometry();
-const positions = new Float32Array(particleCount * 3);
-const colors = new Float32Array(particleCount * 3);
-const sizes = new Float32Array(particleCount);
-const phases = new Float32Array(particleCount);
+// --- シェーダー ---
 
-for (let i = 0; i < particleCount; i++) {
-  // 位置（闇の中に散らばる）
-  positions[i * 3] = (Math.random() - 0.5) * 30;
-  positions[i * 3 + 1] = (Math.random() - 0.5) * 15 + 2;
-  positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
-  
-  // 色（F軸=暖色 / O軸=寒色）
-  const isF = Math.random() > 0.5;
-  if (isF) {
-    colors[i * 3] = 0.9 + Math.random() * 0.1;     // R
-    colors[i * 3 + 1] = 0.5 + Math.random() * 0.3; // G
-    colors[i * 3 + 2] = 0.3 + Math.random() * 0.2; // B
-  } else {
-    colors[i * 3] = 0.3 + Math.random() * 0.2;     // R
-    colors[i * 3 + 1] = 0.5 + Math.random() * 0.3; // G
-    colors[i * 3 + 2] = 0.8 + Math.random() * 0.2; // B
-  }
-  
-  sizes[i] = 0.3 + Math.random() * 0.5;
-  phases[i] = Math.random() * Math.PI * 2;
-}
+// 共通のノイズ関数 (GLSL)
+const noiseGLSL = `
+    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+    float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
+        i = mod289(i);
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m ;
+        m = m*m ;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+        vec3 g;
+        g.x  = a0.x  * x0.x  + h.x  * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+    }
+`;
 
-particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-particlesGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-const particlesMaterial = new THREE.PointsMaterial({
-  size: 0.5,
-  vertexColors: true,
-  transparent: true,
-  opacity: 0.8,
-  blending: THREE.AdditiveBlending,
-  sizeAttenuation: true
+// 【水面（縁）のシェーダー】
+const waterMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        uTime: { value: 0.0 },
+        uColor: { value: new THREE.Color(0x1a1a2e) }
+    },
+    vertexShader: `
+        uniform float uTime;
+        varying vec2 vUv;
+        ${noiseGLSL}
+        void main() {
+            vUv = uv;
+            vec3 pos = position;
+            // フラクタル的なノイズで波紋を作成
+            float noise = snoise(vec2(pos.x * 0.05 + uTime * 0.1, pos.y * 0.05 - uTime * 0.1));
+            pos.z += noise * 2.0;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uTime;
+        varying vec2 vUv;
+        ${noiseGLSL}
+        void main() {
+            float noise = snoise(vUv * 10.0 + uTime * 0.2);
+            float alpha = 0.4 + noise * 0.1; // 半透明で向こう側をうっすら見せる
+            gl_FragColor = vec4(uColor, alpha);
+        }
+    `,
+    transparent: true,
+    wireframe: false,
+    side: THREE.DoubleSide
 });
 
-const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-scene.add(particles);
-
-// === 水面（縁） ===
-const waterGeometry = new THREE.PlaneGeometry(100, 100, 64, 64);
-const waterMaterial = new THREE.MeshBasicMaterial({
-  color: 0x1a1a2e,
-  transparent: true,
-  opacity: 0.3,
-  side: THREE.DoubleSide,
-  wireframe: false
-});
-const water = new THREE.Mesh(waterGeometry, waterMaterial);
+const waterGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
+const water = new THREE.Mesh(waterGeo, waterMaterial);
 water.rotation.x = -Math.PI / 2;
-water.position.y = -2;
+water.position.y = -15;
 scene.add(water);
 
-// === 呼吸する空間（L0）の表現用変数 ===
-let breathPhase = 0;
-const breathSpeed = 0.5;
+// 【光（欠損）のシェーダー】
+const kessonMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        uTime: { value: 0.0 },
+        uColor: { value: new THREE.Color(0xffffff) },
+        uOffset: { value: 0.0 }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            // ビルボード処理（常にカメラを向く）
+            vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+            mvPosition.xy += position.xy;
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    `,
+    fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uTime;
+        uniform float uOffset;
+        varying vec2 vUv;
+        ${noiseGLSL}
+        void main() {
+            vec2 uv = vUv - 0.5;
+            float dist = length(uv);
+            
+            // L1: フラクタルで不完全な輪郭（欠損）
+            float n = snoise(uv * 3.0 + uTime * 0.2 + uOffset);
+            float radius = 0.25 + n * 0.15;
+            
+            // L3: 呼吸するように明滅
+            float breath = 0.7 + 0.3 * sin(uTime * 1.5 + uOffset);
+            
+            // 曖昧なエッジ
+            float alpha = smoothstep(radius + 0.1, radius - 0.05, dist);
+            
+            // 中心の空洞化（欠け）を少し表現
+            alpha *= smoothstep(0.0, 0.1, dist + n*0.1);
 
-// === アニメーションループ ===
+            gl_FragColor = vec4(uColor, alpha * breath * 0.8);
+        }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+});
+
+// --- オブジェクトの配置 ---
+
+// L2 (F-O評価): 色の定義
+const warmColors = [0xff5533, 0xff8833, 0xffaa55]; // F軸 (緊張)
+const coolColors = [0x3366ff, 0x44aaff, 0x55ccff]; // O軸 (安らぎ)
+const kessonMeshes = [];
+const kessonGeo = new THREE.PlaneGeometry(15, 15);
+
+for(let i = 0; i < 30; i++) {
+    const isWarm = Math.random() > 0.5;
+    const colorPalette = isWarm ? warmColors : coolColors;
+    const colorStr = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    
+    const mat = kessonMaterial.clone();
+    mat.uniforms.uColor.value = new THREE.Color(colorStr);
+    mat.uniforms.uOffset.value = Math.random() * 100.0;
+    
+    const mesh = new THREE.Mesh(kessonGeo, mat);
+    // 空間にランダム配置
+    mesh.position.set(
+        (Math.random() - 0.5) * 80,
+        (Math.random() - 0.5) * 30 - 5,
+        (Math.random() - 0.5) * 80 - 20
+    );
+    
+    // アニメーション用の独自データ
+    mesh.userData = {
+        baseY: mesh.position.y,
+        speed: 0.1 + Math.random() * 0.3,
+        id: i
+    };
+    
+    scene.add(mesh);
+    kessonMeshes.push(mesh);
+}
+
+// L0 (内受容感覚): 微細な粒子（埃、漂う気配）
+const particleGeo = new THREE.BufferGeometry();
+const particleCount = 2000;
+const posArray = new Float32Array(particleCount * 3);
+for(let i = 0; i < particleCount * 3; i++) {
+    posArray[i] = (Math.random() - 0.5) * 150;
+}
+particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+const particleMat = new THREE.PointsMaterial({
+    size: 0.15,
+    color: 0x8888aa,
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending
+});
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// --- インタラクション (Raycaster) ---
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('click', (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    
+    const intersects = raycaster.intersectObjects(kessonMeshes);
+    if (intersects.length > 0) {
+        // 将来の詳細ページ遷移用のフック
+        console.log("Kesson clicked:", intersects[0].object.userData.id);
+        // 仮のエフェクト: クリックされたら少し上に跳ねる
+        intersects[0].object.userData.baseY += 5;
+    }
+});
+
+// 視差効果（マウス移動による空間の揺らぎ）
+let targetX = 0;
+let targetY = 0;
+window.addEventListener('mousemove', (event) => {
+    targetX = (event.clientX / window.innerWidth - 0.5) * 5;
+    targetY = (event.clientY / window.innerHeight - 0.5) * 5;
+});
+
+// --- アニメーションループ ---
 const clock = new THREE.Clock();
 
 function animate() {
-  requestAnimationFrame(animate);
-  
-  const time = clock.getElapsedTime();
-  
-  // 呼吸（空間全体の収縮・拡張）
-  breathPhase = Math.sin(time * breathSpeed) * 0.1 + 1;
-  camera.fov = 60 + Math.sin(time * breathSpeed) * 2;
-  camera.updateProjectionMatrix();
-  
-  // パーティクル（光）の動き
-  const posArray = particlesGeometry.attributes.position.array;
-  for (let i = 0; i < particleCount; i++) {
-    const i3 = i * 3;
-    // ゆっくり漂う
-    posArray[i3 + 1] += Math.sin(time * 0.3 + phases[i]) * 0.002;
-    posArray[i3] += Math.cos(time * 0.2 + phases[i]) * 0.001;
-  }
-  particlesGeometry.attributes.position.needsUpdate = true;
-  
-  // 水面の波紋
-  const waterPosArray = waterGeometry.attributes.position.array;
-  for (let i = 0; i < waterPosArray.length; i += 3) {
-    const x = waterPosArray[i];
-    const z = waterPosArray[i + 1];
-    waterPosArray[i + 2] = Math.sin(x * 0.1 + time * 0.5) * 0.3 
-                        + Math.sin(z * 0.1 + time * 0.3) * 0.3;
-  }
-  waterGeometry.attributes.position.needsUpdate = true;
-  
-  // カメラのゆっくりした回転
-  camera.position.x = Math.sin(time * 0.1) * 2;
-  camera.lookAt(0, 0, 0);
-  
-  renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+    const time = clock.getElapsedTime();
+
+    // L0: 空間全体のゆっくりとした呼吸 (FOVの伸縮とカメラの揺らぎ)
+    camera.fov = 60 + Math.sin(time * 0.3) * 1.5;
+    camera.updateProjectionMatrix();
+    
+    // マウス視差とゆっくりとした漂い
+    camera.position.x += (targetX - camera.position.x) * 0.02;
+    camera.position.z += (20 + targetY - camera.position.z) * 0.02;
+
+    // 水面アニメーション
+    waterMaterial.uniforms.uTime.value = time;
+
+    // 欠損(光)のアニメーション
+    kessonMeshes.forEach(mesh => {
+        mesh.material.uniforms.uTime.value = time;
+        // ゆっくり漂う
+        mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 3;
+    });
+
+    // 粒子の回転
+    particles.rotation.y = time * 0.02;
+    particles.rotation.x = time * 0.01;
+
+    renderer.render(scene, camera);
 }
 
-animate();
-
-// === リサイズ対応 ===
+// リサイズ対応
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// === クリックイベント（将来の詳細ページ遷移用） ===
-renderer.domElement.addEventListener('click', (event) => {
-  console.log('クリック:', event.clientX, event.clientY);
-  // TODO: レイキャストで光を検出して詳細ページへ
-});
+animate();
