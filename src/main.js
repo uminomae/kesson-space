@@ -2,8 +2,8 @@
 // DEV_MODE: true でパラメータ調整パネルを表示
 
 import * as THREE from 'three';
-import { createScene, updateScene, sceneParams } from './scene.js';
-import { initControls, updateControls } from './controls.js';
+import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
+import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 
 // ============================
@@ -17,20 +17,67 @@ const { scene, camera, renderer } = createScene(container);
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer });
 
+// --- HTMLオーバーレイの動的更新 ---
+function updateOverlay(key, val) {
+    const overlay = document.getElementById('overlay');
+    const h1 = document.getElementById('title-h1');
+    const sub = document.getElementById('title-sub');
+    if (!overlay || !h1 || !sub) return;
+
+    switch (key) {
+        case 'titleBottom':
+            overlay.style.bottom = val + 'px';
+            break;
+        case 'titleLeft':
+            overlay.style.left = val + 'px';
+            break;
+        case 'titleSize':
+            h1.style.fontSize = val + 'rem';
+            break;
+        case 'titleSpacing':
+            h1.style.letterSpacing = val + 'em';
+            break;
+        case 'titleOpacity':
+            h1.style.color = `rgba(255, 255, 255, ${val})`;
+            break;
+        case 'subSize':
+            sub.style.fontSize = val + 'rem';
+            break;
+        case 'subOpacity':
+            sub.style.color = `rgba(255, 255, 255, ${val})`;
+            sub.style.opacity = val;
+            sub.style.animation = 'none'; // devモード時はアニメ上書き
+            break;
+        case 'titleGlow':
+            h1.style.textShadow = `0 0 ${val}px rgba(100, 150, 255, 0.3)`;
+            break;
+    }
+}
+
 // --- devパネル ---
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel((key, value) => {
-            // パネルのスライダー変更 → sceneParamsに反映
+            // sceneパラメータ
             if (key in sceneParams) {
                 sceneParams[key] = value;
             }
-            // 自動回転速度はcontrolsに直接渡す（別モジュール）
-            if (key === 'autoRotateSpd') {
-                import('./controls.js').then(({ setAutoRotateSpeed }) => {
-                    if (setAutoRotateSpeed) setAutoRotateSpeed(value);
-                });
+
+            // カメラ位置
+            if (key === 'camX' || key === 'camY' || key === 'camZ') {
+                setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
             }
+            if (key === 'camTargetY') {
+                setTarget(0, value, -10);
+            }
+
+            // 自動回転速度
+            if (key === 'autoRotateSpd') {
+                setAutoRotateSpeed(value);
+            }
+
+            // HTMLオーバーレイ
+            updateOverlay(key, value);
         });
     });
 }
