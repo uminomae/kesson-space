@@ -10,7 +10,9 @@ Usage:
 from mcp.server.fastmcp import FastMCP
 import google.generativeai as genai
 import os
+import json
 from pathlib import Path
+from datetime import datetime
 
 # .envから読み込み（python-dotenvがあれば使用）
 try:
@@ -45,7 +47,19 @@ AVAILABLE_MODELS = {
     "3-flash": "gemini-3.0-flash",
 }
 
+# モデルごとの推定コスト（円/回）
+MODEL_COSTS = {
+    "flash": 0.07,
+    "flash-lite": 0.02,
+    "pro": 5.0,
+    "3-flash": 0.07,
+}
+
 DEFAULT_MODEL = "flash"
+MONTHLY_BUDGET = 1000  # 円
+
+# 使用量記録ファイル
+USAGE_FILE = Path(__file__).parent.parent / ".gemini_usage.json"
 
 # kesson-space用のコンテキスト
 KESSON_CONTEXT = """
@@ -74,6 +88,104 @@ def get_model(model_key: str) -> str:
     return AVAILABLE_MODELS.get(model_key, AVAILABLE_MODELS[DEFAULT_MODEL])
 
 
+def get_model_key(model_key: str) -> str:
+    """正規化されたモデルキーを取得"""
+    return model_key if model_key in AVAILABLE_MODELS else DEFAULT_MODEL
+
+
+def load_usage() -> dict:
+    """使用量データを読み込み"""
+    if USAGE_FILE.exists():
+        try:
+            return json.loads(USAGE_FILE.read_text())
+        except:
+            pass
+    return {"calls": []}
+
+
+def save_usage(data: dict):
+    """使用量データを保存"""
+    USAGE_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+
+
+def record_usage(model_key: str, tool_name: str):
+    """API呼び出しを記録"""
+    data = load_usage()
+    data["calls"].append({
+        "timestamp": datetime.now().isoformat(),
+        "model": model_key,
+        "tool": tool_name,
+        "cost": MODEL_COSTS.get(model_key, 0.07)
+    })
+    save_usage(data)
+
+
+@mcp.tool()
+def get_usage() -> str:
+    """
+    Gemini API使用量を表示（今月の使用回数・推定コスト）
+    """
+    data = load_usage()
+    calls = data.get("calls", [])
+    
+    # 今月のデータをフィルタ
+    now = datetime.now()
+    current_month = now.strftime("%Y-%m")
+    monthly_calls = [c for c in calls if c["timestamp"].startswith(current_month)]
+    
+    # モデル別集計
+    model_stats = {}
+    total_cost = 0
+    for call in monthly_calls:
+        model = call.get("model", "unknown")
+        cost = call.get("cost", 0.07)
+        if model not in model_stats:
+            model_stats[model] = {"count": 0, "cost": 0}
+        model_stats[model]["count"] += 1
+        model_stats[model]["cost"] += cost
+        total_cost += cost
+    
+    # 出力生成
+    lines = [
+        f"📊 Gemini API 使用量 ({current_month})",
+        f"{'=' * 40}",
+        "",
+        f"💰 月間予算: ¥{MONTHLY_BUDGET:,}",
+        f"💸 使用済み: ¥{total_cost:,.1f} ({total_cost/MONTHLY_BUDGET*100:.1f}%)",
+        f"📈 残り: ¥{MONTHLY_BUDGET - total_cost:,.1f}",
+        "",
+        f"📞 総呼び出し回数: {len(monthly_calls)}回",
+        "",
+        "モデル別:",
+    ]
+    
+    for model, stats in sorted(model_stats.items()):
+        lines.append(f"  {model}: {stats['count']}回 (¥{stats['cost']:.1f})")
+    
+    if not model_stats:
+        lines.append("  （今月の使用なし）")
+    
+    lines.extend([
+        "",
+        "コスト目安:",
+        f"  flash: ¥{MODEL_COSTS['flash']}/回",
+        f"  flash-lite: ¥{MODEL_COSTS['flash-lite']}/回",
+        f"  pro: ¥{MODEL_COSTS['pro']}/回",
+        f"  3-flash: ¥{MODEL_COSTS['3-flash']}/回",
+    ])
+    
+    return "\n".join(lines)
+
+
+@mcp.tool()
+def reset_usage() -> str:
+    """
+    使用量データをリセット（新しい月の開始時など）
+    """
+    save_usage({"calls": []})
+    return "✅ 使用量データをリセットしました"
+
+
 @mcp.tool()
 def generate_threejs_code(
     task_description: str,
@@ -91,6 +203,7 @@ def generate_threejs_code(
         include_kesson_context: kesson-spaceのコンテキストを含めるか
     """
     context = KESSON_CONTEXT if include_kesson_context else ""
+    model_key = get_model_key(model)
     model_name = get_model(model)
     
     prompt = f"""
@@ -111,6 +224,9 @@ def generate_threejs_code(
     try:
         gemini = genai.GenerativeModel(model_name)
         response = gemini.generate_content(prompt)
+        
+        # 使用量を記録
+        record_usage(model_key, "generate_threejs_code")
         
         if not response.text:
             return "Geminiから有効な回答が得られませんでした。"
@@ -135,6 +251,7 @@ def generate_shader(
         model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
         shader_type: "vertex", "fragment", or "both"
     """
+    model_key = get_model_key(model)
     model_name = get_model(model)
     
     prompt = f"""
@@ -155,6 +272,10 @@ def generate_shader(
     try:
         gemini = genai.GenerativeModel(model_name)
         response = gemini.generate_content(prompt)
+        
+        # 使用量を記録
+        record_usage(model_key, "generate_shader")
+        
         return f"[Model: {model_name}]\n\n{response.text}" if response.text else "シェーダー生成に失敗しました。"
     except Exception as e:
         return f"エラー: {str(e)}"
@@ -174,6 +295,7 @@ def review_threejs_code(
         model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
         focus_areas: レビューの焦点
     """
+    model_key = get_model_key(model)
     model_name = get_model(model)
     
     prompt = f"""
@@ -198,6 +320,10 @@ def review_threejs_code(
     try:
         gemini = genai.GenerativeModel(model_name)
         response = gemini.generate_content(prompt)
+        
+        # 使用量を記録
+        record_usage(model_key, "review_threejs_code")
+        
         return f"[Model: {model_name}]\n\n{response.text}" if response.text else "レビュー結果を取得できませんでした。"
     except Exception as e:
         return f"エラー: {str(e)}"
@@ -217,6 +343,7 @@ def compare_implementations(
         claude_code: Claudeが生成したコード
         model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
     """
+    model_key = get_model_key(model)
     model_name = get_model(model)
     
     prompt = f"""
@@ -241,6 +368,10 @@ Claudeのコード:
     try:
         gemini = genai.GenerativeModel(model_name)
         response = gemini.generate_content(prompt)
+        
+        # 使用量を記録
+        record_usage(model_key, "compare_implementations")
+        
         return f"[Model: {model_name}]\n\n{response.text}" if response.text else "比較結果を取得できませんでした。"
     except Exception as e:
         return f"エラー: {str(e)}"
@@ -253,14 +384,18 @@ def list_models() -> str:
     """
     lines = ["利用可能なモデル:", ""]
     for key, model in AVAILABLE_MODELS.items():
+        cost = MODEL_COSTS.get(key, 0.07)
         default = " (default)" if key == DEFAULT_MODEL else ""
-        lines.append(f"  {key}: {model}{default}")
+        lines.append(f"  {key}: {model} — ¥{cost}/回{default}")
     
     lines.extend([
         "",
         "使用例:",
         '  generate_threejs_code(task="...", model="pro")',
         '  generate_shader(shader_description="...", model="3-flash")',
+        "",
+        "使用量確認:",
+        "  get_usage() — 今月の使用状況を表示",
     ])
     
     return "\n".join(lines)
