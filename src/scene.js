@@ -1,6 +1,7 @@
 // scene.js — 統合グラフィック
 // uMix: 0.0 = v002(deep dark / voidHole) ↔ 1.0 = v004(slate blue / soul core)
 // timeで自動的に行き来する
+// v006: Gemini生成シェーダー統合版（光FBM+Julia / 水面FBM+Fresnel）
 
 import * as THREE from 'three';
 
@@ -114,30 +115,100 @@ export function createScene(container) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // 水面
+    // =============================================
+    // 水面シェーダー（v006: FBM + Fresnel風）
+    // =============================================
     _waterMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0.0 },
-            uColor: { value: new THREE.Color(0x1a1a2e) }
+            uColor: { value: new THREE.Color(0x1a1a2e) },
+            uCameraPos: { value: camera.position },
         },
         vertexShader: `
             uniform float uTime;
             varying vec2 vUv;
+            varying float vWaveHeight;
+            varying vec3 vWorldPos;
+            varying vec3 vWorldNormal;
             ${noiseGLSL}
+
+            // CHANGED: FBM（複数オクターブ）でリアルな波
+            float fbm(vec2 p) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                float frequency = 1.0;
+                for (int i = 0; i < 4; i++) {
+                    value += amplitude * snoise(p * frequency);
+                    amplitude *= 0.5;
+                    frequency *= 2.02;
+                }
+                return value;
+            }
+
             void main() {
                 vUv = uv;
                 vec3 pos = position;
-                float noise = snoise(vec2(pos.x * 0.03 + uTime * 0.05, pos.y * 0.03 - uTime * 0.05));
-                pos.z += noise * 1.5;
+
+                // FBMで複雑な波を生成
+                float wave = fbm(vec2(
+                    pos.x * 0.02 + uTime * 0.04,
+                    pos.y * 0.02 - uTime * 0.03
+                ));
+                pos.z += wave * 2.0;
+                vWaveHeight = wave;
+
+                // ワールド座標と法線を渡す
+                vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+                vWorldPos = worldPos.xyz;
+
+                // 近似法線（微分で計算）
+                float eps = 0.5;
+                float hL = fbm(vec2((position.x - eps) * 0.02 + uTime * 0.04, position.y * 0.02 - uTime * 0.03));
+                float hR = fbm(vec2((position.x + eps) * 0.02 + uTime * 0.04, position.y * 0.02 - uTime * 0.03));
+                float hD = fbm(vec2(position.x * 0.02 + uTime * 0.04, (position.y - eps) * 0.02 - uTime * 0.03));
+                float hU = fbm(vec2(position.x * 0.02 + uTime * 0.04, (position.y + eps) * 0.02 - uTime * 0.03));
+                vec3 localNormal = normalize(vec3(hL - hR, hD - hU, eps * 2.0));
+                vWorldNormal = normalize((modelMatrix * vec4(localNormal, 0.0)).xyz);
+
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
             }
         `,
         fragmentShader: `
             uniform vec3 uColor;
+            uniform float uTime;
+            uniform vec3 uCameraPos;
             varying vec2 vUv;
+            varying float vWaveHeight;
+            varying vec3 vWorldPos;
+            varying vec3 vWorldNormal;
+
             void main() {
-                float alpha = 0.2 * (1.0 - smoothstep(0.4, 0.6, abs(vUv.x - 0.5)));
-                gl_FragColor = vec4(uColor, alpha);
+                // 基本色 + 深浅による色変化
+                vec3 deepColor = vec3(0.04, 0.06, 0.14);
+                float depthFactor = clamp(vWaveHeight * 0.3 + 0.5, 0.0, 1.0);
+                vec3 waterColor = mix(uColor, deepColor, depthFactor);
+
+                // CHANGED: 簡易Fresnel（角度依存の反射）
+                vec3 viewDir = normalize(uCameraPos - vWorldPos);
+                float fresnel = pow(1.0 - max(dot(viewDir, vWorldNormal), 0.0), 3.0);
+                fresnel = 0.05 + 0.15 * fresnel;
+                waterColor = mix(waterColor, vec3(0.6, 0.7, 0.9), fresnel);
+
+                // 波頂のハイライト
+                float highlight = smoothstep(0.3, 0.8, vWaveHeight) * 0.15;
+                waterColor += vec3(highlight);
+
+                // CHANGED: 端のフェードアウト（自然に消える）
+                float edgeFade = smoothstep(0.0, 0.3, vUv.x)
+                               * smoothstep(0.0, 0.3, 1.0 - vUv.x)
+                               * smoothstep(0.0, 0.3, vUv.y)
+                               * smoothstep(0.0, 0.3, 1.0 - vUv.y);
+
+                // 透明度
+                float alpha = 0.25 + clamp(vWaveHeight * 0.15, -0.1, 0.15);
+                alpha *= edgeFade;
+
+                gl_FragColor = vec4(waterColor, alpha);
             }
         `,
         transparent: true,
@@ -149,7 +220,9 @@ export function createScene(container) {
     water.position.y = -20;
     scene.add(water);
 
-    // 光（欠損）シェーダー: uMixで voidHole ↔ soul core
+    // =============================================
+    // 光（欠損）シェーダー（v006: FBM + Julia風境界）
+    // =============================================
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0.0 },
@@ -174,6 +247,19 @@ export function createScene(container) {
             varying vec2 vUv;
             ${noiseGLSL}
 
+            // CHANGED: FBM for richer domain warping
+            float fbm(vec2 p) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                float frequency = 1.0;
+                for (int i = 0; i < 4; i++) {
+                    value += amplitude * snoise(p * frequency);
+                    amplitude *= 0.5;
+                    frequency *= 2.02;
+                }
+                return value;
+            }
+
             mat2 rot(float a) {
                 float s = sin(a), c = cos(a);
                 return mat2(c, -s, s, c);
@@ -183,41 +269,67 @@ export function createScene(container) {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
 
+                // CHANGED: FBM-based domain warping（より有機的）
                 vec2 p = uv;
-                float amplitude = 0.6;
+                float warpAmount = 0.5;
+                vec2 warp = vec2(
+                    fbm(p + t * 0.7),
+                    fbm(p.yx + t * 0.9 + uOffset * 1.2)
+                ) * warpAmount;
+                p += warp;
 
-                for(int i = 0; i < 3; i++) {
-                    p += vec2(snoise(p + t), snoise(p - t)) * amplitude;
-                    p *= rot(t * 0.1);
-                    amplitude *= 0.5;
-                }
+                // 追加のdomain warping層
+                p += vec2(
+                    snoise(p + t * 0.3) * 0.3,
+                    snoise(p - t * 0.2) * 0.3
+                );
+                p *= rot(t * 0.05);
 
                 float dist = length(p);
 
-                // --- v002: voidHole ---
+                // CHANGED: Julia集合風の境界（フラクタル的な曖昧さ）
+                float angle = atan(p.y, p.x);
+                float radius = pow(dist, 0.5);
+                float juliaFactor = 2.0 + sin(t * 0.3) * 0.5;
+                float juliaValue = pow(radius, juliaFactor);
+                float juliaMask = smoothstep(0.4, 0.8, juliaValue);
+
+                // --- v002: voidHole（FBM強化版）---
                 float coreA = 0.08 / (dist + 0.01);
-                float patternA = sin(p.x * 12.0 + t) * sin(p.y * 12.0 - t) * 0.1;
+                float patternA = fbm(p * 6.0 + t * 0.5) * 0.15;
                 float voidHole = smoothstep(0.0, 0.4, dist);
                 float breathA = 0.7 + 0.3 * sin(uTime * 1.2 + uOffset * 10.0);
-                float alphaA = (coreA + patternA) * voidHole * breathA;
+                float alphaA = (coreA + patternA) * voidHole * breathA * juliaMask;
                 alphaA = smoothstep(0.01, 1.0, alphaA);
                 vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
 
-                // --- v004: soul core ---
+                // --- v004: soul core（神秘的な輝き強化版）---
                 float glowIntensity = 0.12 / (dist * dist + 0.02);
-                vec3 coreWhite = vec3(1.0, 1.0, 1.0);
+
+                // CHANGED: より神秘的な白熱→テーマ色→透明グラデーション
+                vec3 coreWhite = vec3(1.0, 0.98, 0.95);
                 vec3 innerHalo = vec3(0.7, 0.85, 1.0);
-                vec3 colorB = mix(uColor, innerHalo, smoothstep(0.5, 3.0, glowIntensity));
-                colorB = mix(colorB, coreWhite, smoothstep(3.0, 8.0, glowIntensity));
-                float edgePattern = snoise(p * 4.0 + t) * 0.5 + 0.5;
+                vec3 colorB = uColor;
+                colorB = mix(colorB, innerHalo, smoothstep(0.3, 2.0, glowIntensity));
+                colorB = mix(colorB, coreWhite, smoothstep(2.0, 6.0, glowIntensity));
+
+                // FBMでエッジパターン
+                float edgePattern = fbm(p * 3.0 + t * 0.4) * 0.5 + 0.5;
                 float alphaB = smoothstep(0.0, 1.0, glowIntensity * 0.5);
-                float noiseBlend = smoothstep(2.0, 0.5, glowIntensity);
+                float noiseBlend = smoothstep(2.0, 0.3, glowIntensity);
                 alphaB *= mix(1.0, edgePattern, noiseBlend);
-                float breathB = 0.85 + 0.15 * sin(uTime * 1.5 + uOffset * 10.0);
+
+                // CHANGED: より自然な呼吸
+                float breathB = 0.85 + 0.15 * sin(uTime * 0.8 + uOffset * 6.0)
+                              + 0.05 * sin(uTime * 2.1 + uOffset * 3.0);
                 alphaB *= breathB;
+                alphaB *= juliaMask;
+
+                // ビネット（端の自然なフェード）
+                float vignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
 
                 // --- mix ---
-                float alpha = mix(alphaA, alphaB, uMix);
+                float alpha = mix(alphaA, alphaB, uMix) * vignette;
                 vec3 finalColor = mix(colorA, colorB * 1.5, uMix);
 
                 if(alpha < 0.01) discard;
@@ -264,8 +376,6 @@ export function createScene(container) {
     }
     _kessonMeshes = kessonMeshes;
 
-    // 粒子なし
-
     return { scene, camera, renderer, kessonMeshes };
 }
 
@@ -282,6 +392,7 @@ export function updateScene(time) {
 
     // 水面
     _waterMaterial.uniforms.uTime.value = time;
+    _waterMaterial.uniforms.uCameraPos.value.copy(_camera.position);
 
     // 光
     _kessonMeshes.forEach(mesh => {
