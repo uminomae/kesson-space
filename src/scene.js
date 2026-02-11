@@ -37,13 +37,11 @@ let _camera;
 let _bgMat;
 let _scene;
 
-// v002: deep dark
 const BG_V002_CENTER = new THREE.Color(0x050508);
 const BG_V002_EDGE = new THREE.Color(0x050508);
 const FOG_V002_COLOR = new THREE.Color(0x050508);
 const FOG_V002_DENSITY = 0.025;
 
-// v004: slate blue gradient
 const BG_V004_CENTER = new THREE.Color(0x2a3a4a);
 const BG_V004_EDGE = new THREE.Color(0x0a1520);
 const FOG_V004_COLOR = new THREE.Color(0x0a1520);
@@ -59,10 +57,10 @@ export const sceneParams = {
     mixCycle: 2.0,
     styleCycle: 14.0,
     fogDensity: 0.0,
-    camX: 0,
-    camY: 20,
-    camZ: 15,
-    camTargetY: -8,
+    camX: -14,
+    camY: 0,
+    camZ: 34,
+    camTargetY: -1,
 };
 
 export function createScene(container) {
@@ -71,7 +69,6 @@ export function createScene(container) {
 
     scene.fog = new THREE.FogExp2(FOG_V004_COLOR.getHex(), FOG_V004_DENSITY);
 
-    // 背景シェーダー
     const bgGeo = new THREE.PlaneGeometry(2, 2);
     _bgMat = new THREE.ShaderMaterial({
         uniforms: {
@@ -116,7 +113,6 @@ export function createScene(container) {
     bgMesh.renderOrder = -999;
     scene.add(bgMesh);
 
-    // カメラ（devパネルのデフォルト値で初期化）
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
     camera.lookAt(0, sceneParams.camTargetY, -10);
@@ -127,9 +123,7 @@ export function createScene(container) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // =============================================
     // 水面シェーダー
-    // =============================================
     _waterMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0.0 },
@@ -223,9 +217,7 @@ export function createScene(container) {
     water.position.y = -20;
     scene.add(water);
 
-    // =============================================
     // 光（欠損）シェーダー
-    // =============================================
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0.0 },
@@ -286,7 +278,6 @@ export function createScene(container) {
                 float uvDist = length(vUv - 0.5) * 2.0;
                 float uvFade = 1.0 - smoothstep(0.6, 1.0, uvDist);
 
-                // === Style A (v005) ===
                 vec2 pA = uv;
                 float ampA = uWarpAmount;
                 for(int i = 0; i < 3; i++) {
@@ -295,7 +286,6 @@ export function createScene(container) {
                     ampA *= 0.5;
                 }
 
-                // === Style B (v006) ===
                 vec2 pB = uv;
                 pB += vec2(
                     fbm(pB + t * 0.7),
@@ -310,7 +300,6 @@ export function createScene(container) {
                 vec2 p = mix(pA, pB, uStyle);
                 float dist = length(p);
 
-                // --- v002: voidHole ---
                 float coreA = 0.08 / (dist + 0.01);
                 float patternA_s = sin(p.x * 12.0 + t) * sin(p.y * 12.0 - t) * 0.1;
                 float patternA_f = fbm(p * 6.0 + t * 0.5) * 0.12;
@@ -321,7 +310,6 @@ export function createScene(container) {
                 alphaA = smoothstep(0.01, 1.0, alphaA);
                 vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
 
-                // --- v004: soul core ---
                 float glowIntensity = uGlowCore / (dist * dist + uGlowSpread);
 
                 vec3 coreWhite = vec3(1.0, 0.98, 0.95);
