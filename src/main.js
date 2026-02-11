@@ -1,72 +1,62 @@
 // main.js — エントリポイント
-// URLパラメータでシーン切り替え: ?scene=v002
+// 左下ボタンでグラデーション遷移
 
 import * as THREE from 'three';
+import { createScene, updateScene, setMix, getMix } from './scene.js';
 import { initControls, updateControls } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 
-// --- シーン選択 ---
-const params = new URLSearchParams(window.location.search);
-const sceneId = params.get('scene') || 'default';
+// --- 初期化 ---
+const container = document.getElementById('canvas-container');
+const { scene, camera, renderer, kessonMeshes } = createScene(container);
 
-const SCENE_MAP = {
-    'default': './scene.js',
-    'v002': './scenes/scene-v002.js',
-    'v004': './scene.js',
-};
+initControls(camera, container, renderer);
+initNavigation({ scene, camera, renderer });
 
-const scenePath = SCENE_MAP[sceneId] || SCENE_MAP['default'];
+// --- シーン切替 UI ---
+createSceneSwitcher();
 
-// --- 起動 ---
-async function boot() {
-    const { createScene, updateScene } = await import(scenePath);
+// --- アニメーションループ ---
+const clock = new THREE.Clock();
 
-    const container = document.getElementById('canvas-container');
-    const { scene, camera, renderer, kessonMeshes } = createScene(container);
+function animate() {
+    requestAnimationFrame(animate);
+    const time = clock.getElapsedTime();
 
-    initControls(camera, container, renderer);
-    initNavigation({ scene, camera, renderer });
+    updateControls(time);
+    updateScene(time);
+    updateNavigation(time);
 
-    // シーン切替 UI
-    createSceneSwitcher(sceneId);
-
-    const clock = new THREE.Clock();
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const time = clock.getElapsedTime();
-
-        updateControls(time);
-        updateScene(time);
-        updateNavigation(time);
-
-        renderer.render(scene, camera);
-    }
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    animate();
+    renderer.render(scene, camera);
 }
 
-// --- シーン切替ボタン ---
-function createSceneSwitcher(currentId) {
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+animate();
+
+// --- 切替ボタン ---
+function createSceneSwitcher() {
     const switcher = document.createElement('div');
     switcher.id = 'scene-switcher';
 
     const scenes = [
-        { id: 'default', label: 'v004 slate blue' },
-        { id: 'v002', label: 'v002 fractal' },
+        { mix: 0.0, label: 'deep dark' },
+        { mix: 1.0, label: 'slate blue' },
     ];
 
     scenes.forEach(s => {
-        const btn = document.createElement('a');
-        btn.href = `?scene=${s.id}`;
+        const btn = document.createElement('button');
         btn.textContent = s.label;
-        btn.className = 'scene-btn' + (s.id === currentId ? ' active' : '');
+        btn.className = 'scene-btn' + (s.mix === getMix() ? ' active' : '');
+        btn.addEventListener('click', () => {
+            setMix(s.mix);
+            switcher.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
         switcher.appendChild(btn);
     });
 
@@ -88,10 +78,10 @@ function createSceneSwitcher(currentId) {
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 2px;
             color: rgba(255, 255, 255, 0.25);
-            text-decoration: none;
             font-family: monospace;
             font-size: 0.65rem;
             letter-spacing: 0.05em;
+            cursor: pointer;
             transition: all 0.4s ease;
         }
         .scene-btn:hover {
@@ -105,5 +95,3 @@ function createSceneSwitcher(currentId) {
     `;
     document.head.appendChild(style);
 }
-
-boot();

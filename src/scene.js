@@ -1,9 +1,8 @@
-// scene.js — グラフィック（Geminiが反復するファイル）
-// v004-slate-blue ベース
+// scene.js — 統合グラフィック
+// uMix: 0.0 = v002(deep dark / voidHole) ↔ 1.0 = v004(slate blue / soul core)
 
 import * as THREE from 'three';
 
-// --- シェーダー共通 (Simplex Noise) ---
 const noiseGLSL = `
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
     vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -32,31 +31,58 @@ const noiseGLSL = `
     }
 `;
 
-// --- 内部参照用 ---
+// --- 内部参照 ---
 let _waterMaterial;
 let _kessonMeshes = [];
 let _particles;
 let _camera;
+let _bgMat;
+let _scene;
+
+// --- Mix制御 ---
+let _mixTarget = 1.0;  // 目標値
+let _mixCurrent = 1.0;  // 現在値
+const MIX_SPEED = 1.5;  // 秒速
+
+// v002: deep dark
+const BG_V002_CENTER = new THREE.Color(0x050508);
+const BG_V002_EDGE = new THREE.Color(0x050508);
+const FOG_V002_COLOR = new THREE.Color(0x050508);
+const FOG_V002_DENSITY = 0.025;
+
+// v004: slate blue gradient
+const BG_V004_CENTER = new THREE.Color(0x2a3a4a);
+const BG_V004_EDGE = new THREE.Color(0x0a1520);
+const FOG_V004_COLOR = new THREE.Color(0x0a1520);
+const FOG_V004_DENSITY = 0.02;
 
 /**
- * シーンを作成し、必要なオブジェクトを返す
- * @param {HTMLElement} container
- * @returns {{ scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, kessonMeshes: THREE.Mesh[] }}
+ * Mix値を設定（0.0=v002, 1.0=v004）
+ * アニメーションで滑らかに遷移
  */
+export function setMix(value) {
+    _mixTarget = Math.max(0, Math.min(1, value));
+}
+
+export function getMix() {
+    return _mixTarget;
+}
+
 export function createScene(container) {
     const scene = new THREE.Scene();
+    _scene = scene;
 
-    // 背景: dark slate blue グラデーション
-    const bgCenterColor = new THREE.Color(0x2a3a4a);
-    const bgEdgeColor = new THREE.Color(0x0a1520);
-    scene.fog = new THREE.FogExp2(0x0a1520, 0.02);
+    scene.fog = new THREE.FogExp2(FOG_V004_COLOR.getHex(), FOG_V004_DENSITY);
 
-    // 背景シェーダーメッシュ
+    // 背景シェーダー: uMixで単色↔グラデーションを補間
     const bgGeo = new THREE.PlaneGeometry(2, 2);
-    const bgMat = new THREE.ShaderMaterial({
+    _bgMat = new THREE.ShaderMaterial({
         uniforms: {
-            uColorCenter: { value: bgCenterColor },
-            uColorEdge: { value: bgEdgeColor }
+            uColorCenterA: { value: BG_V002_CENTER },
+            uColorEdgeA:   { value: BG_V002_EDGE },
+            uColorCenterB: { value: BG_V004_CENTER },
+            uColorEdgeB:   { value: BG_V004_EDGE },
+            uMix: { value: 1.0 },
         },
         vertexShader: `
             varying vec2 vUv;
@@ -66,22 +92,30 @@ export function createScene(container) {
             }
         `,
         fragmentShader: `
-            uniform vec3 uColorCenter;
-            uniform vec3 uColorEdge;
+            uniform vec3 uColorCenterA;
+            uniform vec3 uColorEdgeA;
+            uniform vec3 uColorCenterB;
+            uniform vec3 uColorEdgeB;
+            uniform float uMix;
             varying vec2 vUv;
             void main() {
                 float dist = length(vUv - 0.5);
                 float vignette = smoothstep(0.0, 1.2, dist);
-                vec3 color = mix(uColorCenter, uColorEdge, vignette);
+
+                vec3 colorA = mix(uColorCenterA, uColorEdgeA, vignette);
+                vec3 colorB = mix(uColorCenterB, uColorEdgeB, vignette);
+                vec3 color = mix(colorA, colorB, uMix);
+
                 float noise = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
                 color += (noise - 0.5) * 0.015;
+
                 gl_FragColor = vec4(color, 1.0);
             }
         `,
         depthWrite: false,
         depthTest: false
     });
-    const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+    const bgMesh = new THREE.Mesh(bgGeo, _bgMat);
     bgMesh.renderOrder = -999;
     scene.add(bgMesh);
 
@@ -132,12 +166,13 @@ export function createScene(container) {
     water.position.y = -20;
     scene.add(water);
 
-    // 光（欠損）シェーダー: Soul Core
+    // 光（欠損）シェーダー: uMixで voidHole ↔ soul core を補間
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0.0 },
             uColor: { value: new THREE.Color(0xffffff) },
-            uOffset: { value: 0.0 }
+            uOffset: { value: 0.0 },
+            uMix: { value: 1.0 },
         },
         vertexShader: `
             varying vec2 vUv;
@@ -152,6 +187,7 @@ export function createScene(container) {
             uniform vec3 uColor;
             uniform float uTime;
             uniform float uOffset;
+            uniform float uMix;
             varying vec2 vUv;
             ${noiseGLSL}
 
@@ -163,10 +199,10 @@ export function createScene(container) {
             void main() {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
-                
+
                 vec2 p = uv;
                 float amplitude = 0.6;
-                
+
                 for(int i = 0; i < 3; i++) {
                     p += vec2(snoise(p + t), snoise(p - t)) * amplitude;
                     p *= rot(t * 0.1);
@@ -175,26 +211,35 @@ export function createScene(container) {
 
                 float dist = length(p);
 
+                // --- v002: voidHole ---
+                float coreA = 0.08 / (dist + 0.01);
+                float patternA = sin(p.x * 12.0 + t) * sin(p.y * 12.0 - t) * 0.1;
+                float voidHole = smoothstep(0.0, 0.4, dist);
+                float breathA = 0.7 + 0.3 * sin(uTime * 1.2 + uOffset * 10.0);
+                float alphaA = (coreA + patternA) * voidHole * breathA;
+                alphaA = smoothstep(0.01, 1.0, alphaA);
+                vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
+
+                // --- v004: soul core ---
                 float glowIntensity = 0.12 / (dist * dist + 0.02);
-                
                 vec3 coreWhite = vec3(1.0, 1.0, 1.0);
                 vec3 innerHalo = vec3(0.7, 0.85, 1.0);
-                
-                vec3 finalColor = mix(uColor, innerHalo, smoothstep(0.5, 3.0, glowIntensity));
-                finalColor = mix(finalColor, coreWhite, smoothstep(3.0, 8.0, glowIntensity));
-
+                vec3 colorB = mix(uColor, innerHalo, smoothstep(0.5, 3.0, glowIntensity));
+                colorB = mix(colorB, coreWhite, smoothstep(3.0, 8.0, glowIntensity));
                 float edgePattern = snoise(p * 4.0 + t) * 0.5 + 0.5;
-                float alpha = smoothstep(0.0, 1.0, glowIntensity * 0.5);
-                
+                float alphaB = smoothstep(0.0, 1.0, glowIntensity * 0.5);
                 float noiseBlend = smoothstep(2.0, 0.5, glowIntensity);
-                alpha *= mix(1.0, edgePattern, noiseBlend);
+                alphaB *= mix(1.0, edgePattern, noiseBlend);
+                float breathB = 0.85 + 0.15 * sin(uTime * 1.5 + uOffset * 10.0);
+                alphaB *= breathB;
 
-                float breath = 0.85 + 0.15 * sin(uTime * 1.5 + uOffset * 10.0);
-                alpha *= breath;
+                // --- mix ---
+                float alpha = mix(alphaA, alphaB, uMix);
+                vec3 finalColor = mix(colorA, colorB * 1.5, uMix);
 
                 if(alpha < 0.01) discard;
 
-                gl_FragColor = vec4(finalColor * 1.5, alpha);
+                gl_FragColor = vec4(finalColor, alpha);
             }
         `,
         transparent: true,
@@ -202,7 +247,7 @@ export function createScene(container) {
         depthWrite: false
     });
 
-    // オブジェクト配置
+    // 配置
     const warmColors = [0xff7744, 0xff9955, 0xff5522];
     const coolColors = [0x4477ff, 0x5599ff, 0x2255ee];
     const kessonMeshes = [];
@@ -257,15 +302,31 @@ export function createScene(container) {
     return { scene, camera, renderer, kessonMeshes };
 }
 
-/**
- * 毎フレームのシーン更新
- * @param {number} time - elapsed time in seconds
- */
 export function updateScene(time) {
+    // --- Mixアニメーション ---
+    const dt = 1 / 60; // 粗いが十分
+    if (Math.abs(_mixCurrent - _mixTarget) > 0.001) {
+        _mixCurrent += (_mixTarget - _mixCurrent) * MIX_SPEED * dt;
+    } else {
+        _mixCurrent = _mixTarget;
+    }
+    const m = _mixCurrent;
+
+    // 背景
+    _bgMat.uniforms.uMix.value = m;
+
+    // Fog: 色と密度をlerp
+    const fogColor = new THREE.Color().lerpColors(FOG_V002_COLOR, FOG_V004_COLOR, m);
+    _scene.fog.color.copy(fogColor);
+    _scene.fog.density = FOG_V002_DENSITY + (FOG_V004_DENSITY - FOG_V002_DENSITY) * m;
+
+    // 水面
     _waterMaterial.uniforms.uTime.value = time;
 
+    // 光
     _kessonMeshes.forEach(mesh => {
         mesh.material.uniforms.uTime.value = time;
+        mesh.material.uniforms.uMix.value = m;
         mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 2;
         mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
         mesh.lookAt(_camera.position);
