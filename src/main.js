@@ -1,6 +1,7 @@
 // main.js — エントリポイント（初期化 + animate loop）
 // v005: モジュール分割版
 
+import * as THREE from 'three';
 import { createScene, updateScene } from './scene.js';
 import { initControls, updateControls } from './controls.js';
 import { initNavigation } from './navigation.js';
