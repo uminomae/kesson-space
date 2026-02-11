@@ -49,11 +49,11 @@ const FOG_V004_DENSITY = 0.02;
 
 // --- devパネル連携パラメータ ---
 export const sceneParams = {
-    brightness: 1.65,
-    glowCore: 0.05,
-    glowSpread: 0.02,
+    brightness: 1.0,
+    glowCore: 0.07,
+    glowSpread: 0.08,
     breathAmp: 0.15,
-    warpAmount: 0.6,
+    warpAmount: 1.0,
     mixCycle: 2.0,
     styleCycle: 14.0,
     fogDensity: 0.0,
