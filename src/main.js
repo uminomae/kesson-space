@@ -1,19 +1,44 @@
 // main.js — エントリポイント
-// DEV_MODE: URLに ?dev を付けるとパラメータ調整パネルを表示
-// 言語: ?lang=en で英語表示
 
 import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
 import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
 import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
+import { getOrbScreenData, updateNavLabels } from './nav-objects.js';
 import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
-import { toggles, breathConfig } from './config.js';
+import { DistortionShader } from './shaders/distortion-pass.js';
+import { createFluidSystem } from './shaders/fluid-field.js';
+import { toggles, breathConfig, DISTORTION_PARAMS } from './config.js';
+
+let composer;
+let distortionPass;
+let fluidSystem;
+let navMeshesCache = [];
+
+const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
 // ============================
-// DEV_MODE: ?dev でパネル表示
+// マウストラッキング
 // ============================
-const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
+let _mouseX = 0.5, _mouseY = 0.5;
+let _smoothMouseX = 0.5, _smoothMouseY = 0.5;
+let _prevMouseX = 0.5, _prevMouseY = 0.5;
+
+window.addEventListener('mousemove', (e) => {
+    _mouseX = e.clientX / window.innerWidth;
+    _mouseY = 1.0 - (e.clientY / window.innerHeight);
+});
+window.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+        _mouseX = e.touches[0].clientX / window.innerWidth;
+        _mouseY = 1.0 - (e.touches[0].clientY / window.innerHeight);
+    }
+});
 
 // ============================
 // 言語初期化
@@ -44,43 +69,54 @@ initLangToggle();
 const container = document.getElementById('canvas-container');
 const { scene, camera, renderer } = createScene(container);
 
+// ============================
+// 流体システム
+// ============================
+fluidSystem = createFluidSystem(renderer);
+
+// ============================
+// EffectComposer
+// ============================
+composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+distortionPass = new ShaderPass(DistortionShader);
+distortionPass.uniforms.uStrength.value = DISTORTION_PARAMS.strength;
+distortionPass.uniforms.uAberration.value = DISTORTION_PARAMS.chromaticAberration;
+composer.addPass(distortionPass);
+
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer });
 
-// --- HTML呼吸対象 ---
+function findNavMeshes() {
+    if (navMeshesCache.length > 0) return navMeshesCache;
+    const found = [];
+    scene.traverse((obj) => {
+        if (obj.isGroup && obj.userData && typeof obj.userData.index === 'number' && obj.userData.core) {
+            found.push(obj);
+        }
+    });
+    found.sort((a, b) => a.userData.index - b.userData.index);
+    navMeshesCache = found;
+    return found;
+}
+
+// --- HTMLオーバーレイ ---
 const overlay = document.getElementById('overlay');
 
-// --- HTMLオーバーレイの動的更新 ---
 function updateOverlay(key, val) {
     const h1 = document.getElementById('title-h1');
     const sub = document.getElementById('title-sub');
     if (!overlay || !h1 || !sub) return;
-
     switch (key) {
-        case 'titleBottom':
-            overlay.style.bottom = val + 'px';
-            break;
-        case 'titleLeft':
-            overlay.style.left = val + 'px';
-            break;
-        case 'titleSize':
-            h1.style.fontSize = val + 'rem';
-            break;
-        case 'titleSpacing':
-            h1.style.letterSpacing = val + 'em';
-            break;
-        case 'titleOpacity':
-            h1.style.color = `rgba(255, 255, 255, ${val})`;
-            break;
-        case 'subSize':
-            sub.style.fontSize = val + 'rem';
-            break;
-        case 'subOpacity':
-            sub.style.color = `rgba(255, 255, 255, ${val})`;
-            break;
-        case 'titleGlow':
-            h1.style.textShadow = `0 0 ${val}px rgba(100, 150, 255, 0.3)`;
-            break;
+        case 'titleBottom':  overlay.style.bottom = val + 'px'; break;
+        case 'titleLeft':    overlay.style.left = val + 'px'; break;
+        case 'titleSize':    h1.style.fontSize = val + 'rem'; break;
+        case 'titleSpacing': h1.style.letterSpacing = val + 'em'; break;
+        case 'titleOpacity': h1.style.color = `rgba(255,255,255,${val})`; break;
+        case 'subSize':      sub.style.fontSize = val + 'rem'; break;
+        case 'subOpacity':   sub.style.color = `rgba(255,255,255,${val})`; break;
+        case 'titleGlow':    h1.style.textShadow = `0 0 ${val}px rgba(100,150,255,0.3)`; break;
     }
 }
 
@@ -89,31 +125,44 @@ if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel((key, value) => {
             // トグル
-            if (key in toggles) {
-                toggles[key] = value;
-                return;
-            }
-
-            // 呼吸設定
-            if (key in breathConfig) {
-                breathConfig[key] = value;
-                return;
-            }
-
-            // シーンパラメータ
-            if (key in sceneParams) {
-                sceneParams[key] = value;
-            }
+            if (key in toggles) { toggles[key] = value; return; }
+            // 呼吸
+            if (key in breathConfig) { breathConfig[key] = value; return; }
+            // シーン
+            if (key in sceneParams) sceneParams[key] = value;
 
             if (key === 'camX' || key === 'camY' || key === 'camZ') {
                 setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
             }
-            if (key === 'camTargetY') {
-                setTarget(0, value, -10);
-            }
-            if (key === 'autoRotateSpd') {
-                setAutoRotateSpeed(value);
-            }
+            if (key === 'camTargetY') setTarget(0, value, -10);
+            if (key === 'autoRotateSpd') setAutoRotateSpeed(value);
+
+            // オーブ屈折
+            if (key === 'distStrength')   distortionPass.uniforms.uStrength.value = value;
+            if (key === 'distAberration') distortionPass.uniforms.uAberration.value = value;
+            if (key === 'turbulence')     distortionPass.uniforms.uTurbulence.value = value;
+            if (key === 'baseBlur')       distortionPass.uniforms.uBaseBlur.value = value;
+            if (key === 'orbBlur')        distortionPass.uniforms.uBlurAmount.value = value;
+            if (key === 'innerGlow')      distortionPass.uniforms.uInnerGlow.value = value;
+            if (key === 'haloIntensity')  distortionPass.uniforms.uHaloIntensity.value = value;
+            if (key === 'haloWidth')      distortionPass.uniforms.uHaloWidth.value = value;
+            if (key === 'haloColorR')     distortionPass.uniforms.uHaloColor.value.x = value;
+            if (key === 'haloColorG')     distortionPass.uniforms.uHaloColor.value.y = value;
+            if (key === 'haloColorB')     distortionPass.uniforms.uHaloColor.value.z = value;
+
+            // 流体
+            if (key === 'fluidForce')     fluidSystem.uniforms.uForce.value = value;
+            if (key === 'fluidCurl')      fluidSystem.uniforms.uCurl.value = value;
+            if (key === 'fluidDecay')     fluidSystem.uniforms.uDecay.value = value;
+            if (key === 'fluidRadius')    fluidSystem.uniforms.uRadius.value = value;
+            if (key === 'fluidInfluence') distortionPass.uniforms.uFluidInfluence.value = value;
+
+            // 熱波・DOF
+            if (key === 'heatHaze')       distortionPass.uniforms.uHeatHaze.value = value;
+            if (key === 'heatHazeRadius') distortionPass.uniforms.uHeatHazeRadius.value = value;
+            if (key === 'heatHazeSpeed')  distortionPass.uniforms.uHeatHazeSpeed.value = value;
+            if (key === 'dofStrength')    distortionPass.uniforms.uDofStrength.value = value;
+            if (key === 'dofFocusRadius') distortionPass.uniforms.uDofFocusRadius.value = value;
 
             updateOverlay(key, value);
         });
@@ -126,7 +175,7 @@ function animate() {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
 
-    // --- 統一呼吸値 (0→1→0, 全周期 = period * 2) ---
+    // --- 統一呼吸値 ---
     const breathVal = (Math.sin(time * Math.PI / breathConfig.period - Math.PI / 2) + 1) * 0.5;
 
     // --- HTML呼吸 ---
@@ -145,17 +194,75 @@ function animate() {
         }
     }
 
+    // --- マウススムージング ---
+    _smoothMouseX += (_mouseX - _smoothMouseX) * 0.08;
+    _smoothMouseY += (_mouseY - _smoothMouseY) * 0.08;
+    const velX = _smoothMouseX - _prevMouseX;
+    const velY = _smoothMouseY - _prevMouseY;
+    _prevMouseX = _smoothMouseX;
+    _prevMouseY = _smoothMouseY;
+
     updateControls(time, breathVal);
     updateScene(time);
     updateNavigation(time);
 
-    renderer.render(scene, camera);
+    // --- 流体フィールド ---
+    if (toggles.fluidField) {
+        fluidSystem.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
+        fluidSystem.uniforms.uMouseVelocity.value.set(velX, velY);
+        fluidSystem.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+        fluidSystem.update();
+        distortionPass.uniforms.tFluidField.value = fluidSystem.getTexture();
+    } else {
+        distortionPass.uniforms.uFluidInfluence.value = 0;
+    }
+
+    // --- オーブ情報更新 ---
+    if (toggles.navOrbs && toggles.orbRefraction) {
+        const navs = findNavMeshes();
+        if (navs.length > 0) {
+            const orbData = getOrbScreenData(navs, camera);
+            for (let i = 0; i < 3; i++) {
+                if (i < orbData.length) {
+                    distortionPass.uniforms.uOrbs.value[i].set(orbData[i].x, orbData[i].y);
+                    distortionPass.uniforms.uOrbStrengths.value[i] = orbData[i].strength;
+                    distortionPass.uniforms.uOrbRadii.value[i] = orbData[i].radius;
+                } else {
+                    distortionPass.uniforms.uOrbStrengths.value[i] = 0.0;
+                    distortionPass.uniforms.uOrbRadii.value[i] = 0.0;
+                }
+            }
+        }
+    } else {
+        for (let i = 0; i < 3; i++) {
+            distortionPass.uniforms.uOrbStrengths.value[i] = 0.0;
+        }
+    }
+
+    distortionPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+    distortionPass.uniforms.uTime.value = time;
+    distortionPass.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
+
+    // --- トグル反映 ---
+    if (!toggles.heatHaze) distortionPass.uniforms.uHeatHaze.value = 0;
+    if (!toggles.dof) distortionPass.uniforms.uDofStrength.value = 0;
+
+    // --- レンダリング ---
+    const navs = findNavMeshes();
+    updateNavLabels(navs, camera);
+
+    if (toggles.postProcess) {
+        composer.render();
+    } else {
+        renderer.render(scene, camera);
+    }
 }
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
 });
 
 animate();

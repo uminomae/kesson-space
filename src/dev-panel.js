@@ -2,19 +2,22 @@
 
 import { toggles, breathConfig } from './config.js';
 
-// --- トグル定義 ---
 const TOGGLES = [
     { key: 'background',    label: '背景' },
     { key: 'kessonLights',  label: '欠損ライト' },
     { key: 'water',         label: '水面' },
     { key: 'navOrbs',       label: 'ナビオーブ' },
     { key: 'fog',           label: 'フォグ' },
-    { key: 'fovBreath',     label: 'FOV呼吸（熱波）' },
+    { key: 'fovBreath',     label: 'FOV呼吸' },
     { key: 'htmlBreath',    label: 'HTML呼吸' },
     { key: 'autoRotate',    label: '自動回転' },
+    { key: 'postProcess',   label: 'ポストプロセス' },
+    { key: 'fluidField',    label: '流体かき混ぜ' },
+    { key: 'heatHaze',      label: '熱波' },
+    { key: 'dof',           label: '被写界深度' },
+    { key: 'orbRefraction',label: 'オーブ屈折' },
 ];
 
-// --- スライダー定義 ---
 const SECTIONS = [
     {
         id: 'breath',
@@ -37,6 +40,45 @@ const SECTIONS = [
             glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.08 },
             breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
             warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 1.0 },
+        }
+    },
+    {
+        id: 'orbs',
+        title: '鬼火オーブ（屈折球）',
+        params: {
+            distStrength:  { label: '屈折の強さ',    min: 0.0, max: 0.5, step: 0.01, default: 0.03 },
+            distAberration:{ label: '色収差',        min: 0.0, max: 0.3, step: 0.005, default: 0.1 },
+            turbulence:    { label: '乱流の強さ',    min: 0.0, max: 3.0, step: 0.05, default: 0.4 },
+            baseBlur:      { label: '全体ボケ',      min: 0.0, max: 0.2, step: 0.005, default: 0.06 },
+            orbBlur:       { label: 'エッジボケ',    min: 0.0, max: 0.5, step: 0.01, default: 0.15 },
+            innerGlow:     { label: '内側グロー',    min: 0.0, max: 1.0, step: 0.05, default: 0.1 },
+            haloIntensity: { label: '後光の強さ',    min: 0.0, max: 1.5, step: 0.05, default: 0.2 },
+            haloWidth:     { label: '後光の幅',      min: 0.05, max: 1.0, step: 0.05, default: 1.0 },
+            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: 0.4 },
+            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: 0.05 },
+            haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: 0.0 },
+        }
+    },
+    {
+        id: 'fluid',
+        title: '流体かき混ぜ',
+        params: {
+            fluidForce:    { label: '押す力',        min: 0.0, max: 1.0, step: 0.05, default: 0.3 },
+            fluidCurl:     { label: '渦の強さ',      min: 0.0, max: 1.0, step: 0.05, default: 0.4 },
+            fluidDecay:    { label: '減衰率',        min: 0.9, max: 0.999, step: 0.001, default: 0.97 },
+            fluidRadius:   { label: '影響半径',      min: 0.03, max: 0.4, step: 0.01, default: 0.12 },
+            fluidInfluence:{ label: '画面への影響',  min: 0.0, max: 0.06, step: 0.001, default: 0.015 },
+        }
+    },
+    {
+        id: 'heatdof',
+        title: '熱波・被写界深度',
+        params: {
+            heatHaze:      { label: '熱波の強さ',    min: 0.0, max: 0.06, step: 0.001, default: 0.024 },
+            heatHazeRadius:{ label: '熱波半径',      min: 0.05, max: 0.8, step: 0.01, default: 0.5 },
+            heatHazeSpeed: { label: '熱波速度',      min: 0.5, max: 10.0, step: 0.5, default: 1.0 },
+            dofStrength:   { label: 'DOFボケ強度',   min: 0.0, max: 0.02, step: 0.0005, default: 0.009 },
+            dofFocusRadius:{ label: 'DOFフォーカス半径', min: 0.05, max: 0.6, step: 0.01, default: 0.32 },
         }
     },
     {
@@ -138,7 +180,6 @@ function createPanel() {
         #dev-panel::-webkit-scrollbar { width: 4px; }
         #dev-panel::-webkit-scrollbar-thumb { background: rgba(100,150,255,0.2); border-radius: 2px; }
 
-        /* --- Bootstrapカスタマイズ --- */
         #dev-panel .accordion-button {
             padding: 0.5rem 0.75rem;
             font-size: 0.72rem;
@@ -166,7 +207,6 @@ function createPanel() {
             border-bottom: 1px solid rgba(100, 150, 255, 0.06);
         }
 
-        /* --- トグルスイッチ --- */
         #dev-panel .form-check {
             display: flex;
             justify-content: space-between;
@@ -186,10 +226,7 @@ function createPanel() {
             cursor: pointer;
         }
 
-        /* --- スライダー --- */
-        .dev-slider-row {
-            margin-bottom: 0.4rem;
-        }
+        .dev-slider-row { margin-bottom: 0.4rem; }
         .dev-slider-header {
             display: flex;
             justify-content: space-between;
@@ -204,18 +241,13 @@ function createPanel() {
             min-width: 36px;
             text-align: right;
         }
-        #dev-panel .form-range {
-            height: 0.5rem;
-            padding: 0;
-        }
+        #dev-panel .form-range { height: 0.5rem; padding: 0; }
         #dev-panel .form-range::-webkit-slider-thumb {
-            width: 12px;
-            height: 12px;
+            width: 12px; height: 12px;
             background: rgba(100, 160, 255, 0.8);
             border: 1px solid rgba(150, 200, 255, 0.3);
         }
 
-        /* --- エクスポート --- */
         #dev-export-result {
             font-size: 0.58rem;
             max-height: 180px;
@@ -226,7 +258,6 @@ function createPanel() {
     `;
     document.head.appendChild(style);
 
-    // --- DEVタブ ---
     const tab = document.createElement('div');
     tab.id = 'dev-toggle';
     tab.textContent = 'DEV';
@@ -237,30 +268,19 @@ function createPanel() {
     });
     document.body.appendChild(tab);
 
-    // --- パネル ---
     const panel = document.createElement('div');
     panel.id = 'dev-panel';
     panel.setAttribute('data-bs-theme', 'dark');
 
-    let html = '';
-
-    // ヘッダー
-    html += '<div class="px-3 py-2 border-bottom border-secondary-subtle"><small class="text-secondary-emphasis" style="font-family:monospace;letter-spacing:0.1em">パラメータ調整</small></div>';
-
-    // アコーディオン
+    let html = '<div class="px-3 py-2 border-bottom border-secondary-subtle"><small class="text-secondary-emphasis" style="font-family:monospace;letter-spacing:0.1em">パラメータ調整</small></div>';
     html += '<div class="accordion accordion-flush" id="devAccordion">';
 
-    // --- 表示ON/OFF ---
     html += accordionItem('toggles', '表示 ON/OFF', buildTogglesHTML(), true);
-
-    // --- スライダーセクション ---
-    SECTIONS.forEach((section, i) => {
+    SECTIONS.forEach(section => {
         html += accordionItem(section.id, section.title, buildSlidersHTML(section));
     });
 
-    html += '</div>'; // accordion
-
-    // --- エクスポート ---
+    html += '</div>';
     html += `
         <div class="p-2 border-top border-secondary-subtle">
             <button class="btn btn-outline-secondary btn-sm w-100" id="dev-export-btn" style="font-size:0.68rem">値をコピー</button>
@@ -271,13 +291,10 @@ function createPanel() {
     panel.innerHTML = html;
     document.body.appendChild(panel);
 
-    // --- イベント ---
     bindToggleEvents();
     bindSliderEvents();
     bindExportEvent();
 }
-
-// --- HTMLビルダー ---
 
 function accordionItem(id, title, bodyHTML, show = false) {
     return `
@@ -323,8 +340,6 @@ function buildSlidersHTML(section) {
     }).join('');
 }
 
-// --- イベントバインド ---
-
 function bindToggleEvents() {
     TOGGLES.forEach(t => {
         document.getElementById(`toggle-${t.key}`).addEventListener('change', (e) => {
@@ -367,8 +382,6 @@ function bindExportEvent() {
         });
     });
 }
-
-// --- 公開 ---
 
 export function initDevPanel(onChange) {
     _onChange = onChange;

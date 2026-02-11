@@ -1,90 +1,69 @@
-// nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + 浮遊テキスト）
+// nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + HTMLラベル）
+// テキストラベルはHTMLオーバーレイ（ポストプロセスの歪みを受けない）
 
 import * as THREE from 'three';
 import { detectLang, t } from './i18n.js';
+import { toggles } from './config.js';
 
-// --- ナビ配置定数 ---
 const NAV_POSITIONS = [
     { position: [-12, -8, -5], color: 0x6688cc },
     { position: [0, -8, -5],   color: 0x7799dd },
     { position: [12, -8, -5],  color: 0x5577bb },
 ];
 
-// --- ヘルパー: 光のオーブ（鬼火）テクスチャ生成 ---
-function createGlowTexture(colorHex) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
+const ORB_3D_RADIUS = 2.0;
 
-    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    const color = new THREE.Color(colorHex);
+let _labelElements = [];
 
-    gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
-    gradient.addColorStop(0.3, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0.8)`);
-    gradient.addColorStop(1, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0)`);
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 64, 64);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    return texture;
+function injectNavLabelStyles() {
+    if (document.getElementById('nav-label-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'nav-label-styles';
+    style.textContent = `
+        .nav-label {
+            position: fixed;
+            z-index: 15;
+            pointer-events: none;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: "Sawarabi Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+            transition: filter 0.15s ease, opacity 0.3s ease;
+            will-change: filter;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
-// --- ヘルパー: 浮遊テキスト生成 ---
-function createFloatingTextSprite(text) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 512;
-    canvas.height = 128;
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    ctx.shadowColor = 'rgba(200, 220, 255, 0.8)';
-    ctx.shadowBlur = 15;
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.font = '36px "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif';
-
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-
-    const material = new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.9,
-        depthTest: false,
-        depthWrite: false,
-    });
-
-    const sprite = new THREE.Sprite(material);
-    sprite.scale.set(12, 3, 1);
-
-    return sprite;
+function createHtmlLabel(text) {
+    const el = document.createElement('div');
+    el.className = 'nav-label';
+    el.textContent = text;
+    document.body.appendChild(el);
+    return el;
 }
 
-// --- ナビオブジェクト作成 ---
 export function createNavObjects(scene) {
     const navMeshes = [];
     const lang = detectLang();
     const strings = t(lang);
+
+    injectNavLabelStyles();
 
     NAV_POSITIONS.forEach((pos, index) => {
         const navItem = strings.nav[index];
         const group = new THREE.Group();
         group.position.set(...pos.position);
 
-        const glowMaterial = new THREE.SpriteMaterial({
-            map: createGlowTexture(pos.color),
+        const hitMaterial = new THREE.SpriteMaterial({
             transparent: true,
+            opacity: 0.0,
             depthWrite: false,
-            blending: THREE.AdditiveBlending,
         });
-        const coreSprite = new THREE.Sprite(glowMaterial);
+        const coreSprite = new THREE.Sprite(hitMaterial);
         coreSprite.scale.set(4.0, 4.0, 4.0);
 
         coreSprite.userData = {
@@ -96,11 +75,7 @@ export function createNavObjects(scene) {
             isHitTarget: true,
         };
 
-        const labelSprite = createFloatingTextSprite(navItem.label);
-        labelSprite.position.set(0, 2.0, 0);
-
         group.add(coreSprite);
-        group.add(labelSprite);
 
         group.userData = {
             baseY: pos.position[1],
@@ -111,24 +86,111 @@ export function createNavObjects(scene) {
 
         scene.add(group);
         navMeshes.push(group);
+
+        _labelElements.push(createHtmlLabel(navItem.label));
     });
 
     return navMeshes;
 }
 
-// --- アニメーション更新 ---
 export function updateNavObjects(navMeshes, time) {
     navMeshes.forEach((group) => {
         const data = group.userData;
-
         const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
         group.position.y = data.baseY + floatOffset;
+    });
+}
 
-        if (data.core) {
-            const pulse = 1.0 + Math.sin(time * 1.5 + data.index * 2.0) * 0.1;
-            const base = data.baseScale || 4.0;
-            data.core.scale.set(base * pulse, base * pulse, base * pulse);
-            data.core.material.opacity = 0.7 + Math.sin(time * 1.5 + data.index * 2.0) * 0.3;
+// --- HTMLラベルの位置更新（被写界深度ボケ付き） ---
+const _labelWorldPos = new THREE.Vector3();
+const LABEL_Y_OFFSET = 3.5;
+
+let _gazeX = 0.5;
+let _gazeY = 0.5;
+
+function initGazeTracking() {
+    if (window._gazeTrackingInit) return;
+    window._gazeTrackingInit = true;
+    window.addEventListener('mousemove', (e) => {
+        _gazeX = e.clientX / window.innerWidth;
+        _gazeY = e.clientY / window.innerHeight;
+    });
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+            _gazeX = e.touches[0].clientX / window.innerWidth;
+            _gazeY = e.touches[0].clientY / window.innerHeight;
         }
     });
+}
+
+export function updateNavLabels(navMeshes, camera) {
+    initGazeTracking();
+
+    const visible = toggles.navOrbs;
+    navMeshes.forEach((group, i) => {
+        const el = _labelElements[i];
+        if (!el) return;
+
+        if (!visible) {
+            el.style.opacity = '0';
+            return;
+        }
+
+        group.getWorldPosition(_labelWorldPos);
+        _labelWorldPos.y += LABEL_Y_OFFSET;
+        _labelWorldPos.project(camera);
+
+        if (_labelWorldPos.z > 1.0) {
+            el.style.opacity = '0';
+            return;
+        }
+
+        const x = ( _labelWorldPos.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-_labelWorldPos.y * 0.5 + 0.5) * window.innerHeight;
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.opacity = '1';
+
+        const labelNdcX = x / window.innerWidth;
+        const labelNdcY = y / window.innerHeight;
+        const dx = labelNdcX - _gazeX;
+        const dy = labelNdcY - _gazeY;
+        const gazeDist = Math.sqrt(dx * dx + dy * dy);
+        const blurPx = Math.max(0, (gazeDist - 0.15) * 8.0);
+        const clampedBlur = Math.min(blurPx, 4.0);
+        el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
+    });
+}
+
+// --- スクリーン座標 + 射影半径の計算 ---
+const _orbCenter = new THREE.Vector3();
+const _orbEdge = new THREE.Vector3();
+
+export function getOrbScreenData(navMeshes, camera) {
+    const data = [];
+    navMeshes.forEach(group => {
+        if (group.userData.core) {
+            group.userData.core.getWorldPosition(_orbCenter);
+        } else {
+            group.getWorldPosition(_orbCenter);
+        }
+        const camRight = new THREE.Vector3();
+        camera.getWorldDirection(camRight);
+        camRight.cross(camera.up).normalize();
+        _orbEdge.copy(_orbCenter).addScaledVector(camRight, ORB_3D_RADIUS);
+        const centerNDC = _orbCenter.clone().project(camera);
+        const edgeNDC = _orbEdge.clone().project(camera);
+        const cx = (centerNDC.x * 0.5) + 0.5;
+        const cy = (centerNDC.y * 0.5) + 0.5;
+        const ex = (edgeNDC.x * 0.5) + 0.5;
+        const ey = (edgeNDC.y * 0.5) + 0.5;
+        const dx = (ex - cx) * (window.innerWidth / window.innerHeight);
+        const dy = ey - cy;
+        const screenRadius = Math.sqrt(dx * dx + dy * dy);
+        let strength = 1.0;
+        if (centerNDC.z > 1.0) strength = 0.0;
+        data.push({ x: cx, y: cy, strength, radius: screenRadius });
+    });
+    return data;
 }

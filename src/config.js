@@ -12,11 +12,16 @@ export const toggles = {
     fovBreath: true,
     htmlBreath: true,
     autoRotate: true,
+    postProcess: true,
+    fluidField: true,
+    heatHaze: true,
+    dof: true,
+    orbRefraction: true,
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
 export const breathConfig = {
-    period: 8.0,          // 半周期（秒）。全周期 = period * 2
+    period: 8.0,
     htmlMinOpacity: 0.1,
     htmlMaxOpacity: 0.8,
     htmlMaxBlur: 3.0,
@@ -40,6 +45,12 @@ export const FOG_V004_DENSITY = 0.02;
 // --- 光の色パレット ---
 export const WARM_COLORS = [0xff7744, 0xff9955, 0xff5522];
 export const COOL_COLORS = [0x4477ff, 0x5599ff, 0x2255ee];
+
+// --- 歪みエフェクト定数 ---
+export const DISTORTION_PARAMS = {
+    strength: 0.03,
+    chromaticAberration: 0.1,
+};
 
 // --- devパネル連携パラメータ ---
 export const sceneParams = {
