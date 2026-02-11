@@ -10,7 +10,7 @@ import { initNavigation } from './navigation.js';
 const container = document.getElementById('canvas-container');
 const { scene, camera, renderer, kessonMeshes } = createScene(container);
 
-initControls(camera, container);
+initControls(camera, container, renderer);
 initNavigation(camera, kessonMeshes, renderer);
 
 // --- アニメーションループ ---
