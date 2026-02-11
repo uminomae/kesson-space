@@ -20,6 +20,9 @@ let _bgMat;
 let _bgMesh;
 let _scene;
 
+// GC削減: フォグ色を事前確保（毎フレーム new しない）
+const _fogColor = new THREE.Color();
+
 export function createScene(container) {
     const scene = new THREE.Scene();
     _scene = scene;
@@ -74,8 +77,8 @@ export function updateScene(time) {
 
     // --- フォグ ---
     if (toggles.fog) {
-        const fogColor = new THREE.Color().lerpColors(FOG_V002_COLOR, FOG_V004_COLOR, m);
-        _scene.fog.color.copy(fogColor);
+        _fogColor.lerpColors(FOG_V002_COLOR, FOG_V004_COLOR, m);
+        _scene.fog.color.copy(_fogColor);
         const baseFogV002 = FOG_V002_DENSITY;
         const baseFogV004 = sceneParams.fogDensity;
         _scene.fog.density = baseFogV002 + (baseFogV004 - baseFogV002) * m;

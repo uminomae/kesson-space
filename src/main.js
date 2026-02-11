@@ -212,6 +212,9 @@ function animate() {
     updateScene(time);
     updateNavigation(time);
 
+    // --- ナビメッシュ取得（フレームで1回のみ） ---
+    const navs = findNavMeshes();
+
     // --- 流体フィールド ---
     if (toggles.fluidField) {
         fluidSystem.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
@@ -225,7 +228,6 @@ function animate() {
 
     // --- オーブ情報更新 ---
     if (toggles.navOrbs && toggles.orbRefraction) {
-        const navs = findNavMeshes();
         if (navs.length > 0) {
             const orbData = getOrbScreenData(navs, camera);
             for (let i = 0; i < 3; i++) {
@@ -253,10 +255,10 @@ function animate() {
     if (!toggles.heatHaze) distortionPass.uniforms.uHeatHaze.value = 0;
     if (!toggles.dof) distortionPass.uniforms.uDofStrength.value = 0;
 
-    // --- レンダリング ---
-    const navs = findNavMeshes();
+    // --- ラベル更新 ---
     updateNavLabels(navs, camera);
 
+    // --- レンダリング ---
     if (toggles.postProcess) {
         composer.render();
     } else {

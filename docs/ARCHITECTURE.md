@@ -11,22 +11,24 @@ kesson-space/
 ├── src/
 │   ├── main.js               ← エントリポイント（初期化・アニメーションループ）
 │   ├── scene.js              ← シーン構築・更新オーケストレーション
-│   ├── config.js             ← 設定値・定数の一元管理
+│   ├── config.js             ← ★ 設定値・定数の唯一の信頼源 (Single Source of Truth)
 │   ├── controls.js           ← カメラ・マウス・インタラクション
 │   ├── navigation.js         ← ナビゲーション統合（イベント処理）
-│   ├── nav-objects.js        ← 3Dナビオブジェクト（鬼火オーブ + テキスト）
+│   ├── nav-objects.js        ← 3Dナビオブジェクト（鬼火オーブ + HTMLラベル）
 │   ├── viewer.js             ← PDFフロートビューアー（CSS + DOM）
+│   ├── i18n.js               ← 言語切替（?lang=en / ?lang=ja）
+│   ├── lang-toggle.js        ← 言語トグルUI
 │   ├── dev-panel.js          ← 開発用パラメータ調整パネル
-│   ├── shaders/
-│   │   ├── noise.glsl.js     ← 共有simplex noise GLSL
-│   │   ├── background.js     ← 背景グラデーションシェーダー
-│   │   ├── water.js          ← 水面シェーダー（FBM波、フレネル反射）
-│   │   └── kesson.js         ← 光（欠損）シェーダー（2スタイル補間）
-│   └── versions/             ← scene.js のバージョン履歴
-│       ├── v001-baseline.js
-│       ├── v002-gemini-fractal.js
-│       ├── ...
-│       └── LOG.md
+│   └── shaders/
+│       ├── noise.glsl.js     ← 共有simplex noise GLSL
+│       ├── background.js     ← 背景グラデーションシェーダー
+│       ├── water.js          ← 水面シェーダー（FBM波、フレネル反射）
+│       ├── kesson.js         ← 光（欠損）シェーダー（2スタイル補間）
+│       ├── distortion-pass.js ← ポストプロセス（屈折・ハロー・熱波・DOF）
+│       └── fluid-field.js    ← ピンポンバッファ流体フィールド
+│
+├── tests/
+│   └── config-consistency.test.js  ← 設定値整合性テスト
 │
 ├── mcp_servers/              ← Claude Desktop用MCPサーバー
 │   ├── gemini_threejs.py     ← Gemini API連携
@@ -35,18 +37,15 @@ kesson-space/
 ├── scripts/
 │   └── setup-mcp.sh          ← MCP初期設定スクリプト
 │
-├── docs/
-│   ├── CURRENT.md
-│   ├── CONCEPT.md
-│   ├── ARCHITECTURE.md       ← 本ファイル
-│   ├── WORKFLOW.md
-│   ├── PROMPT-STRUCTURE.md
-│   └── prompts/
-│
-├── data/                     ← コンテンツデータ（将来）
-│   └── kesson/               ← 欠損データ（YAML）
-│
-└── assets/                   ← 静的アセット（将来）
+└── docs/
+    ├── CURRENT.md
+    ├── CONCEPT.md
+    ├── ARCHITECTURE.md       ← 本ファイル
+    ├── WORKFLOW.md
+    ├── PROMPT-STRUCTURE.md
+    ├── REVIEW-REPORT.md      ← 品質レビュー報告書
+    └── prompts/
+
 ```
 
 ---
@@ -64,21 +63,51 @@ main.js
 │   └── shaders/kesson.js
 │       ├── shaders/noise.glsl.js
 │       └── config.js（sceneParams, WARM/COOL_COLORS）
+├── shaders/distortion-pass.js
+│   └── config.js（distortionParams, fluidParams）
+├── shaders/fluid-field.js
+│   └── config.js（fluidParams）
 ├── controls.js
+│   └── config.js（toggles, breathConfig）
+├── i18n.js
+├── lang-toggle.js
+│   └── i18n.js
 ├── navigation.js
 │   ├── viewer.js（CSS + DOM + open/close）
-│   └── nav-objects.js（3Dオーブ生成 + テキストスプライト）
+│   └── nav-objects.js（3Dオーブ生成 + HTMLラベル）
 └── dev-panel.js（?dev 時のみ動的import）
+    └── config.js（全パラメータオブジェクト）
 ```
 
 ---
 
 ## 設計原則
 
+- **config.js が唯一の信頼源 (Single Source of Truth)**: 全デフォルト値はconfig.jsで定義。シェーダーもdevパネルもconfigをimportして参照する
 - **各ファイルは1つの責務**: シェーダー、UI、イベント、設定を明確に分離
-- **config.js が唯一の設定源**: パラメータ・定数はconfig.jsに集約
 - **scene.js は薄いオーケストレーション**: 個別シェーダーの実装は shaders/ に委譲
 - **navigation.js はイベント統合**: 3Dオブジェクト生成とビューアーUIは分離
+
+---
+
+## 品質管理
+
+### テスト実行
+
+```bash
+node tests/config-consistency.test.js
+```
+
+設定値の整合性（config → shader → dev-panel）を自動検証。
+新しいパラメータ追加時はテストも更新すること。
+
+### パラメータ追加手順
+
+1. `config.js` に値を追加
+2. シェーダーで `import` して uniform に設定
+3. `dev-panel.js` で `default: configObj.xxx` で参照
+4. `main.js` の `applyDevValue()` にスライダー反映ロジック追加
+5. テスト実行で整合性確認
 
 ---
 
@@ -106,19 +135,6 @@ http://localhost:3001/          ← 通常表示
 
 **Geminiはユーザーが明示した時のみ使用する。**
 
-- ✅ 「Geminiでシェーダーを生成して」
-- ✅ 「proモデルで水面のコードを作って」
-- ❌ Three.jsコードだからといって自動でGeminiを使わない
-
-### 利用可能なモデル
-
-| キー | モデル名 | 用途 |
-|------|---------|------|
-| `flash` | gemini-2.0-flash | デフォルト、高速・低コスト |
-| `flash-lite` | gemini-2.0-flash-lite | 最軽量 |
-| `pro` | gemini-2.5-pro-preview | 高品質 |
-| `3-flash` | gemini-3.0-flash | 最新 |
-
 ### MCPツール
 
 | ツール | 用途 |
@@ -127,7 +143,6 @@ http://localhost:3001/          ← 通常表示
 | `generate_shader` | GLSLシェーダー生成 |
 | `review_threejs_code` | コードレビュー |
 | `compare_implementations` | Claude vs Gemini 比較 |
-| `list_models` | 利用可能モデル一覧 |
 
 ### セットアップ
 
@@ -136,7 +151,6 @@ http://localhost:3001/          ← 通常表示
 cp .env.example .env
 # .env に GEMINI_API_KEY を設定
 uv sync
-# Claude Desktop の MCP 設定に追加
 ```
 
 ---
@@ -144,6 +158,7 @@ uv sync
 ## 技術スタック
 
 - Three.js 0.160.0（CDN importmap）
+- Bootstrap 5.3.3（devパネル用、CDN）
 - ES Modules（ビルドツールなし）
 - シェーダー: simplex noise + FBM（GLSL文字列埋め込み）
 - ポート: 3001（ローカル開発）

@@ -164,8 +164,12 @@ export function updateNavLabels(navMeshes, camera) {
 }
 
 // --- スクリーン座標 + 射影半径の計算 ---
+// GC削減: ベクトルをモジュールスコープに事前確保
 const _orbCenter = new THREE.Vector3();
 const _orbEdge = new THREE.Vector3();
+const _camRight = new THREE.Vector3();
+const _centerNDC = new THREE.Vector3();
+const _edgeNDC = new THREE.Vector3();
 
 export function getOrbScreenData(navMeshes, camera) {
     const data = [];
@@ -175,21 +179,22 @@ export function getOrbScreenData(navMeshes, camera) {
         } else {
             group.getWorldPosition(_orbCenter);
         }
-        const camRight = new THREE.Vector3();
-        camera.getWorldDirection(camRight);
-        camRight.cross(camera.up).normalize();
-        _orbEdge.copy(_orbCenter).addScaledVector(camRight, ORB_3D_RADIUS);
-        const centerNDC = _orbCenter.clone().project(camera);
-        const edgeNDC = _orbEdge.clone().project(camera);
-        const cx = (centerNDC.x * 0.5) + 0.5;
-        const cy = (centerNDC.y * 0.5) + 0.5;
-        const ex = (edgeNDC.x * 0.5) + 0.5;
-        const ey = (edgeNDC.y * 0.5) + 0.5;
+        camera.getWorldDirection(_camRight);
+        _camRight.cross(camera.up).normalize();
+        _orbEdge.copy(_orbCenter).addScaledVector(_camRight, ORB_3D_RADIUS);
+
+        _centerNDC.copy(_orbCenter).project(camera);
+        _edgeNDC.copy(_orbEdge).project(camera);
+
+        const cx = (_centerNDC.x * 0.5) + 0.5;
+        const cy = (_centerNDC.y * 0.5) + 0.5;
+        const ex = (_edgeNDC.x * 0.5) + 0.5;
+        const ey = (_edgeNDC.y * 0.5) + 0.5;
         const dx = (ex - cx) * (window.innerWidth / window.innerHeight);
         const dy = ey - cy;
         const screenRadius = Math.sqrt(dx * dx + dy * dy);
         let strength = 1.0;
-        if (centerNDC.z > 1.0) strength = 0.0;
+        if (_centerNDC.z > 1.0) strength = 0.0;
         data.push({ x: cx, y: cy, strength, radius: screenRadius });
     });
     return data;

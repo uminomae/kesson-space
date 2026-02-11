@@ -1,4 +1,5 @@
 // kesson.js — 光（欠損）シェーダー
+// ★ uniform初期値は config.js の sceneParams を参照
 
 import * as THREE from 'three';
 import { noiseGLSL } from './noise.glsl.js';
@@ -17,9 +18,9 @@ export function createKessonMaterial() {
             uGlowSpread: { value: sceneParams.glowSpread },
             uBreathAmp: { value: sceneParams.breathAmp },
             uWarpAmount: { value: sceneParams.warpAmount },
-            uTintR: { value: 1.0 },
-            uTintG: { value: 1.0 },
-            uTintB: { value: 1.0 },
+            uTintR: { value: sceneParams.tintR },
+            uTintG: { value: sceneParams.tintG },
+            uTintB: { value: sceneParams.tintB },
         },
         vertexShader: `
             varying vec2 vUv;
