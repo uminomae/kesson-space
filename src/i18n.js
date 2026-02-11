@@ -11,6 +11,8 @@ const STRINGS = {
             '欠けを捨てず、問いに変える',
             '予測のズレを、抱き続ける',
         ],
+        credit: 'AIとの協働で探索中',
+        creditSignature: 'Project Designer — pjdhiro',
         nav: [
             { label: '一般向け', url: PDF_BASE + 'kesson-general.pdf' },
             { label: '設計者向け', url: PDF_BASE + 'kesson-designer.pdf' },
@@ -22,11 +24,12 @@ const STRINGS = {
         subtitle: 'Kesson Space',
         toggleLabel: '日本語',
         taglines: [
-            "Don't discard what's missing — turn it into a question",
+            "Don't discard what's missing \u2014 turn it into a question",
             'Embrace the drift between prediction and reality',
         ],
+        credit: 'Exploring with AI collaboration',
+        creditSignature: 'Project Designer \u2014 pjdhiro',
         nav: [
-            // TODO: 英語版PDF作成後にURLを差し替え
             { label: 'General', url: PDF_BASE + 'kesson-general-en.pdf' },
             { label: 'For Designers', url: PDF_BASE + 'kesson-designer-en.pdf' },
             { label: 'Academic', url: PDF_BASE + 'kesson-academic-en.pdf' },

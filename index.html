@@ -26,6 +26,30 @@
       height: 100%;
       z-index: 1;
     }
+
+    /* 左上: クレジット */
+    #credit {
+      position: fixed;
+      top: 20px;
+      left: 24px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    #credit .credit-line {
+      font-size: 0.7rem;
+      color: rgba(180, 200, 230, 0.45);
+      font-family: 'Georgia', 'Yu Mincho', serif;
+      letter-spacing: 0.05em;
+      line-height: 1.7;
+      text-shadow: 0 0 8px rgba(60, 100, 180, 0.2);
+    }
+    #credit .credit-signature {
+      font-size: 0.65rem;
+      color: rgba(150, 175, 210, 0.35);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
     
     #overlay {
       position: absolute;
@@ -103,6 +127,12 @@
 </head>
 <body>
   <div id="canvas-container"></div>
+
+  <!-- 左上クレジット -->
+  <div id="credit">
+    <div class="credit-line" id="credit-collab">AIとの協働で探索中</div>
+    <div class="credit-signature" id="credit-signature">Project Designer — pjdhiro</div>
+  </div>
   
   <div id="overlay">
     <div id="taglines"></div>
