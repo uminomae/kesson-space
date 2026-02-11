@@ -2,12 +2,6 @@
 
 バージョン追跡。各試行のプロンプト・結果・判定を記録する。
 
-**ルール**:
-- 毎回の試行は `vNNN-名前.js` で保存（上書きしない）
-- 採用 → main.js にコピー、commit、push
-- 不採用 → そのまま残す（後で参照可能）
-- ローカル確認は index.html の import 先を一時的に切り替え
-
 ---
 
 ## ワークフロー
@@ -28,11 +22,11 @@ User: 判定（◎○△✗）を Claude に報告
 Claude: LOG.md に記録 + 次のプロンプトを書く
 ```
 
-### index.html の切り替え方法
+### ローカル確認方法
 
 ```html
 <!-- 試行時: -->
-<script type="module" src="./src/versions/v002-color.js"></script>
+<script type="module" src="./src/versions/vNNN-name.js"></script>
 
 <!-- 採用後（元に戻す）: -->
 <script type="module" src="./src/main.js"></script>
@@ -44,7 +38,8 @@ Claude: LOG.md に記録 + 次のプロンプトを書く
 
 | # | ファイル | プロンプト | 変更対象 | 意図 | 判定 | メモ |
 |---|---------|----------|---------|------|------|------|
-| 001 | v001-baseline.js | — | — | Gemini初版 | ◎ | ベースライン |
+| 001 | v001-baseline.js | — | — | Gemini初版 | ◎ | Session #1ベース |
+| 002 | v002-gemini-fractal.js | P001 | 全体 | 背景深化+光DomainWarping+配置調整 | ◎ | **現在のベース** |
 
 ---
 
@@ -52,4 +47,4 @@ Claude: LOG.md に記録 + 次のプロンプトを書く
 
 | ID | ファイル | 対象レイヤー | 意図 |
 |----|---------|------------|------|
-| （最初のプロンプト作成時に記録開始） |
+| P001 | (手動投入) | 全体 | 初回フラクタル化 |
