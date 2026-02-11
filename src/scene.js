@@ -1,7 +1,7 @@
 // scene.js — 統合グラフィック
 // uMix: 0.0 = v002(deep dark) ↔ 1.0 = v004(slate blue) — 7秒周期
 // uStyle: 0.0 = v005(snoise単層) ↔ 1.0 = v006(FBM多層) — 14秒周期
-// v006d: UV端フェード修正（四角形が見えるバグ）
+// v006e: devパネル連携 + brightness uniform追加
 
 import * as THREE from 'three';
 
@@ -51,9 +51,17 @@ const BG_V004_EDGE = new THREE.Color(0x0a1520);
 const FOG_V004_COLOR = new THREE.Color(0x0a1520);
 const FOG_V004_DENSITY = 0.02;
 
-// 遷移周期（秒）
-const MIX_CYCLE = 7.0;     // 背景: deep dark ↔ slate blue
-const STYLE_CYCLE = 14.0;  // シェーダースタイル: v005 ↔ v006
+// --- devパネル連携パラメータ（リアルタイム変更可能）---
+export const sceneParams = {
+    brightness: 0.5,
+    glowCore: 0.12,
+    glowSpread: 0.02,
+    breathAmp: 0.15,
+    warpAmount: 0.6,
+    mixCycle: 7.0,
+    styleCycle: 14.0,
+    fogDensity: 0.02,
+};
 
 export function createScene(container) {
     const scene = new THREE.Scene();
@@ -214,8 +222,7 @@ export function createScene(container) {
 
     // =============================================
     // 光（欠損）シェーダー
-    // uMix: deep dark ↔ slate blue（背景連動）
-    // uStyle: v005(snoise単層) ↔ v006(FBM多層)
+    // uBrightness: devパネルから制御
     // =============================================
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -224,6 +231,11 @@ export function createScene(container) {
             uOffset: { value: 0.0 },
             uMix: { value: 1.0 },
             uStyle: { value: 0.0 },
+            uBrightness: { value: sceneParams.brightness },
+            uGlowCore: { value: sceneParams.glowCore },
+            uGlowSpread: { value: sceneParams.glowSpread },
+            uBreathAmp: { value: sceneParams.breathAmp },
+            uWarpAmount: { value: sceneParams.warpAmount },
         },
         vertexShader: `
             varying vec2 vUv;
@@ -240,6 +252,11 @@ export function createScene(container) {
             uniform float uOffset;
             uniform float uMix;
             uniform float uStyle;
+            uniform float uBrightness;
+            uniform float uGlowCore;
+            uniform float uGlowSpread;
+            uniform float uBreathAmp;
+            uniform float uWarpAmount;
             varying vec2 vUv;
             ${noiseGLSL}
 
@@ -264,14 +281,13 @@ export function createScene(container) {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
 
-                // FIXED: UV座標ベースの端フェード（ワーピングに依存しない）
-                // vUvは0-1なので、中心からの距離で円形にフェード
-                float uvDist = length(vUv - 0.5) * 2.0; // 0(中心)〜1.414(角)
+                // UV端フェード（Plane矩形が見えない）
+                float uvDist = length(vUv - 0.5) * 2.0;
                 float uvFade = 1.0 - smoothstep(0.6, 1.0, uvDist);
 
                 // === Style A (v005): snoise単層 domain warping ===
                 vec2 pA = uv;
-                float ampA = 0.6;
+                float ampA = uWarpAmount;
                 for(int i = 0; i < 3; i++) {
                     pA += vec2(snoise(pA + t), snoise(pA - t)) * ampA;
                     pA *= rot(t * 0.1);
@@ -283,10 +299,10 @@ export function createScene(container) {
                 pB += vec2(
                     fbm(pB + t * 0.7),
                     fbm(pB.yx + t * 0.9 + uOffset * 1.2)
-                ) * 0.4;
+                ) * uWarpAmount * 0.67;
                 pB += vec2(
-                    snoise(pB + t * 0.3) * 0.25,
-                    snoise(pB - t * 0.2) * 0.25
+                    snoise(pB + t * 0.3) * uWarpAmount * 0.42,
+                    snoise(pB - t * 0.2) * uWarpAmount * 0.42
                 );
                 pB *= rot(t * 0.05);
 
@@ -300,13 +316,13 @@ export function createScene(container) {
                 float patternA_f = fbm(p * 6.0 + t * 0.5) * 0.12;
                 float patternA = mix(patternA_s, patternA_f, uStyle);
                 float voidHole = smoothstep(0.0, 0.4, dist);
-                float breathA = 0.7 + 0.3 * sin(uTime * 1.2 + uOffset * 10.0);
+                float breathA = (1.0 - uBreathAmp) + uBreathAmp * 2.0 * sin(uTime * 1.2 + uOffset * 10.0);
                 float alphaA = (coreA + patternA) * voidHole * breathA;
                 alphaA = smoothstep(0.01, 1.0, alphaA);
                 vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
 
                 // --- v004: soul core ---
-                float glowIntensity = 0.12 / (dist * dist + 0.02);
+                float glowIntensity = uGlowCore / (dist * dist + uGlowSpread);
 
                 vec3 coreWhite = vec3(1.0, 0.98, 0.95);
                 vec3 innerHalo = vec3(0.7, 0.85, 1.0);
@@ -314,7 +330,7 @@ export function createScene(container) {
                 colorB = mix(colorB, innerHalo, smoothstep(0.3, 2.0, glowIntensity));
                 colorB = mix(colorB, coreWhite, smoothstep(2.0, 6.0, glowIntensity));
 
-                // エッジパターンもスタイル補間
+                // エッジパターン
                 float edgeSimple = snoise(p * 4.0 + t) * 0.5 + 0.5;
                 float edgeFbm = fbm(p * 3.0 + t * 0.4) * 0.5 + 0.5;
                 float edgePattern = mix(edgeSimple, edgeFbm, uStyle);
@@ -323,19 +339,22 @@ export function createScene(container) {
                 float noiseBlend = smoothstep(2.0, 0.3, glowIntensity);
                 alphaB *= mix(1.0, edgePattern, noiseBlend);
 
-                // 呼吸: v005=単周波、v006=2周波
-                float breathB_simple = 0.85 + 0.15 * sin(uTime * 1.5 + uOffset * 10.0);
-                float breathB_complex = 0.85 + 0.15 * sin(uTime * 0.8 + uOffset * 6.0)
-                                       + 0.05 * sin(uTime * 2.1 + uOffset * 3.0);
+                // 呼吸
+                float breathB_simple = (1.0 - uBreathAmp) + uBreathAmp * sin(uTime * 1.5 + uOffset * 10.0);
+                float breathB_complex = (1.0 - uBreathAmp) + uBreathAmp * sin(uTime * 0.8 + uOffset * 6.0)
+                                       + uBreathAmp * 0.33 * sin(uTime * 2.1 + uOffset * 3.0);
                 float breathB = mix(breathB_simple, breathB_complex, uStyle);
                 alphaB *= breathB;
 
-                // FIXED: UV端フェード × ワープ後ビネット の二重フェード
+                // ビネット
                 float warpVignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
 
-                // --- mix (背景連動) ---
+                // --- mix ---
                 float alpha = mix(alphaA, alphaB, uMix) * uvFade * warpVignette;
-                vec3 finalColor = mix(colorA, colorB * 1.5, uMix);
+
+                // CHANGED: brightness uniform で最終的な明るさを制御
+                alpha *= uBrightness;
+                vec3 finalColor = mix(colorA, colorB * (1.0 + uBrightness), uMix);
 
                 if(alpha < 0.01) discard;
 
@@ -385,28 +404,38 @@ export function createScene(container) {
 }
 
 export function updateScene(time) {
-    // 背景遷移: 7秒周期
-    const m = (Math.sin(time * Math.PI / MIX_CYCLE) + 1.0) * 0.5;
-    // スタイル遷移: 14秒周期
-    const s = (Math.sin(time * Math.PI / STYLE_CYCLE) + 1.0) * 0.5;
+    // devパネルの値を使用
+    const mixCycle = sceneParams.mixCycle;
+    const styleCycle = sceneParams.styleCycle;
+
+    const m = (Math.sin(time * Math.PI / mixCycle) + 1.0) * 0.5;
+    const s = (Math.sin(time * Math.PI / styleCycle) + 1.0) * 0.5;
 
     // 背景
     _bgMat.uniforms.uMix.value = m;
 
-    // Fog
+    // Fog（devパネルの fogDensity を反映）
     const fogColor = new THREE.Color().lerpColors(FOG_V002_COLOR, FOG_V004_COLOR, m);
     _scene.fog.color.copy(fogColor);
-    _scene.fog.density = FOG_V002_DENSITY + (FOG_V004_DENSITY - FOG_V002_DENSITY) * m;
+    const baseFogV002 = FOG_V002_DENSITY;
+    const baseFogV004 = sceneParams.fogDensity;
+    _scene.fog.density = baseFogV002 + (baseFogV004 - baseFogV002) * m;
 
     // 水面
     _waterMaterial.uniforms.uTime.value = time;
     _waterMaterial.uniforms.uCameraPos.value.copy(_camera.position);
 
-    // 光
+    // 光（devパネルの値をuniformに反映）
     _kessonMeshes.forEach(mesh => {
-        mesh.material.uniforms.uTime.value = time;
-        mesh.material.uniforms.uMix.value = m;
-        mesh.material.uniforms.uStyle.value = s;
+        const u = mesh.material.uniforms;
+        u.uTime.value = time;
+        u.uMix.value = m;
+        u.uStyle.value = s;
+        u.uBrightness.value = sceneParams.brightness;
+        u.uGlowCore.value = sceneParams.glowCore;
+        u.uGlowSpread.value = sceneParams.glowSpread;
+        u.uBreathAmp.value = sceneParams.breathAmp;
+        u.uWarpAmount.value = sceneParams.warpAmount;
         mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 2;
         mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
         mesh.lookAt(_camera.position);
