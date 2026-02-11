@@ -22,4 +22,12 @@ Thumbs.db
 .env
 .env.local
 
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# MCP usage tracking
+.gemini_usage.json
+
 old/
