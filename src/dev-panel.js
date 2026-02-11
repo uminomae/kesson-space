@@ -213,25 +213,30 @@ function createPanel() {
             font-size: 0.65rem;
         }
         .dev-toggle-switch {
+            display: inline-block;
             position: relative;
             width: 32px;
             height: 16px;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .dev-toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
+            position: absolute;
         }
         .dev-toggle-track {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(60, 90, 140, 0.3);
+            background: rgba(60, 90, 140, 0.4);
             border-radius: 8px;
             transition: background 0.2s;
+            border: 1px solid rgba(100, 150, 255, 0.15);
         }
         .dev-toggle-switch input:checked + .dev-toggle-track {
             background: rgba(80, 140, 255, 0.5);
+            border-color: rgba(100, 160, 255, 0.3);
         }
         .dev-toggle-knob {
             position: absolute;
@@ -239,9 +244,10 @@ function createPanel() {
             left: 2px;
             width: 12px;
             height: 12px;
-            background: rgba(200, 220, 255, 0.8);
+            background: rgba(200, 220, 255, 0.9);
             border-radius: 50%;
             transition: transform 0.2s;
+            pointer-events: none;
         }
         .dev-toggle-switch input:checked ~ .dev-toggle-knob {
             transform: translateX(16px);
