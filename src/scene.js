@@ -1,7 +1,7 @@
 // scene.js — 統合グラフィック
 // uMix: 0.0 = v002(deep dark / voidHole) ↔ 1.0 = v004(slate blue / soul core)
 // timeで自動的に行き来する
-// v006: Gemini生成シェーダー統合版（光FBM+Julia / 水面FBM+Fresnel）
+// v006b: FBM改善版（Julia mask除去 — 光が消えるバグ修正）
 
 import * as THREE from 'three';
 
@@ -132,7 +132,6 @@ export function createScene(container) {
             varying vec3 vWorldNormal;
             ${noiseGLSL}
 
-            // CHANGED: FBM（複数オクターブ）でリアルな波
             float fbm(vec2 p) {
                 float value = 0.0;
                 float amplitude = 0.5;
@@ -149,7 +148,6 @@ export function createScene(container) {
                 vUv = uv;
                 vec3 pos = position;
 
-                // FBMで複雑な波を生成
                 float wave = fbm(vec2(
                     pos.x * 0.02 + uTime * 0.04,
                     pos.y * 0.02 - uTime * 0.03
@@ -157,11 +155,9 @@ export function createScene(container) {
                 pos.z += wave * 2.0;
                 vWaveHeight = wave;
 
-                // ワールド座標と法線を渡す
                 vec4 worldPos = modelMatrix * vec4(pos, 1.0);
                 vWorldPos = worldPos.xyz;
 
-                // 近似法線（微分で計算）
                 float eps = 0.5;
                 float hL = fbm(vec2((position.x - eps) * 0.02 + uTime * 0.04, position.y * 0.02 - uTime * 0.03));
                 float hR = fbm(vec2((position.x + eps) * 0.02 + uTime * 0.04, position.y * 0.02 - uTime * 0.03));
@@ -183,28 +179,23 @@ export function createScene(container) {
             varying vec3 vWorldNormal;
 
             void main() {
-                // 基本色 + 深浅による色変化
                 vec3 deepColor = vec3(0.04, 0.06, 0.14);
                 float depthFactor = clamp(vWaveHeight * 0.3 + 0.5, 0.0, 1.0);
                 vec3 waterColor = mix(uColor, deepColor, depthFactor);
 
-                // CHANGED: 簡易Fresnel（角度依存の反射）
                 vec3 viewDir = normalize(uCameraPos - vWorldPos);
                 float fresnel = pow(1.0 - max(dot(viewDir, vWorldNormal), 0.0), 3.0);
                 fresnel = 0.05 + 0.15 * fresnel;
                 waterColor = mix(waterColor, vec3(0.6, 0.7, 0.9), fresnel);
 
-                // 波頂のハイライト
                 float highlight = smoothstep(0.3, 0.8, vWaveHeight) * 0.15;
                 waterColor += vec3(highlight);
 
-                // CHANGED: 端のフェードアウト（自然に消える）
                 float edgeFade = smoothstep(0.0, 0.3, vUv.x)
                                * smoothstep(0.0, 0.3, 1.0 - vUv.x)
                                * smoothstep(0.0, 0.3, vUv.y)
                                * smoothstep(0.0, 0.3, 1.0 - vUv.y);
 
-                // 透明度
                 float alpha = 0.25 + clamp(vWaveHeight * 0.15, -0.1, 0.15);
                 alpha *= edgeFade;
 
@@ -221,7 +212,7 @@ export function createScene(container) {
     scene.add(water);
 
     // =============================================
-    // 光（欠損）シェーダー（v006: FBM + Julia風境界）
+    // 光（欠損）シェーダー（v006b: FBM強化、Julia mask除去）
     // =============================================
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -247,7 +238,6 @@ export function createScene(container) {
             varying vec2 vUv;
             ${noiseGLSL}
 
-            // CHANGED: FBM for richer domain warping
             float fbm(vec2 p) {
                 float value = 0.0;
                 float amplitude = 0.5;
@@ -269,63 +259,51 @@ export function createScene(container) {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
 
-                // CHANGED: FBM-based domain warping（より有機的）
+                // FBM domain warping（v005のsnoise単層→FBM多層に強化）
                 vec2 p = uv;
-                float warpAmount = 0.5;
-                vec2 warp = vec2(
+                p += vec2(
                     fbm(p + t * 0.7),
                     fbm(p.yx + t * 0.9 + uOffset * 1.2)
-                ) * warpAmount;
-                p += warp;
+                ) * 0.4;
 
-                // 追加のdomain warping層
                 p += vec2(
-                    snoise(p + t * 0.3) * 0.3,
-                    snoise(p - t * 0.2) * 0.3
+                    snoise(p + t * 0.3) * 0.25,
+                    snoise(p - t * 0.2) * 0.25
                 );
                 p *= rot(t * 0.05);
 
                 float dist = length(p);
 
-                // CHANGED: Julia集合風の境界（フラクタル的な曖昧さ）
-                float angle = atan(p.y, p.x);
-                float radius = pow(dist, 0.5);
-                float juliaFactor = 2.0 + sin(t * 0.3) * 0.5;
-                float juliaValue = pow(radius, juliaFactor);
-                float juliaMask = smoothstep(0.4, 0.8, juliaValue);
-
                 // --- v002: voidHole（FBM強化版）---
                 float coreA = 0.08 / (dist + 0.01);
-                float patternA = fbm(p * 6.0 + t * 0.5) * 0.15;
+                float patternA = fbm(p * 6.0 + t * 0.5) * 0.12;
                 float voidHole = smoothstep(0.0, 0.4, dist);
                 float breathA = 0.7 + 0.3 * sin(uTime * 1.2 + uOffset * 10.0);
-                float alphaA = (coreA + patternA) * voidHole * breathA * juliaMask;
+                float alphaA = (coreA + patternA) * voidHole * breathA;
                 alphaA = smoothstep(0.01, 1.0, alphaA);
                 vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
 
-                // --- v004: soul core（神秘的な輝き強化版）---
+                // --- v004: soul core（FBM強化版）---
                 float glowIntensity = 0.12 / (dist * dist + 0.02);
 
-                // CHANGED: より神秘的な白熱→テーマ色→透明グラデーション
                 vec3 coreWhite = vec3(1.0, 0.98, 0.95);
                 vec3 innerHalo = vec3(0.7, 0.85, 1.0);
                 vec3 colorB = uColor;
                 colorB = mix(colorB, innerHalo, smoothstep(0.3, 2.0, glowIntensity));
                 colorB = mix(colorB, coreWhite, smoothstep(2.0, 6.0, glowIntensity));
 
-                // FBMでエッジパターン
+                // FBMでエッジを有機的に
                 float edgePattern = fbm(p * 3.0 + t * 0.4) * 0.5 + 0.5;
                 float alphaB = smoothstep(0.0, 1.0, glowIntensity * 0.5);
                 float noiseBlend = smoothstep(2.0, 0.3, glowIntensity);
                 alphaB *= mix(1.0, edgePattern, noiseBlend);
 
-                // CHANGED: より自然な呼吸
+                // 2周波数の自然な呼吸
                 float breathB = 0.85 + 0.15 * sin(uTime * 0.8 + uOffset * 6.0)
                               + 0.05 * sin(uTime * 2.1 + uOffset * 3.0);
                 alphaB *= breathB;
-                alphaB *= juliaMask;
 
-                // ビネット（端の自然なフェード）
+                // ビネット
                 float vignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
 
                 // --- mix ---
