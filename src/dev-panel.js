@@ -22,10 +22,10 @@ const SECTIONS = [
     {
         title: 'カメラ・環境',
         params: {
-            camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: 0 },
-            camY:          { label: 'カメラ Y',      min: 0, max: 80, step: 1, default: 20 },
-            camZ:          { label: 'カメラ Z',      min: -20, max: 60, step: 1, default: 15 },
-            camTargetY:    { label: '注視点 Y',      min: -30, max: 10, step: 1, default: -8 },
+            camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: -14 },
+            camY:          { label: 'カメラ Y',      min: -20, max: 80, step: 1, default: 0 },
+            camZ:          { label: 'カメラ Z',      min: -20, max: 60, step: 1, default: 34 },
+            camTargetY:    { label: '注視点 Y',      min: -30, max: 10, step: 1, default: -1 },
             fogDensity:    { label: 'フォグ濃度',    min: 0.0, max: 0.06, step: 0.002, default: 0.0 },
             autoRotateSpd: { label: '自動回転速度',   min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
         }
@@ -35,11 +35,11 @@ const SECTIONS = [
         params: {
             titleBottom:   { label: '下からの距離(px)', min: 10, max: 300, step: 5, default: 60 },
             titleLeft:     { label: '左からの距離(px)', min: 10, max: 300, step: 5, default: 40 },
-            titleSize:     { label: 'タイトル文字サイズ(rem)', min: 0.5, max: 5.0, step: 0.1, default: 1.8 },
+            titleSize:     { label: 'タイトル文字サイズ(rem)', min: 0.5, max: 5.0, step: 0.1, default: 2.7 },
             titleSpacing:  { label: '文字間隔(em)',   min: 0.0, max: 2.0, step: 0.05, default: 0.8 },
-            titleOpacity:  { label: 'タイトル透明度', min: 0.0, max: 1.0, step: 0.05, default: 0.7 },
-            subSize:       { label: 'サブ文字サイズ(rem)', min: 0.3, max: 3.0, step: 0.1, default: 0.8 },
-            subOpacity:    { label: 'サブ透明度',     min: 0.0, max: 1.0, step: 0.05, default: 0.4 },
+            titleOpacity:  { label: 'タイトル透明度', min: 0.0, max: 1.0, step: 0.05, default: 0.5 },
+            subSize:       { label: 'サブ文字サイズ(rem)', min: 0.3, max: 3.0, step: 0.1, default: 1.3 },
+            subOpacity:    { label: 'サブ透明度',     min: 0.0, max: 1.0, step: 0.05, default: 0.5 },
             titleGlow:     { label: '発光の強さ(px)', min: 0, max: 80, step: 5, default: 30 },
         }
     },
@@ -51,14 +51,12 @@ let _values = {};
 let _onChange = null;
 
 function createPanel() {
-    // 初期値セット
     SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
             _values[key] = section.params[key].default;
         });
     });
 
-    // スタイル
     const style = document.createElement('style');
     style.textContent = `
         #dev-toggle {
@@ -212,7 +210,6 @@ function createPanel() {
     `;
     document.head.appendChild(style);
 
-    // トグルボタン
     const toggle = document.createElement('div');
     toggle.id = 'dev-toggle';
     toggle.textContent = 'DEV';
@@ -223,7 +220,6 @@ function createPanel() {
     });
     document.body.appendChild(toggle);
 
-    // パネル本体
     const panel = document.createElement('div');
     panel.id = 'dev-panel';
 
@@ -256,7 +252,6 @@ function createPanel() {
     panel.innerHTML = html;
     document.body.appendChild(panel);
 
-    // イベント
     SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
             const p = section.params[key];
@@ -271,7 +266,6 @@ function createPanel() {
         });
     });
 
-    // エクスポート
     document.getElementById('dev-export-btn').addEventListener('click', () => {
         const result = document.getElementById('dev-export-result');
         const text = JSON.stringify(_values, null, 2);
@@ -298,8 +292,6 @@ function getDecimals(step) {
     const dot = str.indexOf('.');
     return dot === -1 ? 0 : str.length - dot - 1;
 }
-
-// --- 公開API ---
 
 export function initDevPanel(onChange) {
     _onChange = onChange;
