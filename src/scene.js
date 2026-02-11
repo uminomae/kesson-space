@@ -1,7 +1,7 @@
 // scene.js — 統合グラフィック
 // uMix: 0.0 = v002(deep dark) ↔ 1.0 = v004(slate blue) — 7秒周期
 // uStyle: 0.0 = v005(snoise単層) ↔ 1.0 = v006(FBM多層) — 14秒周期
-// v006c: 2軸遷移版
+// v006d: UV端フェード修正（四角形が見えるバグ）
 
 import * as THREE from 'three';
 
@@ -264,6 +264,11 @@ export function createScene(container) {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
 
+                // FIXED: UV座標ベースの端フェード（ワーピングに依存しない）
+                // vUvは0-1なので、中心からの距離で円形にフェード
+                float uvDist = length(vUv - 0.5) * 2.0; // 0(中心)〜1.414(角)
+                float uvFade = 1.0 - smoothstep(0.6, 1.0, uvDist);
+
                 // === Style A (v005): snoise単層 domain warping ===
                 vec2 pA = uv;
                 float ampA = 0.6;
@@ -325,11 +330,11 @@ export function createScene(container) {
                 float breathB = mix(breathB_simple, breathB_complex, uStyle);
                 alphaB *= breathB;
 
-                // ビネット
-                float vignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
+                // FIXED: UV端フェード × ワープ後ビネット の二重フェード
+                float warpVignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
 
                 // --- mix (背景連動) ---
-                float alpha = mix(alphaA, alphaB, uMix) * vignette;
+                float alpha = mix(alphaA, alphaB, uMix) * uvFade * warpVignette;
                 vec3 finalColor = mix(colorA, colorB * 1.5, uMix);
 
                 if(alpha < 0.01) discard;
