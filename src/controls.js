@@ -1,5 +1,4 @@
 // controls.js — カメラ制御
-// OrbitControls + 呼吸アニメーション
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -10,7 +9,7 @@ export function initControls(camera, container, renderer) {
     _camera = camera;
 
     _controls = new OrbitControls(camera, renderer.domElement);
-    _controls.target.set(0, -8, -10);
+    _controls.target.set(0, -1, -10);
 
     _controls.enableDamping = true;
     _controls.dampingFactor = 0.04;
