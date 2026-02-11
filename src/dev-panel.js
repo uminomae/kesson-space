@@ -40,9 +40,9 @@ const SECTIONS = [
             glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.08 },
             breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
             warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 1.0 },
-            tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
-            tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
-            tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
+            tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: 1.25 },
+            tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: 2.0 },
+            tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: 0.8 },
         }
     },
     {
@@ -57,20 +57,20 @@ const SECTIONS = [
             innerGlow:     { label: '内側グロー',    min: 0.0, max: 1.0, step: 0.05, default: 0.1 },
             haloIntensity: { label: '後光の強さ',    min: 0.0, max: 1.5, step: 0.05, default: 0.2 },
             haloWidth:     { label: '後光の幅',      min: 0.05, max: 1.0, step: 0.05, default: 1.0 },
-            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: 0.4 },
-            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: 0.05 },
-            haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: 0.0 },
+            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: 0.25 },
+            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: 0.15 },
+            haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: 0.05 },
         }
     },
     {
         id: 'fluid',
         title: '流体かき混ぜ',
         params: {
-            fluidForce:    { label: '押す力',        min: 0.0, max: 1.0, step: 0.05, default: 0.3 },
-            fluidCurl:     { label: '渦の強さ',      min: 0.0, max: 1.0, step: 0.05, default: 0.4 },
-            fluidDecay:    { label: '減衰率',        min: 0.9, max: 0.999, step: 0.001, default: 0.97 },
-            fluidRadius:   { label: '影響半径',      min: 0.03, max: 0.4, step: 0.01, default: 0.12 },
-            fluidInfluence:{ label: '画面への影響',  min: 0.0, max: 0.06, step: 0.001, default: 0.015 },
+            fluidForce:    { label: '押す力',        min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
+            fluidCurl:     { label: '渦の強さ',      min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
+            fluidDecay:    { label: '減衰率',        min: 0.9, max: 0.999, step: 0.001, default: 0.948 },
+            fluidRadius:   { label: '影響半径',      min: 0.03, max: 0.4, step: 0.01, default: 0.21 },
+            fluidInfluence:{ label: '画面への影響',  min: 0.0, max: 0.06, step: 0.001, default: 0.06 },
         }
     },
     {
