@@ -7,23 +7,25 @@ import * as THREE from 'three';
 const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
 const HTML_SITE_URL = 'https://uminomae.github.io/pjdhiro/thinking-kesson/';
 
+// CHANGED: タイトルより余白を開けて中央やや下に配置
+// カメラ: y=35, lookAt(0,-5,-10) → 3D y=-8〜-10あたりが画面中央やや下
 const NAV_ITEMS = [
     {
         label: '一般向け',
         url: PDF_BASE + 'kesson-general.pdf',
-        position: [-8, 5, 0],
+        position: [-12, -8, -5],
         color: 0x6688cc,
     },
     {
         label: '設計者向け',
         url: PDF_BASE + 'kesson-designer.pdf',
-        position: [0, 5, 0],
+        position: [0, -8, -5],
         color: 0x7799dd,
     },
     {
         label: '学術版',
         url: PDF_BASE + 'kesson-academic.pdf',
-        position: [8, 5, 0],
+        position: [12, -8, -5],
         color: 0x5577bb,
     },
 ];
@@ -112,7 +114,6 @@ function createGlowTexture(colorHex) {
 }
 
 // --- ヘルパー: 浮遊テキスト生成 ---
-// CHANGED: スケールを大きくして読みやすく変更
 function createFloatingTextSprite(text) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -142,14 +143,12 @@ function createFloatingTextSprite(text) {
     });
 
     const sprite = new THREE.Sprite(material);
-    // CHANGED: スケール拡大 (was: 6, 1.5, 1)
     sprite.scale.set(12, 3, 1);
 
     return sprite;
 }
 
 // --- ナビオブジェクト作成 ---
-// CHANGED: 光のコアサイズ拡大、テキスト位置調整
 function createNavObjects(scene) {
     NAV_ITEMS.forEach((item, index) => {
         const group = new THREE.Group();
@@ -162,7 +161,6 @@ function createNavObjects(scene) {
             blending: THREE.AdditiveBlending,
         });
         const coreSprite = new THREE.Sprite(glowMaterial);
-        // CHANGED: コアサイズ拡大 (was: 1.5, 1.5, 1.5)
         coreSprite.scale.set(4.0, 4.0, 4.0);
 
         coreSprite.userData = {
@@ -175,7 +173,6 @@ function createNavObjects(scene) {
         };
 
         const labelSprite = createFloatingTextSprite(item.label);
-        // CHANGED: テキスト位置を上に調整 (was: 0, 0.9, 0)
         labelSprite.position.set(0, 2.0, 0);
 
         group.add(coreSprite);
@@ -185,7 +182,7 @@ function createNavObjects(scene) {
             baseY: item.position[1],
             index: index,
             core: coreSprite,
-            baseScale: 4.0, // CHANGED: アニメーション基準スケール
+            baseScale: 4.0,
         };
 
         scene.add(group);
@@ -407,12 +404,11 @@ export function initNavigation({ scene, camera, renderer }) {
     renderer.domElement.addEventListener('pointermove', onPointerMove);
 }
 
-// CHANGED: 拡大した基準スケールに合わせてアニメーション調整
 export function updateNavigation(time) {
     _navMeshes.forEach((group) => {
         const data = group.userData;
 
-        // 浮遊（振幅も少し大きく）
+        // 浮遊
         const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
         group.position.y = data.baseY + floatOffset;
 
