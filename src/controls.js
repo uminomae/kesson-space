@@ -61,6 +61,15 @@ export function initControls(camera, container, renderer) {
 }
 
 /**
+ * 自動回転速度をdevパネルから変更
+ */
+export function setAutoRotateSpeed(speed) {
+    if (_controls) {
+        _controls.autoRotateSpeed = speed;
+    }
+}
+
+/**
  * 毎フレームのカメラ更新
  * @param {number} time - elapsed time in seconds
  */
