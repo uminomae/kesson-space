@@ -51,8 +51,8 @@ const BG_V004_EDGE = new THREE.Color(0x0a1520);
 const FOG_V004_COLOR = new THREE.Color(0x0a1520);
 const FOG_V004_DENSITY = 0.02;
 
-// 遷移周期（秒）
-const MIX_CYCLE = 30.0;
+// 遷移周期（秒）: この秒数で片道、往復で×2
+const MIX_CYCLE = 7.0;
 
 export function createScene(container) {
     const scene = new THREE.Scene();
