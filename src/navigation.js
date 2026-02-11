@@ -1,5 +1,5 @@
 // navigation.js — 3Dナビゲーションオブジェクト + フロートビューアー
-// 光（kesson）は背景演出、ナビは別オブジェクト
+// 光（kesson）は背景演出、ナビは鬼火オーブ + 浮遊テキスト
 
 import * as THREE from 'three';
 
@@ -83,36 +83,56 @@ function closeViewer() {
         _viewer.classList.remove('open');
         setTimeout(() => {
             _viewer.classList.remove('visible');
-            // iframeを破棄してメモリ解放
             _viewer.querySelector('.viewer-content').innerHTML = '';
             _isOpen = false;
         }, 500);
     }
 }
 
-// --- テキストスプライト生成 ---
-function createTextSprite(text, color) {
+// --- ヘルパー: 光のオーブ（鬼火）テクスチャ生成 ---
+// CHANGED: Canvas radial gradientで中心白熱→テーマ色→透明のグロー
+function createGlowTexture(colorHex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    const color = new THREE.Color(colorHex);
+
+    // Core (White hot)
+    gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
+    // Mid (Theme color)
+    gradient.addColorStop(0.3, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0.8)`);
+    // Edge (Fade out)
+    gradient.addColorStop(1, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0)`);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+}
+
+// --- ヘルパー: 浮遊テキスト生成 ---
+// CHANGED: 枠線廃止、文字だけが空間に浮かぶ + 光彩（glow）
+function createFloatingTextSprite(text) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 512;
     canvas.height = 128;
 
-    // 背景（半透明の暗いガラス）
-    ctx.fillStyle = 'rgba(15, 25, 40, 0.5)';
-    roundRect(ctx, 0, 0, canvas.width, canvas.height, 8);
-    ctx.fill();
-
-    // ボーダー
-    ctx.strokeStyle = `rgba(100, 150, 255, 0.2)`;
-    ctx.lineWidth = 2;
-    roundRect(ctx, 1, 1, canvas.width - 2, canvas.height - 2, 8);
-    ctx.stroke();
-
-    // テキスト
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.font = '36px "Yu Mincho", "MS PMincho", serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+
+    // 文字の光彩
+    ctx.shadowColor = 'rgba(200, 220, 255, 0.8)';
+    ctx.shadowBlur = 15;
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.font = '48px "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif';
+
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -121,44 +141,57 @@ function createTextSprite(text, color) {
     const material = new THREE.SpriteMaterial({
         map: texture,
         transparent: true,
-        depthTest: true,
+        opacity: 0.9,
+        depthTest: false,
         depthWrite: false,
     });
 
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(8, 2, 1);
+    sprite.scale.set(6, 1.5, 1);
 
     return sprite;
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-}
-
 // --- ナビオブジェクト作成 ---
+// CHANGED: Group構造（光のコア + テキストラベル）
 function createNavObjects(scene) {
     NAV_ITEMS.forEach((item, index) => {
-        const sprite = createTextSprite(item.label, item.color);
-        sprite.position.set(...item.position);
-        sprite.userData = {
+        const group = new THREE.Group();
+        group.position.set(...item.position);
+
+        // 光のコア（クリック判定対象）
+        const glowMaterial = new THREE.SpriteMaterial({
+            map: createGlowTexture(item.color),
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+        });
+        const coreSprite = new THREE.Sprite(glowMaterial);
+        coreSprite.scale.set(1.5, 1.5, 1.5);
+
+        coreSprite.userData = {
             type: 'nav',
             url: item.url,
             label: item.label,
             baseY: item.position[1],
             index,
         };
-        scene.add(sprite);
-        _navMeshes.push(sprite);
+
+        // ラベル（コアの上に配置）
+        const labelSprite = createFloatingTextSprite(item.label);
+        labelSprite.position.set(0, 0.9, 0);
+
+        group.add(coreSprite);
+        group.add(labelSprite);
+
+        group.userData = {
+            baseY: item.position[1],
+            index: index,
+            core: coreSprite,
+        };
+
+        scene.add(group);
+        _navMeshes.push(group);
     });
 }
 
@@ -311,7 +344,6 @@ function onPointerDown(event) {
 function onPointerUp(event) {
     if (_isOpen || !_pointerDownPos) return;
 
-    // ドラッグしていたら無視
     const dx = event.clientX - _pointerDownPos.x;
     const dy = event.clientY - _pointerDownPos.y;
     if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
@@ -324,11 +356,22 @@ function onPointerUp(event) {
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     _raycaster.setFromCamera(_mouse, _camera);
-    const intersects = _raycaster.intersectObjects(_navMeshes);
+    // CHANGED: recursive: true でGroup内の子も判定
+    const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
     if (intersects.length > 0) {
-        const data = intersects[0].object.userData;
-        openPdfViewer(data.url, data.label);
+        // 子のuserDataか、親のuserDataからデータ取得
+        let data = intersects[0].object.userData;
+        if (!data.url) {
+            // ラベルをクリックした場合、親Groupから辿る
+            const parent = intersects[0].object.parent;
+            if (parent && parent.userData.core) {
+                data = parent.userData.core.userData;
+            }
+        }
+        if (data.url) {
+            openPdfViewer(data.url, data.label);
+        }
     }
 }
 
@@ -342,7 +385,8 @@ function onPointerMove(event) {
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     _raycaster.setFromCamera(_mouse, _camera);
-    const intersects = _raycaster.intersectObjects(_navMeshes);
+    // CHANGED: recursive: true
+    const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
     _renderer.domElement.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
 }
@@ -355,10 +399,6 @@ function openPdfViewer(url, label) {
 
 // --- 公開インターフェース ---
 
-/**
- * ナビゲーションの初期化
- * @param {{ scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer }} ctx
- */
 export function initNavigation({ scene, camera, renderer }) {
     _camera = camera;
     _renderer = renderer;
@@ -373,14 +413,20 @@ export function initNavigation({ scene, camera, renderer }) {
     renderer.domElement.addEventListener('pointermove', onPointerMove);
 }
 
-/**
- * 毎フレーム更新（ナビオブジェクトの浮遊）
- * @param {number} time
- */
+// CHANGED: 浮遊 + 呼吸スケール + 明滅
 export function updateNavigation(time) {
-    _navMeshes.forEach((sprite) => {
-        const data = sprite.userData;
-        // ゆっくり浮遊
-        sprite.position.y = data.baseY + Math.sin(time * 0.4 + data.index * 1.5) * 0.4;
+    _navMeshes.forEach((group) => {
+        const data = group.userData;
+
+        // 浮遊
+        const floatOffset = Math.sin(time * 0.8 + data.index) * 0.2;
+        group.position.y = data.baseY + floatOffset;
+
+        // 光のコアの鼓動
+        if (data.core) {
+            const pulse = 1.0 + Math.sin(time * 1.5 + data.index * 2.0) * 0.15;
+            data.core.scale.set(1.5 * pulse, 1.5 * pulse, 1.5 * pulse);
+            data.core.material.opacity = 0.7 + Math.sin(time * 1.5 + data.index * 2.0) * 0.3;
+        }
     });
 }
