@@ -1,15 +1,14 @@
 // dev-panel.js — 開発用パラメータ調整パネル
-// DEV_MODE=true のときサイドからスライドインするパネルを表示
 
 const SECTIONS = [
     {
         title: '光シェーダー',
         params: {
-            brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: 1.65 },
-            glowCore:      { label: 'コア強度',      min: 0.01, max: 0.5, step: 0.01, default: 0.05 },
-            glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.02 },
+            brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
+            glowCore:      { label: 'コア強度',      min: 0.01, max: 0.5, step: 0.01, default: 0.07 },
+            glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.08 },
             breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
-            warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 0.6 },
+            warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 1.0 },
         }
     },
     {
