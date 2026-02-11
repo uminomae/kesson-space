@@ -65,9 +65,33 @@
       animation: breathe 8s infinite alternate ease-in-out;
     }
 
+    .tagline {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-family: 'Yu Mincho', 'MS PMincho', serif;
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+    }
+
+    .tagline-fade {
+      opacity: 0;
+      animation: fadeInOut 7s ease-in-out infinite;
+    }
+
+    .tagline-delay {
+      animation-delay: 3.5s;
+    }
+
     @keyframes breathe {
       0% { opacity: 0.1; filter: blur(3px); transform: scale(0.95); }
       100% { opacity: 0.8; filter: blur(0px); transform: scale(1.0); }
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      10%, 40% { opacity: 0.5; }
+      50%, 90% { opacity: 0; }
     }
   </style>
   
@@ -88,6 +112,8 @@
       <h1 id="title-h1">欠損駆動思考</h1>
     </a>
     <p class="subtitle" id="title-sub">Kesson Space</p>
+    <p class="tagline tagline-fade">欠けを捨てず、問いに変える</p>
+    <p class="tagline tagline-fade tagline-delay">予測のズレを、抱き続ける</p>
   </div>
 
   <script type="module" src="./src/main.js"></script>
