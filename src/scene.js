@@ -1,7 +1,5 @@
 // scene.js — 統合グラフィック
-// uMix: 0.0 = v002(deep dark) ↔ 1.0 = v004(slate blue) — 7秒周期
-// uStyle: 0.0 = v005(snoise単層) ↔ 1.0 = v006(FBM多層) — 14秒周期
-// v006e: devパネル連携 + brightness uniform追加
+// v006f: デフォルト値更新 + カメラ位置パラメータ連携
 
 import * as THREE from 'three';
 
@@ -51,16 +49,20 @@ const BG_V004_EDGE = new THREE.Color(0x0a1520);
 const FOG_V004_COLOR = new THREE.Color(0x0a1520);
 const FOG_V004_DENSITY = 0.02;
 
-// --- devパネル連携パラメータ（リアルタイム変更可能）---
+// --- devパネル連携パラメータ ---
 export const sceneParams = {
-    brightness: 0.5,
-    glowCore: 0.12,
+    brightness: 1.65,
+    glowCore: 0.05,
     glowSpread: 0.02,
     breathAmp: 0.15,
     warpAmount: 0.6,
-    mixCycle: 7.0,
+    mixCycle: 2.0,
     styleCycle: 14.0,
-    fogDensity: 0.02,
+    fogDensity: 0.0,
+    camX: 0,
+    camY: 20,
+    camZ: 15,
+    camTargetY: -8,
 };
 
 export function createScene(container) {
@@ -114,9 +116,10 @@ export function createScene(container) {
     bgMesh.renderOrder = -999;
     scene.add(bgMesh);
 
+    // カメラ（devパネルのデフォルト値で初期化）
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 35, 25);
-    camera.lookAt(0, -5, -10);
+    camera.position.set(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+    camera.lookAt(0, sceneParams.camTargetY, -10);
     _camera = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -125,7 +128,7 @@ export function createScene(container) {
     container.appendChild(renderer.domElement);
 
     // =============================================
-    // 水面シェーダー（FBM + Fresnel風）
+    // 水面シェーダー
     // =============================================
     _waterMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -222,7 +225,6 @@ export function createScene(container) {
 
     // =============================================
     // 光（欠損）シェーダー
-    // uBrightness: devパネルから制御
     // =============================================
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -281,11 +283,10 @@ export function createScene(container) {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
 
-                // UV端フェード（Plane矩形が見えない）
                 float uvDist = length(vUv - 0.5) * 2.0;
                 float uvFade = 1.0 - smoothstep(0.6, 1.0, uvDist);
 
-                // === Style A (v005): snoise単層 domain warping ===
+                // === Style A (v005) ===
                 vec2 pA = uv;
                 float ampA = uWarpAmount;
                 for(int i = 0; i < 3; i++) {
@@ -294,7 +295,7 @@ export function createScene(container) {
                     ampA *= 0.5;
                 }
 
-                // === Style B (v006): FBM多層 domain warping ===
+                // === Style B (v006) ===
                 vec2 pB = uv;
                 pB += vec2(
                     fbm(pB + t * 0.7),
@@ -306,7 +307,6 @@ export function createScene(container) {
                 );
                 pB *= rot(t * 0.05);
 
-                // スタイル補間
                 vec2 p = mix(pA, pB, uStyle);
                 float dist = length(p);
 
@@ -330,7 +330,6 @@ export function createScene(container) {
                 colorB = mix(colorB, innerHalo, smoothstep(0.3, 2.0, glowIntensity));
                 colorB = mix(colorB, coreWhite, smoothstep(2.0, 6.0, glowIntensity));
 
-                // エッジパターン
                 float edgeSimple = snoise(p * 4.0 + t) * 0.5 + 0.5;
                 float edgeFbm = fbm(p * 3.0 + t * 0.4) * 0.5 + 0.5;
                 float edgePattern = mix(edgeSimple, edgeFbm, uStyle);
@@ -339,20 +338,15 @@ export function createScene(container) {
                 float noiseBlend = smoothstep(2.0, 0.3, glowIntensity);
                 alphaB *= mix(1.0, edgePattern, noiseBlend);
 
-                // 呼吸
                 float breathB_simple = (1.0 - uBreathAmp) + uBreathAmp * sin(uTime * 1.5 + uOffset * 10.0);
                 float breathB_complex = (1.0 - uBreathAmp) + uBreathAmp * sin(uTime * 0.8 + uOffset * 6.0)
                                        + uBreathAmp * 0.33 * sin(uTime * 2.1 + uOffset * 3.0);
                 float breathB = mix(breathB_simple, breathB_complex, uStyle);
                 alphaB *= breathB;
 
-                // ビネット
                 float warpVignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
 
-                // --- mix ---
                 float alpha = mix(alphaA, alphaB, uMix) * uvFade * warpVignette;
-
-                // CHANGED: brightness uniform で最終的な明るさを制御
                 alpha *= uBrightness;
                 vec3 finalColor = mix(colorA, colorB * (1.0 + uBrightness), uMix);
 
@@ -366,7 +360,6 @@ export function createScene(container) {
         depthWrite: false
     });
 
-    // 配置
     const warmColors = [0xff7744, 0xff9955, 0xff5522];
     const coolColors = [0x4477ff, 0x5599ff, 0x2255ee];
     const kessonMeshes = [];
@@ -403,29 +396,28 @@ export function createScene(container) {
     return { scene, camera, renderer, kessonMeshes };
 }
 
+export function getCamera() {
+    return _camera;
+}
+
 export function updateScene(time) {
-    // devパネルの値を使用
     const mixCycle = sceneParams.mixCycle;
     const styleCycle = sceneParams.styleCycle;
 
     const m = (Math.sin(time * Math.PI / mixCycle) + 1.0) * 0.5;
     const s = (Math.sin(time * Math.PI / styleCycle) + 1.0) * 0.5;
 
-    // 背景
     _bgMat.uniforms.uMix.value = m;
 
-    // Fog（devパネルの fogDensity を反映）
     const fogColor = new THREE.Color().lerpColors(FOG_V002_COLOR, FOG_V004_COLOR, m);
     _scene.fog.color.copy(fogColor);
     const baseFogV002 = FOG_V002_DENSITY;
     const baseFogV004 = sceneParams.fogDensity;
     _scene.fog.density = baseFogV002 + (baseFogV004 - baseFogV002) * m;
 
-    // 水面
     _waterMaterial.uniforms.uTime.value = time;
     _waterMaterial.uniforms.uCameraPos.value.copy(_camera.position);
 
-    // 光（devパネルの値をuniformに反映）
     _kessonMeshes.forEach(mesh => {
         const u = mesh.material.uniforms;
         u.uTime.value = time;
