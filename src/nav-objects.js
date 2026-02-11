@@ -1,29 +1,13 @@
 // nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + 浮遊テキスト）
 
 import * as THREE from 'three';
+import { detectLang, t } from './i18n.js';
 
-// --- コンテンツ定義 ---
-const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
-
-export const NAV_ITEMS = [
-    {
-        label: '一般向け',
-        url: PDF_BASE + 'kesson-general.pdf',
-        position: [-12, -8, -5],
-        color: 0x6688cc,
-    },
-    {
-        label: '設計者向け',
-        url: PDF_BASE + 'kesson-designer.pdf',
-        position: [0, -8, -5],
-        color: 0x7799dd,
-    },
-    {
-        label: '学術版',
-        url: PDF_BASE + 'kesson-academic.pdf',
-        position: [12, -8, -5],
-        color: 0x5577bb,
-    },
+// --- ナビ配置定数 ---
+const NAV_POSITIONS = [
+    { position: [-12, -8, -5], color: 0x6688cc },
+    { position: [0, -8, -5],   color: 0x7799dd },
+    { position: [12, -8, -5],  color: 0x5577bb },
 ];
 
 // --- ヘルパー: 光のオーブ（鬼火）テクスチャ生成 ---
@@ -86,13 +70,16 @@ function createFloatingTextSprite(text) {
 // --- ナビオブジェクト作成 ---
 export function createNavObjects(scene) {
     const navMeshes = [];
+    const lang = detectLang();
+    const strings = t(lang);
 
-    NAV_ITEMS.forEach((item, index) => {
+    NAV_POSITIONS.forEach((pos, index) => {
+        const navItem = strings.nav[index];
         const group = new THREE.Group();
-        group.position.set(...item.position);
+        group.position.set(...pos.position);
 
         const glowMaterial = new THREE.SpriteMaterial({
-            map: createGlowTexture(item.color),
+            map: createGlowTexture(pos.color),
             transparent: true,
             depthWrite: false,
             blending: THREE.AdditiveBlending,
@@ -102,21 +89,21 @@ export function createNavObjects(scene) {
 
         coreSprite.userData = {
             type: 'nav',
-            url: item.url,
-            label: item.label,
-            baseY: item.position[1],
+            url: navItem.url,
+            label: navItem.label,
+            baseY: pos.position[1],
             index,
             isHitTarget: true,
         };
 
-        const labelSprite = createFloatingTextSprite(item.label);
+        const labelSprite = createFloatingTextSprite(navItem.label);
         labelSprite.position.set(0, 2.0, 0);
 
         group.add(coreSprite);
         group.add(labelSprite);
 
         group.userData = {
-            baseY: item.position[1],
+            baseY: pos.position[1],
             index: index,
             core: coreSprite,
             baseScale: 4.0,

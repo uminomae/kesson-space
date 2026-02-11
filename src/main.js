@@ -1,15 +1,36 @@
 // main.js — エントリポイント
 // DEV_MODE: URLに ?dev を付けるとパラメータ調整パネルを表示
+// 言語: ?lang=en で英語表示
 
 import * as THREE from 'three';
 import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
 import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
+import { initLangToggle } from './lang-toggle.js';
+import { detectLang, t } from './i18n.js';
 
 // ============================
 // DEV_MODE: ?dev でパネル表示
 // ============================
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
+
+// ============================
+// 言語初期化
+// ============================
+const lang = detectLang();
+const strings = t(lang);
+
+// HTMLオーバーレイのテキストを言語に合わせて更新
+const titleH1 = document.getElementById('title-h1');
+const titleSub = document.getElementById('title-sub');
+if (titleH1) titleH1.textContent = strings.title;
+if (titleSub) titleSub.textContent = strings.subtitle;
+
+// html lang属性を更新
+document.documentElement.lang = lang;
+
+// 言語トグルボタン
+initLangToggle();
 
 const container = document.getElementById('canvas-container');
 const { scene, camera, renderer } = createScene(container);
