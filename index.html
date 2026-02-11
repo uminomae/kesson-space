@@ -65,42 +65,38 @@
       animation: breathe 8s infinite alternate ease-in-out;
     }
 
-    .tagline {
+    .taglines {
+      display: none;
       margin-top: 1rem;
+    }
+
+    .taglines.active {
+      display: block;
+    }
+
+    .tagline {
       font-size: 0.85rem;
       color: rgba(255, 255, 255, 0.5);
       font-family: 'Yu Mincho', 'MS PMincho', serif;
       letter-spacing: 0.05em;
       line-height: 1.8;
+      text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
+      animation: breathe 8s infinite alternate ease-in-out;
     }
 
     .tagline-en {
-      margin-top: 0.3rem;
       font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.35);
+      color: rgba(255, 255, 255, 0.4);
       font-family: 'Georgia', serif;
       letter-spacing: 0.03em;
       line-height: 1.8;
-    }
-
-    .tagline-fade {
-      opacity: 0;
-      animation: fadeInOut 7s ease-in-out infinite;
-    }
-
-    .tagline-delay {
-      animation-delay: 3.5s;
+      text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
+      animation: breathe 8s infinite alternate ease-in-out;
     }
 
     @keyframes breathe {
       0% { opacity: 0.1; filter: blur(3px); transform: scale(0.95); }
       100% { opacity: 0.8; filter: blur(0px); transform: scale(1.0); }
-    }
-
-    @keyframes fadeInOut {
-      0%, 100% { opacity: 0; }
-      10%, 40% { opacity: 0.5; }
-      50%, 90% { opacity: 0; }
     }
   </style>
   
@@ -121,11 +117,23 @@
       <h1 id="title-h1">欠損駆動思考</h1>
     </a>
     <p class="subtitle" id="title-sub">Kesson Space</p>
-    <p class="tagline tagline-fade">欠けを捨てず、問いに変える</p>
-    <p class="tagline-en tagline-fade">Don't discard what's missing — turn it into a question</p>
-    <p class="tagline tagline-fade tagline-delay">予測のズレを、抱き続ける</p>
-    <p class="tagline-en tagline-fade tagline-delay">Embrace the drift between prediction and reality</p>
+
+    <div class="taglines" id="taglines-ja">
+      <p class="tagline">欠けを捨てず、問いに変える</p>
+      <p class="tagline">予測のズレを、抱き続ける</p>
+    </div>
+
+    <div class="taglines" id="taglines-en">
+      <p class="tagline-en">Don't discard what's missing — turn it into a question</p>
+      <p class="tagline-en">Embrace the drift between prediction and reality</p>
+    </div>
   </div>
+
+  <script>
+    const lang = navigator.language || navigator.userLanguage || 'ja';
+    const isJa = lang.startsWith('ja');
+    document.getElementById(isJa ? 'taglines-ja' : 'taglines-en').classList.add('active');
+  </script>
 
   <script type="module" src="./src/main.js"></script>
 </body>
