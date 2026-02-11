@@ -5,10 +5,7 @@ import * as THREE from 'three';
 
 // --- コンテンツ定義 ---
 const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
-const HTML_SITE_URL = 'https://uminomae.github.io/pjdhiro/thinking-kesson/';
 
-// CHANGED: タイトルより余白を開けて中央やや下に配置
-// カメラ: y=35, lookAt(0,-5,-10) → 3D y=-8〜-10あたりが画面中央やや下
 const NAV_ITEMS = [
     {
         label: '一般向け',
@@ -39,7 +36,7 @@ const _navMeshes = [];
 
 // ドラッグ検出（OrbitControlsとの干渉防止）
 let _pointerDownPos = null;
-const DRAG_THRESHOLD = 5; // px
+const DRAG_THRESHOLD = 5;
 
 // --- 閲覧ウィンドウ ---
 let _viewer = null;
@@ -190,53 +187,10 @@ function createNavObjects(scene) {
     });
 }
 
-// --- 角のナビリンク ---
-function createNavLinks() {
-    const nav = document.createElement('nav');
-    nav.id = 'site-nav';
-    nav.innerHTML = `
-        <a href="${HTML_SITE_URL}" target="_blank" rel="noopener" class="nav-link" title="HTML版で閲覧">
-            <span class="nav-label">欠損駆動思考</span>
-            <span class="nav-arrow">↗</span>
-        </a>
-    `;
-    document.body.appendChild(nav);
-}
-
 // --- スタイル ---
 function injectStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        #site-nav {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-        }
-        .nav-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 14px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 2px;
-            color: rgba(255, 255, 255, 0.25);
-            text-decoration: none;
-            font-family: inherit;
-            font-size: 0.75rem;
-            letter-spacing: 0.15em;
-            transition: all 0.6s ease;
-        }
-        .nav-link:hover {
-            color: rgba(255, 255, 255, 0.6);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-        .nav-arrow {
-            font-size: 0.65rem;
-            opacity: 0.5;
-        }
-
         #kesson-viewer {
             position: fixed;
             top: 0;
@@ -396,7 +350,6 @@ export function initNavigation({ scene, camera, renderer }) {
     _scene = scene;
 
     injectStyles();
-    createNavLinks();
     createNavObjects(scene);
 
     renderer.domElement.addEventListener('pointerdown', onPointerDown);
@@ -408,11 +361,9 @@ export function updateNavigation(time) {
     _navMeshes.forEach((group) => {
         const data = group.userData;
 
-        // 浮遊
         const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
         group.position.y = data.baseY + floatOffset;
 
-        // 光のコアの鼓動
         if (data.core) {
             const pulse = 1.0 + Math.sin(time * 1.5 + data.index * 2.0) * 0.1;
             const base = data.baseScale || 4.0;

@@ -35,6 +35,12 @@
       text-align: left;
     }
     
+    #overlay a {
+      pointer-events: auto;
+      text-decoration: none;
+      color: inherit;
+    }
+
     h1 {
       color: rgba(255, 255, 255, 0.5);
       font-weight: normal;
@@ -43,6 +49,11 @@
       text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
       animation: breathe 8s infinite alternate ease-in-out;
       margin-bottom: 0.6rem;
+      transition: color 0.4s ease;
+    }
+
+    #overlay a:hover h1 {
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .subtitle {
@@ -73,7 +84,9 @@
   <div id="canvas-container"></div>
   
   <div id="overlay">
-    <h1 id="title-h1">欠損駆動思考</h1>
+    <a href="https://uminomae.github.io/pjdhiro/thinking-kesson/" target="_blank" rel="noopener">
+      <h1 id="title-h1">欠損駆動思考</h1>
+    </a>
     <p class="subtitle" id="title-sub">Kesson Space</p>
   </div>
 
