@@ -9,13 +9,13 @@
 ```
 Claude: プロンプト(PNNN)を書く → docs/prompts/PNNN-*.md
   ↓
-User: プロンプト + 現行main.js を Gemini に投げる
+User: プロンプト + 現行scene.js を Gemini に投げる
   ↓
 Gemini: コードを返す
   ↓
 User: src/versions/vNNN-名前.js として保存
   ↓
-User: index.html の import 先を切り替え → ./serve.sh で確認
+User: src/scene.js を差し替え → ./serve.sh で確認
   ↓
 User: 判定（◎○△✗）を Claude に報告
   ↓
@@ -24,13 +24,8 @@ Claude: LOG.md に記録 + 次のプロンプトを書く
 
 ### ローカル確認方法
 
-```html
-<!-- 試行時: -->
-<script type="module" src="./src/versions/vNNN-name.js"></script>
-
-<!-- 採用後（元に戻す）: -->
-<script type="module" src="./src/main.js"></script>
-```
+v005以降はモジュール分割。
+グラフィック調整時は `src/scene.js` だけを差し替えて確認。
 
 ---
 
@@ -41,6 +36,8 @@ Claude: LOG.md に記録 + 次のプロンプトを書く
 | 001 | v001-baseline.js | — | — | Gemini初版 | ◎ | Session #1ベース |
 | 002 | v002-gemini-fractal.js | P001 | 全体 | 背景深化+光DomainWarping+配置調整 | ◎ | v001からのベース更新 |
 | 003 | v003-soul-core.js | P002 | 光シェーダー | 魂のコア光（voidHole→光源化） | ○ | 悪くない |
+| 004 | v004-slate-blue.js | P003 | 背景 | dark slate blueグラデーション | - | 未判定 |
+| 005 | v005-module-split.js | — | 構造 | モジュール分割 | - | scene/controls/navigationに分離 |
 
 ---
 
