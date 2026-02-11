@@ -1,7 +1,7 @@
 // scene.js — 統合グラフィック
-// uMix: 0.0 = v002(deep dark / voidHole) ↔ 1.0 = v004(slate blue / soul core)
-// timeで自動的に行き来する
-// v006b: FBM改善版（Julia mask除去 — 光が消えるバグ修正）
+// uMix: 0.0 = v002(deep dark) ↔ 1.0 = v004(slate blue) — 7秒周期
+// uStyle: 0.0 = v005(snoise単層) ↔ 1.0 = v006(FBM多層) — 14秒周期
+// v006c: 2軸遷移版
 
 import * as THREE from 'three';
 
@@ -52,7 +52,8 @@ const FOG_V004_COLOR = new THREE.Color(0x0a1520);
 const FOG_V004_DENSITY = 0.02;
 
 // 遷移周期（秒）
-const MIX_CYCLE = 7.0;
+const MIX_CYCLE = 7.0;     // 背景: deep dark ↔ slate blue
+const STYLE_CYCLE = 14.0;  // シェーダースタイル: v005 ↔ v006
 
 export function createScene(container) {
     const scene = new THREE.Scene();
@@ -116,7 +117,7 @@ export function createScene(container) {
     container.appendChild(renderer.domElement);
 
     // =============================================
-    // 水面シェーダー（v006: FBM + Fresnel風）
+    // 水面シェーダー（FBM + Fresnel風）
     // =============================================
     _waterMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -212,7 +213,9 @@ export function createScene(container) {
     scene.add(water);
 
     // =============================================
-    // 光（欠損）シェーダー（v006b: FBM強化、Julia mask除去）
+    // 光（欠損）シェーダー
+    // uMix: deep dark ↔ slate blue（背景連動）
+    // uStyle: v005(snoise単層) ↔ v006(FBM多層)
     // =============================================
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -220,6 +223,7 @@ export function createScene(container) {
             uColor: { value: new THREE.Color(0xffffff) },
             uOffset: { value: 0.0 },
             uMix: { value: 1.0 },
+            uStyle: { value: 0.0 },
         },
         vertexShader: `
             varying vec2 vUv;
@@ -235,6 +239,7 @@ export function createScene(container) {
             uniform float uTime;
             uniform float uOffset;
             uniform float uMix;
+            uniform float uStyle;
             varying vec2 vUv;
             ${noiseGLSL}
 
@@ -259,31 +264,43 @@ export function createScene(container) {
                 vec2 uv = (vUv - 0.5) * 2.0;
                 float t = uTime * 0.15 + uOffset;
 
-                // FBM domain warping（v005のsnoise単層→FBM多層に強化）
-                vec2 p = uv;
-                p += vec2(
-                    fbm(p + t * 0.7),
-                    fbm(p.yx + t * 0.9 + uOffset * 1.2)
+                // === Style A (v005): snoise単層 domain warping ===
+                vec2 pA = uv;
+                float ampA = 0.6;
+                for(int i = 0; i < 3; i++) {
+                    pA += vec2(snoise(pA + t), snoise(pA - t)) * ampA;
+                    pA *= rot(t * 0.1);
+                    ampA *= 0.5;
+                }
+
+                // === Style B (v006): FBM多層 domain warping ===
+                vec2 pB = uv;
+                pB += vec2(
+                    fbm(pB + t * 0.7),
+                    fbm(pB.yx + t * 0.9 + uOffset * 1.2)
                 ) * 0.4;
-
-                p += vec2(
-                    snoise(p + t * 0.3) * 0.25,
-                    snoise(p - t * 0.2) * 0.25
+                pB += vec2(
+                    snoise(pB + t * 0.3) * 0.25,
+                    snoise(pB - t * 0.2) * 0.25
                 );
-                p *= rot(t * 0.05);
+                pB *= rot(t * 0.05);
 
+                // スタイル補間
+                vec2 p = mix(pA, pB, uStyle);
                 float dist = length(p);
 
-                // --- v002: voidHole（FBM強化版）---
+                // --- v002: voidHole ---
                 float coreA = 0.08 / (dist + 0.01);
-                float patternA = fbm(p * 6.0 + t * 0.5) * 0.12;
+                float patternA_s = sin(p.x * 12.0 + t) * sin(p.y * 12.0 - t) * 0.1;
+                float patternA_f = fbm(p * 6.0 + t * 0.5) * 0.12;
+                float patternA = mix(patternA_s, patternA_f, uStyle);
                 float voidHole = smoothstep(0.0, 0.4, dist);
                 float breathA = 0.7 + 0.3 * sin(uTime * 1.2 + uOffset * 10.0);
                 float alphaA = (coreA + patternA) * voidHole * breathA;
                 alphaA = smoothstep(0.01, 1.0, alphaA);
                 vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
 
-                // --- v004: soul core（FBM強化版）---
+                // --- v004: soul core ---
                 float glowIntensity = 0.12 / (dist * dist + 0.02);
 
                 vec3 coreWhite = vec3(1.0, 0.98, 0.95);
@@ -292,21 +309,26 @@ export function createScene(container) {
                 colorB = mix(colorB, innerHalo, smoothstep(0.3, 2.0, glowIntensity));
                 colorB = mix(colorB, coreWhite, smoothstep(2.0, 6.0, glowIntensity));
 
-                // FBMでエッジを有機的に
-                float edgePattern = fbm(p * 3.0 + t * 0.4) * 0.5 + 0.5;
+                // エッジパターンもスタイル補間
+                float edgeSimple = snoise(p * 4.0 + t) * 0.5 + 0.5;
+                float edgeFbm = fbm(p * 3.0 + t * 0.4) * 0.5 + 0.5;
+                float edgePattern = mix(edgeSimple, edgeFbm, uStyle);
+
                 float alphaB = smoothstep(0.0, 1.0, glowIntensity * 0.5);
                 float noiseBlend = smoothstep(2.0, 0.3, glowIntensity);
                 alphaB *= mix(1.0, edgePattern, noiseBlend);
 
-                // 2周波数の自然な呼吸
-                float breathB = 0.85 + 0.15 * sin(uTime * 0.8 + uOffset * 6.0)
-                              + 0.05 * sin(uTime * 2.1 + uOffset * 3.0);
+                // 呼吸: v005=単周波、v006=2周波
+                float breathB_simple = 0.85 + 0.15 * sin(uTime * 1.5 + uOffset * 10.0);
+                float breathB_complex = 0.85 + 0.15 * sin(uTime * 0.8 + uOffset * 6.0)
+                                       + 0.05 * sin(uTime * 2.1 + uOffset * 3.0);
+                float breathB = mix(breathB_simple, breathB_complex, uStyle);
                 alphaB *= breathB;
 
                 // ビネット
                 float vignette = smoothstep(0.0, 1.0, 1.0 - dist * 0.7);
 
-                // --- mix ---
+                // --- mix (背景連動) ---
                 float alpha = mix(alphaA, alphaB, uMix) * vignette;
                 vec3 finalColor = mix(colorA, colorB * 1.5, uMix);
 
@@ -358,7 +380,10 @@ export function createScene(container) {
 }
 
 export function updateScene(time) {
+    // 背景遷移: 7秒周期
     const m = (Math.sin(time * Math.PI / MIX_CYCLE) + 1.0) * 0.5;
+    // スタイル遷移: 14秒周期
+    const s = (Math.sin(time * Math.PI / STYLE_CYCLE) + 1.0) * 0.5;
 
     // 背景
     _bgMat.uniforms.uMix.value = m;
@@ -376,6 +401,7 @@ export function updateScene(time) {
     _kessonMeshes.forEach(mesh => {
         mesh.material.uniforms.uTime.value = time;
         mesh.material.uniforms.uMix.value = m;
+        mesh.material.uniforms.uStyle.value = s;
         mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 2;
         mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
         mesh.lookAt(_camera.position);
