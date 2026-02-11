@@ -1,5 +1,5 @@
 // main.js — エントリポイント
-// DEV_MODE: true でパラメータ調整パネルを表示
+// DEV_MODE: URLに ?dev を付けるとパラメータ調整パネルを表示
 
 import * as THREE from 'three';
 import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
@@ -7,9 +7,9 @@ import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, se
 import { initNavigation, updateNavigation } from './navigation.js';
 
 // ============================
-// DEV_MODE: trueでパネル表示
+// DEV_MODE: ?dev でパネル表示
 // ============================
-const DEV_MODE = true;
+const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
 const container = document.getElementById('canvas-container');
 const { scene, camera, renderer } = createScene(container);
@@ -46,7 +46,7 @@ function updateOverlay(key, val) {
         case 'subOpacity':
             sub.style.color = `rgba(255, 255, 255, ${val})`;
             sub.style.opacity = val;
-            sub.style.animation = 'none'; // devモード時はアニメ上書き
+            sub.style.animation = 'none';
             break;
         case 'titleGlow':
             h1.style.textShadow = `0 0 ${val}px rgba(100, 150, 255, 0.3)`;
@@ -58,12 +58,10 @@ function updateOverlay(key, val) {
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel((key, value) => {
-            // sceneパラメータ
             if (key in sceneParams) {
                 sceneParams[key] = value;
             }
 
-            // カメラ位置
             if (key === 'camX' || key === 'camY' || key === 'camZ') {
                 setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
             }
@@ -71,12 +69,10 @@ if (DEV_MODE) {
                 setTarget(0, value, -10);
             }
 
-            // 自動回転速度
             if (key === 'autoRotateSpd') {
                 setAutoRotateSpeed(value);
             }
 
-            // HTMLオーバーレイ
             updateOverlay(key, value);
         });
     });

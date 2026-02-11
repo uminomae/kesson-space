@@ -10,9 +10,18 @@ kesson-space/
 │
 ├── src/
 │   ├── main.js               ← エントリポイント（初期化・アニメーションループ）
-│   ├── scene.js              ← グラフィック（Geminiが反復するファイル）
+│   ├── scene.js              ← シーン構築・更新オーケストレーション
+│   ├── config.js             ← 設定値・定数の一元管理
 │   ├── controls.js           ← カメラ・マウス・インタラクション
-│   ├── navigation.js         ← リンク・ページ遷移・クリックイベント
+│   ├── navigation.js         ← ナビゲーション統合（イベント処理）
+│   ├── nav-objects.js        ← 3Dナビオブジェクト（鬼火オーブ + テキスト）
+│   ├── viewer.js             ← PDFフロートビューアー（CSS + DOM）
+│   ├── dev-panel.js          ← 開発用パラメータ調整パネル
+│   ├── shaders/
+│   │   ├── noise.glsl.js     ← 共有simplex noise GLSL
+│   │   ├── background.js     ← 背景グラデーションシェーダー
+│   │   ├── water.js          ← 水面シェーダー（FBM波、フレネル反射）
+│   │   └── kesson.js         ← 光（欠損）シェーダー（2スタイル補間）
 │   └── versions/             ← scene.js のバージョン履歴
 │       ├── v001-baseline.js
 │       ├── v002-gemini-fractal.js
@@ -38,6 +47,48 @@ kesson-space/
 │   └── kesson/               ← 欠損データ（YAML）
 │
 └── assets/                   ← 静的アセット（将来）
+```
+
+---
+
+## モジュール依存関係
+
+```
+main.js
+├── scene.js
+│   ├── config.js（sceneParams, 色定数, フォグ定数）
+│   ├── shaders/background.js
+│   │   └── config.js（BG_*定数）
+│   ├── shaders/water.js
+│   │   └── shaders/noise.glsl.js
+│   └── shaders/kesson.js
+│       ├── shaders/noise.glsl.js
+│       └── config.js（sceneParams, WARM/COOL_COLORS）
+├── controls.js
+├── navigation.js
+│   ├── viewer.js（CSS + DOM + open/close）
+│   └── nav-objects.js（3Dオーブ生成 + テキストスプライト）
+└── dev-panel.js（?dev 時のみ動的import）
+```
+
+---
+
+## 設計原則
+
+- **各ファイルは1つの責務**: シェーダー、UI、イベント、設定を明確に分離
+- **config.js が唯一の設定源**: パラメータ・定数はconfig.jsに集約
+- **scene.js は薄いオーケストレーション**: 個別シェーダーの実装は shaders/ に委譲
+- **navigation.js はイベント統合**: 3Dオブジェクト生成とビューアーUIは分離
+
+---
+
+## DEV_MODEの切り替え
+
+URLに `?dev` パラメータを付けるとdevパネルが表示される:
+
+```
+http://localhost:3001/?dev      ← devパネル表示
+http://localhost:3001/          ← 通常表示
 ```
 
 ---
@@ -85,178 +136,15 @@ kesson-space/
 cp .env.example .env
 # .env に GEMINI_API_KEY を設定
 uv sync
-# Claude Desktop を再起動
+# Claude Desktop の MCP 設定に追加
 ```
-
----
-
-## モジュール分割設計
-
-### 原則
-
-| 分離の理由 | 説明 |
-|------------|------|
-| **Gemini反復の独立性** | scene.jsだけを差し替えてビジュアル調整できる |
-| **インタラクションの独立性** | グラフィックを触らずにカメラやリンクを追加できる |
-| **データの独立性** | 将来YAMLデータを差し替えて内容を変えられる |
-
-### モジュール図
-
-```
-main.js (エントリポイント)
-  │
-  ├─ import { createScene, updateScene } from './scene.js'
-  ├─ import { initControls, updateControls } from './controls.js'
-  └─ import { initNavigation } from './navigation.js'
-  
-  ┌────────────────────────────┐
-  │  animate loop (main.jsが所有)  │
-  │                              │
-  │  updateScene(time)           │ ← scene.js
-  │  updateControls(time)        │ ← controls.js
-  │  renderer.render()           │
-  └────────────────────────────┘
-```
-
-### 各モジュールの責務
-
-| ファイル | 責務 | エクスポート | 変更頻度 |
-|---------|------|------------|----------|
-| **main.js** | 初期化、アニメーションループ、リサイズ | — | 低（安定） |
-| **scene.js** | シェーダー、マテリアル、メッシュ生成、背景、水面、粒子 | createScene(), updateScene(time) | 高（Gemini反復） |
-| **controls.js** | カメラ移動、マウス視差、ズーム、モバイルタッチ | initControls(camera, container), updateControls(time) | 中 |
-| **navigation.js** | クリック検出、リンク先解決、ページ遷移・モーダル | initNavigation(camera, kessonMeshes) | 中 |
-
----
-
-## scene.js のインターフェース
-
-Geminiが出力する形式。このインターフェースさえ守れば、内部は自由に変更できる。
-
-```javascript
-// scene.js が export すべきもの
-
-export function createScene(container) {
-  // scene, camera, renderer, メッシュ等を作成
-  return {
-    scene,           // THREE.Scene
-    camera,          // THREE.PerspectiveCamera
-    renderer,        // THREE.WebGLRenderer
-    kessonMeshes,    // Array<THREE.Mesh> — クリック対象
-  };
-}
-
-export function updateScene(time) {
-  // 毎フレームの更新（シェーダーuniform、メッシュ位置、粒子等）
-}
-```
-
----
-
-## controls.js のインターフェース
-
-```javascript
-export function initControls(camera, container) {
-  // マウス・タッチイベント登録
-  // カメラ制御の初期化
-}
-
-export function updateControls(time) {
-  // カメラ位置・視点の毎フレーム更新
-  // マウス視差、浮遊感
-}
-```
-
----
-
-## navigation.js のインターフェース
-
-```javascript
-export function initNavigation(camera, kessonMeshes) {
-  // Raycasterセットアップ
-  // クリックイベント登録
-  // kesson ID → URL/アクションのマッピング
-}
-
-// 将来: data/kesson/*.yaml からリンク先を読み込む
-```
-
----
-
-## Geminiワークフローへの影響
-
-**変更点**: Geminiは `main.js` ではなく `scene.js` を出力する
-
-| Before | After |
-|--------|-------|
-| Geminiがmain.js全文を出力 | Geminiがscene.jsを出力 |
-| versions/にmain.jsを保存 | versions/にscene.jsを保存 |
-| Output Rules: main.js | Output Rules: scene.js + exportインターフェース |
 
 ---
 
 ## 技術スタック
 
-| 領域 | 選択 | 理由 |
-|------|------|------|
-| ホスティング | GitHub Pages | 無料、Git連携 |
-| 3D | Three.js 0.160.0 | 標準的、CDN利用可 |
-| モジュール | ES Modules (importmap) | ビルド不要 |
-| データ | YAML (予定) | 人間が読みやすい |
-| AI連携 | MCP + Gemini API | シェーダー品質向上 |
-
----
-
-## 技術決定ログ
-
-### 2026-02-11: ビルドツール不使用
-
-**決定**: Vite/Webpack等を使わず、ES Modules + CDNで構成
-**理由**: シンプルさ優先、GitHub Pagesで直接動作
-
-### 2026-02-11: ポート3001
-
-**決定**: ローカルサーバーは3001番
-**理由**: pjdhiro (Jekyll) が4000番、VSCode Live Serverが3000番を使用
-
-### 2026-02-11: モジュール分割
-
-**決定**: main.jsを scene.js / controls.js / navigation.js に分割
-**理由**:
-- Gemini反復（グラフィック）とインタラクション開発を独立させる
-- リンク・カメラ制御をグラフィックに影響せず追加可能に
-**トレードオフ**: Geminiの出力形式をexport付きに変更が必要
-
-### 2026-02-11: Gemini MCP連携
-
-**決定**: Claude × Gemini の分業体制をMCPで実装
-**理由**:
-- Geminiの視覚的品質（シェーダー、アニメーション）がClaudeより優れている
-- Claudeはコンテキスト管理・複数ファイル管理に強い
-- 「マネージャー × プログラマー」の分業が合理的
-**ルール**:
-- Geminiはユーザーが明示した時のみ使用
-- 自動呼び出しはしない
-**コスト**: Gemini 2.0 Flash で約0.07円/回
-
----
-
-## 命名規則
-
-| 対象 | 規則 | 例 |
-|------|------|-----|
-| ファイル | kebab-case | kesson-data.yaml |
-| JS変数 | camelCase | kessonMeshes |
-| CSS class | kebab-case | canvas-container |
-| 定数 | UPPER_SNAKE | PARTICLE_COUNT |
-| export関数 | camelCase | createScene, updateScene |
-
----
-
-## 参照
-
-- [CURRENT.md](./CURRENT.md) - 進捗
-- [CONCEPT.md](./CONCEPT.md) - 理論
-- [WORKFLOW.md](./WORKFLOW.md) - セッション管理
-- [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
-- [mcp_servers/README.md](../mcp_servers/README.md) - MCP詳細
+- Three.js 0.160.0（CDN importmap）
+- ES Modules（ビルドツールなし）
+- シェーダー: simplex noise + FBM（GLSL文字列埋め込み）
+- ポート: 3001（ローカル開発）
+- デプロイ: GitHub Pages（mainブランチ直接）

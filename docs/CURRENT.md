@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-11
-**セッション**: #4 完了
+**セッション**: #5 完了
 
 ---
 
@@ -12,13 +12,19 @@ kesson-space/
 ├── index.html              # エントリHTML（タイトル左下、h1にブログリンク）
 ├── serve.sh                # ローカル開発サーバー（ポート3001）
 ├── src/
-│   ├── main.js             # エントリポイント（DEV_MODE切替、devパネル連携）
-│   ├── scene.js            # 統合シェーダー（水面+光+背景、v006f）
+│   ├── main.js             # エントリポイント（?devでパネル表示）
+│   ├── scene.js            # シーン構築・更新オーケストレーション
+│   ├── config.js           # 設定値・定数の一元管理
 │   ├── controls.js         # OrbitControls（自動回転、カメラ位置API）
-│   ├── navigation.js       # 3Dナビ（鬼火オーブ+PDFビューアー）
+│   ├── navigation.js       # ナビゲーション統合（イベント処理）
+│   ├── nav-objects.js      # 3Dナビオブジェクト（鬼火オーブ + テキスト）
+│   ├── viewer.js           # PDFフロートビューアー（CSS + DOM）
 │   ├── dev-panel.js        # 開発用パラメータ調整スライドパネル
-│   ├── scenes/
-│   │   └── scene-v002.js   # 旧: 個別シーン（未使用）
+│   ├── shaders/
+│   │   ├── noise.glsl.js   # 共有simplex noise GLSL
+│   │   ├── background.js   # 背景グラデーションシェーダー
+│   │   ├── water.js        # 水面シェーダー
+│   │   └── kesson.js       # 光（欠損）シェーダー
 │   └── versions/
 │       ├── LOG.md           # バージョン追跡ログ
 │       ├── v001-baseline.js
@@ -58,6 +64,17 @@ kesson-space/
 - [x] devパネル（4セクション、リアルタイムパラメータ調整）
 - [x] h1タイトルにブログ記事リンク
 - [x] Gemini MCP連携構築
+- [x] **リファクタリング #5**: scene.js分割、navigation.js分割、config抽出、DEV_MODE→URLパラメータ
+
+### セッション#5 リファクタリング詳細
+
+| 変更 | Before | After |
+|------|--------|-------|
+| scene.js | 15.9KB 1ファイル | scene.js（薄いオーケストレーション）+ shaders/4ファイル + config.js |
+| navigation.js | 10.7KB 1ファイル | navigation.js（イベント統合）+ viewer.js + nav-objects.js |
+| DEV_MODE | main.jsにハードコード `const DEV_MODE = true` | `?dev` URLパラメータで切替 |
+| scenes/scene-v002.js | 未使用で放置 | 削除（要手動: GitHub APIでは削除不可） |
+| noiseGLSL | scene.js内に埋め込み（3箇所重複） | shaders/noise.glsl.js に一元化 |
 
 ### 現在のデフォルトパラメータ
 
@@ -79,46 +96,7 @@ kesson-space/
 - [ ] 欠損データ構造設計（data/kesson/）
 - [ ] モバイル対応
 - [ ] 音響の検討
-
----
-
-## 次セッション: リファクタリング候補
-
-### scene.js（15.9KB — 最大のファイル）
-
-現在1ファイルに全シェーダーが集約。分割候補：
-
-| 抽出候補 | 内容 | 理由 |
-|----------|------|------|
-| `shaders/noise.glsl.js` | noiseGLSL定数 | 3箇所で重複使用 |
-| `shaders/water.js` | 水面マテリアル生成 | 独立した機能単位 |
-| `shaders/kesson.js` | 光シェーダーマテリアル生成 | 独立した機能単位 |
-| `shaders/background.js` | 背景グラデーション | 独立した機能単位 |
-| `config.js` | sceneParams + 色定数 | 設定値の一元管理 |
-
-### navigation.js（10.7KB）
-
-ビューアーUI（CSS+DOM生成）が大部分。分割候補：
-
-| 抽出候補 | 内容 |
-|----------|------|
-| `viewer.js` | フロートビューアー（CSS + DOM + open/close） |
-| `nav-objects.js` | 3Dオーブ生成 + テキストスプライト |
-
-### dev-panel.js（10.9KB）
-
-CSSが半分以上。分割候補：
-
-| 抽出候補 | 内容 |
-|----------|------|
-| `dev-panel-styles.js` | CSS文字列の分離 |
-
-### その他
-
-- `src/scenes/scene-v002.js` — 未使用。削除 or versions/に移動
-- `src/versions/` — アーカイブとして保持するか、別ブランチに退避するか
-- `docs/ARCHITECTURE.md` — 現状と乖離あり。要更新
-- DEV_MODEフラグ — main.jsにハードコード。URLパラメータ（`?dev`）で切替に変更検討
+- [ ] `src/scenes/scene-v002.js` の手動削除（GitHub APIで削除不可のため）
 
 ---
 
@@ -145,13 +123,14 @@ CSSが半分以上。分割候補：
 - ポート: 3001（pjdhiroの4000と干渉回避）
 - MCP: mcp_servers/gemini_threejs.py
 - デプロイ: GitHub Pages（mainブランチ直接）
+- devパネル: `?dev` をURLに付与で表示
 
 ---
 
 ## 参照リンク
 
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定（※要更新）
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
 - [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
 - [src/versions/LOG.md](../src/versions/LOG.md) - バージョン追跡ログ
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
