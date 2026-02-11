@@ -57,8 +57,8 @@ const SECTIONS = [
             innerGlow:     { label: '内側グロー',    min: 0.0, max: 1.0, step: 0.05, default: 0.1 },
             haloIntensity: { label: '後光の強さ',    min: 0.0, max: 1.5, step: 0.05, default: 0.2 },
             haloWidth:     { label: '後光の幅',      min: 0.05, max: 1.0, step: 0.05, default: 1.0 },
-            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: 0.25 },
-            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: 0.15 },
+            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: 0.3 },
+            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: 0.2 },
             haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: 0.05 },
         }
     },
