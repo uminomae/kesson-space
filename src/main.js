@@ -1,17 +1,16 @@
 // main.js — エントリポイント（初期化 + animate loop）
-// v005: モジュール分割版
 
 import * as THREE from 'three';
 import { createScene, updateScene } from './scene.js';
 import { initControls, updateControls } from './controls.js';
-import { initNavigation } from './navigation.js';
+import { initNavigation, updateNavigation } from './navigation.js';
 
 // --- 初期化 ---
 const container = document.getElementById('canvas-container');
 const { scene, camera, renderer, kessonMeshes } = createScene(container);
 
 initControls(camera, container, renderer);
-initNavigation(camera, kessonMeshes, renderer);
+initNavigation({ scene, camera, renderer });
 
 // --- アニメーションループ ---
 const clock = new THREE.Clock();
@@ -22,6 +21,7 @@ function animate() {
 
     updateControls(time);
     updateScene(time);
+    updateNavigation(time);
 
     renderer.render(scene, camera);
 }

@@ -1,15 +1,43 @@
-// navigation.js — リンク・クリック・コンテンツ表示
-// 中央フロート型：闇の中にガラスの閲覧窓が浮かぶ
+// navigation.js — 3Dナビゲーションオブジェクト + フロートビューアー
+// 光（kesson）は背景演出、ナビは別オブジェクト
 
 import * as THREE from 'three';
 
+// --- コンテンツ定義 ---
+const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
 const HTML_SITE_URL = 'https://uminomae.github.io/pjdhiro/thinking-kesson/';
+
+const NAV_ITEMS = [
+    {
+        label: '一般向け',
+        url: PDF_BASE + 'kesson-general.pdf',
+        position: [-8, 5, 0],
+        color: 0x6688cc,
+    },
+    {
+        label: '設計者向け',
+        url: PDF_BASE + 'kesson-designer.pdf',
+        position: [0, 5, 0],
+        color: 0x7799dd,
+    },
+    {
+        label: '学術版',
+        url: PDF_BASE + 'kesson-academic.pdf',
+        position: [8, 5, 0],
+        color: 0x5577bb,
+    },
+];
 
 let _camera;
 let _renderer;
-let _kessonMeshes = [];
+let _scene;
 const _raycaster = new THREE.Raycaster();
 const _mouse = new THREE.Vector2();
+const _navMeshes = [];
+
+// ドラッグ検出（OrbitControlsとの干渉防止）
+let _pointerDownPos = null;
+const DRAG_THRESHOLD = 5; // px
 
 // --- 閲覧ウィンドウ ---
 let _viewer = null;
@@ -27,13 +55,9 @@ function createViewer() {
     document.body.appendChild(viewer);
 
     viewer.querySelector('.viewer-close').addEventListener('click', closeViewer);
-
-    // 背景（ガラス外）クリックで閉じる
     viewer.addEventListener('click', (e) => {
         if (e.target === viewer) closeViewer();
     });
-
-    // ESCで閉じる
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && _isOpen) closeViewer();
     });
@@ -43,8 +67,7 @@ function createViewer() {
 
 function openViewer(content) {
     if (!_viewer) _viewer = createViewer();
-    const body = _viewer.querySelector('.viewer-content');
-    body.innerHTML = content;
+    _viewer.querySelector('.viewer-content').innerHTML = content;
 
     requestAnimationFrame(() => {
         _viewer.classList.add('visible');
@@ -60,9 +83,83 @@ function closeViewer() {
         _viewer.classList.remove('open');
         setTimeout(() => {
             _viewer.classList.remove('visible');
+            // iframeを破棄してメモリ解放
+            _viewer.querySelector('.viewer-content').innerHTML = '';
             _isOpen = false;
         }, 500);
     }
+}
+
+// --- テキストスプライト生成 ---
+function createTextSprite(text, color) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 512;
+    canvas.height = 128;
+
+    // 背景（半透明の暗いガラス）
+    ctx.fillStyle = 'rgba(15, 25, 40, 0.5)';
+    roundRect(ctx, 0, 0, canvas.width, canvas.height, 8);
+    ctx.fill();
+
+    // ボーダー
+    ctx.strokeStyle = `rgba(100, 150, 255, 0.2)`;
+    ctx.lineWidth = 2;
+    roundRect(ctx, 1, 1, canvas.width - 2, canvas.height - 2, 8);
+    ctx.stroke();
+
+    // テキスト
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = '36px "Yu Mincho", "MS PMincho", serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+
+    const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: true,
+        depthWrite: false,
+    });
+
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(8, 2, 1);
+
+    return sprite;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+// --- ナビオブジェクト作成 ---
+function createNavObjects(scene) {
+    NAV_ITEMS.forEach((item, index) => {
+        const sprite = createTextSprite(item.label, item.color);
+        sprite.position.set(...item.position);
+        sprite.userData = {
+            type: 'nav',
+            url: item.url,
+            label: item.label,
+            baseY: item.position[1],
+            index,
+        };
+        scene.add(sprite);
+        _navMeshes.push(sprite);
+    });
 }
 
 // --- 角のナビリンク ---
@@ -82,7 +179,6 @@ function createNavLinks() {
 function injectStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        /* --- 角のナビリンク（控えめ） --- */
         #site-nav {
             position: fixed;
             bottom: 20px;
@@ -113,7 +209,6 @@ function injectStyles() {
             opacity: 0.5;
         }
 
-        /* --- 中央フロート閲覧ウィンドウ --- */
         #kesson-viewer {
             position: fixed;
             top: 0;
@@ -137,13 +232,11 @@ function injectStyles() {
 
         .viewer-glass {
             position: relative;
-            width: 680px;
-            max-width: 88vw;
-            max-height: 80vh;
-            overflow-y: auto;
+            width: 80vw;
+            max-width: 900px;
+            height: 85vh;
             cursor: default;
 
-            /* ガラス感 */
             background: rgba(15, 25, 40, 0.65);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -154,7 +247,6 @@ function injectStyles() {
                 0 0 120px rgba(30, 60, 120, 0.1),
                 inset 0 0 60px rgba(20, 40, 80, 0.05);
 
-            /* 出現アニメーション */
             opacity: 0;
             transform: scale(0.92) translateY(20px);
             transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -186,47 +278,17 @@ function injectStyles() {
         }
 
         .viewer-content {
-            padding: 32px 36px;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: inherit;
-            line-height: 2.0;
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-        }
-        .viewer-content h2 {
-            font-weight: normal;
-            letter-spacing: 0.3em;
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin: 0 0 20px;
-        }
-        .viewer-content p {
-            margin: 0 0 16px;
-        }
-        .viewer-content a {
-            color: rgba(140, 180, 255, 0.8);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(140, 180, 255, 0.15);
-            transition: all 0.3s;
-        }
-        .viewer-content a:hover {
-            color: rgba(180, 210, 255, 1.0);
-            border-bottom-color: rgba(140, 180, 255, 0.4);
-        }
-        .viewer-content hr {
-            border: none;
-            border-top: 1px solid rgba(100, 150, 255, 0.08);
-            margin: 24px 0;
+            width: 100%;
+            height: 100%;
+            padding: 0;
         }
         .viewer-content iframe {
             width: 100%;
-            height: 60vh;
-            border: 1px solid rgba(100, 150, 255, 0.08);
-            border-radius: 2px;
-            background: rgba(0, 0, 0, 0.3);
+            height: 100%;
+            border: none;
+            border-radius: 3px;
         }
 
-        /* スクロールバー */
         .viewer-glass::-webkit-scrollbar {
             width: 4px;
         }
@@ -241,59 +303,84 @@ function injectStyles() {
     document.head.appendChild(style);
 }
 
-/**
- * ナビゲーションの初期化
- */
-export function initNavigation(camera, kessonMeshes, renderer) {
-    _camera = camera;
-    _kessonMeshes = kessonMeshes;
-    _renderer = renderer;
-
-    injectStyles();
-    createNavLinks();
-
-    renderer.domElement.addEventListener('click', onCanvasClick);
-    renderer.domElement.addEventListener('mousemove', onCanvasHover);
+// --- イベント ---
+function onPointerDown(event) {
+    _pointerDownPos = { x: event.clientX, y: event.clientY };
 }
 
-function onCanvasClick(event) {
-    if (_isOpen) return;
+function onPointerUp(event) {
+    if (_isOpen || !_pointerDownPos) return;
+
+    // ドラッグしていたら無視
+    const dx = event.clientX - _pointerDownPos.x;
+    const dy = event.clientY - _pointerDownPos.y;
+    if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+        _pointerDownPos = null;
+        return;
+    }
+    _pointerDownPos = null;
 
     _mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     _raycaster.setFromCamera(_mouse, _camera);
-    const intersects = _raycaster.intersectObjects(_kessonMeshes);
+    const intersects = _raycaster.intersectObjects(_navMeshes);
 
     if (intersects.length > 0) {
-        const mesh = intersects[0].object;
-        onKessonClick(mesh.userData.id, mesh);
+        const data = intersects[0].object.userData;
+        openPdfViewer(data.url, data.label);
     }
 }
 
-function onCanvasHover(event) {
-    if (_isOpen) return;
+function onPointerMove(event) {
+    if (_isOpen) {
+        _renderer.domElement.style.cursor = 'default';
+        return;
+    }
 
     _mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     _raycaster.setFromCamera(_mouse, _camera);
-    const intersects = _raycaster.intersectObjects(_kessonMeshes);
+    const intersects = _raycaster.intersectObjects(_navMeshes);
 
     _renderer.domElement.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
 }
 
-function onKessonClick(id, mesh) {
-    // TODO: data/kesson/*.yaml からコンテンツを読み込む
+function openPdfViewer(url, label) {
     openViewer(`
-        <h2>欠損 #${id}</h2>
-        <p>この光はまだ名前を持たない。</p>
-        <p>闇の中で問いだけが呼吸している。</p>
-        <hr>
-        <p>
-            <a href="${HTML_SITE_URL}" target="_blank" rel="noopener">
-                欠損駆動思考 → HTML版で読む ↗
-            </a>
-        </p>
+        <iframe src="${url}" title="${label}"></iframe>
     `);
+}
+
+// --- 公開インターフェース ---
+
+/**
+ * ナビゲーションの初期化
+ * @param {{ scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer }} ctx
+ */
+export function initNavigation({ scene, camera, renderer }) {
+    _camera = camera;
+    _renderer = renderer;
+    _scene = scene;
+
+    injectStyles();
+    createNavLinks();
+    createNavObjects(scene);
+
+    renderer.domElement.addEventListener('pointerdown', onPointerDown);
+    renderer.domElement.addEventListener('pointerup', onPointerUp);
+    renderer.domElement.addEventListener('pointermove', onPointerMove);
+}
+
+/**
+ * 毎フレーム更新（ナビオブジェクトの浮遊）
+ * @param {number} time
+ */
+export function updateNavigation(time) {
+    _navMeshes.forEach((sprite) => {
+        const data = sprite.userData;
+        // ゆっくり浮遊
+        sprite.position.y = data.baseY + Math.sin(time * 0.4 + data.index * 1.5) * 0.4;
+    });
 }
