@@ -20,8 +20,27 @@ Claude × Gemini 連携用MCPサーバー。
 
 ### セットアップ
 
-1. Gemini APIキーを取得（Google AI Studio）
-2. Claude Desktop設定を更新
+#### 1. Gemini APIキー取得
+
+https://aistudio.google.com/apikey
+
+#### 2. .env ファイル作成
+
+```bash
+cd ~/Documents/GitHub/kesson-space
+cp .env.example .env
+# .env を編集してAPIキーを設定
+```
+
+#### 3. 依存関係インストール
+
+```bash
+uv sync
+```
+
+#### 4. Claude Desktop設定
+
+`~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -33,14 +52,15 @@ Claude × Gemini 連携用MCPサーバー。
         "/Users/uminomae/Documents/GitHub/kesson-space",
         "run",
         "mcp_servers/gemini_threejs.py"
-      ],
-      "env": {
-        "GEMINI_API_KEY": "YOUR_API_KEY_HERE"
-      }
+      ]
     }
   }
 }
 ```
+
+※ `env` ブロックは不要（.envから自動読み込み）
+
+#### 5. Claude Desktopを再起動
 
 ### 使用例
 
@@ -58,3 +78,13 @@ Claude: [generate_shader を呼び出し]
 - Gemini 3 Pro: 約5.7円/回
 
 現在は Flash を使用（十分な品質でコスト効率が良い）。
+
+### トラブルシューティング
+
+**「GEMINI_API_KEY not found」**
+- `.env` ファイルがプロジェクトルートにあるか確認
+- APIキーが正しく設定されているか確認
+
+**MCPサーバーが認識されない**
+- Claude Desktopを完全に終了して再起動
+- `--directory` パスが正しいか確認

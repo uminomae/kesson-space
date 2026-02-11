@@ -1,7 +1,7 @@
 """Gemini MCP Server for Three.js Development
 
 Claude がマネージャー、Gemini がプログラマーとして分業するためのMCPサーバー。
-シェーダーや視覚的品質が重要なThree.jsコード生成をGemini 3 Proに委託する。
+シェーダーや視覚的品質が重要なThree.jsコード生成をGeminiに委託する。
 
 Usage:
     uv run mcp_servers/gemini_threejs.py
@@ -10,11 +10,25 @@ Usage:
 from mcp.server.fastmcp import FastMCP
 import google.generativeai as genai
 import os
+from pathlib import Path
+
+# .envから読み込み（python-dotenvがあれば使用）
+try:
+    from dotenv import load_dotenv
+    # プロジェクトルートの.envを探す
+    env_path = Path(__file__).parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    pass  # dotenvがなくても環境変数から読める
 
 # APIキー設定
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GENAI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is required")
+    raise ValueError(
+        "GEMINI_API_KEY not found. "
+        "Set it in .env file or as environment variable."
+    )
 
 genai.configure(api_key=GENAI_API_KEY)
 mcp = FastMCP("Gemini-ThreeJS-Assistant")
@@ -48,7 +62,7 @@ def generate_threejs_code(
     include_kesson_context: bool = True
 ) -> str:
     """
-    Gemini 3 ProでThree.jsコードを生成
+    GeminiでThree.jsコードを生成
     
     Args:
         task_description: 実装したいThree.jsの機能説明
