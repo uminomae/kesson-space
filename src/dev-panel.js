@@ -1,17 +1,49 @@
 // dev-panel.js — 開発用パラメータ調整パネル
 // DEV_MODE=true のときサイドからスライドインするパネルを表示
 
-const PARAMS = {
-    brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: 0.5 },
-    glowCore:      { label: 'コア強度',      min: 0.01, max: 0.5, step: 0.01, default: 0.12 },
-    glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.02 },
-    breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
-    warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 0.6 },
-    mixCycle:      { label: '背景周期(s)',    min: 2.0, max: 30.0, step: 1.0, default: 7.0 },
-    styleCycle:    { label: 'スタイル周期(s)', min: 4.0, max: 60.0, step: 2.0, default: 14.0 },
-    fogDensity:    { label: 'フォグ濃度',    min: 0.0, max: 0.06, step: 0.002, default: 0.02 },
-    autoRotateSpd: { label: '自動回転速度',   min: 0.0, max: 1.0, step: 0.05, default: 0.15 },
-};
+const SECTIONS = [
+    {
+        title: '光シェーダー',
+        params: {
+            brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: 1.65 },
+            glowCore:      { label: 'コア強度',      min: 0.01, max: 0.5, step: 0.01, default: 0.05 },
+            glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.02 },
+            breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
+            warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 0.6 },
+        }
+    },
+    {
+        title: 'タイミング',
+        params: {
+            mixCycle:      { label: '背景周期(s)',    min: 2.0, max: 30.0, step: 1.0, default: 2.0 },
+            styleCycle:    { label: 'スタイル周期(s)', min: 4.0, max: 60.0, step: 2.0, default: 14.0 },
+        }
+    },
+    {
+        title: 'カメラ・環境',
+        params: {
+            camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: 0 },
+            camY:          { label: 'カメラ Y',      min: 0, max: 80, step: 1, default: 20 },
+            camZ:          { label: 'カメラ Z',      min: -20, max: 60, step: 1, default: 15 },
+            camTargetY:    { label: '注視点 Y',      min: -30, max: 10, step: 1, default: -8 },
+            fogDensity:    { label: 'フォグ濃度',    min: 0.0, max: 0.06, step: 0.002, default: 0.0 },
+            autoRotateSpd: { label: '自動回転速度',   min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
+        }
+    },
+    {
+        title: 'HTMLオーバーレイ',
+        params: {
+            titleBottom:   { label: '下からの距離(px)', min: 10, max: 300, step: 5, default: 60 },
+            titleLeft:     { label: '左からの距離(px)', min: 10, max: 300, step: 5, default: 40 },
+            titleSize:     { label: 'タイトル文字サイズ(rem)', min: 0.5, max: 5.0, step: 0.1, default: 1.8 },
+            titleSpacing:  { label: '文字間隔(em)',   min: 0.0, max: 2.0, step: 0.05, default: 0.8 },
+            titleOpacity:  { label: 'タイトル透明度', min: 0.0, max: 1.0, step: 0.05, default: 0.7 },
+            subSize:       { label: 'サブ文字サイズ(rem)', min: 0.3, max: 3.0, step: 0.1, default: 0.8 },
+            subOpacity:    { label: 'サブ透明度',     min: 0.0, max: 1.0, step: 0.05, default: 0.4 },
+            titleGlow:     { label: '発光の強さ(px)', min: 0, max: 80, step: 5, default: 30 },
+        }
+    },
+];
 
 let _panel = null;
 let _isOpen = false;
@@ -20,8 +52,10 @@ let _onChange = null;
 
 function createPanel() {
     // 初期値セット
-    Object.keys(PARAMS).forEach(key => {
-        _values[key] = PARAMS[key].default;
+    SECTIONS.forEach(section => {
+        Object.keys(section.params).forEach(key => {
+            _values[key] = section.params[key].default;
+        });
     });
 
     // スタイル
@@ -88,17 +122,26 @@ function createPanel() {
             border-bottom: 1px solid rgba(100, 150, 255, 0.08);
         }
 
+        .dev-section-title {
+            padding: 10px 16px 4px;
+            font-size: 0.7rem;
+            color: rgba(120, 160, 255, 0.5);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-top: 1px solid rgba(100, 150, 255, 0.06);
+        }
+
         .dev-group {
-            padding: 10px 16px;
-            border-bottom: 1px solid rgba(100, 150, 255, 0.05);
+            padding: 6px 16px 8px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.03);
         }
         .dev-group label {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             color: rgba(180, 200, 230, 0.6);
-            font-size: 0.68rem;
+            font-size: 0.65rem;
         }
         .dev-group .dev-value {
             color: rgba(130, 200, 255, 0.9);
@@ -134,7 +177,7 @@ function createPanel() {
         }
 
         .dev-export {
-            padding: 12px 16px;
+            padding: 10px 16px 16px;
         }
         .dev-export button {
             width: 100%;
@@ -157,12 +200,14 @@ function createPanel() {
             padding: 8px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 3px;
-            font-size: 0.62rem;
+            font-size: 0.58rem;
             color: rgba(150, 200, 255, 0.7);
             word-break: break-all;
             display: none;
             user-select: all;
             -webkit-user-select: all;
+            max-height: 200px;
+            overflow-y: auto;
         }
     `;
     document.head.appendChild(style);
@@ -184,18 +229,21 @@ function createPanel() {
 
     let html = '<div class="dev-header">パラメータ調整</div>';
 
-    Object.keys(PARAMS).forEach(key => {
-        const p = PARAMS[key];
-        html += `
-            <div class="dev-group">
-                <label>
-                    <span>${p.label}</span>
-                    <span class="dev-value" id="val-${key}">${p.default}</span>
-                </label>
-                <input type="range" id="slider-${key}"
-                    min="${p.min}" max="${p.max}" step="${p.step}" value="${p.default}">
-            </div>
-        `;
+    SECTIONS.forEach(section => {
+        html += `<div class="dev-section-title">${section.title}</div>`;
+        Object.keys(section.params).forEach(key => {
+            const p = section.params[key];
+            html += `
+                <div class="dev-group">
+                    <label>
+                        <span>${p.label}</span>
+                        <span class="dev-value" id="val-${key}">${formatValue(p.default, p.step)}</span>
+                    </label>
+                    <input type="range" id="slider-${key}"
+                        min="${p.min}" max="${p.max}" step="${p.step}" value="${p.default}">
+                </div>
+            `;
+        });
     });
 
     html += `
@@ -209,14 +257,17 @@ function createPanel() {
     document.body.appendChild(panel);
 
     // イベント
-    Object.keys(PARAMS).forEach(key => {
-        const slider = document.getElementById(`slider-${key}`);
-        const valueEl = document.getElementById(`val-${key}`);
-        slider.addEventListener('input', () => {
-            const val = parseFloat(slider.value);
-            _values[key] = val;
-            valueEl.textContent = val.toFixed(getDecimals(PARAMS[key].step));
-            if (_onChange) _onChange(key, val);
+    SECTIONS.forEach(section => {
+        Object.keys(section.params).forEach(key => {
+            const p = section.params[key];
+            const slider = document.getElementById(`slider-${key}`);
+            const valueEl = document.getElementById(`val-${key}`);
+            slider.addEventListener('input', () => {
+                const val = parseFloat(slider.value);
+                _values[key] = val;
+                valueEl.textContent = formatValue(val, p.step);
+                if (_onChange) _onChange(key, val);
+            });
         });
     });
 
@@ -235,6 +286,11 @@ function createPanel() {
     });
 
     _panel = panel;
+}
+
+function formatValue(val, step) {
+    const decimals = getDecimals(step);
+    return Number(val).toFixed(decimals);
 }
 
 function getDecimals(step) {
