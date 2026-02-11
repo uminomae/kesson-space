@@ -19,6 +19,13 @@ kesson-space/
 │       ├── ...
 │       └── LOG.md
 │
+├── mcp_servers/              ← Claude Desktop用MCPサーバー
+│   ├── gemini_threejs.py     ← Gemini API連携
+│   └── README.md
+│
+├── scripts/
+│   └── setup-mcp.sh          ← MCP初期設定スクリプト
+│
 ├── docs/
 │   ├── CURRENT.md
 │   ├── CONCEPT.md
@@ -31,6 +38,54 @@ kesson-space/
 │   └── kesson/               ← 欠損データ（YAML）
 │
 └── assets/                   ← 静的アセット（将来）
+```
+
+---
+
+## Claude × Gemini 分業体制
+
+### 概要
+
+| 役割 | 担当 | 強み |
+|------|------|------|
+| **マネージャー** | Claude | コンテキスト把握、複数ファイル管理、要件整理、対話 |
+| **プログラマー** | Gemini | シェーダー、視覚的品質の高いThree.jsコード生成 |
+
+### 呼び出しルール
+
+**Geminiはユーザーが明示した時のみ使用する。**
+
+- ✅ 「Geminiでシェーダーを生成して」
+- ✅ 「proモデルで水面のコードを作って」
+- ❌ Three.jsコードだからといって自動でGeminiを使わない
+
+### 利用可能なモデル
+
+| キー | モデル名 | 用途 |
+|------|---------|------|
+| `flash` | gemini-2.0-flash | デフォルト、高速・低コスト |
+| `flash-lite` | gemini-2.0-flash-lite | 最軽量 |
+| `pro` | gemini-2.5-pro-preview | 高品質 |
+| `3-flash` | gemini-3.0-flash | 最新 |
+
+### MCPツール
+
+| ツール | 用途 |
+|--------|------|
+| `generate_threejs_code` | Three.jsコード生成 |
+| `generate_shader` | GLSLシェーダー生成 |
+| `review_threejs_code` | コードレビュー |
+| `compare_implementations` | Claude vs Gemini 比較 |
+| `list_models` | 利用可能モデル一覧 |
+
+### セットアップ
+
+```bash
+./scripts/setup-mcp.sh
+cp .env.example .env
+# .env に GEMINI_API_KEY を設定
+uv sync
+# Claude Desktop を再起動
 ```
 
 ---
@@ -148,6 +203,7 @@ export function initNavigation(camera, kessonMeshes) {
 | 3D | Three.js 0.160.0 | 標準的、CDN利用可 |
 | モジュール | ES Modules (importmap) | ビルド不要 |
 | データ | YAML (予定) | 人間が読みやすい |
+| AI連携 | MCP + Gemini API | シェーダー品質向上 |
 
 ---
 
@@ -171,6 +227,18 @@ export function initNavigation(camera, kessonMeshes) {
 - リンク・カメラ制御をグラフィックに影響せず追加可能に
 **トレードオフ**: Geminiの出力形式をexport付きに変更が必要
 
+### 2026-02-11: Gemini MCP連携
+
+**決定**: Claude × Gemini の分業体制をMCPで実装
+**理由**:
+- Geminiの視覚的品質（シェーダー、アニメーション）がClaudeより優れている
+- Claudeはコンテキスト管理・複数ファイル管理に強い
+- 「マネージャー × プログラマー」の分業が合理的
+**ルール**:
+- Geminiはユーザーが明示した時のみ使用
+- 自動呼び出しはしない
+**コスト**: Gemini 2.0 Flash で約0.07円/回
+
 ---
 
 ## 命名規則
@@ -191,3 +259,4 @@ export function initNavigation(camera, kessonMeshes) {
 - [CONCEPT.md](./CONCEPT.md) - 理論
 - [WORKFLOW.md](./WORKFLOW.md) - セッション管理
 - [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
+- [mcp_servers/README.md](../mcp_servers/README.md) - MCP詳細
