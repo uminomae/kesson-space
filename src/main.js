@@ -168,11 +168,27 @@ function applyDevValue(key, value) {
     updateOverlay(key, value);
 }
 
-// --- devパネル ---
+// --- dev機能（?dev でのみ有効） ---
 if (DEV_MODE) {
+    // devパネル
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel(applyDevValue);
     });
+    // 開発ログ + スクロール案内
+    import('./dev-log.js').then(({ renderDevLog, setupScrollHint }) => {
+        renderDevLog();
+        setupScrollHint();
+    });
+} else {
+    // dev無効時: スクロール不要要素を非表示
+    const scrollHint = document.getElementById('scroll-hint');
+    const heroSpacer = document.getElementById('hero-spacer');
+    const devLog = document.getElementById('dev-log');
+    if (scrollHint) scrollHint.style.display = 'none';
+    if (heroSpacer) heroSpacer.style.display = 'none';
+    if (devLog) devLog.style.display = 'none';
+    // スクロール無効化（Three.jsシーンのみ）
+    document.body.style.overflowY = 'hidden';
 }
 
 const clock = new THREE.Clock();
