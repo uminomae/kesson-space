@@ -1,4 +1,5 @@
 // navigation.js — リンク・クリック・コンテンツ表示
+// 中央フロート型：闇の中にガラスの閲覧窓が浮かぶ
 
 import * as THREE from 'three';
 
@@ -10,148 +11,231 @@ let _kessonMeshes = [];
 const _raycaster = new THREE.Raycaster();
 const _mouse = new THREE.Vector2();
 
-// --- コンテンツパネル ---
-let _panel = null;
+// --- 閲覧ウィンドウ ---
+let _viewer = null;
 let _isOpen = false;
 
-function createPanel() {
-    const panel = document.createElement('div');
-    panel.id = 'content-panel';
-    panel.innerHTML = `
-        <div class="panel-header">
-            <button class="panel-close" aria-label="閉じる">×</button>
+function createViewer() {
+    const viewer = document.createElement('div');
+    viewer.id = 'kesson-viewer';
+    viewer.innerHTML = `
+        <div class="viewer-glass">
+            <button class="viewer-close" aria-label="閉じる">×</button>
+            <div class="viewer-content"></div>
         </div>
-        <div class="panel-body"></div>
     `;
-    document.body.appendChild(panel);
+    document.body.appendChild(viewer);
 
-    panel.querySelector('.panel-close').addEventListener('click', closePanel);
+    viewer.querySelector('.viewer-close').addEventListener('click', closeViewer);
 
-    return panel;
+    // 背景（ガラス外）クリックで閉じる
+    viewer.addEventListener('click', (e) => {
+        if (e.target === viewer) closeViewer();
+    });
+
+    // ESCで閉じる
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && _isOpen) closeViewer();
+    });
+
+    return viewer;
 }
 
-function openPanel(content) {
-    if (!_panel) _panel = createPanel();
-    const body = _panel.querySelector('.panel-body');
+function openViewer(content) {
+    if (!_viewer) _viewer = createViewer();
+    const body = _viewer.querySelector('.viewer-content');
     body.innerHTML = content;
-    _panel.classList.add('open');
+
+    requestAnimationFrame(() => {
+        _viewer.classList.add('visible');
+        requestAnimationFrame(() => {
+            _viewer.classList.add('open');
+        });
+    });
     _isOpen = true;
 }
 
-function closePanel() {
-    if (_panel) {
-        _panel.classList.remove('open');
-        _isOpen = false;
+function closeViewer() {
+    if (_viewer) {
+        _viewer.classList.remove('open');
+        setTimeout(() => {
+            _viewer.classList.remove('visible');
+            _isOpen = false;
+        }, 500);
     }
 }
 
-// --- ナビゲーションリンク作成 ---
+// --- 角のナビリンク ---
 function createNavLinks() {
     const nav = document.createElement('nav');
     nav.id = 'site-nav';
     nav.innerHTML = `
         <a href="${HTML_SITE_URL}" target="_blank" rel="noopener" class="nav-link" title="HTML版で閲覧">
-            <span class="nav-icon">⚡</span>
             <span class="nav-label">欠損駆動思考</span>
+            <span class="nav-arrow">↗</span>
         </a>
     `;
     document.body.appendChild(nav);
 }
 
-// --- スタイル注入 ---
+// --- スタイル ---
 function injectStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        /* ナビゲーションリンク */
+        /* --- 角のナビリンク（控えめ） --- */
         #site-nav {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
+            bottom: 20px;
+            right: 20px;
             z-index: 100;
-            display: flex;
-            gap: 12px;
         }
         .nav-link {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            background: rgba(26, 42, 58, 0.6);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(100, 150, 255, 0.15);
-            border-radius: 20px;
-            color: rgba(255, 255, 255, 0.6);
+            gap: 4px;
+            padding: 6px 14px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            color: rgba(255, 255, 255, 0.25);
             text-decoration: none;
-            font-family: "Sawarabi Mincho", serif;
-            font-size: 0.85rem;
-            letter-spacing: 0.1em;
-            transition: all 0.4s ease;
+            font-family: inherit;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            transition: all 0.6s ease;
         }
         .nav-link:hover {
-            background: rgba(26, 42, 58, 0.85);
-            color: rgba(255, 255, 255, 0.9);
-            border-color: rgba(100, 150, 255, 0.4);
-            box-shadow: 0 0 20px rgba(100, 150, 255, 0.15);
+            color: rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
         }
-        .nav-icon {
-            font-size: 1rem;
+        .nav-arrow {
+            font-size: 0.65rem;
+            opacity: 0.5;
         }
 
-        /* コンテンツパネル */
-        #content-panel {
+        /* --- 中央フロート閲覧ウィンドウ --- */
+        #kesson-viewer {
             position: fixed;
             top: 0;
-            right: -480px;
-            width: 460px;
-            max-width: 90vw;
-            height: 100vh;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 200;
-            background: rgba(10, 21, 32, 0.92);
-            backdrop-filter: blur(16px);
-            border-left: 1px solid rgba(100, 150, 255, 0.15);
-            transition: right 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-            overflow-y: auto;
-            font-family: "Sawarabi Mincho", serif;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        #content-panel.open {
-            right: 0;
-        }
-        .panel-header {
-            display: flex;
-            justify-content: flex-end;
-            padding: 16px;
-            position: sticky;
-            top: 0;
-            background: rgba(10, 21, 32, 0.95);
-        }
-        .panel-close {
-            background: none;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.6);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 1.2rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(5, 10, 20, 0.0);
+            transition: background 0.5s ease;
             cursor: pointer;
+        }
+        #kesson-viewer.visible {
+            display: flex;
+        }
+        #kesson-viewer.open {
+            background: rgba(5, 10, 20, 0.5);
+        }
+
+        .viewer-glass {
+            position: relative;
+            width: 680px;
+            max-width: 88vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            cursor: default;
+
+            /* ガラス感 */
+            background: rgba(15, 25, 40, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(100, 150, 255, 0.08);
+            border-radius: 3px;
+            box-shadow:
+                0 0 60px rgba(0, 0, 0, 0.4),
+                0 0 120px rgba(30, 60, 120, 0.1),
+                inset 0 0 60px rgba(20, 40, 80, 0.05);
+
+            /* 出現アニメーション */
+            opacity: 0;
+            transform: scale(0.92) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #kesson-viewer.open .viewer-glass {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .viewer-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 1.4rem;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s;
+            z-index: 1;
+        }
+        .viewer-close:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .viewer-content {
+            padding: 32px 36px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            line-height: 2.0;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+        .viewer-content h2 {
+            font-weight: normal;
+            letter-spacing: 0.3em;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0 0 20px;
+        }
+        .viewer-content p {
+            margin: 0 0 16px;
+        }
+        .viewer-content a {
+            color: rgba(140, 180, 255, 0.8);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(140, 180, 255, 0.15);
             transition: all 0.3s;
         }
-        .panel-close:hover {
-            border-color: rgba(255, 255, 255, 0.5);
-            color: rgba(255, 255, 255, 0.9);
+        .viewer-content a:hover {
+            color: rgba(180, 210, 255, 1.0);
+            border-bottom-color: rgba(140, 180, 255, 0.4);
         }
-        .panel-body {
-            padding: 0 24px 24px;
-            line-height: 1.8;
-        }
-        .panel-body iframe {
-            width: 100%;
-            height: 70vh;
+        .viewer-content hr {
             border: none;
-            border-radius: 4px;
+            border-top: 1px solid rgba(100, 150, 255, 0.08);
+            margin: 24px 0;
         }
-        .panel-body a {
-            color: rgba(120, 170, 255, 0.9);
+        .viewer-content iframe {
+            width: 100%;
+            height: 60vh;
+            border: 1px solid rgba(100, 150, 255, 0.08);
+            border-radius: 2px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* スクロールバー */
+        .viewer-glass::-webkit-scrollbar {
+            width: 4px;
+        }
+        .viewer-glass::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .viewer-glass::-webkit-scrollbar-thumb {
+            background: rgba(100, 150, 255, 0.15);
+            border-radius: 2px;
         }
     `;
     document.head.appendChild(style);
@@ -159,9 +243,6 @@ function injectStyles() {
 
 /**
  * ナビゲーションの初期化
- * @param {THREE.PerspectiveCamera} camera
- * @param {THREE.Mesh[]} kessonMeshes
- * @param {THREE.WebGLRenderer} renderer
  */
 export function initNavigation(camera, kessonMeshes, renderer) {
     _camera = camera;
@@ -171,14 +252,13 @@ export function initNavigation(camera, kessonMeshes, renderer) {
     injectStyles();
     createNavLinks();
 
-    // クリックで光を検出
     renderer.domElement.addEventListener('click', onCanvasClick);
-    
-    // ホバーでカーソル変更
     renderer.domElement.addEventListener('mousemove', onCanvasHover);
 }
 
 function onCanvasClick(event) {
+    if (_isOpen) return;
+
     _mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -187,14 +267,13 @@ function onCanvasClick(event) {
 
     if (intersects.length > 0) {
         const mesh = intersects[0].object;
-        const id = mesh.userData.id;
-        onKessonClick(id, mesh);
-    } else if (_isOpen) {
-        closePanel();
+        onKessonClick(mesh.userData.id, mesh);
     }
 }
 
 function onCanvasHover(event) {
+    if (_isOpen) return;
+
     _mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -205,16 +284,15 @@ function onCanvasHover(event) {
 }
 
 function onKessonClick(id, mesh) {
-    // TODO: kesson ID → コンテンツのマッピング
-    // 将来: data/kesson/*.yaml から読み込む
-    // 今はデモとしてパネルを開く
-    openPanel(`
-        <h2 style="letter-spacing: 0.2em; font-weight: normal; margin-bottom: 16px;">欠損 #${id}</h2>
-        <p style="opacity: 0.6; margin-bottom: 24px;">この光はまだ名前を持たない。</p>
-        <hr style="border-color: rgba(100,150,255,0.15); margin: 24px 0;">
+    // TODO: data/kesson/*.yaml からコンテンツを読み込む
+    openViewer(`
+        <h2>欠損 #${id}</h2>
+        <p>この光はまだ名前を持たない。</p>
+        <p>闇の中で問いだけが呼吸している。</p>
+        <hr>
         <p>
             <a href="${HTML_SITE_URL}" target="_blank" rel="noopener">
-                → HTML版で読む
+                欠損駆動思考 → HTML版で読む ↗
             </a>
         </p>
     `);
