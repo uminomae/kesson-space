@@ -1,5 +1,6 @@
 // scene.js — 統合グラフィック
 // uMix: 0.0 = v002(deep dark / voidHole) ↔ 1.0 = v004(slate blue / soul core)
+// timeで自動的に行き来する
 
 import * as THREE from 'three';
 
@@ -31,18 +32,12 @@ const noiseGLSL = `
     }
 `;
 
-// --- 内部参照 ---
 let _waterMaterial;
 let _kessonMeshes = [];
 let _particles;
 let _camera;
 let _bgMat;
 let _scene;
-
-// --- Mix制御 ---
-let _mixTarget = 1.0;  // 目標値
-let _mixCurrent = 1.0;  // 現在値
-const MIX_SPEED = 1.5;  // 秒速
 
 // v002: deep dark
 const BG_V002_CENTER = new THREE.Color(0x050508);
@@ -56,17 +51,8 @@ const BG_V004_EDGE = new THREE.Color(0x0a1520);
 const FOG_V004_COLOR = new THREE.Color(0x0a1520);
 const FOG_V004_DENSITY = 0.02;
 
-/**
- * Mix値を設定（0.0=v002, 1.0=v004）
- * アニメーションで滑らかに遷移
- */
-export function setMix(value) {
-    _mixTarget = Math.max(0, Math.min(1, value));
-}
-
-export function getMix() {
-    return _mixTarget;
-}
+// 遷移周期（秒）: この秒数で片道、往復で×2
+const MIX_CYCLE = 30.0;
 
 export function createScene(container) {
     const scene = new THREE.Scene();
@@ -74,7 +60,7 @@ export function createScene(container) {
 
     scene.fog = new THREE.FogExp2(FOG_V004_COLOR.getHex(), FOG_V004_DENSITY);
 
-    // 背景シェーダー: uMixで単色↔グラデーションを補間
+    // 背景シェーダー
     const bgGeo = new THREE.PlaneGeometry(2, 2);
     _bgMat = new THREE.ShaderMaterial({
         uniforms: {
@@ -119,13 +105,11 @@ export function createScene(container) {
     bgMesh.renderOrder = -999;
     scene.add(bgMesh);
 
-    // カメラ
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 35, 25);
     camera.lookAt(0, -5, -10);
     _camera = camera;
 
-    // レンダラー
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -166,7 +150,7 @@ export function createScene(container) {
     water.position.y = -20;
     scene.add(water);
 
-    // 光（欠損）シェーダー: uMixで voidHole ↔ soul core を補間
+    // 光（欠損）シェーダー: uMixで voidHole ↔ soul core
     const kessonMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0.0 },
@@ -303,19 +287,14 @@ export function createScene(container) {
 }
 
 export function updateScene(time) {
-    // --- Mixアニメーション ---
-    const dt = 1 / 60; // 粗いが十分
-    if (Math.abs(_mixCurrent - _mixTarget) > 0.001) {
-        _mixCurrent += (_mixTarget - _mixCurrent) * MIX_SPEED * dt;
-    } else {
-        _mixCurrent = _mixTarget;
-    }
-    const m = _mixCurrent;
+    // --- timeベースの自動遷移 ---
+    // sin波で0↔1↔0 を繰り返す（端で滑らかに止まる）
+    const m = (Math.sin(time * Math.PI / MIX_CYCLE) + 1.0) * 0.5;
 
     // 背景
     _bgMat.uniforms.uMix.value = m;
 
-    // Fog: 色と密度をlerp
+    // Fog
     const fogColor = new THREE.Color().lerpColors(FOG_V002_COLOR, FOG_V004_COLOR, m);
     _scene.fog.color.copy(fogColor);
     _scene.fog.density = FOG_V002_DENSITY + (FOG_V004_DENSITY - FOG_V002_DENSITY) * m;
