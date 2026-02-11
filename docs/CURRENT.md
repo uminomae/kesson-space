@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-11
-**セッション**: #2 進行中
+**セッション**: #3 完了
 
 ---
 
@@ -18,6 +18,8 @@
 - [x] GitHub Pages有効化
 - [x] main.jsをシェーダー版に更新
 - [x] バージョン管理体制の構築（src/versions/, LOG.md, PROMPT-STRUCTURE.md）
+- [x] **Gemini MCP連携構築**（mcp_servers/gemini_threejs.py）
+- [x] **使用量追跡ツール**（get_usage, reset_usage）
 
 ### 進行中
 
@@ -32,13 +34,55 @@
 
 ---
 
-## ビジュアル調整の役割分担
+## ⚠️ Three.js作業時の重要ルール
 
-| 役割 | 担当 | 成果物 |
-|------|------|--------|
-| プロンプト設計・版管理 | Claude | docs/prompts/PNNN-*.md, LOG.md更新 |
-| コード実装 | Gemini | src/versions/vNNN-*.js |
-| 判定（◎○△✗） | User | 口頭報告 → Claudeが記録 |
+**シェーダーや視覚的品質が重要なThree.jsコードを書く際は、Geminiへの作業依頼を検討すること。**
+
+### 判断基準
+
+| 状況 | 対応 |
+|------|------|
+| シェーダー（GLSL）の新規作成・改良 | → Geminiに依頼 |
+| 視覚的品質が重要なアニメーション | → Geminiに依頼 |
+| 複数ファイルの構成・リファクタリング | → Claudeが対応 |
+| バグ修正・デバッグ | → Claudeが対応 |
+
+### 呼び出し方
+
+```
+「Geminiでシェーダーを生成して」
+「proモデルで水面のコードを作って」
+「Geminiの使用量を見せて」
+```
+
+**ユーザーが明示した時のみGeminiを使用。自動呼び出しはしない。**
+
+---
+
+## Claude × Gemini 分業体制
+
+| 役割 | 担当 | 強み |
+|------|------|------|
+| マネージャー | Claude | コンテキスト把握、複数ファイル管理、対話、プロジェクト管理 |
+| プログラマー | Gemini | シェーダー、視覚的品質の高いThree.jsコード生成 |
+
+### MCPツール一覧
+
+| ツール | 用途 |
+|--------|------|
+| `generate_threejs_code` | Three.jsコード生成 |
+| `generate_shader` | GLSLシェーダー生成 |
+| `review_threejs_code` | コードレビュー |
+| `compare_implementations` | Claude vs Gemini 比較 |
+| `list_models` | 利用可能モデル一覧 |
+| `get_usage` | 使用量確認 |
+| `reset_usage` | 使用量リセット |
+
+### コスト
+
+- 月間予算: ¥1,000
+- flash: ¥0.07/回（約14,000回/月）
+- pro: ¥5.0/回（約200回/月）
 
 ---
 
@@ -53,16 +97,10 @@
 
 ---
 
-## 参照画像
-
-Prompt: "Abstract figure on the boundary between form and formlessness, body contour as Julia set fractal edge, luminous point at the center of chest, hands open, holding nothing yet receiving everything, dark slate blue gradient background, ethereal and philosophical, digital art, high contrast --ar 16:10"
-
----
-
 ## 次セッションのタスク
 
-1. 最初のビジュアル微調整プロンプトを作成
-2. Geminiに投入 → 結果判定
+1. ビジュアル微調整プロンプトを作成
+2. **Geminiに投入**（MCP経由） → 結果判定
 3. 反復サイクルを回す
 
 ---
@@ -73,12 +111,15 @@ Prompt: "Abstract figure on the boundary between form and formlessness, body con
 - シェーダー: simplex noise使用（GLSL埋め込み）
 - ポート: 3001（pjdhiroの4000と干渉回避）
 - ベースライン: src/versions/v001-baseline.js
+- MCP: mcp_servers/gemini_threejs.py
+- 使用量記録: .gemini_usage.json（gitignore済み）
 
 ---
 
 ## 参照リンク
 
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定・Gemini連携詳細
 - [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
 - [src/versions/LOG.md](../src/versions/LOG.md) - バージョン追跡ログ
+- [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
