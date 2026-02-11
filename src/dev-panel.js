@@ -1,4 +1,4 @@
-// dev-panel.js — 開発用パラメータ調整パネル
+// dev-panel.js — Bootstrapベースのdevパネル
 
 import { toggles, breathConfig } from './config.js';
 
@@ -17,6 +17,7 @@ const TOGGLES = [
 // --- スライダー定義 ---
 const SECTIONS = [
     {
+        id: 'breath',
         title: '呼吸（同期）',
         params: {
             period:          { label: '周期(s)',       min: 2.0, max: 30.0, step: 0.5, default: 8.0, target: 'breath' },
@@ -28,6 +29,7 @@ const SECTIONS = [
         }
     },
     {
+        id: 'shader',
         title: '光シェーダー',
         params: {
             brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
@@ -38,6 +40,7 @@ const SECTIONS = [
         }
     },
     {
+        id: 'timing',
         title: 'タイミング',
         params: {
             mixCycle:      { label: '背景周期(s)',    min: 2.0, max: 30.0, step: 1.0, default: 2.0 },
@@ -45,6 +48,7 @@ const SECTIONS = [
         }
     },
     {
+        id: 'camera',
         title: 'カメラ・環境',
         params: {
             camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: -14 },
@@ -56,27 +60,33 @@ const SECTIONS = [
         }
     },
     {
+        id: 'overlay',
         title: 'HTMLオーバーレイ',
         params: {
             titleBottom:   { label: '下からの距離(px)', min: 10, max: 300, step: 5, default: 60 },
             titleLeft:     { label: '左からの距離(px)', min: 10, max: 300, step: 5, default: 40 },
-            titleSize:     { label: 'タイトル文字サイズ(rem)', min: 0.5, max: 5.0, step: 0.1, default: 2.7 },
+            titleSize:     { label: 'タイトル文字(rem)', min: 0.5, max: 5.0, step: 0.1, default: 2.7 },
             titleSpacing:  { label: '文字間隔(em)',   min: 0.0, max: 2.0, step: 0.05, default: 0.8 },
             titleOpacity:  { label: 'タイトル透明度', min: 0.0, max: 1.0, step: 0.05, default: 0.5 },
-            subSize:       { label: 'サブ文字サイズ(rem)', min: 0.3, max: 3.0, step: 0.1, default: 1.3 },
+            subSize:       { label: 'サブ文字(rem)',   min: 0.3, max: 3.0, step: 0.1, default: 1.3 },
             subOpacity:    { label: 'サブ透明度',     min: 0.0, max: 1.0, step: 0.05, default: 0.5 },
-            titleGlow:     { label: '発光の強さ(px)', min: 0, max: 80, step: 5, default: 30 },
+            titleGlow:     { label: '発光(px)',       min: 0, max: 80, step: 5, default: 30 },
         }
     },
 ];
 
-let _panel = null;
 let _isOpen = false;
 let _values = {};
 let _onChange = null;
 
+function formatValue(val, step) {
+    const str = step.toString();
+    const dot = str.indexOf('.');
+    const decimals = dot === -1 ? 0 : str.length - dot - 1;
+    return Number(val).toFixed(decimals);
+}
+
 function createPanel() {
-    // スライダー初期値
     SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
             _values[key] = section.params[key].default;
@@ -93,7 +103,6 @@ function createPanel() {
             z-index: 1001;
             background: rgba(20, 30, 50, 0.7);
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(100, 150, 255, 0.15);
             border-right: none;
             border-radius: 4px 0 0 4px;
@@ -110,270 +119,237 @@ function createPanel() {
             color: rgba(200, 220, 255, 0.9);
             background: rgba(30, 45, 70, 0.8);
         }
-        #dev-toggle.open {
-            right: 280px;
-        }
+        #dev-toggle.open { right: 300px; }
 
         #dev-panel {
             position: fixed;
             top: 0;
-            right: -280px;
-            width: 280px;
+            right: -300px;
+            width: 300px;
             height: 100%;
             z-index: 1000;
-            background: rgba(10, 18, 30, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-left: 1px solid rgba(100, 150, 255, 0.1);
             overflow-y: auto;
             transition: right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-            font-family: monospace;
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(100, 150, 255, 0.1);
+        }
+        #dev-panel.open { right: 0; }
+        #dev-panel::-webkit-scrollbar { width: 4px; }
+        #dev-panel::-webkit-scrollbar-thumb { background: rgba(100,150,255,0.2); border-radius: 2px; }
+
+        /* --- Bootstrapカスタマイズ --- */
+        #dev-panel .accordion-button {
+            padding: 0.5rem 0.75rem;
             font-size: 0.72rem;
-            color: rgba(200, 215, 240, 0.8);
+            font-family: monospace;
+            letter-spacing: 0.05em;
+            background: rgba(20, 28, 40, 0.9);
+            color: rgba(140, 170, 220, 0.8);
+            border: none;
+            box-shadow: none;
         }
-        #dev-panel.open {
-            right: 0;
+        #dev-panel .accordion-button:not(.collapsed) {
+            background: rgba(30, 45, 70, 0.7);
+            color: rgba(160, 190, 255, 0.9);
         }
-
-        #dev-panel::-webkit-scrollbar { width: 3px; }
-        #dev-panel::-webkit-scrollbar-thumb { background: rgba(100,150,255,0.15); border-radius: 2px; }
-
-        .dev-header {
-            padding: 14px 16px 8px;
-            font-size: 0.8rem;
-            color: rgba(150, 180, 255, 0.7);
-            letter-spacing: 0.1em;
-            border-bottom: 1px solid rgba(100, 150, 255, 0.08);
+        #dev-panel .accordion-button::after {
+            filter: invert(0.6) sepia(1) saturate(2) hue-rotate(190deg);
         }
-
-        .dev-section-title {
-            padding: 10px 16px 4px;
-            font-size: 0.7rem;
-            color: rgba(120, 160, 255, 0.5);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            border-top: 1px solid rgba(100, 150, 255, 0.06);
+        #dev-panel .accordion-body {
+            padding: 0.5rem 0.75rem;
+            background: rgba(10, 15, 25, 0.8);
+        }
+        #dev-panel .accordion-item {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.06);
         }
 
-        .dev-group {
-            padding: 6px 16px 8px;
-            border-bottom: 1px solid rgba(100, 150, 255, 0.03);
-        }
-        .dev-group label {
+        /* --- トグルスイッチ --- */
+        #dev-panel .form-check {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 3px;
-            color: rgba(180, 200, 230, 0.6);
-            font-size: 0.65rem;
+            padding: 0.25rem 0;
+            margin: 0;
         }
-        .dev-group .dev-value {
+        #dev-panel .form-check-label {
+            font-size: 0.68rem;
+            font-family: monospace;
+            color: rgba(180, 200, 230, 0.7);
+            order: -1;
+            padding-left: 0;
+        }
+        #dev-panel .form-check-input {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* --- スライダー --- */
+        .dev-slider-row {
+            margin-bottom: 0.4rem;
+        }
+        .dev-slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            font-family: monospace;
+            color: rgba(180, 200, 230, 0.6);
+            margin-bottom: 0.15rem;
+        }
+        .dev-slider-val {
             color: rgba(130, 200, 255, 0.9);
-            min-width: 40px;
+            min-width: 36px;
             text-align: right;
         }
-        .dev-group input[type="range"] {
-            width: 100%;
-            height: 3px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(60, 90, 140, 0.3);
-            border-radius: 2px;
-            outline: none;
-            cursor: pointer;
+        #dev-panel .form-range {
+            height: 0.5rem;
+            padding: 0;
         }
-        .dev-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
+        #dev-panel .form-range::-webkit-slider-thumb {
             width: 12px;
             height: 12px;
-            border-radius: 50%;
-            background: rgba(100, 160, 255, 0.7);
+            background: rgba(100, 160, 255, 0.8);
             border: 1px solid rgba(150, 200, 255, 0.3);
-            cursor: pointer;
-        }
-        .dev-group input[type="range"]::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(100, 160, 255, 0.7);
-            border: 1px solid rgba(150, 200, 255, 0.3);
-            cursor: pointer;
         }
 
-        /* --- トグル --- */
-        .dev-toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 16px;
-            border-bottom: 1px solid rgba(100, 150, 255, 0.03);
-        }
-        .dev-toggle-label {
-            color: rgba(180, 200, 230, 0.6);
-            font-size: 0.65rem;
-        }
-        .dev-toggle-switch {
-            display: inline-block;
-            position: relative;
-            width: 32px;
-            height: 16px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .dev-toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-            position: absolute;
-        }
-        .dev-toggle-track {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(60, 90, 140, 0.4);
-            border-radius: 8px;
-            transition: background 0.2s;
-            border: 1px solid rgba(100, 150, 255, 0.15);
-        }
-        .dev-toggle-switch input:checked + .dev-toggle-track {
-            background: rgba(80, 140, 255, 0.5);
-            border-color: rgba(100, 160, 255, 0.3);
-        }
-        .dev-toggle-knob {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 12px;
-            height: 12px;
-            background: rgba(200, 220, 255, 0.9);
-            border-radius: 50%;
-            transition: transform 0.2s;
-            pointer-events: none;
-        }
-        .dev-toggle-switch input:checked ~ .dev-toggle-knob {
-            transform: translateX(16px);
-        }
-
-        .dev-export {
-            padding: 10px 16px 16px;
-        }
-        .dev-export button {
-            width: 100%;
-            padding: 6px;
-            background: rgba(60, 100, 180, 0.2);
-            border: 1px solid rgba(100, 150, 255, 0.15);
-            border-radius: 3px;
-            color: rgba(180, 210, 255, 0.7);
-            font-family: monospace;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .dev-export button:hover {
-            background: rgba(60, 100, 180, 0.35);
-            color: rgba(200, 225, 255, 0.9);
-        }
-        .dev-export-result {
-            margin-top: 8px;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 3px;
+        /* --- エクスポート --- */
+        #dev-export-result {
             font-size: 0.58rem;
-            color: rgba(150, 200, 255, 0.7);
-            word-break: break-all;
+            max-height: 180px;
+            overflow-y: auto;
             display: none;
             user-select: all;
-            -webkit-user-select: all;
-            max-height: 200px;
-            overflow-y: auto;
         }
     `;
     document.head.appendChild(style);
 
-    // トグルボタン
-    const toggle = document.createElement('div');
-    toggle.id = 'dev-toggle';
-    toggle.textContent = 'DEV';
-    toggle.addEventListener('click', () => {
+    // --- DEVタブ ---
+    const tab = document.createElement('div');
+    tab.id = 'dev-toggle';
+    tab.textContent = 'DEV';
+    tab.addEventListener('click', () => {
         _isOpen = !_isOpen;
-        toggle.classList.toggle('open', _isOpen);
+        tab.classList.toggle('open', _isOpen);
         panel.classList.toggle('open', _isOpen);
     });
-    document.body.appendChild(toggle);
+    document.body.appendChild(tab);
 
-    // パネル
+    // --- パネル ---
     const panel = document.createElement('div');
     panel.id = 'dev-panel';
+    panel.setAttribute('data-bs-theme', 'dark');
 
-    let html = '<div class="dev-header">パラメータ調整</div>';
+    let html = '';
 
-    // --- トグルセクション ---
-    html += '<div class="dev-section-title">表示ON/OFF</div>';
-    TOGGLES.forEach(t => {
-        const checked = toggles[t.key] ? 'checked' : '';
-        html += `
-            <div class="dev-toggle-row">
-                <span class="dev-toggle-label">${t.label}</span>
-                <label class="dev-toggle-switch">
-                    <input type="checkbox" id="toggle-${t.key}" ${checked}>
-                    <span class="dev-toggle-track"></span>
-                    <span class="dev-toggle-knob"></span>
-                </label>
-            </div>
-        `;
-    });
+    // ヘッダー
+    html += '<div class="px-3 py-2 border-bottom border-secondary-subtle"><small class="text-secondary-emphasis" style="font-family:monospace;letter-spacing:0.1em">パラメータ調整</small></div>';
+
+    // アコーディオン
+    html += '<div class="accordion accordion-flush" id="devAccordion">';
+
+    // --- 表示ON/OFF ---
+    html += accordionItem('toggles', '表示 ON/OFF', buildTogglesHTML(), true);
 
     // --- スライダーセクション ---
-    SECTIONS.forEach(section => {
-        html += `<div class="dev-section-title">${section.title}</div>`;
-        Object.keys(section.params).forEach(key => {
-            const p = section.params[key];
-            html += `
-                <div class="dev-group">
-                    <label>
-                        <span>${p.label}</span>
-                        <span class="dev-value" id="val-${key}">${formatValue(p.default, p.step)}</span>
-                    </label>
-                    <input type="range" id="slider-${key}"
-                        min="${p.min}" max="${p.max}" step="${p.step}" value="${p.default}">
-                </div>
-            `;
-        });
+    SECTIONS.forEach((section, i) => {
+        html += accordionItem(section.id, section.title, buildSlidersHTML(section));
     });
 
+    html += '</div>'; // accordion
+
+    // --- エクスポート ---
     html += `
-        <div class="dev-export">
-            <button id="dev-export-btn">値をコピー</button>
-            <div class="dev-export-result" id="dev-export-result"></div>
+        <div class="p-2 border-top border-secondary-subtle">
+            <button class="btn btn-outline-secondary btn-sm w-100" id="dev-export-btn" style="font-size:0.68rem">値をコピー</button>
+            <pre class="mt-2 p-2 bg-black rounded text-info-emphasis" id="dev-export-result"></pre>
         </div>
     `;
 
     panel.innerHTML = html;
     document.body.appendChild(panel);
 
-    // --- トグルイベント ---
+    // --- イベント ---
+    bindToggleEvents();
+    bindSliderEvents();
+    bindExportEvent();
+}
+
+// --- HTMLビルダー ---
+
+function accordionItem(id, title, bodyHTML, show = false) {
+    return `
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button ${show ? '' : 'collapsed'}" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapse-${id}">
+                    ${title}
+                </button>
+            </h2>
+            <div id="collapse-${id}" class="accordion-collapse collapse ${show ? 'show' : ''}" data-bs-parent="#devAccordion">
+                <div class="accordion-body">${bodyHTML}</div>
+            </div>
+        </div>
+    `;
+}
+
+function buildTogglesHTML() {
+    return TOGGLES.map(t => {
+        const checked = toggles[t.key] ? 'checked' : '';
+        return `
+            <div class="form-check form-switch">
+                <label class="form-check-label" for="toggle-${t.key}">${t.label}</label>
+                <input class="form-check-input" type="checkbox" role="switch" id="toggle-${t.key}" ${checked}>
+            </div>
+        `;
+    }).join('');
+}
+
+function buildSlidersHTML(section) {
+    return Object.keys(section.params).map(key => {
+        const p = section.params[key];
+        return `
+            <div class="dev-slider-row">
+                <div class="dev-slider-header">
+                    <span>${p.label}</span>
+                    <span class="dev-slider-val" id="val-${key}">${formatValue(p.default, p.step)}</span>
+                </div>
+                <input type="range" class="form-range" id="slider-${key}"
+                    min="${p.min}" max="${p.max}" step="${p.step}" value="${p.default}">
+            </div>
+        `;
+    }).join('');
+}
+
+// --- イベントバインド ---
+
+function bindToggleEvents() {
     TOGGLES.forEach(t => {
-        const checkbox = document.getElementById(`toggle-${t.key}`);
-        checkbox.addEventListener('change', () => {
-            if (_onChange) _onChange(t.key, checkbox.checked);
+        document.getElementById(`toggle-${t.key}`).addEventListener('change', (e) => {
+            if (_onChange) _onChange(t.key, e.target.checked);
         });
     });
+}
 
-    // --- スライダーイベント ---
+function bindSliderEvents() {
     SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
             const p = section.params[key];
             const slider = document.getElementById(`slider-${key}`);
-            const valueEl = document.getElementById(`val-${key}`);
+            const valEl = document.getElementById(`val-${key}`);
             slider.addEventListener('input', () => {
                 const val = parseFloat(slider.value);
                 _values[key] = val;
-                valueEl.textContent = formatValue(val, p.step);
+                valEl.textContent = formatValue(val, p.step);
                 if (_onChange) _onChange(key, val);
             });
         });
     });
+}
 
-    // --- エクスポート ---
+function bindExportEvent() {
     document.getElementById('dev-export-btn').addEventListener('click', () => {
         const result = document.getElementById('dev-export-result');
         const exportData = {
@@ -385,26 +361,14 @@ function createPanel() {
         result.textContent = text;
         result.style.display = 'block';
         navigator.clipboard?.writeText(text).then(() => {
-            document.getElementById('dev-export-btn').textContent = 'コピーしました';
-            setTimeout(() => {
-                document.getElementById('dev-export-btn').textContent = '値をコピー';
-            }, 2000);
+            const btn = document.getElementById('dev-export-btn');
+            btn.textContent = 'コピーしました';
+            setTimeout(() => { btn.textContent = '値をコピー'; }, 2000);
         });
     });
-
-    _panel = panel;
 }
 
-function formatValue(val, step) {
-    const decimals = getDecimals(step);
-    return Number(val).toFixed(decimals);
-}
-
-function getDecimals(step) {
-    const str = step.toString();
-    const dot = str.indexOf('.');
-    return dot === -1 ? 0 : str.length - dot - 1;
-}
+// --- 公開 ---
 
 export function initDevPanel(onChange) {
     _onChange = onChange;
