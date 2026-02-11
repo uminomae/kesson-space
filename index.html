@@ -13,7 +13,8 @@
     body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       background: #050508;
       font-family: "Sawarabi Mincho", "Yu Mincho", "MS PMincho", serif;
     }
@@ -114,6 +115,116 @@
       line-height: 1.8;
       text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
     }
+
+    /* --- モバイル対応 --- */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.0rem;
+        letter-spacing: 0.25em;
+      }
+      .subtitle {
+        font-size: 0.65rem;
+        letter-spacing: 0.15em;
+      }
+      #overlay {
+        left: 20px;
+        bottom: 40px;
+      }
+      #credit {
+        left: 16px;
+        top: 14px;
+      }
+    }
+
+    /* --- ファーストビュー スペーサー --- */
+    #hero-spacer {
+      position: relative;
+      height: 100vh;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* --- スクロール案内 --- */
+    #scroll-hint {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      text-align: center;
+      pointer-events: none;
+      animation: scrollHintPulse 3s ease-in-out infinite;
+    }
+    #scroll-hint span {
+      display: block;
+      font-size: 0.65rem;
+      color: rgba(180, 200, 230, 0.3);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    #scroll-hint .arrow {
+      font-size: 1.2rem;
+      color: rgba(180, 200, 230, 0.25);
+    }
+    @keyframes scrollHintPulse {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 1; transform: translateX(-50%) translateY(4px); }
+    }
+
+    /* --- 開発ログセクション --- */
+    #dev-log {
+      position: relative;
+      z-index: 5;
+      min-height: 100vh;
+      padding: 80px 40px 120px;
+      max-width: 720px;
+    }
+
+    #dev-log .log-header {
+      font-size: 0.75rem;
+      color: rgba(180, 200, 230, 0.4);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    #dev-log .log-date {
+      font-size: 0.85rem;
+      color: rgba(180, 200, 230, 0.5);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.08em;
+      margin-bottom: 40px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(100, 150, 255, 0.08);
+    }
+
+    #dev-log .log-paragraph {
+      font-size: 0.82rem;
+      color: rgba(200, 215, 235, 0.55);
+      font-family: 'Yu Mincho', 'MS PMincho', 'Georgia', serif;
+      line-height: 2.2;
+      letter-spacing: 0.04em;
+      margin-bottom: 2.0em;
+      text-shadow: 0 0 12px rgba(60, 100, 180, 0.1);
+    }
+
+    #dev-log .log-paragraph-en {
+      font-size: 0.72rem;
+      color: rgba(180, 200, 225, 0.35);
+      font-family: 'Georgia', serif;
+      line-height: 2.0;
+      letter-spacing: 0.02em;
+      margin-top: -1.2em;
+      margin-bottom: 2.4em;
+    }
+
+    @media (max-width: 600px) {
+      #dev-log {
+        padding: 60px 20px 80px;
+      }
+    }
   </style>
   
   <script type="importmap">
@@ -142,6 +253,18 @@
     </a>
     <p class="subtitle" id="title-sub">Kesson Space</p>
   </div>
+
+  <!-- スクロール案内 -->
+  <div id="scroll-hint">
+    <span>scroll</span>
+    <div class="arrow">▾</div>
+  </div>
+
+  <!-- ファーストビュー（Three.jsシーンと重なる領域） -->
+  <div id="hero-spacer"></div>
+
+  <!-- 開発ログ（スクロールで表示） -->
+  <div id="dev-log"></div>
 
   <!-- Bootstrap JS (devパネルのアコーディオン用) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
