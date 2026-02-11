@@ -40,6 +40,13 @@ digital art, high contrast"
 - Must work on GitHub Pages
 - Performance: 60fps on mid-range laptop
 - Keep code readable（magic number → named constant preferred）
+
+### Output Rules（重要）
+- JSコードのみ出力すること（HTMLは変更しない）
+- ファイル先頭に `import * as THREE from 'three';` を含めること
+- index.htmlから `<script type="module" src="./src/main.js"></script>` で呼び出される前提
+- HTMLのDOM構造: `<div id="canvas-container">` と `<div id="overlay"><h1>秘される花</h1></div>` が存在
+- HTMLやCSSの変更が必要な場合は、コードとは別に明記すること
 ```
 
 ---
@@ -74,8 +81,8 @@ digital art, high contrast"
 （この変更固有の制約）
 
 ### Output format
-- Modified code only / Full file
-- // CHANGED マーク付き
+- Full file（main.js全文を出力）
+- 変更箇所に // CHANGED コメント
 ```
 
 ---
@@ -86,13 +93,13 @@ digital art, high contrast"
 |-------|------|-----------|---------------|
 | **背景** | 闇 | `scene.background`, `scene.fog` | 色, fog density |
 | **L0** | 内受容感覚 | `camera.fov` 呼吸, `particles` | FOV振幅, 粒子数/サイズ/色/opacity |
-| **L1** | 光の生成 | `kessonMaterial` fragmentShader | noise scale, radius, edge softness |
+| **L1** | 光の生成 | `kessonMaterial` fragmentShader | Domain Warping amplitude/反復数, core強度 |
 | **L2** | F-O評価 | `warmColors[]`, `coolColors[]` | 色パレット |
 | **L3** | 保持 | `breath` in shader | 明滅速度, 振幅 |
-| **水面** | 縁 | `waterMaterial` shaders | 波の振幅/速度, 透明度, 色 |
-| **配置** | 空間構成 | `mesh.position.set(...)` | 分布範囲, Y軸オフセット |
+| **水面** | 縁 | `waterMaterial` shaders | 波の振幅/速度, 透明度, 端フェード |
+| **配置** | 空間構成 | `mesh.position.set(...)` | 分布範囲, 数, サイズ |
 | **カメラ** | 意識の視点 | `camera.position`, `lookAt` | 高さ, 角度, 視差係数 |
-| **動き** | 漂い | `animate()` 内 | 速度, 振幅, 周波数 |
+| **動き** | 漂い | `animate()` 内 | 速度, 振幅, 軌道 |
 
 ---
 
