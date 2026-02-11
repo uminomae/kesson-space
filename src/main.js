@@ -26,6 +26,19 @@ const titleSub = document.getElementById('title-sub');
 if (titleH1) titleH1.textContent = strings.title;
 if (titleSub) titleSub.textContent = strings.subtitle;
 
+// タグライン
+const taglineContainer = document.getElementById('taglines');
+if (taglineContainer && strings.taglines) {
+    taglineContainer.innerHTML = '';
+    const isEn = lang === 'en';
+    strings.taglines.forEach(text => {
+        const p = document.createElement('p');
+        p.className = isEn ? 'tagline-en' : 'tagline';
+        p.textContent = text;
+        taglineContainer.appendChild(p);
+    });
+}
+
 // html lang属性を更新
 document.documentElement.lang = lang;
 

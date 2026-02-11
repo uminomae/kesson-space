@@ -7,6 +7,10 @@ const STRINGS = {
         title: '欠損駆動思考',
         subtitle: 'Kesson Space',
         toggleLabel: 'English',
+        taglines: [
+            '欠けを捨てず、問いに変える',
+            '予測のズレを、抱き続ける',
+        ],
         nav: [
             { label: '一般向け', url: PDF_BASE + 'kesson-general.pdf' },
             { label: '設計者向け', url: PDF_BASE + 'kesson-designer.pdf' },
@@ -17,6 +21,10 @@ const STRINGS = {
         title: 'Kesson-Driven Thinking',
         subtitle: 'Kesson Space',
         toggleLabel: '日本語',
+        taglines: [
+            "Don't discard what's missing — turn it into a question",
+            'Embrace the drift between prediction and reality',
+        ],
         nav: [
             // TODO: 英語版PDF作成後にURLを差し替え
             { label: 'General', url: PDF_BASE + 'kesson-general-en.pdf' },

@@ -65,13 +65,8 @@
       animation: breathe 8s infinite alternate ease-in-out;
     }
 
-    .taglines {
-      display: none;
+    #taglines {
       margin-bottom: 1rem;
-    }
-
-    .taglines.active {
-      display: block;
     }
 
     .tagline {
@@ -113,27 +108,13 @@
   <div id="canvas-container"></div>
   
   <div id="overlay">
-    <div class="taglines" id="taglines-ja">
-      <p class="tagline">欠けを捨てず、問いに変える</p>
-      <p class="tagline">予測のズレを、抱き続ける</p>
-    </div>
-
-    <div class="taglines" id="taglines-en">
-      <p class="tagline-en">Don't discard what's missing — turn it into a question</p>
-      <p class="tagline-en">Embrace the drift between prediction and reality</p>
-    </div>
+    <div id="taglines"></div>
 
     <a href="https://uminomae.github.io/pjdhiro/thinking-kesson/" target="_blank" rel="noopener">
       <h1 id="title-h1">欠損駆動思考</h1>
     </a>
     <p class="subtitle" id="title-sub">Kesson Space</p>
   </div>
-
-  <script>
-    const lang = navigator.language || navigator.userLanguage || 'ja';
-    const isJa = lang.startsWith('ja');
-    document.getElementById(isJa ? 'taglines-ja' : 'taglines-en').classList.add('active');
-  </script>
 
   <script type="module" src="./src/main.js"></script>
 </body>
