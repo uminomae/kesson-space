@@ -90,7 +90,6 @@ function closeViewer() {
 }
 
 // --- ヘルパー: 光のオーブ（鬼火）テクスチャ生成 ---
-// CHANGED: Canvas radial gradientで中心白熱→テーマ色→透明のグロー
 function createGlowTexture(colorHex) {
     const canvas = document.createElement('canvas');
     canvas.width = 64;
@@ -100,11 +99,8 @@ function createGlowTexture(colorHex) {
     const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
     const color = new THREE.Color(colorHex);
 
-    // Core (White hot)
     gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
-    // Mid (Theme color)
     gradient.addColorStop(0.3, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0.8)`);
-    // Edge (Fade out)
     gradient.addColorStop(1, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0)`);
 
     ctx.fillStyle = gradient;
@@ -116,7 +112,7 @@ function createGlowTexture(colorHex) {
 }
 
 // --- ヘルパー: 浮遊テキスト生成 ---
-// CHANGED: 枠線廃止、文字だけが空間に浮かぶ + 光彩（glow）
+// CHANGED: スケールを大きくして読みやすく変更
 function createFloatingTextSprite(text) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -126,7 +122,6 @@ function createFloatingTextSprite(text) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // 文字の光彩
     ctx.shadowColor = 'rgba(200, 220, 255, 0.8)';
     ctx.shadowBlur = 15;
 
@@ -147,19 +142,19 @@ function createFloatingTextSprite(text) {
     });
 
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(6, 1.5, 1);
+    // CHANGED: スケール拡大 (was: 6, 1.5, 1)
+    sprite.scale.set(12, 3, 1);
 
     return sprite;
 }
 
 // --- ナビオブジェクト作成 ---
-// CHANGED: Group構造（光のコア + テキストラベル）
+// CHANGED: 光のコアサイズ拡大、テキスト位置調整
 function createNavObjects(scene) {
     NAV_ITEMS.forEach((item, index) => {
         const group = new THREE.Group();
         group.position.set(...item.position);
 
-        // 光のコア（クリック判定対象）
         const glowMaterial = new THREE.SpriteMaterial({
             map: createGlowTexture(item.color),
             transparent: true,
@@ -167,7 +162,8 @@ function createNavObjects(scene) {
             blending: THREE.AdditiveBlending,
         });
         const coreSprite = new THREE.Sprite(glowMaterial);
-        coreSprite.scale.set(1.5, 1.5, 1.5);
+        // CHANGED: コアサイズ拡大 (was: 1.5, 1.5, 1.5)
+        coreSprite.scale.set(4.0, 4.0, 4.0);
 
         coreSprite.userData = {
             type: 'nav',
@@ -175,11 +171,12 @@ function createNavObjects(scene) {
             label: item.label,
             baseY: item.position[1],
             index,
+            isHitTarget: true,
         };
 
-        // ラベル（コアの上に配置）
         const labelSprite = createFloatingTextSprite(item.label);
-        labelSprite.position.set(0, 0.9, 0);
+        // CHANGED: テキスト位置を上に調整 (was: 0, 0.9, 0)
+        labelSprite.position.set(0, 2.0, 0);
 
         group.add(coreSprite);
         group.add(labelSprite);
@@ -188,6 +185,7 @@ function createNavObjects(scene) {
             baseY: item.position[1],
             index: index,
             core: coreSprite,
+            baseScale: 4.0, // CHANGED: アニメーション基準スケール
         };
 
         scene.add(group);
@@ -356,14 +354,11 @@ function onPointerUp(event) {
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     _raycaster.setFromCamera(_mouse, _camera);
-    // CHANGED: recursive: true でGroup内の子も判定
     const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
     if (intersects.length > 0) {
-        // 子のuserDataか、親のuserDataからデータ取得
         let data = intersects[0].object.userData;
         if (!data.url) {
-            // ラベルをクリックした場合、親Groupから辿る
             const parent = intersects[0].object.parent;
             if (parent && parent.userData.core) {
                 data = parent.userData.core.userData;
@@ -385,7 +380,6 @@ function onPointerMove(event) {
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     _raycaster.setFromCamera(_mouse, _camera);
-    // CHANGED: recursive: true
     const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
     _renderer.domElement.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
@@ -413,19 +407,20 @@ export function initNavigation({ scene, camera, renderer }) {
     renderer.domElement.addEventListener('pointermove', onPointerMove);
 }
 
-// CHANGED: 浮遊 + 呼吸スケール + 明滅
+// CHANGED: 拡大した基準スケールに合わせてアニメーション調整
 export function updateNavigation(time) {
     _navMeshes.forEach((group) => {
         const data = group.userData;
 
-        // 浮遊
-        const floatOffset = Math.sin(time * 0.8 + data.index) * 0.2;
+        // 浮遊（振幅も少し大きく）
+        const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
         group.position.y = data.baseY + floatOffset;
 
         // 光のコアの鼓動
         if (data.core) {
-            const pulse = 1.0 + Math.sin(time * 1.5 + data.index * 2.0) * 0.15;
-            data.core.scale.set(1.5 * pulse, 1.5 * pulse, 1.5 * pulse);
+            const pulse = 1.0 + Math.sin(time * 1.5 + data.index * 2.0) * 0.1;
+            const base = data.baseScale || 4.0;
+            data.core.scale.set(base * pulse, base * pulse, base * pulse);
             data.core.material.opacity = 0.7 + Math.sin(time * 1.5 + data.index * 2.0) * 0.3;
         }
     });
