@@ -33,6 +33,20 @@ if not GENAI_API_KEY:
 genai.configure(api_key=GENAI_API_KEY)
 mcp = FastMCP("Gemini-ThreeJS-Assistant")
 
+# 利用可能なモデル
+# https://ai.google.dev/gemini-api/docs/models
+AVAILABLE_MODELS = {
+    # Flash系（高速・低コスト）
+    "flash": "gemini-2.0-flash",
+    "flash-lite": "gemini-2.0-flash-lite",
+    # Pro系（高品質）
+    "pro": "gemini-2.5-pro-preview-05-06",
+    # Gemini 3
+    "3-flash": "gemini-3.0-flash",
+}
+
+DEFAULT_MODEL = "flash"
+
 # kesson-space用のコンテキスト
 KESSON_CONTEXT = """
 あなたはkesson-spaceプロジェクトのThree.jsエキスパートです。
@@ -55,9 +69,15 @@ KESSON_CONTEXT = """
 """
 
 
+def get_model(model_key: str) -> str:
+    """モデルキーから実際のモデル名を取得"""
+    return AVAILABLE_MODELS.get(model_key, AVAILABLE_MODELS[DEFAULT_MODEL])
+
+
 @mcp.tool()
 def generate_threejs_code(
     task_description: str,
+    model: str = "flash",
     optimization_level: str = "standard",
     include_kesson_context: bool = True
 ) -> str:
@@ -66,10 +86,12 @@ def generate_threejs_code(
     
     Args:
         task_description: 実装したいThree.jsの機能説明
+        model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
         optimization_level: "standard" or "advanced"
         include_kesson_context: kesson-spaceのコンテキストを含めるか
     """
     context = KESSON_CONTEXT if include_kesson_context else ""
+    model_name = get_model(model)
     
     prompt = f"""
 {context}
@@ -87,13 +109,13 @@ def generate_threejs_code(
 """
     
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
+        gemini = genai.GenerativeModel(model_name)
+        response = gemini.generate_content(prompt)
         
         if not response.text:
             return "Geminiから有効な回答が得られませんでした。"
         
-        return response.text
+        return f"[Model: {model_name}]\n\n{response.text}"
         
     except Exception as e:
         return f"Gemini APIエラー: {type(e).__name__}: {str(e)}"
@@ -102,6 +124,7 @@ def generate_threejs_code(
 @mcp.tool()
 def generate_shader(
     shader_description: str,
+    model: str = "flash",
     shader_type: str = "fragment"
 ) -> str:
     """
@@ -109,8 +132,11 @@ def generate_shader(
     
     Args:
         shader_description: シェーダーで実現したい視覚効果
+        model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
         shader_type: "vertex", "fragment", or "both"
     """
+    model_name = get_model(model)
+    
     prompt = f"""
 {KESSON_CONTEXT}
 
@@ -127,9 +153,9 @@ def generate_shader(
 """
     
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
-        return response.text if response.text else "シェーダー生成に失敗しました。"
+        gemini = genai.GenerativeModel(model_name)
+        response = gemini.generate_content(prompt)
+        return f"[Model: {model_name}]\n\n{response.text}" if response.text else "シェーダー生成に失敗しました。"
     except Exception as e:
         return f"エラー: {str(e)}"
 
@@ -137,6 +163,7 @@ def generate_shader(
 @mcp.tool()
 def review_threejs_code(
     code: str,
+    model: str = "flash",
     focus_areas: str = "visual quality, performance, shader optimization"
 ) -> str:
     """
@@ -144,8 +171,11 @@ def review_threejs_code(
     
     Args:
         code: レビューするコード
+        model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
         focus_areas: レビューの焦点
     """
+    model_name = get_model(model)
+    
     prompt = f"""
 {KESSON_CONTEXT}
 
@@ -166,9 +196,9 @@ def review_threejs_code(
 """
     
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
-        return response.text if response.text else "レビュー結果を取得できませんでした。"
+        gemini = genai.GenerativeModel(model_name)
+        response = gemini.generate_content(prompt)
+        return f"[Model: {model_name}]\n\n{response.text}" if response.text else "レビュー結果を取得できませんでした。"
     except Exception as e:
         return f"エラー: {str(e)}"
 
@@ -176,15 +206,19 @@ def review_threejs_code(
 @mcp.tool()
 def compare_implementations(
     task: str,
-    claude_code: str
+    claude_code: str,
+    model: str = "pro"
 ) -> str:
     """
-    ClaudeのコードとGeminiの実装を比較
+    Claudeのコードとの比較（デフォルトはPro）
     
     Args:
         task: 実装タスクの説明
         claude_code: Claudeが生成したコード
+        model: 使用モデル ("flash", "flash-lite", "pro", "3-flash")
     """
+    model_name = get_model(model)
+    
     prompt = f"""
 {KESSON_CONTEXT}
 
@@ -205,11 +239,31 @@ Claudeのコード:
 """
     
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
-        return response.text if response.text else "比較結果を取得できませんでした。"
+        gemini = genai.GenerativeModel(model_name)
+        response = gemini.generate_content(prompt)
+        return f"[Model: {model_name}]\n\n{response.text}" if response.text else "比較結果を取得できませんでした。"
     except Exception as e:
         return f"エラー: {str(e)}"
+
+
+@mcp.tool()
+def list_models() -> str:
+    """
+    利用可能なGeminiモデル一覧を表示
+    """
+    lines = ["利用可能なモデル:", ""]
+    for key, model in AVAILABLE_MODELS.items():
+        default = " (default)" if key == DEFAULT_MODEL else ""
+        lines.append(f"  {key}: {model}{default}")
+    
+    lines.extend([
+        "",
+        "使用例:",
+        '  generate_threejs_code(task="...", model="pro")',
+        '  generate_shader(shader_description="...", model="3-flash")',
+    ])
+    
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
