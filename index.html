@@ -13,8 +13,7 @@
     
     body {
       overflow: hidden;
-      background: #050508; /* 深い闇色 */
-      /* 先ほどの明朝体に戻しました */
+      background: #050508;
       font-family: "Sawarabi Mincho", "Yu Mincho", "MS PMincho", serif;
     }
     
@@ -27,19 +26,16 @@
       z-index: 1;
     }
     
-    /* 先ほどの中央配置スタイル */
+    /* 左下配置 */
     #overlay {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      bottom: 60px;
+      left: 40px;
       z-index: 10;
       pointer-events: none;
-      text-align: center;
-      width: 100%;
+      text-align: left;
     }
     
-    /* ゆらぎアニメーションと発光表現 */
     h1 {
       color: rgba(255, 255, 255, 0.7);
       font-weight: normal;
@@ -47,8 +43,7 @@
       font-size: 1.8rem;
       text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
       animation: breathe 8s infinite alternate ease-in-out;
-      margin-left: 0.8em; /* letter-spacingの視覚調整 */
-      margin-bottom: 1rem;
+      margin-bottom: 0.6rem;
     }
 
     .subtitle {
@@ -84,14 +79,10 @@
   <div id="canvas-container"></div>
   
   <div id="overlay">
-    <h1>欠損駆動思考</h1>
-    <p class="subtitle">Kesson Space</p>
+    <h1 id="title-h1">欠損駆動思考</h1>
+    <p class="subtitle" id="title-sub">Kesson Space</p>
   </div>
 
-  <!-- <script type="module" src="./src/versions/v001-baseline.js"></script> -->
-  <!-- <script type="module" src="./src/versions/v002-gemini-fractal.js"></script> -->
-  <!-- <script type="module" src="./src/versions/v003-soul-core.js"></script> -->
-  <!-- <script type="module" src="./src/versions/v004-slate-blue.js"></script> -->
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
