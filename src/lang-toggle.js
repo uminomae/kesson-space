@@ -16,7 +16,7 @@ export function initLangToggle() {
             z-index: 50;
             background: none;
             border: none;
-            color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.4);
             font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
             font-size: 0.85rem;
             letter-spacing: 0.15em;

@@ -46,7 +46,7 @@ function createFloatingTextSprite(text) {
     ctx.shadowBlur = 15;
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.font = '48px "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif';
+    ctx.font = '36px "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif';
 
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
