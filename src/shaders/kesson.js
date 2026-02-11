@@ -17,6 +17,9 @@ export function createKessonMaterial() {
             uGlowSpread: { value: sceneParams.glowSpread },
             uBreathAmp: { value: sceneParams.breathAmp },
             uWarpAmount: { value: sceneParams.warpAmount },
+            uTintR: { value: 1.0 },
+            uTintG: { value: 1.0 },
+            uTintB: { value: 1.0 },
         },
         vertexShader: `
             varying vec2 vUv;
@@ -38,6 +41,9 @@ export function createKessonMaterial() {
             uniform float uGlowSpread;
             uniform float uBreathAmp;
             uniform float uWarpAmount;
+            uniform float uTintR;
+            uniform float uTintG;
+            uniform float uTintB;
             varying vec2 vUv;
             ${noiseGLSL}
 
@@ -124,6 +130,9 @@ export function createKessonMaterial() {
                 float alpha = mix(alphaA, alphaB, uMix) * uvFade * warpVignette;
                 alpha *= uBrightness;
                 vec3 finalColor = mix(colorA, colorB * (1.0 + uBrightness), uMix);
+
+                // RGBティント適用
+                finalColor *= vec3(uTintR, uTintG, uTintB);
 
                 if(alpha < 0.01) discard;
 

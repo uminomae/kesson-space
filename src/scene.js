@@ -104,6 +104,9 @@ export function updateScene(time) {
         u.uGlowSpread.value = sceneParams.glowSpread;
         u.uBreathAmp.value = sceneParams.breathAmp;
         u.uWarpAmount.value = sceneParams.warpAmount;
+        u.uTintR.value = sceneParams.tintR;
+        u.uTintG.value = sceneParams.tintG;
+        u.uTintB.value = sceneParams.tintB;
         mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 2;
         mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
         mesh.lookAt(_camera.position);

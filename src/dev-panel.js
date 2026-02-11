@@ -40,6 +40,9 @@ const SECTIONS = [
             glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.08 },
             breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
             warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 1.0 },
+            tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
+            tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
+            tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
         }
     },
     {
