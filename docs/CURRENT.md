@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-11
-**セッション**: #1 完了
+**セッション**: #2 進行中
 
 ---
 
@@ -11,15 +11,17 @@
 
 - [x] リポジトリ作成
 - [x] コンセプト文書（docs/CONCEPT.md）
-- [x] Three.js MVP実装（src/main.js）
+- [x] Three.js MVP実装（src/main.js）— Gemini初版
 - [x] ローカル開発環境（serve.sh, ポート3001）
 - [x] プロジェクト管理体制（WORKFLOW.md, ARCHITECTURE.md）
 - [x] HTMLとJS分離（index.html + src/main.js）
+- [x] GitHub Pages有効化
+- [x] main.jsをシェーダー版に更新
+- [x] バージョン管理体制の構築（src/versions/, LOG.md, PROMPT-STRUCTURE.md）
 
 ### 進行中
 
-- [ ] GitHub Pages有効化（Settings → Pages → main / root）
-- [ ] main.jsをシェーダー版に更新（コード提供済み、ローカルでコピペ必要）
+- [ ] ビジュアル微調整サイクル（Claude=プロンプト、Gemini=実装、User=判定）
 
 ### 未着手
 
@@ -27,6 +29,16 @@
 - [ ] クリック時の詳細ページ遷移
 - [ ] モバイル対応
 - [ ] 音響の検討
+
+---
+
+## ビジュアル調整の役割分担
+
+| 役割 | 担当 | 成果物 |
+|------|------|--------|
+| プロンプト設計・版管理 | Claude | docs/prompts/PNNN-*.md, LOG.md更新 |
+| コード実装 | Gemini | src/versions/vNNN-*.js |
+| 判定（◎○△✗） | User | 口頭報告 → Claudeが記録 |
 
 ---
 
@@ -41,12 +53,17 @@
 
 ---
 
+## 参照画像
+
+Prompt: "Abstract figure on the boundary between form and formlessness, body contour as Julia set fractal edge, luminous point at the center of chest, hands open, holding nothing yet receiving everything, dark slate blue gradient background, ethereal and philosophical, digital art, high contrast --ar 16:10"
+
+---
+
 ## 次セッションのタスク
 
-1. main.jsをシェーダー版に更新（ローカルで）
-2. ローカルサーバーで動作確認（./serve.sh）
-3. GitHub Pages有効化・動作確認
-4. 詳細ページの設計検討
+1. 最初のビジュアル微調整プロンプトを作成
+2. Geminiに投入 → 結果判定
+3. 反復サイクルを回す
 
 ---
 
@@ -55,7 +72,7 @@
 - Three.js 0.160.0（CDN）
 - シェーダー: simplex noise使用（GLSL埋め込み）
 - ポート: 3001（pjdhiroの4000と干渉回避）
-- Gemini用Three.jsプロンプト作成済み
+- ベースライン: src/versions/v001-baseline.js
 
 ---
 
@@ -63,4 +80,5 @@
 
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
-- [WORKFLOW.md](./WORKFLOW.md) - セッション管理手順
+- [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
+- [src/versions/LOG.md](../src/versions/LOG.md) - バージョン追跡ログ
