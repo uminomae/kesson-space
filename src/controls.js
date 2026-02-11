@@ -1,6 +1,7 @@
 // controls.js — カメラ制御
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { toggles, breathConfig } from './config.js';
 
 let _camera;
 let _controls;
@@ -34,7 +35,9 @@ export function initControls(camera, container, renderer) {
         clearTimeout(autoRotateTimeout);
         _controls.autoRotate = false;
         autoRotateTimeout = setTimeout(() => {
-            _controls.autoRotate = true;
+            if (toggles.autoRotate) {
+                _controls.autoRotate = true;
+            }
         }, 8000);
     };
 
@@ -55,12 +58,21 @@ export function setTarget(x, y, z) {
     if (_controls) _controls.target.set(x, y, z);
 }
 
-export function updateControls(time) {
+export function updateControls(time, breathVal = 0.5) {
     if (!_camera || !_controls) return;
 
-    const breath = Math.sin(time * 0.3) + Math.sin(time * 0.1) * 0.5;
-    _camera.fov = 60 + breath * 1.0;
+    // --- FOV呼吸（熱波）: breathValと同期 ---
+    if (toggles.fovBreath) {
+        _camera.fov = breathConfig.fovBase + (breathVal * 2 - 1) * breathConfig.fovAmplitude;
+    } else {
+        _camera.fov = breathConfig.fovBase;
+    }
     _camera.updateProjectionMatrix();
+
+    // --- 自動回転 ---
+    if (!toggles.autoRotate) {
+        _controls.autoRotate = false;
+    }
 
     _controls.update();
 }

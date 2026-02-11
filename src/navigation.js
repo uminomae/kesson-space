@@ -1,6 +1,7 @@
 // navigation.js — ナビゲーション統合（イベント + オーブ + ビューアー）
 
 import * as THREE from 'three';
+import { toggles } from './config.js';
 import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
 import { createNavObjects, updateNavObjects } from './nav-objects.js';
 
@@ -10,11 +11,9 @@ const _raycaster = new THREE.Raycaster();
 const _mouse = new THREE.Vector2();
 let _navMeshes = [];
 
-// ドラッグ検出（OrbitControlsとの干渉防止）
 let _pointerDownPos = null;
 const DRAG_THRESHOLD = 5;
 
-// --- イベント ---
 function onPointerDown(event) {
     _pointerDownPos = { x: event.clientX, y: event.clientY };
 }
@@ -29,6 +28,8 @@ function onPointerUp(event) {
         return;
     }
     _pointerDownPos = null;
+
+    if (!toggles.navOrbs) return;
 
     _mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -51,7 +52,7 @@ function onPointerUp(event) {
 }
 
 function onPointerMove(event) {
-    if (isViewerOpen()) {
+    if (isViewerOpen() || !toggles.navOrbs) {
         _renderer.domElement.style.cursor = 'default';
         return;
     }
@@ -64,8 +65,6 @@ function onPointerMove(event) {
 
     _renderer.domElement.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
 }
-
-// --- 公開インターフェース ---
 
 export function initNavigation({ scene, camera, renderer }) {
     _camera = camera;
@@ -80,5 +79,8 @@ export function initNavigation({ scene, camera, renderer }) {
 }
 
 export function updateNavigation(time) {
-    updateNavObjects(_navMeshes, time);
+    _navMeshes.forEach(g => g.visible = toggles.navOrbs);
+    if (toggles.navOrbs) {
+        updateNavObjects(_navMeshes, time);
+    }
 }

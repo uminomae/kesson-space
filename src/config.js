@@ -2,6 +2,29 @@
 
 import * as THREE from 'three';
 
+// --- 表示トグル ---
+export const toggles = {
+    background: true,
+    kessonLights: true,
+    water: true,
+    navOrbs: true,
+    fog: true,
+    fovBreath: true,
+    htmlBreath: true,
+    autoRotate: true,
+};
+
+// --- 呼吸設定（HTML + FOV 同期）---
+export const breathConfig = {
+    period: 8.0,          // 半周期（秒）。全周期 = period * 2
+    htmlMinOpacity: 0.1,
+    htmlMaxOpacity: 0.8,
+    htmlMaxBlur: 3.0,
+    htmlMinScale: 0.95,
+    fovBase: 60,
+    fovAmplitude: 1.0,
+};
+
 // --- 背景色定数 ---
 export const BG_V002_CENTER = new THREE.Color(0x050508);
 export const BG_V002_EDGE = new THREE.Color(0x050508);

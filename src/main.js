@@ -8,6 +8,7 @@ import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, se
 import { initNavigation, updateNavigation } from './navigation.js';
 import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
+import { toggles, breathConfig } from './config.js';
 
 // ============================
 // DEV_MODE: ?dev でパネル表示
@@ -20,13 +21,11 @@ const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 const lang = detectLang();
 const strings = t(lang);
 
-// HTMLオーバーレイのテキストを言語に合わせて更新
 const titleH1 = document.getElementById('title-h1');
 const titleSub = document.getElementById('title-sub');
 if (titleH1) titleH1.textContent = strings.title;
 if (titleSub) titleSub.textContent = strings.subtitle;
 
-// タグライン
 const taglineContainer = document.getElementById('taglines');
 if (taglineContainer && strings.taglines) {
     taglineContainer.innerHTML = '';
@@ -39,10 +38,7 @@ if (taglineContainer && strings.taglines) {
     });
 }
 
-// html lang属性を更新
 document.documentElement.lang = lang;
-
-// 言語トグルボタン
 initLangToggle();
 
 const container = document.getElementById('canvas-container');
@@ -51,9 +47,11 @@ const { scene, camera, renderer } = createScene(container);
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer });
 
+// --- HTML呼吸対象 ---
+const overlay = document.getElementById('overlay');
+
 // --- HTMLオーバーレイの動的更新 ---
 function updateOverlay(key, val) {
-    const overlay = document.getElementById('overlay');
     const h1 = document.getElementById('title-h1');
     const sub = document.getElementById('title-sub');
     if (!overlay || !h1 || !sub) return;
@@ -79,8 +77,6 @@ function updateOverlay(key, val) {
             break;
         case 'subOpacity':
             sub.style.color = `rgba(255, 255, 255, ${val})`;
-            sub.style.opacity = val;
-            sub.style.animation = 'none';
             break;
         case 'titleGlow':
             h1.style.textShadow = `0 0 ${val}px rgba(100, 150, 255, 0.3)`;
@@ -92,6 +88,19 @@ function updateOverlay(key, val) {
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel((key, value) => {
+            // トグル
+            if (key in toggles) {
+                toggles[key] = value;
+                return;
+            }
+
+            // 呼吸設定
+            if (key in breathConfig) {
+                breathConfig[key] = value;
+                return;
+            }
+
+            // シーンパラメータ
             if (key in sceneParams) {
                 sceneParams[key] = value;
             }
@@ -102,7 +111,6 @@ if (DEV_MODE) {
             if (key === 'camTargetY') {
                 setTarget(0, value, -10);
             }
-
             if (key === 'autoRotateSpd') {
                 setAutoRotateSpeed(value);
             }
@@ -118,7 +126,26 @@ function animate() {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
 
-    updateControls(time);
+    // --- 統一呼吸値 (0→1→0, 全周期 = period * 2) ---
+    const breathVal = (Math.sin(time * Math.PI / breathConfig.period - Math.PI / 2) + 1) * 0.5;
+
+    // --- HTML呼吸 ---
+    if (overlay) {
+        if (toggles.htmlBreath) {
+            const opacity = breathConfig.htmlMinOpacity + breathVal * (breathConfig.htmlMaxOpacity - breathConfig.htmlMinOpacity);
+            const blur = breathConfig.htmlMaxBlur * (1 - breathVal);
+            const scale = breathConfig.htmlMinScale + breathVal * (1 - breathConfig.htmlMinScale);
+            overlay.style.opacity = opacity;
+            overlay.style.filter = `blur(${blur}px)`;
+            overlay.style.transform = `scale(${scale})`;
+        } else {
+            overlay.style.opacity = breathConfig.htmlMaxOpacity;
+            overlay.style.filter = 'none';
+            overlay.style.transform = 'scale(1)';
+        }
+    }
+
+    updateControls(time, breathVal);
     updateScene(time);
     updateNavigation(time);
 

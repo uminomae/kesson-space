@@ -1,6 +1,32 @@
 // dev-panel.js — 開発用パラメータ調整パネル
 
+import { toggles, breathConfig } from './config.js';
+
+// --- トグル定義 ---
+const TOGGLES = [
+    { key: 'background',    label: '背景' },
+    { key: 'kessonLights',  label: '欠損ライト' },
+    { key: 'water',         label: '水面' },
+    { key: 'navOrbs',       label: 'ナビオーブ' },
+    { key: 'fog',           label: 'フォグ' },
+    { key: 'fovBreath',     label: 'FOV呼吸（熱波）' },
+    { key: 'htmlBreath',    label: 'HTML呼吸' },
+    { key: 'autoRotate',    label: '自動回転' },
+];
+
+// --- スライダー定義 ---
 const SECTIONS = [
+    {
+        title: '呼吸（同期）',
+        params: {
+            period:          { label: '周期(s)',       min: 2.0, max: 30.0, step: 0.5, default: 8.0, target: 'breath' },
+            htmlMinOpacity:  { label: 'HTML最小透明度', min: 0.0, max: 0.5, step: 0.05, default: 0.1, target: 'breath' },
+            htmlMaxOpacity:  { label: 'HTML最大透明度', min: 0.3, max: 1.0, step: 0.05, default: 0.8, target: 'breath' },
+            htmlMaxBlur:     { label: 'HTMLぼかし(px)', min: 0.0, max: 8.0, step: 0.5, default: 3.0, target: 'breath' },
+            htmlMinScale:    { label: 'HTML最小スケール', min: 0.8, max: 1.0, step: 0.01, default: 0.95, target: 'breath' },
+            fovAmplitude:    { label: 'FOV振幅(deg)',   min: 0.0, max: 5.0, step: 0.1, default: 1.0, target: 'breath' },
+        }
+    },
     {
         title: '光シェーダー',
         params: {
@@ -50,6 +76,7 @@ let _values = {};
 let _onChange = null;
 
 function createPanel() {
+    // スライダー初期値
     SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
             _values[key] = section.params[key].default;
@@ -173,6 +200,53 @@ function createPanel() {
             cursor: pointer;
         }
 
+        /* --- トグル --- */
+        .dev-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 16px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.03);
+        }
+        .dev-toggle-label {
+            color: rgba(180, 200, 230, 0.6);
+            font-size: 0.65rem;
+        }
+        .dev-toggle-switch {
+            position: relative;
+            width: 32px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .dev-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .dev-toggle-track {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(60, 90, 140, 0.3);
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .dev-toggle-switch input:checked + .dev-toggle-track {
+            background: rgba(80, 140, 255, 0.5);
+        }
+        .dev-toggle-knob {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            background: rgba(200, 220, 255, 0.8);
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .dev-toggle-switch input:checked ~ .dev-toggle-knob {
+            transform: translateX(16px);
+        }
+
         .dev-export {
             padding: 10px 16px 16px;
         }
@@ -209,6 +283,7 @@ function createPanel() {
     `;
     document.head.appendChild(style);
 
+    // トグルボタン
     const toggle = document.createElement('div');
     toggle.id = 'dev-toggle';
     toggle.textContent = 'DEV';
@@ -219,11 +294,29 @@ function createPanel() {
     });
     document.body.appendChild(toggle);
 
+    // パネル
     const panel = document.createElement('div');
     panel.id = 'dev-panel';
 
     let html = '<div class="dev-header">パラメータ調整</div>';
 
+    // --- トグルセクション ---
+    html += '<div class="dev-section-title">表示ON/OFF</div>';
+    TOGGLES.forEach(t => {
+        const checked = toggles[t.key] ? 'checked' : '';
+        html += `
+            <div class="dev-toggle-row">
+                <span class="dev-toggle-label">${t.label}</span>
+                <label class="dev-toggle-switch">
+                    <input type="checkbox" id="toggle-${t.key}" ${checked}>
+                    <span class="dev-toggle-track"></span>
+                    <span class="dev-toggle-knob"></span>
+                </label>
+            </div>
+        `;
+    });
+
+    // --- スライダーセクション ---
     SECTIONS.forEach(section => {
         html += `<div class="dev-section-title">${section.title}</div>`;
         Object.keys(section.params).forEach(key => {
@@ -251,6 +344,15 @@ function createPanel() {
     panel.innerHTML = html;
     document.body.appendChild(panel);
 
+    // --- トグルイベント ---
+    TOGGLES.forEach(t => {
+        const checkbox = document.getElementById(`toggle-${t.key}`);
+        checkbox.addEventListener('change', () => {
+            if (_onChange) _onChange(t.key, checkbox.checked);
+        });
+    });
+
+    // --- スライダーイベント ---
     SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
             const p = section.params[key];
@@ -265,9 +367,15 @@ function createPanel() {
         });
     });
 
+    // --- エクスポート ---
     document.getElementById('dev-export-btn').addEventListener('click', () => {
         const result = document.getElementById('dev-export-result');
-        const text = JSON.stringify(_values, null, 2);
+        const exportData = {
+            toggles: { ...toggles },
+            breathConfig: { ...breathConfig },
+            sceneParams: { ..._values },
+        };
+        const text = JSON.stringify(exportData, null, 2);
         result.textContent = text;
         result.style.display = 'block';
         navigator.clipboard?.writeText(text).then(() => {
