@@ -1,7 +1,6 @@
 // scene.js — 統合グラフィック
-// uMix: 0.0 = v002(deep dark) ↔ 1.0 = v004(slate blue)
+// uMix: 0.0 = v002(deep dark / voidHole) ↔ 1.0 = v004(slate blue / soul core)
 // timeで自動的に行き来する
-// kesson light 無効版（比較用）
 
 import * as THREE from 'three';
 
@@ -34,7 +33,7 @@ const noiseGLSL = `
 `;
 
 let _waterMaterial;
-let _particles;
+let _kessonMeshes = [];
 let _camera;
 let _bgMat;
 let _scene;
@@ -51,7 +50,7 @@ const BG_V004_EDGE = new THREE.Color(0x0a1520);
 const FOG_V004_COLOR = new THREE.Color(0x0a1520);
 const FOG_V004_DENSITY = 0.02;
 
-// 遷移周期（秒）: この秒数で片道、往復で×2
+// 遷移周期（秒）
 const MIX_CYCLE = 7.0;
 
 export function createScene(container) {
@@ -150,28 +149,124 @@ export function createScene(container) {
     water.position.y = -20;
     scene.add(water);
 
-    // --- kesson light 無効化（比較用） ---
-    // 復活させる場合はここにkesson meshesの生成コードを戻す
+    // 光（欠損）シェーダー: uMixで voidHole ↔ soul core
+    const kessonMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0.0 },
+            uColor: { value: new THREE.Color(0xffffff) },
+            uOffset: { value: 0.0 },
+            uMix: { value: 1.0 },
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+                mvPosition.xy += position.xy;
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 uColor;
+            uniform float uTime;
+            uniform float uOffset;
+            uniform float uMix;
+            varying vec2 vUv;
+            ${noiseGLSL}
 
-    // 粒子
-    const particleGeo = new THREE.BufferGeometry();
-    const particleCount = 1500;
-    const posArray = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount * 3; i++) {
-        posArray[i] = (Math.random() - 0.5) * 160;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    const particleMat = new THREE.PointsMaterial({
-        size: 0.1,
-        color: 0xaaccff,
+            mat2 rot(float a) {
+                float s = sin(a), c = cos(a);
+                return mat2(c, -s, s, c);
+            }
+
+            void main() {
+                vec2 uv = (vUv - 0.5) * 2.0;
+                float t = uTime * 0.15 + uOffset;
+
+                vec2 p = uv;
+                float amplitude = 0.6;
+
+                for(int i = 0; i < 3; i++) {
+                    p += vec2(snoise(p + t), snoise(p - t)) * amplitude;
+                    p *= rot(t * 0.1);
+                    amplitude *= 0.5;
+                }
+
+                float dist = length(p);
+
+                // --- v002: voidHole ---
+                float coreA = 0.08 / (dist + 0.01);
+                float patternA = sin(p.x * 12.0 + t) * sin(p.y * 12.0 - t) * 0.1;
+                float voidHole = smoothstep(0.0, 0.4, dist);
+                float breathA = 0.7 + 0.3 * sin(uTime * 1.2 + uOffset * 10.0);
+                float alphaA = (coreA + patternA) * voidHole * breathA;
+                alphaA = smoothstep(0.01, 1.0, alphaA);
+                vec3 colorA = mix(uColor, vec3(1.0), coreA * 0.5);
+
+                // --- v004: soul core ---
+                float glowIntensity = 0.12 / (dist * dist + 0.02);
+                vec3 coreWhite = vec3(1.0, 1.0, 1.0);
+                vec3 innerHalo = vec3(0.7, 0.85, 1.0);
+                vec3 colorB = mix(uColor, innerHalo, smoothstep(0.5, 3.0, glowIntensity));
+                colorB = mix(colorB, coreWhite, smoothstep(3.0, 8.0, glowIntensity));
+                float edgePattern = snoise(p * 4.0 + t) * 0.5 + 0.5;
+                float alphaB = smoothstep(0.0, 1.0, glowIntensity * 0.5);
+                float noiseBlend = smoothstep(2.0, 0.5, glowIntensity);
+                alphaB *= mix(1.0, edgePattern, noiseBlend);
+                float breathB = 0.85 + 0.15 * sin(uTime * 1.5 + uOffset * 10.0);
+                alphaB *= breathB;
+
+                // --- mix ---
+                float alpha = mix(alphaA, alphaB, uMix);
+                vec3 finalColor = mix(colorA, colorB * 1.5, uMix);
+
+                if(alpha < 0.01) discard;
+
+                gl_FragColor = vec4(finalColor, alpha);
+            }
+        `,
         transparent: true,
-        opacity: 0.2,
-        blending: THREE.AdditiveBlending
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
     });
-    _particles = new THREE.Points(particleGeo, particleMat);
-    scene.add(_particles);
 
-    return { scene, camera, renderer, kessonMeshes: [] };
+    // 配置
+    const warmColors = [0xff7744, 0xff9955, 0xff5522];
+    const coolColors = [0x4477ff, 0x5599ff, 0x2255ee];
+    const kessonMeshes = [];
+    const kessonGeo = new THREE.PlaneGeometry(12, 12);
+
+    for (let i = 0; i < 40; i++) {
+        const isWarm = Math.random() > 0.5;
+        const colorPalette = isWarm ? warmColors : coolColors;
+        const colorStr = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+
+        const mat = kessonMaterial.clone();
+        mat.uniforms.uColor.value = new THREE.Color(colorStr);
+        mat.uniforms.uOffset.value = Math.random() * 1000.0;
+
+        const mesh = new THREE.Mesh(kessonGeo, mat);
+        mesh.position.set(
+            (Math.random() - 0.5) * 90,
+            (Math.random() - 0.5) * 40,
+            (Math.random() - 0.5) * 60 - 10
+        );
+
+        mesh.userData = {
+            baseY: mesh.position.y,
+            baseX: mesh.position.x,
+            speed: 0.05 + Math.random() * 0.15,
+            id: i
+        };
+
+        scene.add(mesh);
+        kessonMeshes.push(mesh);
+    }
+    _kessonMeshes = kessonMeshes;
+
+    // 粒子なし
+
+    return { scene, camera, renderer, kessonMeshes };
 }
 
 export function updateScene(time) {
@@ -188,6 +283,12 @@ export function updateScene(time) {
     // 水面
     _waterMaterial.uniforms.uTime.value = time;
 
-    // 粒子
-    _particles.rotation.y = time * 0.01;
+    // 光
+    _kessonMeshes.forEach(mesh => {
+        mesh.material.uniforms.uTime.value = time;
+        mesh.material.uniforms.uMix.value = m;
+        mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 2;
+        mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
+        mesh.lookAt(_camera.position);
+    });
 }
