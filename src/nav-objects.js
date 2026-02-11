@@ -1,4 +1,4 @@
-// nav-objects.js — 3Dナビゲーションオブジェクト（重力レンズオーブ + 浮遊テキスト）
+// nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + 浮遊テキスト）
 
 import * as THREE from 'three';
 import { detectLang, t } from './i18n.js';
@@ -10,33 +10,26 @@ const NAV_POSITIONS = [
     { position: [12, -8, -5],  color: 0x5577bb },
 ];
 
-const SPHERE_RADIUS = 1.8;
-const SPHERE_SEGMENTS = 64;
+// --- ヘルパー: 光のオーブ（鬼火）テクスチャ生成 ---
+function createGlowTexture(colorHex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
 
-// --- ヘルパー: 重力レンズ球体（空間歪みエフェクト）---
-function createGravityOrb(colorHex) {
-    const geometry = new THREE.SphereGeometry(SPHERE_RADIUS, SPHERE_SEGMENTS, SPHERE_SEGMENTS);
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
     const color = new THREE.Color(colorHex);
 
-    const material = new THREE.MeshPhysicalMaterial({
-        color: color,
-        metalness: 0.0,
-        roughness: 0.0,
-        transmission: 1.0,
-        thickness: 3.5,
-        ior: 2.0,
-        transparent: true,
-        opacity: 1.0,
-        attenuationColor: color,
-        attenuationDistance: 5.0,
-        envMapIntensity: 0.3,
-        clearcoat: 0.1,
-        clearcoatRoughness: 0.4,
-        side: THREE.FrontSide,
-    });
+    gradient.addColorStop(0, `rgba(255, 255, 255, 1)`);
+    gradient.addColorStop(0.3, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0.8)`);
+    gradient.addColorStop(1, `rgba(${color.r*255|0}, ${color.g*255|0}, ${color.b*255|0}, 0)`);
 
-    const mesh = new THREE.Mesh(geometry, material);
-    return mesh;
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
 }
 
 // --- ヘルパー: 浮遊テキスト生成 ---
@@ -80,21 +73,21 @@ export function createNavObjects(scene) {
     const lang = detectLang();
     const strings = t(lang);
 
-    // transmission が機能するためのアンビエントライト（存在しなければ追加）
-    const hasAmbient = scene.children.some(c => c.isAmbientLight);
-    if (!hasAmbient) {
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    }
-
     NAV_POSITIONS.forEach((pos, index) => {
         const navItem = strings.nav[index];
         const group = new THREE.Group();
         group.position.set(...pos.position);
 
-        // 重力レンズオーブ
-        const orb = createGravityOrb(pos.color);
+        const glowMaterial = new THREE.SpriteMaterial({
+            map: createGlowTexture(pos.color),
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+        });
+        const coreSprite = new THREE.Sprite(glowMaterial);
+        coreSprite.scale.set(4.0, 4.0, 4.0);
 
-        orb.userData = {
+        coreSprite.userData = {
             type: 'nav',
             url: navItem.url,
             label: navItem.label,
@@ -103,18 +96,17 @@ export function createNavObjects(scene) {
             isHitTarget: true,
         };
 
-        // ラベル
         const labelSprite = createFloatingTextSprite(navItem.label);
-        labelSprite.position.set(0, SPHERE_RADIUS + 1.5, 0);
+        labelSprite.position.set(0, 2.0, 0);
 
-        group.add(orb);
+        group.add(coreSprite);
         group.add(labelSprite);
 
         group.userData = {
             baseY: pos.position[1],
             index: index,
-            core: orb,
-            baseScale: 1.0,
+            core: coreSprite,
+            baseScale: 4.0,
         };
 
         scene.add(group);
@@ -129,20 +121,14 @@ export function updateNavObjects(navMeshes, time) {
     navMeshes.forEach((group) => {
         const data = group.userData;
 
-        // 浮遊
         const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
         group.position.y = data.baseY + floatOffset;
 
         if (data.core) {
-            const mat = data.core.material;
-
-            // 脈動: ior を微妙に揺らして歪み感を呼吸させる
-            mat.ior = 1.8 + Math.sin(time * 1.2 + data.index * 2.0) * 0.3;
-            mat.thickness = 3.0 + Math.sin(time * 0.9 + data.index * 1.5) * 0.8;
-
-            // ゆっくり回転（球体の微妙な歪みが見える）
-            data.core.rotation.y = time * 0.2 + data.index;
-            data.core.rotation.x = Math.sin(time * 0.3 + data.index) * 0.15;
+            const pulse = 1.0 + Math.sin(time * 1.5 + data.index * 2.0) * 0.1;
+            const base = data.baseScale || 4.0;
+            data.core.scale.set(base * pulse, base * pulse, base * pulse);
+            data.core.material.opacity = 0.7 + Math.sin(time * 1.5 + data.index * 2.0) * 0.3;
         }
     });
 }
