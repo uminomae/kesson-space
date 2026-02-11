@@ -26,7 +26,6 @@
       z-index: 1;
     }
     
-    /* 左下配置 */
     #overlay {
       position: absolute;
       bottom: 60px;
@@ -37,32 +36,27 @@
     }
     
     h1 {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.5);
       font-weight: normal;
       letter-spacing: 0.8em;
-      font-size: 1.8rem;
+      font-size: 2.7rem;
       text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
       animation: breathe 8s infinite alternate ease-in-out;
       margin-bottom: 0.6rem;
     }
 
     .subtitle {
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 1.3rem;
       letter-spacing: 0.3em;
       font-weight: normal;
-      opacity: 0;
-      animation: fadeIn 3s ease-in-out 2s forwards;
+      text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
+      animation: breathe 8s infinite alternate ease-in-out;
     }
 
     @keyframes breathe {
       0% { opacity: 0.1; filter: blur(3px); transform: scale(0.95); }
       100% { opacity: 0.8; filter: blur(0px); transform: scale(1.0); }
-    }
-
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 0.4; }
     }
   </style>
   
