@@ -1,6 +1,8 @@
 // fluid-field.js — ピンポンバッファ流体フィールド
+// ★ 初期値は config.js の fluidParams を参照
 
 import * as THREE from 'three';
+import { fluidParams } from '../config.js';
 
 const FIELD_SIZE = 256;
 
@@ -23,10 +25,10 @@ export function createFluidSystem(renderer) {
             tPrevField:     { value: null },
             uMouse:         { value: new THREE.Vector2(0.5, 0.5) },
             uMouseVelocity: { value: new THREE.Vector2(0, 0) },
-            uDecay:         { value: 0.97 },
-            uRadius:        { value: 0.12 },
-            uForce:         { value: 0.3 },
-            uCurl:          { value: 0.4 },
+            uDecay:         { value: fluidParams.decay },
+            uRadius:        { value: fluidParams.radius },
+            uForce:         { value: fluidParams.force },
+            uCurl:          { value: fluidParams.curl },
             uAspect:        { value: 1.0 },
         },
 

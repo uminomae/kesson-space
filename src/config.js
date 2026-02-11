@@ -1,4 +1,5 @@
 // config.js — 設定値・定数の一元管理
+// ★ すべてのデフォルト値はここで定義し、他ファイルから参照する
 
 import * as THREE from 'three';
 
@@ -46,13 +47,7 @@ export const FOG_V004_DENSITY = 0.02;
 export const WARM_COLORS = [0xff7744, 0xff9955, 0xff5522];
 export const COOL_COLORS = [0x4477ff, 0x5599ff, 0x2255ee];
 
-// --- 歪みエフェクト定数 ---
-export const DISTORTION_PARAMS = {
-    strength: 0.03,
-    chromaticAberration: 0.1,
-};
-
-// --- devパネル連携パラメータ ---
+// --- 光シェーダーパラメータ ---
 export const sceneParams = {
     brightness: 1.0,
     glowCore: 0.07,
@@ -69,4 +64,39 @@ export const sceneParams = {
     camY: 0,
     camZ: 34,
     camTargetY: -1,
+};
+
+// --- 流体フィールドパラメータ ---
+export const fluidParams = {
+    force:     1.0,
+    curl:      1.0,
+    decay:     0.948,
+    radius:    0.21,
+    influence: 0.06,
+};
+
+// --- ポストプロセス（歪み・オーブ・熱波・DOF）パラメータ ---
+export const distortionParams = {
+    strength:       0.03,
+    aberration:     0.1,
+    turbulence:     0.4,
+    baseBlur:       0.06,
+    blurAmount:     0.15,
+    innerGlow:      0.1,
+    haloIntensity:  0.2,
+    haloWidth:      1.0,
+    haloColorR:     0.3,
+    haloColorG:     0.2,
+    haloColorB:     0.05,
+    heatHaze:       0.024,
+    heatHazeRadius: 0.5,
+    heatHazeSpeed:  1.0,
+    dofStrength:    0.009,
+    dofFocusRadius: 0.32,
+};
+
+// --- 後方互換（旧 DISTORTION_PARAMS） ---
+export const DISTORTION_PARAMS = {
+    strength: distortionParams.strength,
+    chromaticAberration: distortionParams.aberration,
 };

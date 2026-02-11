@@ -1,33 +1,35 @@
 // distortion-pass.js — ポストプロセスシェーダー
 // 流体フィールド + 鬼火屈折 + 熱波 + DOF
+// ★ 初期値は config.js の distortionParams / fluidParams を参照
 
 import * as THREE from 'three';
+import { distortionParams, fluidParams } from '../config.js';
 
 export const DistortionShader = {
     uniforms: {
         'tDiffuse':       { value: null },
         'tFluidField':    { value: null },
-        'uFluidInfluence':{ value: 0.015 },
+        'uFluidInfluence':{ value: fluidParams.influence },
         'uOrbs':          { value: [new THREE.Vector2(-1, -1), new THREE.Vector2(-1, -1), new THREE.Vector2(-1, -1)] },
         'uOrbRadii':      { value: [0.0, 0.0, 0.0] },
         'uOrbStrengths':  { value: [0.0, 0.0, 0.0] },
-        'uStrength':      { value: 0.03 },
-        'uAberration':    { value: 0.1 },
+        'uStrength':      { value: distortionParams.strength },
+        'uAberration':    { value: distortionParams.aberration },
         'uAspect':        { value: 1.0 },
-        'uHaloColor':     { value: new THREE.Vector3(0.4, 0.05, 0.0) },
-        'uHaloIntensity': { value: 0.2 },
-        'uHaloWidth':     { value: 1.0 },
+        'uHaloColor':     { value: new THREE.Vector3(distortionParams.haloColorR, distortionParams.haloColorG, distortionParams.haloColorB) },
+        'uHaloIntensity': { value: distortionParams.haloIntensity },
+        'uHaloWidth':     { value: distortionParams.haloWidth },
         'uTime':          { value: 0.0 },
-        'uTurbulence':    { value: 0.4 },
-        'uBlurAmount':    { value: 0.15 },
-        'uBaseBlur':      { value: 0.06 },
-        'uInnerGlow':     { value: 0.1 },
+        'uTurbulence':    { value: distortionParams.turbulence },
+        'uBlurAmount':    { value: distortionParams.blurAmount },
+        'uBaseBlur':      { value: distortionParams.baseBlur },
+        'uInnerGlow':     { value: distortionParams.innerGlow },
         'uMouse':         { value: new THREE.Vector2(0.5, 0.5) },
-        'uHeatHaze':      { value: 0.024 },
-        'uHeatHazeRadius':{ value: 0.5 },
-        'uHeatHazeSpeed': { value: 1.0 },
-        'uDofStrength':   { value: 0.009 },
-        'uDofFocusRadius':{ value: 0.32 },
+        'uHeatHaze':      { value: distortionParams.heatHaze },
+        'uHeatHazeRadius':{ value: distortionParams.heatHazeRadius },
+        'uHeatHazeSpeed': { value: distortionParams.heatHazeSpeed },
+        'uDofStrength':   { value: distortionParams.dofStrength },
+        'uDofFocusRadius':{ value: distortionParams.dofFocusRadius },
     },
 
     vertexShader: /* glsl */`

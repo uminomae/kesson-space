@@ -1,6 +1,7 @@
 // dev-panel.js — Bootstrapベースのdevパネル
+// ★ default値は config.js を参照し、ハードコードしない
 
-import { toggles, breathConfig } from './config.js';
+import { toggles, breathConfig, sceneParams, fluidParams, distortionParams } from './config.js';
 
 const TOGGLES = [
     { key: 'background',    label: '背景' },
@@ -23,84 +24,84 @@ const SECTIONS = [
         id: 'breath',
         title: '呼吸（同期）',
         params: {
-            period:          { label: '周期(s)',       min: 2.0, max: 30.0, step: 0.5, default: 8.0, target: 'breath' },
-            htmlMinOpacity:  { label: 'HTML最小透明度', min: 0.0, max: 0.5, step: 0.05, default: 0.1, target: 'breath' },
-            htmlMaxOpacity:  { label: 'HTML最大透明度', min: 0.3, max: 1.0, step: 0.05, default: 0.8, target: 'breath' },
-            htmlMaxBlur:     { label: 'HTMLぼかし(px)', min: 0.0, max: 8.0, step: 0.5, default: 3.0, target: 'breath' },
-            htmlMinScale:    { label: 'HTML最小スケール', min: 0.8, max: 1.0, step: 0.01, default: 0.95, target: 'breath' },
-            fovAmplitude:    { label: 'FOV振幅(deg)',   min: 0.0, max: 5.0, step: 0.1, default: 1.0, target: 'breath' },
+            period:          { label: '周期(s)',       min: 2.0, max: 30.0, step: 0.5, default: breathConfig.period, target: 'breath' },
+            htmlMinOpacity:  { label: 'HTML最小透明度', min: 0.0, max: 0.5, step: 0.05, default: breathConfig.htmlMinOpacity, target: 'breath' },
+            htmlMaxOpacity:  { label: 'HTML最大透明度', min: 0.3, max: 1.0, step: 0.05, default: breathConfig.htmlMaxOpacity, target: 'breath' },
+            htmlMaxBlur:     { label: 'HTMLぼかし(px)', min: 0.0, max: 8.0, step: 0.5, default: breathConfig.htmlMaxBlur, target: 'breath' },
+            htmlMinScale:    { label: 'HTML最小スケール', min: 0.8, max: 1.0, step: 0.01, default: breathConfig.htmlMinScale, target: 'breath' },
+            fovAmplitude:    { label: 'FOV振幅(deg)',   min: 0.0, max: 5.0, step: 0.1, default: breathConfig.fovAmplitude, target: 'breath' },
         }
     },
     {
         id: 'shader',
         title: '光シェーダー',
         params: {
-            brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: 1.0 },
-            glowCore:      { label: 'コア強度',      min: 0.01, max: 0.5, step: 0.01, default: 0.07 },
-            glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: 0.08 },
-            breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: 0.15 },
-            warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: 1.0 },
-            tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: 1.25 },
-            tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: 2.0 },
-            tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: 0.8 },
+            brightness:    { label: '光の強さ',      min: 0.0, max: 2.0, step: 0.05, default: sceneParams.brightness },
+            glowCore:      { label: 'コア強度',      min: 0.01, max: 0.5, step: 0.01, default: sceneParams.glowCore },
+            glowSpread:    { label: '広がり',        min: 0.005, max: 0.1, step: 0.005, default: sceneParams.glowSpread },
+            breathAmp:     { label: '呼吸の深さ',    min: 0.0, max: 0.5, step: 0.05, default: sceneParams.breathAmp },
+            warpAmount:    { label: '揺らぎ量',      min: 0.0, max: 1.5, step: 0.05, default: sceneParams.warpAmount },
+            tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintR },
+            tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintG },
+            tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintB },
         }
     },
     {
         id: 'orbs',
         title: '鬼火オーブ（屈折球）',
         params: {
-            distStrength:  { label: '屈折の強さ',    min: 0.0, max: 0.5, step: 0.01, default: 0.03 },
-            distAberration:{ label: '色収差',        min: 0.0, max: 0.3, step: 0.005, default: 0.1 },
-            turbulence:    { label: '乱流の強さ',    min: 0.0, max: 3.0, step: 0.05, default: 0.4 },
-            baseBlur:      { label: '全体ボケ',      min: 0.0, max: 0.2, step: 0.005, default: 0.06 },
-            orbBlur:       { label: 'エッジボケ',    min: 0.0, max: 0.5, step: 0.01, default: 0.15 },
-            innerGlow:     { label: '内側グロー',    min: 0.0, max: 1.0, step: 0.05, default: 0.1 },
-            haloIntensity: { label: '後光の強さ',    min: 0.0, max: 1.5, step: 0.05, default: 0.2 },
-            haloWidth:     { label: '後光の幅',      min: 0.05, max: 1.0, step: 0.05, default: 1.0 },
-            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: 0.3 },
-            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: 0.2 },
-            haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: 0.05 },
+            distStrength:  { label: '屈折の強さ',    min: 0.0, max: 0.5, step: 0.01, default: distortionParams.strength },
+            distAberration:{ label: '色収差',        min: 0.0, max: 0.3, step: 0.005, default: distortionParams.aberration },
+            turbulence:    { label: '乱流の強さ',    min: 0.0, max: 3.0, step: 0.05, default: distortionParams.turbulence },
+            baseBlur:      { label: '全体ボケ',      min: 0.0, max: 0.2, step: 0.005, default: distortionParams.baseBlur },
+            orbBlur:       { label: 'エッジボケ',    min: 0.0, max: 0.5, step: 0.01, default: distortionParams.blurAmount },
+            innerGlow:     { label: '内側グロー',    min: 0.0, max: 1.0, step: 0.05, default: distortionParams.innerGlow },
+            haloIntensity: { label: '後光の強さ',    min: 0.0, max: 1.5, step: 0.05, default: distortionParams.haloIntensity },
+            haloWidth:     { label: '後光の幅',      min: 0.05, max: 1.0, step: 0.05, default: distortionParams.haloWidth },
+            haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: distortionParams.haloColorR },
+            haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: distortionParams.haloColorG },
+            haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: distortionParams.haloColorB },
         }
     },
     {
         id: 'fluid',
         title: '流体かき混ぜ',
         params: {
-            fluidForce:    { label: '押す力',        min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
-            fluidCurl:     { label: '渦の強さ',      min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
-            fluidDecay:    { label: '減衰率',        min: 0.9, max: 0.999, step: 0.001, default: 0.948 },
-            fluidRadius:   { label: '影響半径',      min: 0.03, max: 0.4, step: 0.01, default: 0.21 },
-            fluidInfluence:{ label: '画面への影響',  min: 0.0, max: 0.06, step: 0.001, default: 0.06 },
+            fluidForce:    { label: '押す力',        min: 0.0, max: 1.0, step: 0.05, default: fluidParams.force },
+            fluidCurl:     { label: '渦の強さ',      min: 0.0, max: 1.0, step: 0.05, default: fluidParams.curl },
+            fluidDecay:    { label: '減衰率',        min: 0.9, max: 0.999, step: 0.001, default: fluidParams.decay },
+            fluidRadius:   { label: '影響半径',      min: 0.03, max: 0.4, step: 0.01, default: fluidParams.radius },
+            fluidInfluence:{ label: '画面への影響',  min: 0.0, max: 0.06, step: 0.001, default: fluidParams.influence },
         }
     },
     {
         id: 'heatdof',
         title: '熱波・被写界深度',
         params: {
-            heatHaze:      { label: '熱波の強さ',    min: 0.0, max: 0.06, step: 0.001, default: 0.024 },
-            heatHazeRadius:{ label: '熱波半径',      min: 0.05, max: 0.8, step: 0.01, default: 0.5 },
-            heatHazeSpeed: { label: '熱波速度',      min: 0.5, max: 10.0, step: 0.5, default: 1.0 },
-            dofStrength:   { label: 'DOFボケ強度',   min: 0.0, max: 0.02, step: 0.0005, default: 0.009 },
-            dofFocusRadius:{ label: 'DOFフォーカス半径', min: 0.05, max: 0.6, step: 0.01, default: 0.32 },
+            heatHaze:      { label: '熱波の強さ',    min: 0.0, max: 0.06, step: 0.001, default: distortionParams.heatHaze },
+            heatHazeRadius:{ label: '熱波半径',      min: 0.05, max: 0.8, step: 0.01, default: distortionParams.heatHazeRadius },
+            heatHazeSpeed: { label: '熱波速度',      min: 0.5, max: 10.0, step: 0.5, default: distortionParams.heatHazeSpeed },
+            dofStrength:   { label: 'DOFボケ強度',   min: 0.0, max: 0.02, step: 0.0005, default: distortionParams.dofStrength },
+            dofFocusRadius:{ label: 'DOFフォーカス半径', min: 0.05, max: 0.6, step: 0.01, default: distortionParams.dofFocusRadius },
         }
     },
     {
         id: 'timing',
         title: 'タイミング',
         params: {
-            mixCycle:      { label: '背景周期(s)',    min: 2.0, max: 30.0, step: 1.0, default: 2.0 },
-            styleCycle:    { label: 'スタイル周期(s)', min: 4.0, max: 60.0, step: 2.0, default: 14.0 },
+            mixCycle:      { label: '背景周期(s)',    min: 2.0, max: 30.0, step: 1.0, default: sceneParams.mixCycle },
+            styleCycle:    { label: 'スタイル周期(s)', min: 4.0, max: 60.0, step: 2.0, default: sceneParams.styleCycle },
         }
     },
     {
         id: 'camera',
         title: 'カメラ・環境',
         params: {
-            camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: -14 },
-            camY:          { label: 'カメラ Y',      min: -20, max: 80, step: 1, default: 0 },
-            camZ:          { label: 'カメラ Z',      min: -20, max: 60, step: 1, default: 34 },
-            camTargetY:    { label: '注視点 Y',      min: -30, max: 10, step: 1, default: -1 },
-            fogDensity:    { label: 'フォグ濃度',    min: 0.0, max: 0.06, step: 0.002, default: 0.0 },
+            camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: sceneParams.camX },
+            camY:          { label: 'カメラ Y',      min: -20, max: 80, step: 1, default: sceneParams.camY },
+            camZ:          { label: 'カメラ Z',      min: -20, max: 60, step: 1, default: sceneParams.camZ },
+            camTargetY:    { label: '注視点 Y',      min: -30, max: 10, step: 1, default: sceneParams.camTargetY },
+            fogDensity:    { label: 'フォグ濃度',    min: 0.0, max: 0.06, step: 0.002, default: sceneParams.fogDensity },
             autoRotateSpd: { label: '自動回転速度',   min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
         }
     },

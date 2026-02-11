@@ -13,7 +13,7 @@ import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
-import { toggles, breathConfig, DISTORTION_PARAMS } from './config.js';
+import { toggles, breathConfig, distortionParams, fluidParams } from './config.js';
 
 let composer;
 let distortionPass;
@@ -86,8 +86,6 @@ composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 distortionPass = new ShaderPass(DistortionShader);
-distortionPass.uniforms.uStrength.value = DISTORTION_PARAMS.strength;
-distortionPass.uniforms.uAberration.value = DISTORTION_PARAMS.chromaticAberration;
 composer.addPass(distortionPass);
 
 initControls(camera, container, renderer);
@@ -125,52 +123,55 @@ function updateOverlay(key, val) {
     }
 }
 
+// --- devパネル用：スライダー値をユニフォームに反映 ---
+function applyDevValue(key, value) {
+    // トグル
+    if (key in toggles) { toggles[key] = value; return; }
+    // 呼吸
+    if (key in breathConfig) { breathConfig[key] = value; return; }
+    // シーン
+    if (key in sceneParams) sceneParams[key] = value;
+
+    if (key === 'camX' || key === 'camY' || key === 'camZ') {
+        setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+    }
+    if (key === 'camTargetY') setTarget(0, value, -10);
+    if (key === 'autoRotateSpd') setAutoRotateSpeed(value);
+
+    // オーブ屈折
+    if (key === 'distStrength')   distortionPass.uniforms.uStrength.value = value;
+    if (key === 'distAberration') distortionPass.uniforms.uAberration.value = value;
+    if (key === 'turbulence')     distortionPass.uniforms.uTurbulence.value = value;
+    if (key === 'baseBlur')       distortionPass.uniforms.uBaseBlur.value = value;
+    if (key === 'orbBlur')        distortionPass.uniforms.uBlurAmount.value = value;
+    if (key === 'innerGlow')      distortionPass.uniforms.uInnerGlow.value = value;
+    if (key === 'haloIntensity')  distortionPass.uniforms.uHaloIntensity.value = value;
+    if (key === 'haloWidth')      distortionPass.uniforms.uHaloWidth.value = value;
+    if (key === 'haloColorR')     distortionPass.uniforms.uHaloColor.value.x = value;
+    if (key === 'haloColorG')     distortionPass.uniforms.uHaloColor.value.y = value;
+    if (key === 'haloColorB')     distortionPass.uniforms.uHaloColor.value.z = value;
+
+    // 流体
+    if (key === 'fluidForce')     fluidSystem.uniforms.uForce.value = value;
+    if (key === 'fluidCurl')      fluidSystem.uniforms.uCurl.value = value;
+    if (key === 'fluidDecay')     fluidSystem.uniforms.uDecay.value = value;
+    if (key === 'fluidRadius')    fluidSystem.uniforms.uRadius.value = value;
+    if (key === 'fluidInfluence') distortionPass.uniforms.uFluidInfluence.value = value;
+
+    // 熱波・DOF
+    if (key === 'heatHaze')       distortionPass.uniforms.uHeatHaze.value = value;
+    if (key === 'heatHazeRadius') distortionPass.uniforms.uHeatHazeRadius.value = value;
+    if (key === 'heatHazeSpeed')  distortionPass.uniforms.uHeatHazeSpeed.value = value;
+    if (key === 'dofStrength')    distortionPass.uniforms.uDofStrength.value = value;
+    if (key === 'dofFocusRadius') distortionPass.uniforms.uDofFocusRadius.value = value;
+
+    updateOverlay(key, value);
+}
+
 // --- devパネル ---
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
-        initDevPanel((key, value) => {
-            // トグル
-            if (key in toggles) { toggles[key] = value; return; }
-            // 呼吸
-            if (key in breathConfig) { breathConfig[key] = value; return; }
-            // シーン
-            if (key in sceneParams) sceneParams[key] = value;
-
-            if (key === 'camX' || key === 'camY' || key === 'camZ') {
-                setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
-            }
-            if (key === 'camTargetY') setTarget(0, value, -10);
-            if (key === 'autoRotateSpd') setAutoRotateSpeed(value);
-
-            // オーブ屈折
-            if (key === 'distStrength')   distortionPass.uniforms.uStrength.value = value;
-            if (key === 'distAberration') distortionPass.uniforms.uAberration.value = value;
-            if (key === 'turbulence')     distortionPass.uniforms.uTurbulence.value = value;
-            if (key === 'baseBlur')       distortionPass.uniforms.uBaseBlur.value = value;
-            if (key === 'orbBlur')        distortionPass.uniforms.uBlurAmount.value = value;
-            if (key === 'innerGlow')      distortionPass.uniforms.uInnerGlow.value = value;
-            if (key === 'haloIntensity')  distortionPass.uniforms.uHaloIntensity.value = value;
-            if (key === 'haloWidth')      distortionPass.uniforms.uHaloWidth.value = value;
-            if (key === 'haloColorR')     distortionPass.uniforms.uHaloColor.value.x = value;
-            if (key === 'haloColorG')     distortionPass.uniforms.uHaloColor.value.y = value;
-            if (key === 'haloColorB')     distortionPass.uniforms.uHaloColor.value.z = value;
-
-            // 流体
-            if (key === 'fluidForce')     fluidSystem.uniforms.uForce.value = value;
-            if (key === 'fluidCurl')      fluidSystem.uniforms.uCurl.value = value;
-            if (key === 'fluidDecay')     fluidSystem.uniforms.uDecay.value = value;
-            if (key === 'fluidRadius')    fluidSystem.uniforms.uRadius.value = value;
-            if (key === 'fluidInfluence') distortionPass.uniforms.uFluidInfluence.value = value;
-
-            // 熱波・DOF
-            if (key === 'heatHaze')       distortionPass.uniforms.uHeatHaze.value = value;
-            if (key === 'heatHazeRadius') distortionPass.uniforms.uHeatHazeRadius.value = value;
-            if (key === 'heatHazeSpeed')  distortionPass.uniforms.uHeatHazeSpeed.value = value;
-            if (key === 'dofStrength')    distortionPass.uniforms.uDofStrength.value = value;
-            if (key === 'dofFocusRadius') distortionPass.uniforms.uDofFocusRadius.value = value;
-
-            updateOverlay(key, value);
-        });
+        initDevPanel(applyDevValue);
     });
 }
 
