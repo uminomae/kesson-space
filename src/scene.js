@@ -34,9 +34,14 @@ export function createScene(container) {
     _bgMesh = createBackgroundMesh(_bgMat);
     scene.add(_bgMesh);
 
-    // カメラ
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+    // カメラ（モバイルportrait時は近づける）
+    const aspect = window.innerWidth / window.innerHeight;
+    const mobileCamZ = aspect < 1
+        ? sceneParams.camZ * (0.6 + 0.4 * aspect)  // portrait: 60-100%
+        : sceneParams.camZ;                          // landscape: そのまま
+
+    const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
+    camera.position.set(sceneParams.camX, sceneParams.camY, mobileCamZ);
     camera.lookAt(0, sceneParams.camTargetY, -10);
     _camera = camera;
 
