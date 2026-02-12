@@ -23,6 +23,19 @@ let _scene;
 // GC削減: フォグ色を事前確保（毎フレーム new しない）
 const _fogColor = new THREE.Color();
 
+/**
+ * カメラZ距離をアスペクト比から算出
+ * - landscape (aspect >= 1): デスクトップ値そのまま (34)
+ * - portrait: aspect 0.5→0, aspect 1.0→34 の線形補間
+ *   iPhone 9:16 (0.56) → camZ ≈ 4
+ *   iPad 3:4  (0.75) → camZ ≈ 17
+ */
+function calcCamZ(aspect) {
+    if (aspect >= 1) return sceneParams.camZ;
+    const t = Math.max(0, (aspect - 0.5) * 2.0);  // 0.5→0, 1.0→1
+    return sceneParams.camZ * t;
+}
+
 export function createScene(container) {
     const scene = new THREE.Scene();
     _scene = scene;
@@ -34,14 +47,12 @@ export function createScene(container) {
     _bgMesh = createBackgroundMesh(_bgMat);
     scene.add(_bgMesh);
 
-    // カメラ（モバイルportrait時は近づける）
+    // カメラ
     const aspect = window.innerWidth / window.innerHeight;
-    const mobileCamZ = aspect < 1
-        ? sceneParams.camZ * (0.6 + 0.4 * aspect)  // portrait: 60-100%
-        : sceneParams.camZ;                          // landscape: そのまま
+    const camZ = calcCamZ(aspect);
 
     const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
-    camera.position.set(sceneParams.camX, sceneParams.camY, mobileCamZ);
+    camera.position.set(sceneParams.camX, sceneParams.camY, camZ);
     camera.lookAt(0, sceneParams.camTargetY, -10);
     _camera = camera;
 
