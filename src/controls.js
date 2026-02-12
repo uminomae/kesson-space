@@ -6,6 +6,9 @@ import { toggles, breathConfig } from './config.js';
 let _camera;
 let _controls;
 
+// デスクトップ基準アスペクト比（16:9）
+const REF_ASPECT = 16 / 9;
+
 export function initControls(camera, container, renderer) {
     _camera = camera;
 
@@ -58,14 +61,33 @@ export function setTarget(x, y, z) {
     if (_controls) _controls.target.set(x, y, z);
 }
 
+/**
+ * アスペクト比に応じたFOV補正
+ * portrait（縦持ち）時: デスクトップの水平画角を維持するようFOVを拡大
+ */
+function getAdjustedFovBase() {
+    const base = breathConfig.fovBase;
+    const aspect = _camera.aspect;
+    if (aspect >= 1) return base; // landscape: そのまま
+
+    // デスクトップ基準の水平FOVを算出
+    const baseRad = base * Math.PI / 180;
+    const hFov = 2 * Math.atan(Math.tan(baseRad / 2) * REF_ASPECT);
+    // 現在のアスペクト比で水平FOVを維持する垂直FOV
+    const adjusted = 2 * Math.atan(Math.tan(hFov / 2) / aspect) * 180 / Math.PI;
+    return Math.min(adjusted, 120); // 歪み防止の上限
+}
+
 export function updateControls(time, breathVal = 0.5) {
     if (!_camera || !_controls) return;
 
+    const fovBase = getAdjustedFovBase();
+
     // --- FOV呼吸（熱波）: breathValと同期 ---
     if (toggles.fovBreath) {
-        _camera.fov = breathConfig.fovBase + (breathVal * 2 - 1) * breathConfig.fovAmplitude;
+        _camera.fov = fovBase + (breathVal * 2 - 1) * breathConfig.fovAmplitude;
     } else {
-        _camera.fov = breathConfig.fovBase;
+        _camera.fov = fovBase;
     }
     _camera.updateProjectionMatrix();
 
