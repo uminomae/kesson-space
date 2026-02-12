@@ -259,5 +259,6 @@ export function updateControls(time, breathVal = 0.5) {
     const diveY = _baseCamY - eased * DIVE_DEPTH;
 
     _camera.position.set(rotX, diveY, rotZ);
-    _camera.lookAt(0, LOOKAT_BASE_Y - eased * DIVE_DEPTH * 0.5, -10);
+    // lookAt: 原点中心（オーブの三角形重心と一致）
+    _camera.lookAt(0, LOOKAT_BASE_Y - eased * DIVE_DEPTH * 0.5, 0);
 }
