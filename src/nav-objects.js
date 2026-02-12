@@ -19,17 +19,17 @@ const ORB_3D_RADIUS = 2.0;
 let _labelElements = [];
 let _gemLabelElement = null;
 let _gemGroup = null;
-let _gemMesh = null;      // GLTFメッシュ
+let _gemMesh = null;
 let _scene = null;
 let _navMeshes = null;
 
 // ========================================
 // Gem オーブシェーダー（GLTFメッシュ用）
+// オーブ球と同じ美学: 暗闇の中でエッジがうっすら光る
 // ========================================
 const gemMeshVertexShader = /* glsl */ `
 varying vec3 vWorldNormal;
 varying vec3 vViewDir;
-varying vec3 vWorldPos;
 varying float vFresnel;
 
 void main() {
@@ -39,7 +39,6 @@ void main() {
 
     vWorldNormal = worldNormal;
     vViewDir = viewDir;
-    vWorldPos = worldPos.xyz;
     vFresnel = 1.0 - max(dot(worldNormal, viewDir), 0.0);
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -57,64 +56,50 @@ uniform float uHover;
 
 varying vec3 vWorldNormal;
 varying vec3 vViewDir;
-varying vec3 vWorldPos;
 varying float vFresnel;
 
 void main() {
     // --- 呼吸 ---
-    float breath = 1.0 + sin(uTime * 0.5) * 0.08;
+    float breath = 1.0 + sin(uTime * 0.5) * 0.06;
 
-    // --- フレネルリム（エッジ発光） ---
+    // --- フレネルリム（エッジグロー） ---
+    // オーブ球と同じ: エッジだけがうっすら光る
     float rim = pow(vFresnel, uRimPower) * uGlowStrength * breath;
 
-    // --- 中心グロー（正面向きほど明るい、抑えめ） ---
+    // --- ソフトな外側グロー（エッジを超えて滲む） ---
+    float outerGlow = pow(vFresnel, max(uRimPower * 0.5, 0.5)) * uGlowStrength * 0.15 * breath;
+
+    // --- 中心の微かな明かり ---
     float facing = max(dot(vWorldNormal, vViewDir), 0.0);
-    float center = pow(facing, 2.5) * uInnerGlow;
+    float center = pow(facing, 3.0) * uInnerGlow;
 
-    // --- 位置ベースのグラデーション（メッシュ中心からの距離） ---
-    // GLTFのローカル原点からの距離で中心→エッジのグラデーション
-    float distFromCenter = length(vWorldPos - vec3(0.0));
-    // ※ Group位置でオフセットされるため、相対距離を使う
-    float edgeFade = smoothstep(0.0, 2.5, distFromCenter) * 0.4;
+    // --- カラーパレット（オーブ球に近い冷たい青紫） ---
+    vec3 rimColor   = vec3(0.40, 0.55, 0.95);   // リム: 冷たい青
+    vec3 glowColor  = vec3(0.25, 0.35, 0.75);   // 外側グロー: 深い青
+    vec3 coreColor  = vec3(0.20, 0.28, 0.65);   // 中心: 暗い青紫
 
-    // --- カラーパレット ---
-    vec3 coreColor  = vec3(0.45, 0.52, 0.88);
-    vec3 rimColor   = vec3(0.65, 0.75, 1.00);
-    vec3 glowColor  = vec3(0.30, 0.40, 0.80);
-    vec3 deepColor  = vec3(0.15, 0.20, 0.55);
-
-    // --- 合成 ---
-    // ベース: 薄い深色で形状が見える
-    vec3 color = deepColor * 0.3;
-    // 中心グロー
+    // --- 合成: 暗闘ベース + グローのみ ---
+    vec3 color = vec3(0.0);
     color += coreColor * center;
-    // リム発光
     color += rimColor * rim;
-    // 補助グロー
-    color += glowColor * rim * 0.25;
+    color += glowColor * outerGlow;
 
-    // --- 色収差風（リム部分でR/Bシフト） ---
+    // --- 色収差（リムでR/Bシフト） ---
     float rimR = pow(vFresnel, uRimPower * 0.85) * uGlowStrength * breath;
     float rimB = pow(vFresnel, uRimPower * 1.15) * uGlowStrength * breath;
-    color.r += (rimR - rim) * 0.12;
-    color.b += (rimB - rim) * 0.12;
+    color.r += (rimR - rim) * 0.08;
+    color.b += (rimB - rim) * 0.08;
 
-    // --- シマー（法線+時間ベース） ---
-    float shimmer = sin(vFresnel * 10.0 + uTime * 1.2) * 0.04;
-    color += shimmer * rim;
+    // --- シマー ---
+    float shimmer = sin(vFresnel * 10.0 + uTime * 1.2) * 0.02;
+    color += shimmer * rimColor * rim;
 
-    // --- 角度ベース微光（星の先端方向を強調） ---
-    float angleFade = sin(atan(vWorldNormal.z, vWorldNormal.x) * 4.0 + uTime * 0.3) * 0.03;
-    color += angleFade * rim;
-
-    // --- アルファ ---
-    float alpha = 0.15;  // ベース透明度（形状が薄く見える）
-    alpha += center * 0.5;
-    alpha += rim * 0.8;
+    // --- アルファ: エッジグローのみ見える ---
+    float alpha = rim * 0.9 + outerGlow + center * 0.3;
     alpha = clamp(alpha, 0.0, 1.0);
 
     // --- ホバー ---
-    color *= 1.0 + uHover * 0.4;
+    color *= 1.0 + uHover * 0.5;
     alpha = min(alpha * (1.0 + uHover * 0.3), 1.0);
 
     if (alpha < 0.005) discard;
@@ -154,7 +139,7 @@ function createGemGroup() {
             const loadedMesh = gltf.scene.children[0];
             if (!loadedMesh) return;
 
-            // 法線を再計算（Subdivision後に重要）
+            // 法線を再計算
             if (loadedMesh.geometry) {
                 loadedMesh.geometry.computeVertexNormals();
             }
@@ -180,8 +165,9 @@ function createGemGroup() {
             loadedMesh.scale.setScalar(gemParams.meshScale);
             loadedMesh.renderOrder = 10;
 
-            // 初期回転: XZ平面の星をカメラに見えやすい角度に傾ける
-            loadedMesh.rotation.x = -Math.PI * 0.15;
+            // ★ Blenderモデルを起こす: XY平面→正面向きに
+            // X軸90度回転で星を立てる
+            loadedMesh.rotation.x = Math.PI / 2;
 
             group.add(loadedMesh);
             group.userData.gemMesh = loadedMesh;
@@ -371,10 +357,9 @@ export function updateNavObjects(navMeshes, time, camera) {
             // GLTFメッシュ: ゆっくり自転 + uniform更新
             const mesh = data.gemMesh;
             if (mesh) {
-                // Y軸でゆっくり自転（AutoRotateと独立）
-                mesh.rotation.y = time * 0.3;
-                // X軸の傾き（呼吸で微揺れ）
-                mesh.rotation.x = -Math.PI * 0.15 + Math.sin(time * 0.4) * 0.08;
+                // 基本姿勢: X=90度で立てた状態 + Z軸でゆっくり自転
+                mesh.rotation.x = Math.PI / 2 + Math.sin(time * 0.3) * 0.1;
+                mesh.rotation.z = time * 0.25;
 
                 const u = mesh.material.uniforms;
                 if (u.uTime) u.uTime.value = time;
