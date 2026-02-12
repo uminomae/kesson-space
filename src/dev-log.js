@@ -1,11 +1,10 @@
 // dev-log.js — 開発ログの描画とスクロール演出
-// content/devlog-{lang}.md から読み込み
+// content/devlog-{lang}.md から読み込み（言語ごとに片方のみ表示）
 
 import { detectLang } from './i18n.js';
 
 /**
  * 簡易frontmatterパーサー
- * --- で囲まれたヘッダー部分と本文を分離
  */
 function parseFrontmatter(text) {
     const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -25,33 +24,20 @@ function parseFrontmatter(text) {
 }
 
 /**
- * 開発ログセクションを描画
+ * 開発ログセクションを描画（現在言語のみ）
  */
 export async function renderDevLog() {
     const container = document.getElementById('dev-log');
     if (!container) return;
 
     const lang = detectLang();
-    const pairLang = lang === 'ja' ? 'en' : 'ja';
 
     try {
-        // メイン言語のmd読み込み
         const res = await fetch(`./content/devlog-${lang}.md`);
         if (!res.ok) return;
         const raw = await res.text();
         const { meta, body } = parseFrontmatter(raw);
         const paragraphs = body.split(/\n\n+/).filter(p => p.trim());
-
-        // ペア言語（薄く表示）
-        let pairParagraphs = [];
-        try {
-            const pairRes = await fetch(`./content/devlog-${pairLang}.md`);
-            if (pairRes.ok) {
-                const pairRaw = await pairRes.text();
-                const pairParsed = parseFrontmatter(pairRaw);
-                pairParagraphs = pairParsed.body.split(/\n\n+/).filter(p => p.trim());
-            }
-        } catch (_) { /* ペア言語なくてもOK */ }
 
         // ヘッダー
         if (meta.header) {
@@ -70,7 +56,7 @@ export async function renderDevLog() {
         }
 
         // 段落
-        paragraphs.forEach((text, i) => {
+        paragraphs.forEach((text) => {
             const p = document.createElement('p');
             p.className = 'log-paragraph';
             p.textContent = text;
@@ -78,17 +64,6 @@ export async function renderDevLog() {
             p.style.transform = 'translateY(20px)';
             p.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
             container.appendChild(p);
-
-            // ペア言語を薄く表示
-            if (pairParagraphs[i]) {
-                const pEn = document.createElement('p');
-                pEn.className = 'log-paragraph-en';
-                pEn.textContent = pairParagraphs[i];
-                pEn.style.opacity = '0';
-                pEn.style.transform = 'translateY(20px)';
-                pEn.style.transition = 'opacity 0.8s ease 0.15s, transform 0.8s ease 0.15s';
-                container.appendChild(pEn);
-            }
         });
 
         // IntersectionObserver でフェードイン
@@ -116,13 +91,13 @@ function setupScrollReveal(container) {
         { threshold: 0.15 }
     );
 
-    container.querySelectorAll('.log-paragraph, .log-paragraph-en').forEach((el) => {
+    container.querySelectorAll('.log-paragraph').forEach((el) => {
         observer.observe(el);
     });
 }
 
 /**
- * スクロール案内の自動非表示
+ * スクロール案内の自動非表示（下にスクロールしたら消す）
  */
 export function setupScrollHint() {
     const hint = document.getElementById('scroll-hint');
