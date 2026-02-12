@@ -14,6 +14,7 @@ import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
 import { toggles, breathConfig, distortionParams, fluidParams } from './config.js';
+import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 
 let composer;
 let distortionPass;
@@ -90,6 +91,7 @@ composer.addPass(distortionPass);
 
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer });
+initScrollUI();
 
 function findNavMeshes() {
     if (navMeshesCache.length > 0) return navMeshesCache;
@@ -105,10 +107,8 @@ function findNavMeshes() {
 }
 
 // --- HTMLオーバーレイ ---
-const overlay = document.getElementById('overlay');
-const credit = document.getElementById('credit');
-
 function updateOverlay(key, val) {
+    const overlay = document.getElementById('overlay');
     const h1 = document.getElementById('title-h1');
     const sub = document.getElementById('title-sub');
     if (!overlay || !h1 || !sub) return;
@@ -171,32 +171,9 @@ if (DEV_MODE) {
 }
 
 // --- スクロールコンテンツ（常時有効） ---
-import('./dev-log.js').then(({ renderDevLog, setupScrollHint }) => {
+import('./dev-log.js').then(({ renderDevLog }) => {
     renderDevLog();
-    setupScrollHint();
 });
-
-// --- 浮上ボタン + 上部scroll hint ---
-const surfaceBtn = document.getElementById('surface-btn');
-const scrollHintTop = document.getElementById('scroll-hint-top');
-
-if (surfaceBtn) {
-    surfaceBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-}
-if (scrollHintTop) {
-    scrollHintTop.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-}
-
-// --- ページ最下部検知 ---
-function isNearBottom() {
-    const scrollBottom = window.scrollY + window.innerHeight;
-    const docHeight = document.documentElement.scrollHeight;
-    return (docHeight - scrollBottom) < 60;
-}
 
 const clock = new THREE.Clock();
 
@@ -209,61 +186,9 @@ function animate() {
 
     // --- スクロール進捗 ---
     const scrollProg = getScrollProgress();
-    const atBottom = isNearBottom();
-    const atTop = window.scrollY < 20;
 
-    // --- HTML呼吸 + スクロールフェード ---
-    if (overlay) {
-        const scrollFade = Math.max(0, 1 - scrollProg * 3.3);
-
-        if (toggles.htmlBreath && scrollFade > 0) {
-            const opacity = breathConfig.htmlMinOpacity + breathVal * (breathConfig.htmlMaxOpacity - breathConfig.htmlMinOpacity);
-            const blur = breathConfig.htmlMaxBlur * (1 - breathVal);
-            const scale = breathConfig.htmlMinScale + breathVal * (1 - breathConfig.htmlMinScale);
-            overlay.style.opacity = opacity * scrollFade;
-            overlay.style.filter = `blur(${blur}px)`;
-            overlay.style.transform = `scale(${scale})`;
-        } else if (scrollFade > 0) {
-            overlay.style.opacity = breathConfig.htmlMaxOpacity * scrollFade;
-            overlay.style.filter = 'none';
-            overlay.style.transform = 'scale(1)';
-        } else {
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-        }
-    }
-
-    // --- クレジットもフェード ---
-    if (credit) {
-        const creditFade = Math.max(0, 1 - scrollProg * 4);
-        credit.style.opacity = creditFade;
-    }
-
-    // --- 下部 scroll hint: ページ最下部で非表示 ---
-    const scrollHintBottom = document.getElementById('scroll-hint');
-    if (scrollHintBottom) {
-        if (atBottom) {
-            scrollHintBottom.style.opacity = '0';
-            scrollHintBottom.style.pointerEvents = 'none';
-        }
-    }
-
-    // --- 上部 scroll hint: スクロールしたら出現、最上部で消える ---
-    if (scrollHintTop) {
-        const showTop = !atTop && scrollProg > 0.15;
-        if (showTop) {
-            scrollHintTop.classList.add('visible');
-        } else {
-            scrollHintTop.classList.remove('visible');
-        }
-    }
-
-    // --- 浮上ボタン ---
-    if (surfaceBtn) {
-        const showSurface = scrollProg > 0.8;
-        surfaceBtn.style.opacity = showSurface ? '1' : '0';
-        surfaceBtn.style.pointerEvents = showSurface ? 'auto' : 'none';
-    }
+    // --- スクロールUI更新 ---
+    updateScrollUI(scrollProg, breathVal);
 
     // --- マウススムージング ---
     _smoothMouseX += (_mouseX - _smoothMouseX) * 0.08;

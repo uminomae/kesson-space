@@ -1,4 +1,4 @@
-// dev-log.js — 開発ログの描画とスクロール演出
+// dev-log.js — 開発ログの描画
 // content/devlog-{lang}.md から読み込み（言語ごとに片方のみ表示）
 
 import { detectLang } from './i18n.js';
@@ -94,21 +94,4 @@ function setupScrollReveal(container) {
     container.querySelectorAll('.log-paragraph').forEach((el) => {
         observer.observe(el);
     });
-}
-
-/**
- * スクロール案内の自動非表示（下にスクロールしたら消す）
- */
-export function setupScrollHint() {
-    const hint = document.getElementById('scroll-hint');
-    if (!hint) return;
-
-    const hideOnScroll = () => {
-        if (window.scrollY > 80) {
-            hint.style.transition = 'opacity 0.6s ease';
-            hint.style.opacity = '0';
-            window.removeEventListener('scroll', hideOnScroll);
-        }
-    };
-    window.addEventListener('scroll', hideOnScroll, { passive: true });
 }
