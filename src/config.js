@@ -108,7 +108,7 @@ export const gemParams = {
     posX: 10,
     posY: 2,
     posZ: 15,
-    labelYOffset: 1.75,
+    labelYOffset: 1.25,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
