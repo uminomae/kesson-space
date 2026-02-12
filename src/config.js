@@ -97,9 +97,12 @@ export const distortionParams = {
 
 // --- Gem四芒星パラメータ ---
 export const gemParams = {
-    outerRadius: 0.42,    // 先端までの半径（canvasサイズに対する比率）
-    innerRadius: 0.13,    // くびれ部分の半径
-    spriteSize:  5.0,     // Spriteの3Dサイズ
+    outerRadius: 0.42,
+    innerRadius: 0.13,
+    spriteSize:  5.0,
+    posX: 10,
+    posY: 3,
+    posZ: 18,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---

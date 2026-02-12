@@ -70,6 +70,9 @@ const SECTIONS = [
             gemOuterRadius: { label: '先端半径',      min: 0.15, max: 0.48, step: 0.01, default: gemParams.outerRadius },
             gemInnerRadius: { label: 'くびれ半径',    min: 0.03, max: 0.30, step: 0.01, default: gemParams.innerRadius },
             gemSpriteSize:  { label: 'サイズ',        min: 2.0, max: 10.0, step: 0.5, default: gemParams.spriteSize },
+            gemPosX:        { label: '位置 X',        min: -30, max: 30, step: 1, default: gemParams.posX },
+            gemPosY:        { label: '位置 Y',        min: -15, max: 15, step: 1, default: gemParams.posY },
+            gemPosZ:        { label: '位置 Z',        min: -10, max: 40, step: 1, default: gemParams.posZ },
         }
     },
     {

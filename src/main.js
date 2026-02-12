@@ -9,7 +9,7 @@ import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
 import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget, getScrollProgress } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 import { getOrbScreenData, updateNavLabels } from './nav-objects.js';
-import { rebuildGem } from './nav-objects.js';
+import { rebuildGem, updateGemPosition } from './nav-objects.js';
 import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
@@ -165,6 +165,9 @@ function applyDevValue(key, value) {
     if (key === 'gemOuterRadius') { gemParams.outerRadius = value; rebuildGem(); }
     if (key === 'gemInnerRadius') { gemParams.innerRadius = value; rebuildGem(); }
     if (key === 'gemSpriteSize')  { gemParams.spriteSize = value; rebuildGem(); }
+    if (key === 'gemPosX')        { gemParams.posX = value; updateGemPosition(); }
+    if (key === 'gemPosY')        { gemParams.posY = value; updateGemPosition(); }
+    if (key === 'gemPosZ')        { gemParams.posZ = value; updateGemPosition(); }
 
     updateOverlay(key, value);
 }
@@ -187,16 +190,11 @@ function animate() {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
 
-    // --- 統一呼吸値 ---
     const breathVal = (Math.sin(time * Math.PI / breathConfig.period - Math.PI / 2) + 1) * 0.5;
-
-    // --- スクロール進捗 ---
     const scrollProg = getScrollProgress();
 
-    // --- スクロールUI更新 ---
     updateScrollUI(scrollProg, breathVal);
 
-    // --- マウススムージング ---
     _smoothMouseX += (_mouseX - _smoothMouseX) * 0.08;
     _smoothMouseY += (_mouseY - _smoothMouseY) * 0.08;
     const velX = _smoothMouseX - _prevMouseX;
@@ -208,10 +206,8 @@ function animate() {
     updateScene(time);
     updateNavigation(time);
 
-    // --- ナビメッシュ取得（フレームで1回のみ） ---
     const navs = findNavMeshes();
 
-    // --- 流体フィールド ---
     if (toggles.fluidField) {
         fluidSystem.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
         fluidSystem.uniforms.uMouseVelocity.value.set(velX, velY);
@@ -222,7 +218,6 @@ function animate() {
         distortionPass.uniforms.uFluidInfluence.value = 0;
     }
 
-    // --- オーブ情報更新 ---
     if (toggles.navOrbs && toggles.orbRefraction) {
         if (navs.length > 0) {
             const orbData = getOrbScreenData(navs, camera);

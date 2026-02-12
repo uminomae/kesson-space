@@ -15,13 +15,10 @@ const NAV_POSITIONS = [
 
 const ORB_3D_RADIUS = 2.0;
 
-// --- Gemini星の配置 ---
-const GEM_POSITION = [10, 3, 18];
-
 let _labelElements = [];
 let _gemLabelElement = null;
 let _gemSprite = null;
-let _scene = null;  // rebuildGem用に保持
+let _scene = null;
 let _navMeshes = null;
 
 // ========================================
@@ -40,7 +37,6 @@ function createGeminiStarTexture(outerR, innerR) {
     const inner = size * innerR;
     const points = 4;
 
-    // --- グロー元 ---
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer * 1.3);
     glow.addColorStop(0, 'rgba(123, 143, 232, 0.25)');
     glow.addColorStop(0.5, 'rgba(123, 143, 232, 0.08)');
@@ -48,7 +44,6 @@ function createGeminiStarTexture(outerR, innerR) {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, size, size);
 
-    // --- 四芒星本体 ---
     ctx.beginPath();
     for (let i = 0; i < points * 2; i++) {
         const r = i % 2 === 0 ? outer : inner;
@@ -90,28 +85,32 @@ function createGemSprite() {
     const sprite = new THREE.Sprite(material);
     const s = gemParams.spriteSize;
     sprite.scale.set(s, s, 1);
-    sprite.position.set(...GEM_POSITION);
+    sprite.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
 
     return sprite;
 }
 
-// --- devPanelからの再構築 ---
+// --- devPanelからの再構築---
 export function rebuildGem() {
     if (!_gemSprite || !_scene) return;
 
-    // 古いテクスチャを破棄
     if (_gemSprite.material.map) {
         _gemSprite.material.map.dispose();
     }
 
-    // 新しいテクスチャで差し替え
     const newTexture = createGeminiStarTexture(gemParams.outerRadius, gemParams.innerRadius);
     _gemSprite.material.map = newTexture;
     _gemSprite.material.needsUpdate = true;
 
-    // サイズ更新
     const s = gemParams.spriteSize;
     _gemSprite.scale.set(s, s, 1);
+}
+
+// --- devPanelからの位置更新 ---
+export function updateGemPosition() {
+    if (!_gemSprite) return;
+    _gemSprite.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
+    _gemSprite.userData.baseY = gemParams.posY;
 }
 
 // ========================================
@@ -210,7 +209,7 @@ export function createNavObjects(scene) {
         type: 'nav',
         url: gemData.url,
         label: gemData.label,
-        baseY: GEM_POSITION[1],
+        baseY: gemParams.posY,
         index: gemIndex,
         isGem: true,
         external: true,
