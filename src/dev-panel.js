@@ -75,6 +75,7 @@ const SECTIONS = [
             gemHaloWidth:           { label: 'Halo幅',       min: 0.05, max: 1.0, step: 0.05, default: gemParams.haloWidth },
             gemHaloIntensity:       { label: 'Halo強度',     min: 0.0, max: 2.0, step: 0.05, default: gemParams.haloIntensity },
             gemChromaticAberration: { label: '色収差',       min: 0.0, max: 0.5, step: 0.01, default: gemParams.chromaticAberration },
+            gemLabelYOffset:        { label: 'ラベル距離',   min: 0.0, max: 8.0, step: 0.25, default: gemParams.labelYOffset },
             gemPosX:                { label: '位置 X',       min: -30, max: 30, step: 1, default: gemParams.posX },
             gemPosY:                { label: '位置 Y',       min: -15, max: 15, step: 1, default: gemParams.posY },
             gemPosZ:                { label: '位置 Z',       min: -10, max: 40, step: 1, default: gemParams.posZ },

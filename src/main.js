@@ -170,6 +170,7 @@ function applyDevValue(key, value) {
     if (key === 'gemHaloWidth')           { gemParams.haloWidth = value; rebuildGem(); }
     if (key === 'gemHaloIntensity')       { gemParams.haloIntensity = value; rebuildGem(); }
     if (key === 'gemChromaticAberration') { gemParams.chromaticAberration = value; rebuildGem(); }
+    if (key === 'gemLabelYOffset')        { gemParams.labelYOffset = value; }
     if (key === 'gemPosX')                { gemParams.posX = value; updateGemPosition(); }
     if (key === 'gemPosY')                { gemParams.posY = value; updateGemPosition(); }
     if (key === 'gemPosZ')                { gemParams.posZ = value; updateGemPosition(); }
