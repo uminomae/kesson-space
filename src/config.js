@@ -95,6 +95,13 @@ export const distortionParams = {
     dofFocusRadius: 0.32,
 };
 
+// --- Gem四芒星パラメータ ---
+export const gemParams = {
+    outerRadius: 0.42,    // 先端までの半径（canvasサイズに対する比率）
+    innerRadius: 0.13,    // くびれ部分の半径
+    spriteSize:  5.0,     // Spriteの3Dサイズ
+};
+
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
 export const DISTORTION_PARAMS = {
     strength: distortionParams.strength,

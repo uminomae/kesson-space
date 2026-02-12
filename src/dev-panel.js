@@ -1,7 +1,7 @@
 // dev-panel.js — Bootstrapベースのdevパネル
 // ★ default値は config.js を参照し、ハードコードしない
 
-import { toggles, breathConfig, sceneParams, fluidParams, distortionParams } from './config.js';
+import { toggles, breathConfig, sceneParams, fluidParams, distortionParams, gemParams } from './config.js';
 
 const TOGGLES = [
     { key: 'background',    label: '背景' },
@@ -61,6 +61,15 @@ const SECTIONS = [
             haloColorR:    { label: '後光色 R',      min: 0.0, max: 1.0, step: 0.05, default: distortionParams.haloColorR },
             haloColorG:    { label: '後光色 G',      min: 0.0, max: 1.0, step: 0.05, default: distortionParams.haloColorG },
             haloColorB:    { label: '後光色 B',      min: 0.0, max: 1.0, step: 0.05, default: distortionParams.haloColorB },
+        }
+    },
+    {
+        id: 'gem',
+        title: 'Gem 四芒星',
+        params: {
+            gemOuterRadius: { label: '先端半径',      min: 0.15, max: 0.48, step: 0.01, default: gemParams.outerRadius },
+            gemInnerRadius: { label: 'くびれ半径',    min: 0.03, max: 0.30, step: 0.01, default: gemParams.innerRadius },
+            gemSpriteSize:  { label: 'サイズ',        min: 2.0, max: 10.0, step: 0.5, default: gemParams.spriteSize },
         }
     },
     {

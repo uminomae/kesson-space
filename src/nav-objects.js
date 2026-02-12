@@ -1,9 +1,8 @@
 // nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + HTMLラベル + Gemini星）
-// テキストラベルはHTMLオーバーレイ（ポストプロセスの歪みを受けない）
 
 import * as THREE from 'three';
 import { detectLang, t } from './i18n.js';
-import { toggles } from './config.js';
+import { toggles, gemParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 
 // --- 正三角形配置（XZ平面） ---
@@ -18,17 +17,17 @@ const ORB_3D_RADIUS = 2.0;
 
 // --- Gemini星の配置 ---
 const GEM_POSITION = [10, 3, 18];
-const GEM_SPRITE_SIZE = 5.0;  // Spriteの表示サイズ
 
 let _labelElements = [];
 let _gemLabelElement = null;
 let _gemSprite = null;
+let _scene = null;  // rebuildGem用に保持
+let _navMeshes = null;
 
 // ========================================
 // Canvasで四芒星を描画→Spriteテクスチャ
-// SpriteはThree.jsが自動でビルボード化するので角度問題が起きない
 // ========================================
-function createGeminiStarTexture() {
+function createGeminiStarTexture(outerR, innerR) {
     const size = 256;
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -37,12 +36,12 @@ function createGeminiStarTexture() {
 
     const cx = size / 2;
     const cy = size / 2;
-    const outerR = size * 0.42;   // 先端までの半径
-    const innerR = size * 0.13;   // くびれの半径
+    const outer = size * outerR;
+    const inner = size * innerR;
     const points = 4;
 
     // --- グロー元 ---
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, outerR * 1.3);
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer * 1.3);
     glow.addColorStop(0, 'rgba(123, 143, 232, 0.25)');
     glow.addColorStop(0.5, 'rgba(123, 143, 232, 0.08)');
     glow.addColorStop(1, 'rgba(123, 143, 232, 0.0)');
@@ -52,8 +51,7 @@ function createGeminiStarTexture() {
     // --- 四芒星本体 ---
     ctx.beginPath();
     for (let i = 0; i < points * 2; i++) {
-        const r = i % 2 === 0 ? outerR : innerR;
-        // -90度から開始（上向き先端）
+        const r = i % 2 === 0 ? outer : inner;
         const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
         const x = cx + Math.cos(angle) * r;
         const y = cy + Math.sin(angle) * r;
@@ -62,15 +60,13 @@ function createGeminiStarTexture() {
     }
     ctx.closePath();
 
-    // グラデーションフィル（中心からエッジへ）
-    const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outerR);
-    starGrad.addColorStop(0, 'rgba(160, 176, 240, 0.9)');   // 中心: 明るい青紫
-    starGrad.addColorStop(0.4, 'rgba(123, 143, 232, 0.75)'); // 中間
-    starGrad.addColorStop(1, 'rgba(90, 110, 200, 0.3)');     // エッジ: 淡く
+    const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer);
+    starGrad.addColorStop(0, 'rgba(160, 176, 240, 0.9)');
+    starGrad.addColorStop(0.4, 'rgba(123, 143, 232, 0.75)');
+    starGrad.addColorStop(1, 'rgba(90, 110, 200, 0.3)');
     ctx.fillStyle = starGrad;
     ctx.fill();
 
-    // エッジの柔らかい光
     ctx.shadowColor = 'rgba(123, 143, 232, 0.6)';
     ctx.shadowBlur = 15;
     ctx.fill();
@@ -82,7 +78,7 @@ function createGeminiStarTexture() {
 }
 
 function createGemSprite() {
-    const texture = createGeminiStarTexture();
+    const texture = createGeminiStarTexture(gemParams.outerRadius, gemParams.innerRadius);
 
     const material = new THREE.SpriteMaterial({
         map: texture,
@@ -92,10 +88,30 @@ function createGemSprite() {
     });
 
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(GEM_SPRITE_SIZE, GEM_SPRITE_SIZE, 1);
+    const s = gemParams.spriteSize;
+    sprite.scale.set(s, s, 1);
     sprite.position.set(...GEM_POSITION);
 
     return sprite;
+}
+
+// --- devPanelからの再構築 ---
+export function rebuildGem() {
+    if (!_gemSprite || !_scene) return;
+
+    // 古いテクスチャを破棄
+    if (_gemSprite.material.map) {
+        _gemSprite.material.map.dispose();
+    }
+
+    // 新しいテクスチャで差し替え
+    const newTexture = createGeminiStarTexture(gemParams.outerRadius, gemParams.innerRadius);
+    _gemSprite.material.map = newTexture;
+    _gemSprite.material.needsUpdate = true;
+
+    // サイズ更新
+    const s = gemParams.spriteSize;
+    _gemSprite.scale.set(s, s, 1);
 }
 
 // ========================================
@@ -140,6 +156,7 @@ function createHtmlLabel(text, extraClass) {
 // 公開API
 // ========================================
 export function createNavObjects(scene) {
+    _scene = scene;
     const navMeshes = [];
     const lang = detectLang();
     const strings = t(lang);
@@ -202,6 +219,7 @@ export function createNavObjects(scene) {
     scene.add(gemSprite);
     navMeshes.push(gemSprite);
     _gemSprite = gemSprite;
+    _navMeshes = navMeshes;
 
     _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem');
 
@@ -213,11 +231,9 @@ export function updateNavObjects(navMeshes, time) {
         const data = obj.userData;
 
         if (data.isGem) {
-            // Gem: 浮遊のみ（Spriteは自動ビルボード）
             obj.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * 0.4;
-
-            // 呼吸的なスケール脈動
-            const breathScale = GEM_SPRITE_SIZE * (1.0 + Math.sin(time * 0.5) * 0.05);
+            const s = gemParams.spriteSize;
+            const breathScale = s * (1.0 + Math.sin(time * 0.5) * 0.05);
             obj.scale.set(breathScale, breathScale, 1);
         } else {
             const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
@@ -229,8 +245,8 @@ export function updateNavObjects(navMeshes, time) {
 // --- Gemホバー制御 ---
 export function setGemHover(isHovered) {
     if (_gemSprite) {
-        // ホバー時: 少し大きく + 明るく
-        const scale = isHovered ? GEM_SPRITE_SIZE * 1.15 : GEM_SPRITE_SIZE;
+        const s = gemParams.spriteSize;
+        const scale = isHovered ? s * 1.15 : s;
         _gemSprite.scale.set(scale, scale, 1);
         _gemSprite.material.opacity = isHovered ? 1.0 : 0.85;
     }

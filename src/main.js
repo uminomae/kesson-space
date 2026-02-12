@@ -9,11 +9,12 @@ import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
 import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget, getScrollProgress } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 import { getOrbScreenData, updateNavLabels } from './nav-objects.js';
+import { rebuildGem } from './nav-objects.js';
 import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
-import { toggles, breathConfig, distortionParams, fluidParams } from './config.js';
+import { toggles, breathConfig, distortionParams, fluidParams, gemParams } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 
 let composer;
@@ -159,6 +160,11 @@ function applyDevValue(key, value) {
     if (key === 'heatHazeSpeed')  distortionPass.uniforms.uHeatHazeSpeed.value = value;
     if (key === 'dofStrength')    distortionPass.uniforms.uDofStrength.value = value;
     if (key === 'dofFocusRadius') distortionPass.uniforms.uDofFocusRadius.value = value;
+
+    // --- Gemパラメータ ---
+    if (key === 'gemOuterRadius') { gemParams.outerRadius = value; rebuildGem(); }
+    if (key === 'gemInnerRadius') { gemParams.innerRadius = value; rebuildGem(); }
+    if (key === 'gemSpriteSize')  { gemParams.spriteSize = value; rebuildGem(); }
 
     updateOverlay(key, value);
 }
