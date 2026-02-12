@@ -1,5 +1,5 @@
 // viewer.js — draft.md ビューアー（PDF iframe → Markdown HTML）
-// GitHub Pages の draft.md を fetch → パース → HTML レンダリング
+// raw.githubusercontent.com から draft.md を fetch → パース → HTML レンダリング
 // PDF はダウンロードリンクとして残す
 
 let _viewer = null;
@@ -185,11 +185,24 @@ export function isViewerOpen() {
 }
 
 /**
- * PDF URL から draft.md URL を導出
- * kesson-general.pdf → kesson-general-draft.md
- * kesson-general-en.pdf → kesson-general-en-draft.md
+ * PDF URL (GitHub Pages) から raw.githubusercontent.com の draft.md URL を導出
+ *
+ * Input:  https://uminomae.github.io/pjdhiro/assets/pdf/kesson-general.pdf
+ * Output: https://raw.githubusercontent.com/uminomae/pjdhiro/main/assets/pdf/kesson-general-draft.md
+ *
+ * Input:  https://uminomae.github.io/pjdhiro/assets/pdf/kesson-general-en.pdf
+ * Output: https://raw.githubusercontent.com/uminomae/pjdhiro/main/assets/pdf/kesson-general-en-draft.md
  */
 function deriveDraftUrl(pdfUrl) {
+    // GitHub Pages URL → raw URL
+    // uminomae.github.io/pjdhiro/assets/pdf/X.pdf
+    //   → raw.githubusercontent.com/uminomae/pjdhiro/main/assets/pdf/X-draft.md
+    const RAW_BASE = 'https://raw.githubusercontent.com/uminomae/pjdhiro/main/';
+    const match = pdfUrl.match(/github\.io\/pjdhiro\/(.+)\.pdf$/);
+    if (match) {
+        return RAW_BASE + match[1] + '-draft.md';
+    }
+    // フォールバック: 単純な拡張子置換
     return pdfUrl.replace(/\.pdf$/, '-draft.md');
 }
 
@@ -213,7 +226,7 @@ export async function openPdfViewer(pdfUrl, label) {
         if (!res.ok) throw new Error(`${res.status}`);
         const raw = await res.text();
 
-        // Jekyll が HTML に変換してしまう場合のチェック
+        // Jekyll が HTML に変換してしまった場合のガード
         if (raw.trim().startsWith('<!') || raw.trim().startsWith('<html')) {
             throw new Error('Got HTML instead of markdown');
         }
