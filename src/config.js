@@ -97,9 +97,9 @@ export const distortionParams = {
 
 // --- Gem四芒星パラメータ ---
 export const gemParams = {
-    outerRadius: 0.42,
-    innerRadius: 0.13,
-    sharpness:   2.5,     // SDF指数: 小→丸い四葉、大→鋭い四芒星
+    outerRadius: 0.45,
+    innerRadius: 0.05,    // 細いくびれ → 鋭い星
+    sharpness:   8.0,     // SDF指数: 高い値 → 鋭い先端
     spriteSize:  5.0,
     posX: 10,
     posY: 3,
