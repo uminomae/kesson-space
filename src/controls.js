@@ -1,22 +1,34 @@
-// controls.js — カメラ制御（スクロールレイアウト版）
-// OrbitControls無効、自動回転 + FOV呼吸のみ
-// モバイルファースト: タッチ操作はすべてページスクロールに渡す
+// controls.js — カメラ制御（スクロール潜水版）
+// モバイルファースト: タッチ/ホイールはすべてページスクロールに渡す
+// スクロール → カメラY下降（水面に潜る演出）
 
-import { toggles, breathConfig } from './config.js';
+import { toggles, breathConfig, sceneParams } from './config.js';
 
 let _camera;
 
-// デスクトップ基準: 16:9, 高さ900px
+// デスクトップ基準
 const REF_ASPECT = 16 / 9;
 const REF_HEIGHT = 900;
 
+// スクロール潜水パラメータ
+const DIVE_DEPTH = 30;           // カメラが潜る最大Y距離
+const DIVE_SCROLL_VH = 1.5;     // 何vh分のスクロールで完全潜水
+const LOOKAT_BASE_Y = -1;       // 初期lookAtのY
+
 // 自動回転
-let _autoRotateSpeed = 1.0; // deg/sec
-let _targetY = -1;
+let _autoRotateSpeed = 1.0;
+let _baseCamY = 0;
+let _baseCamX = -14;
+let _baseCamZ = 34;
+
+// スクロール進捗 (0 = 水面, 1 = 完全潜水)
+let _scrollProgress = 0;
 
 export function initControls(camera, container, renderer) {
     _camera = camera;
-    // OrbitControls不使用 — タッチ/ホイールをページスクロールに渡す
+    _baseCamY = sceneParams.camY;
+    _baseCamX = sceneParams.camX;
+    _baseCamZ = sceneParams.camZ;
 }
 
 export function setAutoRotateSpeed(speed) {
@@ -24,11 +36,21 @@ export function setAutoRotateSpeed(speed) {
 }
 
 export function setCameraPosition(x, y, z) {
-    if (_camera) _camera.position.set(x, y, z);
+    _baseCamX = x;
+    _baseCamY = y;
+    _baseCamZ = z;
 }
 
 export function setTarget(x, y, z) {
-    _targetY = y;
+    // unused in scroll mode
+}
+
+/**
+ * スクロール進捗を取得 (0~1)
+ * 外部から参照可能
+ */
+export function getScrollProgress() {
+    return _scrollProgress;
 }
 
 /**
@@ -57,9 +79,17 @@ function getAdjustedFovBase() {
 export function updateControls(time, breathVal = 0.5) {
     if (!_camera) return;
 
-    const fovBase = getAdjustedFovBase();
+    // --- スクロール進捗 ---
+    const diveScrollPx = window.innerHeight * DIVE_SCROLL_VH;
+    _scrollProgress = Math.min(1, window.scrollY / diveScrollPx);
+
+    // --- easeInOut for smooth dive ---
+    const eased = _scrollProgress < 0.5
+        ? 2 * _scrollProgress * _scrollProgress
+        : 1 - Math.pow(-2 * _scrollProgress + 2, 2) / 2;
 
     // --- FOV呼吸 ---
+    const fovBase = getAdjustedFovBase();
     if (toggles.fovBreath) {
         _camera.fov = fovBase + (breathVal * 2 - 1) * breathConfig.fovAmplitude;
     } else {
@@ -68,17 +98,20 @@ export function updateControls(time, breathVal = 0.5) {
     _camera.updateProjectionMatrix();
 
     // --- 自動回転（Y軸周り） ---
-    if (toggles.autoRotate) {
-        const radius = Math.sqrt(
-            _camera.position.x * _camera.position.x +
-            _camera.position.z * _camera.position.z
-        );
-        const angle = Math.atan2(_camera.position.x, _camera.position.z);
-        const speed = _autoRotateSpeed * 0.002; // ゆっくり
-        const newAngle = angle + speed;
+    const radius = Math.sqrt(_baseCamX * _baseCamX + _baseCamZ * _baseCamZ);
+    let angle = Math.atan2(_baseCamX, _baseCamZ);
 
-        _camera.position.x = radius * Math.sin(newAngle);
-        _camera.position.z = radius * Math.cos(newAngle);
-        _camera.lookAt(0, _targetY, -10);
+    if (toggles.autoRotate) {
+        // ゆっくり回転を累積
+        angle += time * _autoRotateSpeed * 0.002;
     }
+
+    const rotX = radius * Math.sin(angle);
+    const rotZ = radius * Math.cos(angle);
+
+    // --- スクロールでカメラY下降 ---
+    const diveY = _baseCamY - eased * DIVE_DEPTH;
+
+    _camera.position.set(rotX, diveY, rotZ);
+    _camera.lookAt(0, LOOKAT_BASE_Y - eased * DIVE_DEPTH * 0.5, -10);
 }
