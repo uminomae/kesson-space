@@ -268,7 +268,7 @@
       50% { opacity: 1; transform: translateX(-50%) translateY(4px); }
     }
 
-    /* --- スクロール案内（上部・浮上用） --- */
+    /* --- スクロール案内（上部） --- */
     #scroll-hint-top {
       position: fixed;
       top: 16px;
@@ -278,8 +278,14 @@
       text-align: center;
       cursor: pointer;
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #scroll-hint-top.visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
       animation: scrollHintTopPulse 3s ease-in-out infinite;
     }
     #scroll-hint-top .arrow {
@@ -299,8 +305,8 @@
       color: rgba(180, 200, 230, 0.6);
     }
     @keyframes scrollHintTopPulse {
-      0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
-      50% { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-4px); }
     }
 
     /* --- 開発ログセクション --- */
@@ -405,10 +411,10 @@
     <div class="arrow">▾</div>
   </div>
 
-  <!-- スクロール案内（上部・浮上用） -->
+  <!-- スクロール案内（上部） -->
   <div id="scroll-hint-top">
     <div class="arrow">▴</div>
-    <span>surface</span>
+    <span>scroll</span>
   </div>
 
   <!-- 潜水スペーサー（カメラ下降のスクロール余白） -->
