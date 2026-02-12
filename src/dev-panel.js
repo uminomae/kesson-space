@@ -16,7 +16,7 @@ const TOGGLES = [
     { key: 'fluidField',    label: '流体かき混ぜ' },
     { key: 'heatHaze',      label: '熱波' },
     { key: 'dof',           label: '被写界深度' },
-    { key: 'orbRefraction',label: 'オーブ屈折' },
+    { key: 'orbRefraction', label: 'オーブ屈折' },
 ];
 
 const SECTIONS = [
@@ -67,13 +67,17 @@ const SECTIONS = [
         id: 'gem',
         title: 'Gem 四芒星',
         params: {
-            gemMeshScale:    { label: 'スケール',      min: 0.3, max: 4.0, step: 0.1, default: gemParams.meshScale },
-            gemGlowStrength: { label: 'グロー強度',    min: 0.0, max: 4.0, step: 0.1, default: gemParams.glowStrength },
-            gemRimPower:     { label: 'リム鋭さ',      min: 0.5, max: 8.0, step: 0.1, default: gemParams.rimPower },
-            gemInnerGlow:    { label: '中心グロー',    min: 0.0, max: 3.0, step: 0.1, default: gemParams.innerGlow },
-            gemPosX:         { label: '位置 X',        min: -30, max: 30, step: 1, default: gemParams.posX },
-            gemPosY:         { label: '位置 Y',        min: -15, max: 15, step: 1, default: gemParams.posY },
-            gemPosZ:         { label: '位置 Z',        min: -10, max: 40, step: 1, default: gemParams.posZ },
+            gemMeshScale:           { label: 'スケール',     min: 0.3, max: 4.0, step: 0.1, default: gemParams.meshScale },
+            gemGlowStrength:        { label: 'グロー強度',   min: 0.0, max: 5.0, step: 0.1, default: gemParams.glowStrength },
+            gemRimPower:            { label: 'リム鋭さ',     min: 0.5, max: 8.0, step: 0.1, default: gemParams.rimPower },
+            gemInnerGlow:           { label: '中心グロー',   min: 0.0, max: 3.0, step: 0.1, default: gemParams.innerGlow },
+            gemTurbulence:          { label: '乱流',         min: 0.0, max: 2.0, step: 0.05, default: gemParams.turbulence },
+            gemHaloWidth:           { label: 'Halo幅',       min: 0.05, max: 1.0, step: 0.05, default: gemParams.haloWidth },
+            gemHaloIntensity:       { label: 'Halo強度',     min: 0.0, max: 2.0, step: 0.05, default: gemParams.haloIntensity },
+            gemChromaticAberration: { label: '色収差',       min: 0.0, max: 0.5, step: 0.01, default: gemParams.chromaticAberration },
+            gemPosX:                { label: '位置 X',       min: -30, max: 30, step: 1, default: gemParams.posX },
+            gemPosY:                { label: '位置 Y',       min: -15, max: 15, step: 1, default: gemParams.posY },
+            gemPosZ:                { label: '位置 Z',       min: -10, max: 40, step: 1, default: gemParams.posZ },
         }
     },
     {

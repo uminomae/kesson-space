@@ -95,12 +95,16 @@ export const distortionParams = {
     dofFocusRadius: 0.32,
 };
 
-// --- Gem四芒星パラメータ（GLTFメッシュ版） ---
+// --- Gem四芒星パラメータ（Gemini設計: 乱流+Haloグロー版） ---
 export const gemParams = {
-    meshScale:    1.0,      // GLTFメッシュのスケール
-    glowStrength: 2.0,      // フレネルグロー強度（リムの明るさ）
-    rimPower:     3.0,      // リムの鋭さ（高い→エッジのみ発光）
-    innerGlow:    0.4,      // 中心グロー（低め→白飛び防止）
+    meshScale:           1.0,    // GLTFメッシュのスケール
+    glowStrength:        2.0,    // フレネルグロー強度
+    rimPower:            2.5,    // リムの鋭さ
+    innerGlow:           0.3,    // 中心グロー（低め→暗闇感）
+    turbulence:          0.5,    // 法線擾乱強度（乱流）
+    haloWidth:           0.3,    // Haloの幅
+    haloIntensity:       0.6,    // Haloの強度
+    chromaticAberration: 0.15,   // 色収差
     posX: 10,
     posY: 3,
     posZ: 18,
