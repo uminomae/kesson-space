@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { toggles } from './config.js';
 import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
 import { createNavObjects, updateNavObjects } from './nav-objects.js';
+import { getScrollProgress } from './controls.js';
 
 let _camera;
 let _renderer;
@@ -20,6 +21,12 @@ function onPointerDown(event) {
 
 function onPointerUp(event) {
     if (isViewerOpen() || !_pointerDownPos) return;
+
+    // 潜水中はクリック無効
+    if (getScrollProgress() > 0.1) {
+        _pointerDownPos = null;
+        return;
+    }
 
     const dx = event.clientX - _pointerDownPos.x;
     const dy = event.clientY - _pointerDownPos.y;
@@ -52,7 +59,7 @@ function onPointerUp(event) {
 }
 
 function onPointerMove(event) {
-    if (isViewerOpen() || !toggles.navOrbs) {
+    if (isViewerOpen() || !toggles.navOrbs || getScrollProgress() > 0.1) {
         _renderer.domElement.style.cursor = 'default';
         return;
     }
@@ -79,8 +86,10 @@ export function initNavigation({ scene, camera, renderer }) {
 }
 
 export function updateNavigation(time) {
-    _navMeshes.forEach(g => g.visible = toggles.navOrbs);
-    if (toggles.navOrbs) {
+    // 潜水中はオーブ非表示
+    const submerged = getScrollProgress() > 0.3;
+    _navMeshes.forEach(g => g.visible = toggles.navOrbs && !submerged);
+    if (toggles.navOrbs && !submerged) {
         updateNavObjects(_navMeshes, time);
     }
 }
