@@ -24,6 +24,29 @@ function parseFrontmatter(text) {
 }
 
 /**
+ * 安全なHTML描画（<a> と <hr> のみ許可、他はエスケープ）
+ */
+function safeHTML(text) {
+    // 1. 全体をエスケープ
+    let escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    // 2. <a href="...">...</a> だけ復元（https:// のみ許可）
+    escaped = escaped.replace(
+        /&lt;a\s+href=&quot;(https:\/\/[^&]+)&quot;&gt;([^&]*?)&lt;\/a&gt;/g,
+        '<a href="$1" target="_blank" rel="noopener">$2</a>'
+    );
+
+    // 3. <hr> を復元
+    escaped = escaped.replace(/&lt;hr&gt;/g, '<hr>');
+
+    return escaped;
+}
+
+/**
  * 開発ログセクションを描画（現在言語のみ）
  */
 export async function renderDevLog() {
@@ -57,9 +80,19 @@ export async function renderDevLog() {
 
         // 段落
         paragraphs.forEach((text) => {
+            const trimmed = text.trim();
+
+            // <hr> 単独段落はhr要素として描画
+            if (trimmed === '<hr>') {
+                const hr = document.createElement('hr');
+                hr.className = 'log-separator';
+                container.appendChild(hr);
+                return;
+            }
+
             const p = document.createElement('p');
             p.className = 'log-paragraph';
-            p.textContent = text;
+            p.innerHTML = safeHTML(trimmed);
             p.style.opacity = '0';
             p.style.transform = 'translateY(20px)';
             p.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
