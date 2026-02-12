@@ -26,8 +26,8 @@ function injectNavLabelStyles() {
             pointer-events: none;
             color: rgba(255, 255, 255, 0.9);
             font-family: "Sawarabi Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
-            font-size: 1.1rem;
-            letter-spacing: 0.15em;
+            font-size: clamp(0.55rem, 2.8vw, 1.1rem);
+            letter-spacing: clamp(0.05em, 0.4vw, 0.15em);
             text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
             transform: translate(-50%, -100%);
             white-space: nowrap;
