@@ -102,8 +102,8 @@ export function updateControls(time, breathVal = 0.5) {
     let angle = Math.atan2(_baseCamX, _baseCamZ);
 
     if (toggles.autoRotate) {
-        // ゆっくり回転を累積
-        angle += time * _autoRotateSpeed * 0.002;
+        // OrbitControls autoRotateSpeed=1.0 相当: ~0.05 rad/sec（約125秒で1周）
+        angle += time * _autoRotateSpeed * 0.05;
     }
 
     const rotX = radius * Math.sin(angle);
