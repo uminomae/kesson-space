@@ -19,14 +19,13 @@ export function initControls(camera, container, renderer) {
     _controls.enableDamping = true;
     _controls.dampingFactor = 0.04;
 
-    _controls.minDistance = 10;
-    _controls.maxDistance = 80;
+    // --- ズーム無効（スクロールをページに渡す） --- // CHANGED
+    _controls.enableZoom = false;
 
     _controls.minPolarAngle = Math.PI * 0.15;
     _controls.maxPolarAngle = Math.PI * 0.75;
 
     _controls.rotateSpeed = 0.4;
-    _controls.zoomSpeed = 0.6;
 
     _controls.enablePan = true;
     _controls.panSpeed = 0.3;
@@ -46,7 +45,6 @@ export function initControls(camera, container, renderer) {
     };
 
     renderer.domElement.addEventListener('pointerdown', resumeAutoRotate);
-    renderer.domElement.addEventListener('wheel', resumeAutoRotate, { passive: true });
     renderer.domElement.addEventListener('touchstart', resumeAutoRotate, { passive: true });
 }
 
