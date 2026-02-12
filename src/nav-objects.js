@@ -455,7 +455,6 @@ export function setGemHover(isHovered) {
 // --- HTMLラベルの位置更新 ---
 const _labelWorldPos = new THREE.Vector3();
 const LABEL_Y_OFFSET = 3.5;
-const GEM_LABEL_Y_OFFSET = 3.5;
 
 let _gazeX = 0.5;
 let _gazeY = 0.5;
@@ -529,7 +528,7 @@ export function updateNavLabels(navMeshes, camera) {
         }
 
         _gemGroup.getWorldPosition(_labelWorldPos);
-        updateSingleLabel(_gemLabelElement, _labelWorldPos, GEM_LABEL_Y_OFFSET, camera, scrollFade);
+        updateSingleLabel(_gemLabelElement, _labelWorldPos, gemParams.labelYOffset, camera, scrollFade);
     }
 }
 
