@@ -17,103 +17,164 @@ const ORB_3D_RADIUS = 2.0;
 
 let _labelElements = [];
 let _gemLabelElement = null;
-let _gemSprite = null;
+let _gemGroup = null;
 let _scene = null;
 let _navMeshes = null;
 
 // ========================================
-// Canvasで四芒星を描画→Spriteテクスチャ
+// Gem SDF シェーダー（billboard + オーブ風）
 // ========================================
-function createGeminiStarTexture(outerR, innerR) {
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
+const gemVertexShader = /* glsl */ `
+uniform float uSize;
+varying vec2 vUv;
 
-    const cx = size / 2;
-    const cy = size / 2;
-    const outer = size * outerR;
-    const inner = size * innerR;
-    const points = 4;
-
-    // --- グロー元 ---
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer * 1.3);
-    glow.addColorStop(0, 'rgba(123, 143, 232, 0.25)');
-    glow.addColorStop(0.5, 'rgba(123, 143, 232, 0.08)');
-    glow.addColorStop(1, 'rgba(123, 143, 232, 0.0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, size, size);
-
-    // --- 四芒星本体 ---
-    ctx.beginPath();
-    for (let i = 0; i < points * 2; i++) {
-        const r = i % 2 === 0 ? outer : inner;
-        const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
-        const x = cx + Math.cos(angle) * r;
-        const y = cy + Math.sin(angle) * r;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-
-    const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer);
-    starGrad.addColorStop(0, 'rgba(160, 176, 240, 0.9)');
-    starGrad.addColorStop(0.4, 'rgba(123, 143, 232, 0.75)');
-    starGrad.addColorStop(1, 'rgba(90, 110, 200, 0.3)');
-    ctx.fillStyle = starGrad;
-    ctx.fill();
-
-    ctx.shadowColor = 'rgba(123, 143, 232, 0.6)';
-    ctx.shadowBlur = 15;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    return texture;
+void main() {
+    vUv = uv;
+    // Billboard: 中心をビュー空間に変換し、頂点をオフセット
+    vec4 mvCenter = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    mvCenter.xy += position.xy * uSize;
+    gl_Position = projectionMatrix * mvCenter;
 }
+`;
 
-function createGemSprite() {
-    const texture = createGeminiStarTexture(gemParams.outerRadius, gemParams.innerRadius);
+const gemFragmentShader = /* glsl */ `
+precision highp float;
 
-    const material = new THREE.SpriteMaterial({
-        map: texture,
+uniform float uTime;
+uniform float uOuterRadius;
+uniform float uInnerRadius;
+uniform float uHover;
+
+varying vec2 vUv;
+
+void main() {
+    vec2 p = vUv * 2.0 - 1.0;
+    float r = length(p);
+    float angle = atan(p.y, p.x);
+
+    // --- 呼吸 ---
+    float breath = 1.0 + sin(uTime * 0.5) * 0.05;
+
+    // --- 四芒星 SDF（cos(2θ) ベース） ---
+    float starShape = pow(abs(cos(angle * 2.0)), 0.5);
+    float starR = mix(uInnerRadius, uOuterRadius, starShape) * breath;
+    float dist = r - starR;
+
+    // --- 本体（ソフトエッジ） ---
+    float body = 1.0 - smoothstep(-0.02, 0.02, dist);
+
+    // --- 中心グロー（オーブ風 innerGlow） ---
+    float centerGlow = exp(-r * r * 8.0);
+
+    // --- 外側ヘイロー（オーブ風 halo） ---
+    float halo = exp(-max(dist, 0.0) * 6.0) * 0.35;
+
+    // --- エッジリム（屈折風のリムライト） ---
+    float rim = exp(-dist * dist * 300.0) * 0.7;
+
+    // --- 色収差（オーブ風 chromatic aberration） ---
+    float rShift = 1.0 - smoothstep(-0.04, 0.04, dist + 0.015);
+    float bShift = 1.0 - smoothstep(-0.04, 0.04, dist - 0.015);
+
+    // --- カラーパレット ---
+    vec3 coreColor = vec3(0.55, 0.62, 0.92);
+    vec3 glowColor = vec3(0.42, 0.50, 0.85);
+    vec3 rimColor  = vec3(0.72, 0.80, 1.0);
+
+    // --- 合成 ---
+    vec3 color = coreColor * body * (0.5 + centerGlow * 2.0);
+    color += rimColor * rim;
+    color += glowColor * halo;
+
+    // 色収差
+    color.r += (rShift - body) * 0.06;
+    color.b += (bShift - body) * 0.06;
+
+    // 乱流シマー（オーブ風 turbulence）
+    float shimmer = sin(angle * 8.0 + uTime * 1.5) * 0.02 * body;
+    color += shimmer;
+
+    float alpha = max(body * 0.85, max(halo, rim * 0.5));
+
+    // --- ホバー ---
+    color *= 1.0 + uHover * 0.35;
+    alpha = min(alpha * (1.0 + uHover * 0.2), 1.0);
+
+    if (alpha < 0.001) discard;
+
+    gl_FragColor = vec4(color, alpha);
+}
+`;
+
+// ========================================
+// Gem Group 生成（hitSprite + shaderMesh）
+// ========================================
+function createGemGroup() {
+    const group = new THREE.Group();
+    group.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
+
+    // --- 不可視ヒットスプライト（レイキャスト用） ---
+    const hitMat = new THREE.SpriteMaterial({
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false,
+    });
+    const hitSprite = new THREE.Sprite(hitMat);
+    const hitSize = gemParams.spriteSize * 0.8;
+    hitSprite.scale.set(hitSize, hitSize, 1);
+    group.add(hitSprite);
+
+    // --- SDFシェーダーメッシュ（ビジュアル） ---
+    const geom = new THREE.PlaneGeometry(1, 1);
+    const mat = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime:        { value: 0.0 },
+            uSize:        { value: gemParams.spriteSize },
+            uOuterRadius: { value: gemParams.outerRadius },
+            uInnerRadius: { value: gemParams.innerRadius },
+            uHover:       { value: 0.0 },
+        },
+        vertexShader: gemVertexShader,
+        fragmentShader: gemFragmentShader,
         transparent: true,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
+        side: THREE.DoubleSide,
     });
 
-    const sprite = new THREE.Sprite(material);
-    const s = gemParams.spriteSize;
-    sprite.scale.set(s, s, 1);
-    sprite.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.raycast = () => {};  // レイキャスト無効化（hitSpriteで処理）
+    group.add(mesh);
 
-    return sprite;
+    group.userData = {
+        hitSprite,
+        shaderMesh: mesh,
+    };
+
+    return group;
 }
 
-// --- devPanelからの再構築---
+// --- devPanelからの再構築（形状パラメータ変更時） ---
 export function rebuildGem() {
-    if (!_gemSprite || !_scene) return;
-
-    // テクスチャ再描画
-    if (_gemSprite.material.map) {
-        _gemSprite.material.map.dispose();
+    if (!_gemGroup) return;
+    const mesh = _gemGroup.userData.shaderMesh;
+    if (mesh) {
+        mesh.material.uniforms.uOuterRadius.value = gemParams.outerRadius;
+        mesh.material.uniforms.uInnerRadius.value = gemParams.innerRadius;
+        mesh.material.uniforms.uSize.value = gemParams.spriteSize;
     }
-    const newTexture = createGeminiStarTexture(gemParams.outerRadius, gemParams.innerRadius);
-    _gemSprite.material.map = newTexture;
-    _gemSprite.material.needsUpdate = true;
-
-    // サイズ更新
-    const s = gemParams.spriteSize;
-    _gemSprite.scale.set(s, s, 1);
+    const hit = _gemGroup.userData.hitSprite;
+    if (hit) {
+        const s = gemParams.spriteSize * 0.8;
+        hit.scale.set(s, s, 1);
+    }
 }
 
 // --- devPanelからの位置更新 ---
 export function updateGemPosition() {
-    if (!_gemSprite) return;
-    _gemSprite.userData.baseY = gemParams.posY;
-    _gemSprite.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
+    if (!_gemGroup) return;
+    _gemGroup.userData.baseY = gemParams.posY;
+    _gemGroup.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
 }
 
 // ========================================
@@ -203,24 +264,30 @@ export function createNavObjects(scene) {
         _labelElements.push(createHtmlLabel(navItem.label));
     });
 
-    // --- Gemini Gem四芒星（Sprite） ---
+    // --- Gemini Gem（SDF シェーダー Group） ---
     const gemData = strings.gem;
-    const gemSprite = createGemSprite();
+    const gemGroup = createGemGroup();
     const gemIndex = navMeshes.length;
 
-    gemSprite.userData = {
+    // hitSprite に userData（レイキャスト用）
+    gemGroup.userData.hitSprite.userData = {
         type: 'nav',
         url: gemData.url,
         label: gemData.label,
-        baseY: gemParams.posY,
-        index: gemIndex,
         isGem: true,
         external: true,
     };
 
-    scene.add(gemSprite);
-    navMeshes.push(gemSprite);
-    _gemSprite = gemSprite;
+    // Group 自身の userData
+    Object.assign(gemGroup.userData, {
+        baseY: gemParams.posY,
+        index: gemIndex,
+        isGem: true,
+    });
+
+    scene.add(gemGroup);
+    navMeshes.push(gemGroup);
+    _gemGroup = gemGroup;
     _navMeshes = navMeshes;
 
     _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem');
@@ -233,10 +300,16 @@ export function updateNavObjects(navMeshes, time) {
         const data = obj.userData;
 
         if (data.isGem) {
+            // Y浮遊
             obj.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * 0.4;
-            const s = gemParams.spriteSize;
-            const breathScale = s * (1.0 + Math.sin(time * 0.5) * 0.05);
-            obj.scale.set(breathScale, breathScale, 1);
+
+            // シェーダー uniform 更新
+            const mesh = data.shaderMesh;
+            if (mesh) {
+                const mat = mesh.material;
+                mat.uniforms.uTime.value = time;
+                // 呼吸はシェーダー内で処理（uSize は静的）
+            }
         } else {
             const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
             obj.position.y = data.baseY + floatOffset;
@@ -246,11 +319,11 @@ export function updateNavObjects(navMeshes, time) {
 
 // --- Gemホバー制御 ---
 export function setGemHover(isHovered) {
-    if (_gemSprite) {
-        const s = gemParams.spriteSize;
-        const scale = isHovered ? s * 1.15 : s;
-        _gemSprite.scale.set(scale, scale, 1);
-        _gemSprite.material.opacity = isHovered ? 1.0 : 0.85;
+    if (_gemGroup) {
+        const mesh = _gemGroup.userData.shaderMesh;
+        if (mesh) {
+            mesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
+        }
     }
 }
 
@@ -324,13 +397,13 @@ export function updateNavLabels(navMeshes, camera) {
         updateSingleLabel(el, _labelWorldPos, LABEL_Y_OFFSET, camera, scrollFade);
     });
 
-    if (_gemLabelElement && _gemSprite) {
+    if (_gemLabelElement && _gemGroup) {
         if (!visible || scrollFade <= 0) {
             _gemLabelElement.style.opacity = '0';
             return;
         }
 
-        _gemSprite.getWorldPosition(_labelWorldPos);
+        _gemGroup.getWorldPosition(_labelWorldPos);
         updateSingleLabel(_gemLabelElement, _labelWorldPos, GEM_LABEL_Y_OFFSET, camera, scrollFade);
     }
 }
