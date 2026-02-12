@@ -248,11 +248,14 @@ function animate() {
         }
     }
 
-    // --- 上部 scroll hint: スクロール中は表示、最上部で消える ---
+    // --- 上部 scroll hint: スクロールしたら出現、最上部で消える ---
     if (scrollHintTop) {
         const showTop = !atTop && scrollProg > 0.15;
-        scrollHintTop.style.opacity = showTop ? '1' : '0';
-        scrollHintTop.style.pointerEvents = showTop ? 'auto' : 'none';
+        if (showTop) {
+            scrollHintTop.classList.add('visible');
+        } else {
+            scrollHintTop.classList.remove('visible');
+        }
     }
 
     // --- 浮上ボタン ---
