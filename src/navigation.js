@@ -22,7 +22,6 @@ function onPointerDown(event) {
 function onPointerUp(event) {
     if (isViewerOpen() || !_pointerDownPos) return;
 
-    // 潜水中はクリック無効
     if (getScrollProgress() > 0.1) {
         _pointerDownPos = null;
         return;
@@ -48,7 +47,6 @@ function onPointerUp(event) {
         let hitObj = intersects[0].object;
         let data = hitObj.userData;
 
-        // Groupの子にヒットした場合は親のcoreからuserDataを取得
         if (!data.url) {
             const parent = hitObj.parent;
             if (parent && parent.userData.core) {
@@ -57,7 +55,7 @@ function onPointerUp(event) {
         }
 
         if (data.url) {
-            // CHANGED: 外部リンクはwindow.openで開く（PDFビューアーではない）
+            // CHANGED: 外部リンクはwindow.open
             if (data.external) {
                 window.open(data.url, '_blank', 'noopener,noreferrer');
             } else {
@@ -70,7 +68,7 @@ function onPointerUp(event) {
 function onPointerMove(event) {
     if (isViewerOpen() || !toggles.navOrbs || getScrollProgress() > 0.1) {
         _renderer.domElement.style.cursor = 'default';
-        setGemHover(false);  // CHANGED
+        setGemHover(false);
         return;
     }
 
@@ -83,7 +81,6 @@ function onPointerMove(event) {
     const isHovering = intersects.length > 0;
     _renderer.domElement.style.cursor = isHovering ? 'pointer' : 'default';
 
-    // CHANGED: Gemホバー判定
     if (isHovering) {
         const hitObj = intersects[0].object;
         const isGemHit = hitObj.userData.isGem || (hitObj.parent && hitObj.parent.userData.isGem);
@@ -105,11 +102,11 @@ export function initNavigation({ scene, camera, renderer }) {
     renderer.domElement.addEventListener('pointermove', onPointerMove);
 }
 
+// FIXED: cameraをupdateNavObjectsに渡す
 export function updateNavigation(time) {
-    // 潜水中はオーブ非表示
     const submerged = getScrollProgress() > 0.3;
     _navMeshes.forEach(g => g.visible = toggles.navOrbs && !submerged);
     if (toggles.navOrbs && !submerged) {
-        updateNavObjects(_navMeshes, time);
+        updateNavObjects(_navMeshes, time, _camera);
     }
 }

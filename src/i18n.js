@@ -19,7 +19,7 @@ const STRINGS = {
             { label: '学術版', url: PDF_BASE + 'kesson-academic.pdf' },
         ],
         gem: {
-            label: 'アドバイザー',
+            label: 'Gem',
             url: 'https://gemini.google.com/gem/1KtKkuMSS95qeHBArr3-LgH4Y0XCOs-z-?usp=sharing',
         },
         devLog: {
@@ -53,7 +53,7 @@ const STRINGS = {
             { label: 'Academic', url: PDF_BASE + 'kesson-academic-en.pdf' },
         ],
         gem: {
-            label: 'Advisor',
+            label: 'Gem',
             url: 'https://gemini.google.com/gem/1KtKkuMSS95qeHBArr3-LgH4Y0XCOs-z-?usp=sharing',
         },
         devLog: {

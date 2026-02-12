@@ -7,29 +7,26 @@ import { toggles } from './config.js';
 import { getScrollProgress } from './controls.js';
 
 // --- 正三角形配置（XZ平面、天井から見て三角形） ---
-// Y は全て同じ高さ、X-Z で正三角形を形成
-// 辺長 ≈ 16, 重心が原点付近
-const TRI_R = 9;  // 外接円半径
+const TRI_R = 9;
 const NAV_POSITIONS = [
-    { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },  // 一般向け（手前）
-    { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },  // 設計者向け（左奥）
-    { position: [TRI_R * Math.sin(4*Math.PI/3),   -8, TRI_R * Math.cos(4*Math.PI/3)],  color: 0x5577bb },  // 学術版（右奥）
+    { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
+    { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
+    { position: [TRI_R * Math.sin(4*Math.PI/3),   -8, TRI_R * Math.cos(4*Math.PI/3)],  color: 0x5577bb },
 ];
 
 const ORB_3D_RADIUS = 2.0;
 
 // --- Gemini星の配置 ---
-// PDFオーブ(Y=-8)より上、カメラ(Y=0)付近。頭脳に近い上方だが上スクロール不要
-const GEM_POSITION = [10, 3, 18];  // CHANGED: 右上方向に浮かぶ
-const GEM_SCALE = 2.2;             // CHANGED: オーブと同程度のサイズ
+const GEM_POSITION = [10, 3, 18];
+const GEM_SCALE = 2.2;
 
 let _labelElements = [];
-let _gemLabelElement = null;  // CHANGED: Gem専用ラベル
-let _gemMesh = null;          // CHANGED: Gem Meshへの参照
+let _gemLabelElement = null;
+let _gemMesh = null;
 
 // ========================================
 // Gemini四芒星シェーダー
-// CHANGED: 冷知的な青紫、ゆっくり脈動、ホバー対応
+// 冷知的な青紫、ゆっくり脈動、ホバー対応
 // ========================================
 const GEM_VERTEX_SHADER = `
     varying vec2 vUv;
@@ -45,7 +42,6 @@ const GEM_FRAGMENT_SHADER = `
     varying vec2 vUv;
 
     void main() {
-        // 中心からの距離
         vec2 center = vUv - 0.5;
         float dist = length(center);
 
@@ -58,7 +54,7 @@ const GEM_FRAGMENT_SHADER = `
         vec3 colorEdge = vec3(0.63, 0.69, 0.94);   // #A0B0F0
         vec3 color = mix(colorCore, colorEdge, dist * 2.0);
 
-        // ホバー時：少し明るく白みがかる
+        // ホバー時: 少し明るく白みがかる
         color = mix(color, vec3(0.75, 0.82, 1.0), uHover * 0.3);
 
         // エッジに向かうソフトフェード
@@ -74,35 +70,27 @@ const GEM_FRAGMENT_SHADER = `
 
 // ========================================
 // 四芒星シェイプ（ベジェ曲線、Geminiスパークル風）
-// CHANGED: 丸みのある四芒星をShapeGeometryで作成
+// FIXED: くびれを太くして星形を明確に
 // ========================================
 function createGeminiStarShape() {
     const shape = new THREE.Shape();
-    const tipLen = 1.0;       // 先端までの距離
-    const waist = 0.18;       // くびれの深さ（小さいほど鋭い）
-    const cpOffset = 0.35;    // ベジェ制御点のオフセット
+    const tip = 1.0;          // 先端までの距離
+    const waist = 0.32;       // FIXED: くびれの幅（大きいほど太い）
+    const cp = 0.42;          // FIXED: ベジェ制御点の位置
 
-    // 上の先端から開始
-    shape.moveTo(0, tipLen);
-
-    // 上→右: 右上のくびれを経由
-    shape.quadraticCurveTo(waist, cpOffset, tipLen, 0);
-
-    // 右→下: 右下のくびれを経由
-    shape.quadraticCurveTo(cpOffset, -waist, 0, -tipLen);
-
-    // 下→左: 左下のくびれを経由
-    shape.quadraticCurveTo(-waist, -cpOffset, -tipLen, 0);
-
-    // 左→上: 左上のくびれを経由
-    shape.quadraticCurveTo(-cpOffset, waist, 0, tipLen);
+    // 上の先端から時計回りに4つの弧を描く
+    shape.moveTo(0, tip);
+    shape.quadraticCurveTo(waist, cp, tip, 0);      // 上→右
+    shape.quadraticCurveTo(cp, -waist, 0, -tip);    // 右→下
+    shape.quadraticCurveTo(-waist, -cp, -tip, 0);   // 下→左
+    shape.quadraticCurveTo(-cp, waist, 0, tip);     // 左→上
 
     return shape;
 }
 
 function createGemMesh() {
     const shape = createGeminiStarShape();
-    const geometry = new THREE.ShapeGeometry(shape, 24);  // 24セグメントで滑らか
+    const geometry = new THREE.ShapeGeometry(shape, 24);
 
     const material = new THREE.ShaderMaterial({
         uniforms: {
@@ -146,7 +134,6 @@ function injectNavLabelStyles() {
             transition: filter 0.15s ease, opacity 0.3s ease;
             will-change: filter;
         }
-        /* CHANGED: Gem専用ラベルスタイル — 冷たい青紫の光 */
         .nav-label--gem {
             color: rgba(180, 195, 240, 0.85);
             text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
@@ -211,10 +198,10 @@ export function createNavObjects(scene) {
         _labelElements.push(createHtmlLabel(navItem.label));
     });
 
-    // --- CHANGED: Gemini Gem四芒星 ---
+    // --- Gemini Gem四芒星 ---
     const gemData = strings.gem;
     const gemMesh = createGemMesh();
-    const gemIndex = navMeshes.length;  // オーブの後のインデックス
+    const gemIndex = navMeshes.length;
 
     gemMesh.userData = {
         type: 'nav',
@@ -222,12 +209,12 @@ export function createNavObjects(scene) {
         label: gemData.label,
         baseY: GEM_POSITION[1],
         index: gemIndex,
-        isGem: true,       // CHANGED: Gem識別フラグ
-        external: true,    // CHANGED: 外部リンクフラグ（PDFビューアーではなくwindow.open）
+        isGem: true,
+        external: true,
     };
 
     scene.add(gemMesh);
-    navMeshes.push(gemMesh);  // Raycaster対象に追加
+    navMeshes.push(gemMesh);
     _gemMesh = gemMesh;
 
     _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem');
@@ -235,14 +222,20 @@ export function createNavObjects(scene) {
     return navMeshes;
 }
 
-export function updateNavObjects(navMeshes, time) {
+// FIXED: cameraを受け取ってGemをビルボード化
+export function updateNavObjects(navMeshes, time, camera) {
     navMeshes.forEach((obj) => {
         const data = obj.userData;
 
         if (data.isGem) {
-            // CHANGED: Gem — ゆっくりY軸回転 + 浮遊
-            obj.rotation.z = Math.sin(time * 0.3) * 0.15;  // 微かな傾き揺れ
+            // FIXED: ビルボード — 常にカメラに正面を向ける
+            if (camera) {
+                obj.quaternion.copy(camera.quaternion);
+            }
+
+            // 浮遊 + 微かな回転（ビルボード後に加算）
             obj.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * 0.4;
+            obj.rotateZ(Math.sin(time * 0.3) * 0.003);  // 微かな傾き
 
             // シェーダーuniform更新
             if (obj.material && obj.material.uniforms) {
@@ -256,19 +249,17 @@ export function updateNavObjects(navMeshes, time) {
     });
 }
 
-// --- CHANGED: Gemホバー制御（navigation.jsから呼ばれる） ---
+// --- Gemホバー制御 ---
 export function setGemHover(isHovered) {
     if (_gemMesh && _gemMesh.material && _gemMesh.material.uniforms) {
-        const target = isHovered ? 1.0 : 0.0;
-        // スムースに補間（毎フレーム呼ばれる想定ではないので即時反映）
-        _gemMesh.material.uniforms.uHover.value = target;
+        _gemMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
     }
 }
 
-// --- HTMLラベルの位置更新（被写界深度ボケ付き） ---
+// --- HTMLラベルの位置更新 ---
 const _labelWorldPos = new THREE.Vector3();
 const LABEL_Y_OFFSET = 3.5;
-const GEM_LABEL_Y_OFFSET = 3.0;  // CHANGED: Gem用ラベルオフセット
+const GEM_LABEL_Y_OFFSET = 3.0;
 
 let _gazeX = 0.5;
 let _gazeY = 0.5;
@@ -322,7 +313,7 @@ export function updateNavLabels(navMeshes, camera) {
 
     // --- 既存オーブラベル ---
     navMeshes.forEach((group, i) => {
-        if (group.userData.isGem) return;  // Gemは別処理
+        if (group.userData.isGem) return;
 
         const el = _labelElements[i];
         if (!el) return;
@@ -336,7 +327,7 @@ export function updateNavLabels(navMeshes, camera) {
         updateSingleLabel(el, _labelWorldPos, LABEL_Y_OFFSET, camera, scrollFade);
     });
 
-    // --- CHANGED: Gemラベル ---
+    // --- Gemラベル ---
     if (_gemLabelElement && _gemMesh) {
         if (!visible || scrollFade <= 0) {
             _gemLabelElement.style.opacity = '0';
@@ -349,7 +340,6 @@ export function updateNavLabels(navMeshes, camera) {
 }
 
 // --- スクリーン座標 + 射影半径の計算 ---
-// GC削減: ベクトルをモジュールスコープに事前確保
 const _orbCenter = new THREE.Vector3();
 const _orbEdge = new THREE.Vector3();
 const _camRight = new THREE.Vector3();
@@ -359,7 +349,6 @@ const _edgeNDC = new THREE.Vector3();
 export function getOrbScreenData(navMeshes, camera) {
     const data = [];
     navMeshes.forEach(group => {
-        // CHANGED: Gemは屈折パスに含めない（オーブ専用）
         if (group.userData.isGem) return;
 
         if (group.userData.core) {
