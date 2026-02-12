@@ -190,11 +190,16 @@ function animate() {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
 
+    // --- 統一呼吸値 ---
     const breathVal = (Math.sin(time * Math.PI / breathConfig.period - Math.PI / 2) + 1) * 0.5;
+
+    // --- スクロール進捗 ---
     const scrollProg = getScrollProgress();
 
+    // --- スクロールUI更新 ---
     updateScrollUI(scrollProg, breathVal);
 
+    // --- マウススムージング ---
     _smoothMouseX += (_mouseX - _smoothMouseX) * 0.08;
     _smoothMouseY += (_mouseY - _smoothMouseY) * 0.08;
     const velX = _smoothMouseX - _prevMouseX;
@@ -206,8 +211,10 @@ function animate() {
     updateScene(time);
     updateNavigation(time);
 
+    // --- ナビメッシュ取得（フレームで1回のみ） ---
     const navs = findNavMeshes();
 
+    // --- 流体フィールド ---
     if (toggles.fluidField) {
         fluidSystem.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
         fluidSystem.uniforms.uMouseVelocity.value.set(velX, velY);
@@ -218,6 +225,7 @@ function animate() {
         distortionPass.uniforms.uFluidInfluence.value = 0;
     }
 
+    // --- オーブ情報更新 ---
     if (toggles.navOrbs && toggles.orbRefraction) {
         if (navs.length > 0) {
             const orbData = getOrbScreenData(navs, camera);

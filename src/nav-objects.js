@@ -37,6 +37,7 @@ function createGeminiStarTexture(outerR, innerR) {
     const inner = size * innerR;
     const points = 4;
 
+    // --- グロー元 ---
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer * 1.3);
     glow.addColorStop(0, 'rgba(123, 143, 232, 0.25)');
     glow.addColorStop(0.5, 'rgba(123, 143, 232, 0.08)');
@@ -44,6 +45,7 @@ function createGeminiStarTexture(outerR, innerR) {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, size, size);
 
+    // --- 四芒星本体 ---
     ctx.beginPath();
     for (let i = 0; i < points * 2; i++) {
         const r = i % 2 === 0 ? outer : inner;
@@ -94,14 +96,15 @@ function createGemSprite() {
 export function rebuildGem() {
     if (!_gemSprite || !_scene) return;
 
+    // テクスチャ再描画
     if (_gemSprite.material.map) {
         _gemSprite.material.map.dispose();
     }
-
     const newTexture = createGeminiStarTexture(gemParams.outerRadius, gemParams.innerRadius);
     _gemSprite.material.map = newTexture;
     _gemSprite.material.needsUpdate = true;
 
+    // サイズ更新
     const s = gemParams.spriteSize;
     _gemSprite.scale.set(s, s, 1);
 }
@@ -109,8 +112,8 @@ export function rebuildGem() {
 // --- devPanelからの位置更新 ---
 export function updateGemPosition() {
     if (!_gemSprite) return;
-    _gemSprite.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
     _gemSprite.userData.baseY = gemParams.posY;
+    _gemSprite.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
 }
 
 // ========================================
