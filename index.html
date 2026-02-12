@@ -239,7 +239,7 @@
       pointer-events: none;
     }
 
-    /* --- スクロール案内 --- */
+    /* --- スクロール案内（下部） --- */
     #scroll-hint {
       position: fixed;
       bottom: 16px;
@@ -248,6 +248,7 @@
       z-index: 15;
       text-align: center;
       pointer-events: none;
+      transition: opacity 0.6s ease;
       animation: scrollHintPulse 3s ease-in-out infinite;
     }
     #scroll-hint span {
@@ -265,6 +266,41 @@
     @keyframes scrollHintPulse {
       0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
       50% { opacity: 1; transform: translateX(-50%) translateY(4px); }
+    }
+
+    /* --- スクロール案内（上部・浮上用） --- */
+    #scroll-hint-top {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+      animation: scrollHintTopPulse 3s ease-in-out infinite;
+    }
+    #scroll-hint-top .arrow {
+      font-size: 1.2rem;
+      color: rgba(180, 200, 230, 0.25);
+    }
+    #scroll-hint-top span {
+      display: block;
+      font-size: 0.65rem;
+      color: rgba(180, 200, 230, 0.3);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+    #scroll-hint-top:hover span,
+    #scroll-hint-top:hover .arrow {
+      color: rgba(180, 200, 230, 0.6);
+    }
+    @keyframes scrollHintTopPulse {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 1; transform: translateX(-50%) translateY(-4px); }
     }
 
     /* --- 開発ログセクション --- */
@@ -303,16 +339,6 @@
       letter-spacing: 0.04em;
       margin-bottom: 2.0em;
       text-shadow: 0 0 12px rgba(60, 100, 180, 0.1);
-    }
-
-    #dev-log .log-paragraph-en {
-      font-size: 0.72rem;
-      color: rgba(180, 200, 225, 0.35);
-      font-family: 'Georgia', serif;
-      line-height: 2.0;
-      letter-spacing: 0.02em;
-      margin-top: -1.2em;
-      margin-bottom: 2.4em;
     }
 
     @media (max-width: 600px) {
@@ -373,10 +399,16 @@
     <p class="subtitle" id="title-sub">Kesson Space</p>
   </div>
 
-  <!-- スクロール案内 -->
+  <!-- スクロール案内（下部） -->
   <div id="scroll-hint">
     <span>scroll</span>
     <div class="arrow">▾</div>
+  </div>
+
+  <!-- スクロール案内（上部・浮上用） -->
+  <div id="scroll-hint-top">
+    <div class="arrow">▴</div>
+    <span>surface</span>
   </div>
 
   <!-- 潜水スペーサー（カメラ下降のスクロール余白） -->
