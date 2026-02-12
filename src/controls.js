@@ -246,7 +246,7 @@ export function updateControls(time, breathVal = 0.5) {
 
     // 自動回転
     if (toggles.autoRotate) {
-        angle += time * _autoRotateSpeed * 0.05 * 2;
+        angle += time * _autoRotateSpeed * 0.05;
     }
 
     // 手動回転を加算
