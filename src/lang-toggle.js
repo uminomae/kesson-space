@@ -18,8 +18,8 @@ export function initLangToggle() {
             border: none;
             color: rgba(255, 255, 255, 0.4);
             font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
-            font-size: 0.85rem;
-            letter-spacing: 0.15em;
+            font-size: clamp(0.5rem, 2.5vmin, 0.85rem);
+            letter-spacing: clamp(0.08em, 0.4vmin, 0.15em);
             cursor: pointer;
             padding: 6px 0;
             transition: color 0.5s ease, text-shadow 0.5s ease, opacity 0.3s ease;
