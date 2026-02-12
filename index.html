@@ -328,6 +328,51 @@
       50% { transform: translateX(-50%) translateY(-4px); }
     }
 
+    /* ============================
+       操作ガイド（右上フロート）
+       ============================ */
+    #control-guide {
+      position: fixed;
+      top: 3%;
+      right: 3%;
+      z-index: 10;
+      pointer-events: none;
+      text-align: right;
+      transition: opacity 0.6s ease;
+    }
+    #control-guide .guide-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 0.5em;
+      margin-bottom: 3px;
+    }
+    #control-guide .guide-key {
+      font-size: 0.55rem;
+      color: rgba(180, 200, 230, 0.35);
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    #control-guide .guide-sep {
+      font-size: 0.5rem;
+      color: rgba(180, 200, 230, 0.2);
+    }
+    #control-guide .guide-action {
+      font-size: 0.55rem;
+      color: rgba(180, 200, 230, 0.3);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    /* タッチデバイス用: デスクトップ版を隠す */
+    #control-guide .guide-touch { display: none; }
+    #control-guide .guide-desktop { display: flex; }
+    @media (hover: none) and (pointer: coarse) {
+      #control-guide .guide-touch { display: flex; }
+      #control-guide .guide-desktop { display: none; }
+    }
+
     /* --- 開発ログセクション --- */
     #dev-log {
       position: relative;
@@ -440,6 +485,42 @@
       <h1 id="title-h1">欠損駆動思考</h1>
     </a>
     <p class="subtitle" id="title-sub">Kesson Space</p>
+  </div>
+
+  <!-- 右上: 操作ガイド -->
+  <div id="control-guide">
+    <!-- デスクトップ版 -->
+    <div class="guide-row guide-desktop">
+      <span class="guide-key" data-ja="ドラッグ" data-en="drag">drag</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="回転" data-en="rotate">rotate</span>
+    </div>
+    <div class="guide-row guide-desktop">
+      <span class="guide-key">Ctrl + wheel</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="ズーム" data-en="zoom">zoom</span>
+    </div>
+    <div class="guide-row guide-desktop">
+      <span class="guide-key" data-ja="スクロール" data-en="scroll">scroll</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="潜水" data-en="dive">dive</span>
+    </div>
+    <!-- モバイル版 -->
+    <div class="guide-row guide-touch">
+      <span class="guide-key" data-ja="横スワイプ" data-en="swipe">swipe</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="回転" data-en="rotate">rotate</span>
+    </div>
+    <div class="guide-row guide-touch">
+      <span class="guide-key" data-ja="ピンチ" data-en="pinch">pinch</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="ズーム" data-en="zoom">zoom</span>
+    </div>
+    <div class="guide-row guide-touch">
+      <span class="guide-key" data-ja="縦スクロール" data-en="scroll">scroll</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="潜水" data-en="dive">dive</span>
+    </div>
   </div>
 
   <!-- スクロール案内（下部） -->

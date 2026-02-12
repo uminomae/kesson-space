@@ -1,11 +1,13 @@
 // scroll-ui.js — スクロール連動のHTML UI制御
-// overlay, credit, scroll hints, surface button の表示/非表示を一元管理
+// overlay, credit, control-guide, scroll hints, surface button の表示/非表示を一元管理
 
 import { toggles, breathConfig } from './config.js';
+import { detectLang } from './i18n.js';
 
 // --- DOM要素キャッシュ ---
 let _overlay;
 let _credit;
+let _controlGuide;
 let _scrollHintBottom;
 let _scrollHintTop;
 let _surfaceBtn;
@@ -16,6 +18,7 @@ let _surfaceBtn;
 export function initScrollUI() {
     _overlay = document.getElementById('overlay');
     _credit = document.getElementById('credit');
+    _controlGuide = document.getElementById('control-guide');
     _scrollHintBottom = document.getElementById('scroll-hint');
     _scrollHintTop = document.getElementById('scroll-hint-top');
     _surfaceBtn = document.getElementById('surface-btn');
@@ -28,10 +31,26 @@ export function initScrollUI() {
     if (_scrollHintTop) {
         _scrollHintTop.addEventListener('click', scrollToTop);
     }
+
+    // 操作ガイドの言語切替
+    applyGuideLang();
 }
 
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * 操作ガイドの表示テキストを言語に応じて切替
+ */
+function applyGuideLang() {
+    if (!_controlGuide) return;
+    const lang = detectLang();
+    const isJa = lang === 'ja';
+
+    _controlGuide.querySelectorAll('[data-ja]').forEach(el => {
+        el.textContent = isJa ? el.dataset.ja : el.dataset.en;
+    });
 }
 
 /**
@@ -58,6 +77,11 @@ export function updateScrollUI(scrollProg, breathVal) {
     // --- クレジット: スクロール初期でフェードアウト ---
     if (_credit) {
         _credit.style.opacity = Math.max(0, 1 - scrollProg * 4);
+    }
+
+    // --- 操作ガイド: スクロール初期でフェードアウト ---
+    if (_controlGuide) {
+        _controlGuide.style.opacity = Math.max(0, 1 - scrollProg * 4);
     }
 
     // --- 下部 scroll hint: 最下部で非表示 ---
