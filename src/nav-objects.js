@@ -128,7 +128,7 @@ function createGemGroup() {
     // --- GLTFロード ---
     const loader = new GLTFLoader();
     loader.load(
-        'assets/gem-star.glb',
+        'assets/blender/gemini-logo.glb',
         (gltf) => {
             const loadedMesh = gltf.scene.children[0];
             if (!loadedMesh) return;
