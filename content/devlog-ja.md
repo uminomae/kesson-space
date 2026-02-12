@@ -1,5 +1,5 @@
 ---
-header: kesson-space 開発ログ
+header: 本サイト開発ログ：Claude Opus 4.6がコミット履歴から見た初日の私
 date: 2026.02.10 20:58 → 02.12 10:51（約38時間・123 commits）
 ---
 
