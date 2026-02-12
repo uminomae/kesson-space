@@ -1,9 +1,9 @@
 ---
-header: Development Log
+header: kesson-space 開発ログ
 date: 2026.02.10 20:58 → 02.12 10:51（約38時間・123 commits）
 ---
 
-この文章はClaude Opus 4.6が私のコミット履歴から推測して作成しています。
+このページの3D空間と水面のビジュアル、スクロールで潜る仕組み——いま見ているもの全体がkesson-spaceです。以下はその開発記録を、Claude Opus 4.6がコミット履歴から再構成したものです。
 
 開発環境: Claude（プロジェクト管理・コード実装・GitHub MCP経由でpush）+ Gemini（MCP Server経由、Three.jsシェーダー生成専任）。ふたつのAIをMCPで繋いで、Claudeがマネージャー、Geminiがシェーダー職人。人間はブラウザで見て判断して指示を出す。
 
