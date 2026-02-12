@@ -176,12 +176,26 @@ import('./dev-log.js').then(({ renderDevLog, setupScrollHint }) => {
     setupScrollHint();
 });
 
-// --- 浮上ボタン ---
+// --- 浮上ボタン + 上部scroll hint ---
 const surfaceBtn = document.getElementById('surface-btn');
+const scrollHintTop = document.getElementById('scroll-hint-top');
+
 if (surfaceBtn) {
     surfaceBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+}
+if (scrollHintTop) {
+    scrollHintTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// --- ページ最下部検知 ---
+function isNearBottom() {
+    const scrollBottom = window.scrollY + window.innerHeight;
+    const docHeight = document.documentElement.scrollHeight;
+    return (docHeight - scrollBottom) < 60;
 }
 
 const clock = new THREE.Clock();
@@ -195,10 +209,10 @@ function animate() {
 
     // --- スクロール進捗 ---
     const scrollProg = getScrollProgress();
+    const atBottom = isNearBottom();
 
     // --- HTML呼吸 + スクロールフェード ---
     if (overlay) {
-        // スクロール0~30%でフェードアウト
         const scrollFade = Math.max(0, 1 - scrollProg * 3.3);
 
         if (toggles.htmlBreath && scrollFade > 0) {
@@ -224,10 +238,24 @@ function animate() {
         credit.style.opacity = creditFade;
     }
 
-    // --- 浮上ボタン表示 ---
+    // --- 下部 scroll hint: ページ最下部で非表示 ---
+    const scrollHintBottom = document.getElementById('scroll-hint');
+    if (scrollHintBottom) {
+        if (atBottom) {
+            scrollHintBottom.style.opacity = '0';
+            scrollHintBottom.style.pointerEvents = 'none';
+        }
+    }
+
+    // --- 浮上ボタン + 上部 scroll hint ---
+    const showSurface = scrollProg > 0.8;
     if (surfaceBtn) {
-        surfaceBtn.style.opacity = scrollProg > 0.8 ? '1' : '0';
-        surfaceBtn.style.pointerEvents = scrollProg > 0.8 ? 'auto' : 'none';
+        surfaceBtn.style.opacity = showSurface ? '1' : '0';
+        surfaceBtn.style.pointerEvents = showSurface ? 'auto' : 'none';
+    }
+    if (scrollHintTop) {
+        scrollHintTop.style.opacity = showSurface ? '1' : '0';
+        scrollHintTop.style.pointerEvents = showSurface ? 'auto' : 'none';
     }
 
     // --- マウススムージング ---
