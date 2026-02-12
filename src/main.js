@@ -210,6 +210,7 @@ function animate() {
     // --- スクロール進捗 ---
     const scrollProg = getScrollProgress();
     const atBottom = isNearBottom();
+    const atTop = window.scrollY < 20;
 
     // --- HTML呼吸 + スクロールフェード ---
     if (overlay) {
@@ -247,15 +248,18 @@ function animate() {
         }
     }
 
-    // --- 浮上ボタン + 上部 scroll hint ---
-    const showSurface = scrollProg > 0.8;
+    // --- 上部 scroll hint: スクロール中は表示、最上部で消える ---
+    if (scrollHintTop) {
+        const showTop = !atTop && scrollProg > 0.15;
+        scrollHintTop.style.opacity = showTop ? '1' : '0';
+        scrollHintTop.style.pointerEvents = showTop ? 'auto' : 'none';
+    }
+
+    // --- 浮上ボタン ---
     if (surfaceBtn) {
+        const showSurface = scrollProg > 0.8;
         surfaceBtn.style.opacity = showSurface ? '1' : '0';
         surfaceBtn.style.pointerEvents = showSurface ? 'auto' : 'none';
-    }
-    if (scrollHintTop) {
-        scrollHintTop.style.opacity = showSurface ? '1' : '0';
-        scrollHintTop.style.pointerEvents = showSurface ? 'auto' : 'none';
     }
 
     // --- マウススムージング ---
