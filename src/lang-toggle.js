@@ -11,8 +11,8 @@ export function initLangToggle() {
     style.textContent = `
         #lang-toggle {
             position: fixed;
-            top: 28px;
-            right: 32px;
+            top: 3%;
+            right: 3%;
             z-index: 50;
             background: none;
             border: none;
@@ -22,7 +22,7 @@ export function initLangToggle() {
             letter-spacing: 0.15em;
             cursor: pointer;
             padding: 6px 0;
-            transition: color 0.5s ease, text-shadow 0.5s ease;
+            transition: color 0.5s ease, text-shadow 0.5s ease, opacity 0.3s ease;
             text-shadow: 0 0 12px rgba(100, 150, 255, 0.0);
         }
         #lang-toggle:hover {
