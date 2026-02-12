@@ -6,13 +6,14 @@ import { detectLang, t } from './i18n.js';
 import { toggles } from './config.js';
 import { getScrollProgress } from './controls.js';
 
-// --- 正三角形配置 ---
-// 上1つ（設計者向け） + 下2つ（一般向け・学術版）
-// 底辺=16, 高さ≈7 → 見た目の正三角形バランス
+// --- 正三角形配置（XZ平面、天井から見て三角形） ---
+// Y は全て同じ高さ、X-Z で正三角形を形成
+// 辺長 ≈ 16, 重心が原点付近
+const TRI_R = 9;  // 外接円半径
 const NAV_POSITIONS = [
-    { position: [8, -12, -5],   color: 0x6688cc },   // 一般向け（右下）
-    { position: [0, -5, -5],    color: 0x7799dd },   // 設計者向け（上中央）
-    { position: [-8, -12, -5],  color: 0x5577bb },   // 学術版（左下）
+    { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },  // 一般向け（手前）
+    { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },  // 設計者向け（左奥）
+    { position: [TRI_R * Math.sin(4*Math.PI/3),   -8, TRI_R * Math.cos(4*Math.PI/3)],  color: 0x5577bb },  // 学術版（右奥）
 ];
 
 const ORB_3D_RADIUS = 2.0;
