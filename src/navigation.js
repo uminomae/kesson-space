@@ -105,6 +105,6 @@ export function updateNavigation(time) {
     const submerged = getScrollProgress() > 0.3;
     _navMeshes.forEach(g => g.visible = toggles.navOrbs && !submerged);
     if (toggles.navOrbs && !submerged) {
-        updateNavObjects(_navMeshes, time);
+        updateNavObjects(_navMeshes, time, _camera);
     }
 }

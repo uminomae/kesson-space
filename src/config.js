@@ -95,12 +95,12 @@ export const distortionParams = {
     dofFocusRadius: 0.32,
 };
 
-// --- Gem四芒星パラメータ ---
+// --- Gem四芒星パラメータ（GLTFメッシュ版） ---
 export const gemParams = {
-    outerRadius: 0.45,
-    innerRadius: 0.05,    // 細いくびれ → 鋭い星
-    sharpness:   8.0,     // SDF指数: 高い値 → 鋭い先端
-    spriteSize:  5.0,
+    meshScale:    1.2,      // GLTFメッシュのスケール
+    glowStrength: 1.5,      // フレネルグロー強度
+    rimPower:     2.0,      // リムライトの鋭さ
+    innerGlow:    0.8,      // 中心グロー
     posX: 10,
     posY: 3,
     posZ: 18,

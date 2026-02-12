@@ -67,13 +67,13 @@ const SECTIONS = [
         id: 'gem',
         title: 'Gem 四芒星',
         params: {
-            gemOuterRadius: { label: '先端半径',      min: 0.15, max: 0.48, step: 0.01, default: gemParams.outerRadius },
-            gemInnerRadius: { label: 'くびれ半径',    min: 0.01, max: 0.30, step: 0.01, default: gemParams.innerRadius },
-            gemSharpness:   { label: '鋭さ',          min: 0.3, max: 20.0, step: 0.5, default: gemParams.sharpness },
-            gemSpriteSize:  { label: 'サイズ',        min: 2.0, max: 10.0, step: 0.5, default: gemParams.spriteSize },
-            gemPosX:        { label: '位置 X',        min: -30, max: 30, step: 1, default: gemParams.posX },
-            gemPosY:        { label: '位置 Y',        min: -15, max: 15, step: 1, default: gemParams.posY },
-            gemPosZ:        { label: '位置 Z',        min: -10, max: 40, step: 1, default: gemParams.posZ },
+            gemMeshScale:    { label: 'スケール',      min: 0.3, max: 4.0, step: 0.1, default: gemParams.meshScale },
+            gemGlowStrength: { label: 'グロー強度',    min: 0.0, max: 4.0, step: 0.1, default: gemParams.glowStrength },
+            gemRimPower:     { label: 'リム鋭さ',      min: 0.5, max: 8.0, step: 0.1, default: gemParams.rimPower },
+            gemInnerGlow:    { label: '中心グロー',    min: 0.0, max: 3.0, step: 0.1, default: gemParams.innerGlow },
+            gemPosX:         { label: '位置 X',        min: -30, max: 30, step: 1, default: gemParams.posX },
+            gemPosY:         { label: '位置 Y',        min: -15, max: 15, step: 1, default: gemParams.posY },
+            gemPosZ:         { label: '位置 Z',        min: -10, max: 40, step: 1, default: gemParams.posZ },
         }
     },
     {

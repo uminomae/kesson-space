@@ -1,6 +1,7 @@
-// nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + HTMLラベル + Gemini星）
+// nav-objects.js — 3Dナビゲーションオブジェクト（鬼火オーブ + HTMLラベル + Gemini星[GLTF]）
 
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
 import { toggles, gemParams } from './config.js';
 import { getScrollProgress } from './controls.js';
@@ -18,89 +19,82 @@ const ORB_3D_RADIUS = 2.0;
 let _labelElements = [];
 let _gemLabelElement = null;
 let _gemGroup = null;
-let _scene = null;
+let _gemMesh = null;      // GLTFメッシュ
+ let _scene = null;
 let _navMeshes = null;
 
 // ========================================
-// Gem SDF シェーダー（billboard + オーブ風）
+// Gem オーブシェーダー（GLTFメッシュ用）
 // ========================================
-const gemVertexShader = /* glsl */ `
-uniform float uSize;
-varying vec2 vUv;
+const gemMeshVertexShader = /* glsl */ `
+varying vec3 vWorldNormal;
+varying vec3 vViewDir;
+varying float vFresnel;
 
 void main() {
-    vUv = uv;
-    // Billboard: 中心をビュー空間に変換し、頂点をオフセット
-    vec4 mvCenter = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-    mvCenter.xy += position.xy * uSize;
-    gl_Position = projectionMatrix * mvCenter;
+    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+    vec3 worldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+    vec3 viewDir = normalize(cameraPosition - worldPos.xyz);
+
+    vWorldNormal = worldNormal;
+    vViewDir = viewDir;
+    vFresnel = 1.0 - max(dot(worldNormal, viewDir), 0.0);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
 
-const gemFragmentShader = /* glsl */ `
+const gemMeshFragmentShader = /* glsl */ `
 precision highp float;
 
 uniform float uTime;
-uniform float uOuterRadius;
-uniform float uInnerRadius;
-uniform float uSharpness;
+uniform float uGlowStrength;
+uniform float uRimPower;
+uniform float uInnerGlow;
 uniform float uHover;
 
-varying vec2 vUv;
+varying vec3 vWorldNormal;
+varying vec3 vViewDir;
+varying float vFresnel;
 
 void main() {
-    vec2 p = vUv * 2.0 - 1.0;
-    float r = length(p);
-    float angle = atan(p.y, p.x);
-
     // --- 呼吸 ---
-    float breath = 1.0 + sin(uTime * 0.5) * 0.05;
+    float breath = 1.0 + sin(uTime * 0.5) * 0.08;
 
-    // --- 四芒星 SDF（cos(2θ) ベース） ---
-    // uSharpness: 小(<1)→丸い四葉、大(>1)→鋭い四芒星
-    float starShape = pow(abs(cos(angle * 2.0)), uSharpness);
-    float starR = mix(uInnerRadius, uOuterRadius, starShape) * breath;
-    float dist = r - starR;
+    // --- フレネルリム（エッジ発光） ---
+    float rim = pow(vFresnel, uRimPower) * uGlowStrength * breath;
 
-    // --- 本体（ソフトエッジ） ---
-    float body = 1.0 - smoothstep(-0.02, 0.02, dist);
-
-    // --- 中心グロー（オーブ風 innerGlow） ---
-    float centerGlow = exp(-r * r * 8.0);
-
-    // --- 外側ヘイロー（オーブ風 halo） ---
-    float halo = exp(-max(dist, 0.0) * 6.0) * 0.35;
-
-    // --- エッジリム（屈折風のリムライト） ---
-    float rim = exp(-dist * dist * 300.0) * 0.7;
-
-    // --- 色収差（オーブ風 chromatic aberration） ---
-    float rShift = 1.0 - smoothstep(-0.04, 0.04, dist + 0.015);
-    float bShift = 1.0 - smoothstep(-0.04, 0.04, dist - 0.015);
+    // --- 中心グロー（正面向きほど明るい） ---
+    float facing = max(dot(vWorldNormal, vViewDir), 0.0);
+    float center = pow(facing, 1.5) * uInnerGlow;
 
     // --- カラーパレット ---
-    vec3 coreColor = vec3(0.55, 0.62, 0.92);
-    vec3 glowColor = vec3(0.42, 0.50, 0.85);
-    vec3 rimColor  = vec3(0.72, 0.80, 1.0);
+    vec3 coreColor  = vec3(0.50, 0.58, 0.90);
+    vec3 rimColor   = vec3(0.70, 0.78, 1.00);
+    vec3 glowColor  = vec3(0.35, 0.45, 0.82);
 
     // --- 合成 ---
-    vec3 color = coreColor * body * (0.5 + centerGlow * 2.0);
+    vec3 color = coreColor * center;
     color += rimColor * rim;
-    color += glowColor * halo;
+    color += glowColor * rim * 0.3;
 
-    // 色収差
-    color.r += (rShift - body) * 0.06;
-    color.b += (bShift - body) * 0.06;
+    // --- 色収差風（リム部分でR/Bシフト） ---
+    float rimR = pow(vFresnel, uRimPower * 0.9) * uGlowStrength * breath;
+    float rimB = pow(vFresnel, uRimPower * 1.1) * uGlowStrength * breath;
+    color.r += (rimR - rim) * 0.15;
+    color.b += (rimB - rim) * 0.15;
 
-    // 乱流シマー（オーブ風 turbulence）
-    float shimmer = sin(angle * 8.0 + uTime * 1.5) * 0.02 * body;
-    color += shimmer;
+    // --- シマー ---
+    float shimmer = sin(vFresnel * 12.0 + uTime * 1.5) * 0.03;
+    color += shimmer * rim;
 
-    float alpha = max(body * 0.85, max(halo, rim * 0.5));
+    // --- アルファ（リムが強いほど透明度高く） ---
+    float alpha = max(center * 0.7, rim * 0.9);
+    alpha = clamp(alpha, 0.0, 1.0);
 
     // --- ホバー ---
-    color *= 1.0 + uHover * 0.35;
-    alpha = min(alpha * (1.0 + uHover * 0.2), 1.0);
+    color *= 1.0 + uHover * 0.4;
+    alpha = min(alpha * (1.0 + uHover * 0.25), 1.0);
 
     if (alpha < 0.001) discard;
 
@@ -109,7 +103,7 @@ void main() {
 `;
 
 // ========================================
-// Gem Group 生成（hitSprite + shaderMesh）
+// Gem Group 生成（hitSprite + GLTFメッシュ）
 // ========================================
 function createGemGroup() {
     const group = new THREE.Group();
@@ -122,55 +116,97 @@ function createGemGroup() {
         depthWrite: false,
     });
     const hitSprite = new THREE.Sprite(hitMat);
-    const hitSize = gemParams.spriteSize * 0.8;
+    const hitSize = gemParams.meshScale * 3.0;
     hitSprite.scale.set(hitSize, hitSize, 1);
     group.add(hitSprite);
 
-    // --- SDFシェーダーメッシュ（ビジュアル） ---
-    const geom = new THREE.PlaneGeometry(1, 1);
-    const mat = new THREE.ShaderMaterial({
-        uniforms: {
-            uTime:        { value: 0.0 },
-            uSize:        { value: gemParams.spriteSize },
-            uOuterRadius: { value: gemParams.outerRadius },
-            uInnerRadius: { value: gemParams.innerRadius },
-            uSharpness:   { value: gemParams.sharpness },
-            uHover:       { value: 0.0 },
-        },
-        vertexShader: gemVertexShader,
-        fragmentShader: gemFragmentShader,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-    });
-
-    const mesh = new THREE.Mesh(geom, mat);
-    mesh.raycast = () => {};
-    group.add(mesh);
-
     group.userData = {
         hitSprite,
-        shaderMesh: mesh,
+        gemMesh: null,  // GLTFロード後に設定
     };
+
+    // --- GLTFロード ---
+    const loader = new GLTFLoader();
+    loader.load(
+        'assets/gem-star.glb',
+        (gltf) => {
+            const loadedMesh = gltf.scene.children[0];
+            if (!loadedMesh) return;
+
+            // ShaderMaterialを適用
+            const mat = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime:         { value: 0.0 },
+                    uGlowStrength: { value: gemParams.glowStrength },
+                    uRimPower:     { value: gemParams.rimPower },
+                    uInnerGlow:    { value: gemParams.innerGlow },
+                    uHover:        { value: 0.0 },
+                },
+                vertexShader: gemMeshVertexShader,
+                fragmentShader: gemMeshFragmentShader,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
+
+            loadedMesh.material = mat;
+            loadedMesh.scale.setScalar(gemParams.meshScale);
+            loadedMesh.renderOrder = 10;
+
+            group.add(loadedMesh);
+            group.userData.gemMesh = loadedMesh;
+            _gemMesh = loadedMesh;
+
+            console.log('[Gem] GLTF loaded:', loadedMesh.geometry.attributes.position.count, 'vertices');
+        },
+        undefined,
+        (err) => {
+            console.warn('[Gem] GLTF load failed, using fallback sphere:', err.message);
+            // フォールバック: 簡易球体
+            const fallbackGeom = new THREE.IcosahedronGeometry(1.0, 2);
+            const mat = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime:         { value: 0.0 },
+                    uGlowStrength: { value: gemParams.glowStrength },
+                    uRimPower:     { value: gemParams.rimPower },
+                    uInnerGlow:    { value: gemParams.innerGlow },
+                    uHover:        { value: 0.0 },
+                },
+                vertexShader: gemMeshVertexShader,
+                fragmentShader: gemMeshFragmentShader,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
+            const fallback = new THREE.Mesh(fallbackGeom, mat);
+            fallback.scale.setScalar(gemParams.meshScale);
+            fallback.renderOrder = 10;
+            group.add(fallback);
+            group.userData.gemMesh = fallback;
+            _gemMesh = fallback;
+        }
+    );
 
     return group;
 }
 
-// --- devPanelからの再構築 ---
+// --- devPanelからのパラメータ更新 ---
 export function rebuildGem() {
-    if (!_gemGroup) return;
-    const mesh = _gemGroup.userData.shaderMesh;
-    if (mesh) {
-        mesh.material.uniforms.uOuterRadius.value = gemParams.outerRadius;
-        mesh.material.uniforms.uInnerRadius.value = gemParams.innerRadius;
-        mesh.material.uniforms.uSharpness.value = gemParams.sharpness;
-        mesh.material.uniforms.uSize.value = gemParams.spriteSize;
-    }
-    const hit = _gemGroup.userData.hitSprite;
-    if (hit) {
-        const s = gemParams.spriteSize * 0.8;
-        hit.scale.set(s, s, 1);
+    if (!_gemMesh) return;
+    _gemMesh.scale.setScalar(gemParams.meshScale);
+    const u = _gemMesh.material.uniforms;
+    if (u.uGlowStrength) u.uGlowStrength.value = gemParams.glowStrength;
+    if (u.uRimPower)     u.uRimPower.value = gemParams.rimPower;
+    if (u.uInnerGlow)    u.uInnerGlow.value = gemParams.innerGlow;
+    // hitSpriteもサイズ同期
+    if (_gemGroup) {
+        const hit = _gemGroup.userData.hitSprite;
+        if (hit) {
+            const s = gemParams.meshScale * 3.0;
+            hit.scale.set(s, s, 1);
+        }
     }
 }
 
@@ -268,7 +304,7 @@ export function createNavObjects(scene) {
         _labelElements.push(createHtmlLabel(navItem.label));
     });
 
-    // --- Gemini Gem（SDF シェーダー Group） ---
+    // --- Gemini Gem（GLTF Group） ---
     const gemData = strings.gem;
     const gemGroup = createGemGroup();
     const gemIndex = navMeshes.length;
@@ -297,15 +333,20 @@ export function createNavObjects(scene) {
     return navMeshes;
 }
 
-export function updateNavObjects(navMeshes, time) {
+export function updateNavObjects(navMeshes, time, camera) {
     navMeshes.forEach((obj) => {
         const data = obj.userData;
 
         if (data.isGem) {
+            // Y浮遊
             obj.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * 0.4;
-            const mesh = data.shaderMesh;
-            if (mesh) {
-                mesh.material.uniforms.uTime.value = time;
+
+            // GLTFメッシュ: billboard (lookAt) + uniform更新
+            const mesh = data.gemMesh;
+            if (mesh && camera) {
+                mesh.lookAt(camera.position);
+                const u = mesh.material.uniforms;
+                if (u.uTime) u.uTime.value = time;
             }
         } else {
             const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
@@ -316,11 +357,8 @@ export function updateNavObjects(navMeshes, time) {
 
 // --- Gemホバー制御 ---
 export function setGemHover(isHovered) {
-    if (_gemGroup) {
-        const mesh = _gemGroup.userData.shaderMesh;
-        if (mesh) {
-            mesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
-        }
+    if (_gemMesh && _gemMesh.material.uniforms.uHover) {
+        _gemMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
     }
 }
 
