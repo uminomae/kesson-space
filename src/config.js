@@ -99,6 +99,7 @@ export const distortionParams = {
 export const gemParams = {
     outerRadius: 0.42,
     innerRadius: 0.13,
+    sharpness:   2.5,     // SDF指数: 小→丸い四葉、大→鋭い四芒星
     spriteSize:  5.0,
     posX: 10,
     posY: 3,

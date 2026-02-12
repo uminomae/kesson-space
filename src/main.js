@@ -164,6 +164,7 @@ function applyDevValue(key, value) {
     // --- Gemパラメータ ---
     if (key === 'gemOuterRadius') { gemParams.outerRadius = value; rebuildGem(); }
     if (key === 'gemInnerRadius') { gemParams.innerRadius = value; rebuildGem(); }
+    if (key === 'gemSharpness')   { gemParams.sharpness = value; rebuildGem(); }
     if (key === 'gemSpriteSize')  { gemParams.spriteSize = value; rebuildGem(); }
     if (key === 'gemPosX')        { gemParams.posX = value; updateGemPosition(); }
     if (key === 'gemPosY')        { gemParams.posY = value; updateGemPosition(); }

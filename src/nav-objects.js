@@ -43,6 +43,7 @@ precision highp float;
 uniform float uTime;
 uniform float uOuterRadius;
 uniform float uInnerRadius;
+uniform float uSharpness;
 uniform float uHover;
 
 varying vec2 vUv;
@@ -56,7 +57,8 @@ void main() {
     float breath = 1.0 + sin(uTime * 0.5) * 0.05;
 
     // --- 四芒星 SDF（cos(2θ) ベース） ---
-    float starShape = pow(abs(cos(angle * 2.0)), 0.5);
+    // uSharpness: 小(<1)→丸い四葉、大(>1)→鋭い四芒星
+    float starShape = pow(abs(cos(angle * 2.0)), uSharpness);
     float starR = mix(uInnerRadius, uOuterRadius, starShape) * breath;
     float dist = r - starR;
 
@@ -132,6 +134,7 @@ function createGemGroup() {
             uSize:        { value: gemParams.spriteSize },
             uOuterRadius: { value: gemParams.outerRadius },
             uInnerRadius: { value: gemParams.innerRadius },
+            uSharpness:   { value: gemParams.sharpness },
             uHover:       { value: 0.0 },
         },
         vertexShader: gemVertexShader,
@@ -143,7 +146,7 @@ function createGemGroup() {
     });
 
     const mesh = new THREE.Mesh(geom, mat);
-    mesh.raycast = () => {};  // レイキャスト無効化（hitSpriteで処理）
+    mesh.raycast = () => {};
     group.add(mesh);
 
     group.userData = {
@@ -154,13 +157,14 @@ function createGemGroup() {
     return group;
 }
 
-// --- devPanelからの再構築（形状パラメータ変更時） ---
+// --- devPanelからの再構築 ---
 export function rebuildGem() {
     if (!_gemGroup) return;
     const mesh = _gemGroup.userData.shaderMesh;
     if (mesh) {
         mesh.material.uniforms.uOuterRadius.value = gemParams.outerRadius;
         mesh.material.uniforms.uInnerRadius.value = gemParams.innerRadius;
+        mesh.material.uniforms.uSharpness.value = gemParams.sharpness;
         mesh.material.uniforms.uSize.value = gemParams.spriteSize;
     }
     const hit = _gemGroup.userData.hitSprite;
@@ -269,7 +273,6 @@ export function createNavObjects(scene) {
     const gemGroup = createGemGroup();
     const gemIndex = navMeshes.length;
 
-    // hitSprite に userData（レイキャスト用）
     gemGroup.userData.hitSprite.userData = {
         type: 'nav',
         url: gemData.url,
@@ -278,7 +281,6 @@ export function createNavObjects(scene) {
         external: true,
     };
 
-    // Group 自身の userData
     Object.assign(gemGroup.userData, {
         baseY: gemParams.posY,
         index: gemIndex,
@@ -300,15 +302,10 @@ export function updateNavObjects(navMeshes, time) {
         const data = obj.userData;
 
         if (data.isGem) {
-            // Y浮遊
             obj.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * 0.4;
-
-            // シェーダー uniform 更新
             const mesh = data.shaderMesh;
             if (mesh) {
-                const mat = mesh.material;
-                mat.uniforms.uTime.value = time;
-                // 呼吸はシェーダー内で処理（uSize は静的）
+                mesh.material.uniforms.uTime.value = time;
             }
         } else {
             const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
