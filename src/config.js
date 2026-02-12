@@ -97,10 +97,10 @@ export const distortionParams = {
 
 // --- Gem四芒星パラメータ（GLTFメッシュ版） ---
 export const gemParams = {
-    meshScale:    1.2,      // GLTFメッシュのスケール
-    glowStrength: 1.5,      // フレネルグロー強度
-    rimPower:     2.0,      // リムライトの鋭さ
-    innerGlow:    0.8,      // 中心グロー
+    meshScale:    1.0,      // GLTFメッシュのスケール
+    glowStrength: 2.0,      // フレネルグロー強度（リムの明るさ）
+    rimPower:     3.0,      // リムの鋭さ（高い→エッジのみ発光）
+    innerGlow:    0.4,      // 中心グロー（低め→白飛び防止）
     posX: 10,
     posY: 3,
     posZ: 18,
