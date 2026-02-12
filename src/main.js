@@ -6,7 +6,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
-import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget } from './controls.js';
+import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget, getScrollProgress } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 import { getOrbScreenData, updateNavLabels } from './nav-objects.js';
 import { initLangToggle } from './lang-toggle.js';
@@ -106,6 +106,7 @@ function findNavMeshes() {
 
 // --- HTMLオーバーレイ ---
 const overlay = document.getElementById('overlay');
+const credit = document.getElementById('credit');
 
 function updateOverlay(key, val) {
     const h1 = document.getElementById('title-h1');
@@ -125,11 +126,8 @@ function updateOverlay(key, val) {
 
 // --- devパネル用：スライダー値をユニフォームに反映 ---
 function applyDevValue(key, value) {
-    // トグル
     if (key in toggles) { toggles[key] = value; return; }
-    // 呼吸
     if (key in breathConfig) { breathConfig[key] = value; return; }
-    // シーン
     if (key in sceneParams) sceneParams[key] = value;
 
     if (key === 'camX' || key === 'camY' || key === 'camZ') {
@@ -138,7 +136,6 @@ function applyDevValue(key, value) {
     if (key === 'camTargetY') setTarget(0, value, -10);
     if (key === 'autoRotateSpd') setAutoRotateSpeed(value);
 
-    // オーブ屈折
     if (key === 'distStrength')   distortionPass.uniforms.uStrength.value = value;
     if (key === 'distAberration') distortionPass.uniforms.uAberration.value = value;
     if (key === 'turbulence')     distortionPass.uniforms.uTurbulence.value = value;
@@ -151,14 +148,12 @@ function applyDevValue(key, value) {
     if (key === 'haloColorG')     distortionPass.uniforms.uHaloColor.value.y = value;
     if (key === 'haloColorB')     distortionPass.uniforms.uHaloColor.value.z = value;
 
-    // 流体
     if (key === 'fluidForce')     fluidSystem.uniforms.uForce.value = value;
     if (key === 'fluidCurl')      fluidSystem.uniforms.uCurl.value = value;
     if (key === 'fluidDecay')     fluidSystem.uniforms.uDecay.value = value;
     if (key === 'fluidRadius')    fluidSystem.uniforms.uRadius.value = value;
     if (key === 'fluidInfluence') distortionPass.uniforms.uFluidInfluence.value = value;
 
-    // 熱波・DOF
     if (key === 'heatHaze')       distortionPass.uniforms.uHeatHaze.value = value;
     if (key === 'heatHazeRadius') distortionPass.uniforms.uHeatHazeRadius.value = value;
     if (key === 'heatHazeSpeed')  distortionPass.uniforms.uHeatHazeSpeed.value = value;
@@ -175,11 +170,19 @@ if (DEV_MODE) {
     });
 }
 
-// --- スクロールコンテンツ（常時有効） --- // CHANGED
+// --- スクロールコンテンツ（常時有効） ---
 import('./dev-log.js').then(({ renderDevLog, setupScrollHint }) => {
     renderDevLog();
     setupScrollHint();
 });
+
+// --- 浮上ボタン ---
+const surfaceBtn = document.getElementById('surface-btn');
+if (surfaceBtn) {
+    surfaceBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
 
 const clock = new THREE.Clock();
 
@@ -190,20 +193,41 @@ function animate() {
     // --- 統一呼吸値 ---
     const breathVal = (Math.sin(time * Math.PI / breathConfig.period - Math.PI / 2) + 1) * 0.5;
 
-    // --- HTML呼吸 ---
+    // --- スクロール進捗 ---
+    const scrollProg = getScrollProgress();
+
+    // --- HTML呼吸 + スクロールフェード ---
     if (overlay) {
-        if (toggles.htmlBreath) {
+        // スクロール0~30%でフェードアウト
+        const scrollFade = Math.max(0, 1 - scrollProg * 3.3);
+
+        if (toggles.htmlBreath && scrollFade > 0) {
             const opacity = breathConfig.htmlMinOpacity + breathVal * (breathConfig.htmlMaxOpacity - breathConfig.htmlMinOpacity);
             const blur = breathConfig.htmlMaxBlur * (1 - breathVal);
             const scale = breathConfig.htmlMinScale + breathVal * (1 - breathConfig.htmlMinScale);
-            overlay.style.opacity = opacity;
+            overlay.style.opacity = opacity * scrollFade;
             overlay.style.filter = `blur(${blur}px)`;
             overlay.style.transform = `scale(${scale})`;
-        } else {
-            overlay.style.opacity = breathConfig.htmlMaxOpacity;
+        } else if (scrollFade > 0) {
+            overlay.style.opacity = breathConfig.htmlMaxOpacity * scrollFade;
             overlay.style.filter = 'none';
             overlay.style.transform = 'scale(1)';
+        } else {
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
         }
+    }
+
+    // --- クレジットもフェード ---
+    if (credit) {
+        const creditFade = Math.max(0, 1 - scrollProg * 4);
+        credit.style.opacity = creditFade;
+    }
+
+    // --- 浮上ボタン表示 ---
+    if (surfaceBtn) {
+        surfaceBtn.style.opacity = scrollProg > 0.8 ? '1' : '0';
+        surfaceBtn.style.pointerEvents = scrollProg > 0.8 ? 'auto' : 'none';
     }
 
     // --- マウススムージング ---
@@ -257,14 +281,11 @@ function animate() {
     distortionPass.uniforms.uTime.value = time;
     distortionPass.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
 
-    // --- トグル反映 ---
     if (!toggles.heatHaze) distortionPass.uniforms.uHeatHaze.value = 0;
     if (!toggles.dof) distortionPass.uniforms.uDofStrength.value = 0;
 
-    // --- ラベル更新 ---
     updateNavLabels(navs, camera);
 
-    // --- レンダリング ---
     if (toggles.postProcess) {
         composer.render();
     } else {
