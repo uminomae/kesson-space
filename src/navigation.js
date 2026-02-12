@@ -55,7 +55,6 @@ function onPointerUp(event) {
         }
 
         if (data.url) {
-            // CHANGED: 外部リンクはwindow.open
             if (data.external) {
                 window.open(data.url, '_blank', 'noopener,noreferrer');
             } else {
@@ -102,11 +101,10 @@ export function initNavigation({ scene, camera, renderer }) {
     renderer.domElement.addEventListener('pointermove', onPointerMove);
 }
 
-// FIXED: cameraをupdateNavObjectsに渡す
 export function updateNavigation(time) {
     const submerged = getScrollProgress() > 0.3;
     _navMeshes.forEach(g => g.visible = toggles.navOrbs && !submerged);
     if (toggles.navOrbs && !submerged) {
-        updateNavObjects(_navMeshes, time, _camera);
+        updateNavObjects(_navMeshes, time);
     }
 }
