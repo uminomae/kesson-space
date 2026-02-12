@@ -6,8 +6,9 @@ import { toggles, breathConfig } from './config.js';
 let _camera;
 let _controls;
 
-// デスクトップ基準アスペクト比（16:9）
+// デスクトップ基準: 16:9, 高さ900px
 const REF_ASPECT = 16 / 9;
+const REF_HEIGHT = 900;
 
 export function initControls(camera, container, renderer) {
     _camera = camera;
@@ -62,20 +63,30 @@ export function setTarget(x, y, z) {
 }
 
 /**
- * アスペクト比に応じたFOV補正
- * portrait（縦持ち）時: デスクトップの水平画角を維持するようFOVを拡大
+ * アスペクト比 + 画面高さに応じたFOV補正
+ * - portrait時: デスクトップの水平画角を維持するようFOVを拡大
+ * - landscape短時: 高さが低い場合もFOVを少し拡大（上下の切れ防止）
  */
 function getAdjustedFovBase() {
     const base = breathConfig.fovBase;
     const aspect = _camera.aspect;
-    if (aspect >= 1) return base; // landscape: そのまま
+    const height = window.innerHeight;
 
-    // デスクトップ基準の水平FOVを算出
-    const baseRad = base * Math.PI / 180;
-    const hFov = 2 * Math.atan(Math.tan(baseRad / 2) * REF_ASPECT);
-    // 現在のアスペクト比で水平FOVを維持する垂直FOV
-    const adjusted = 2 * Math.atan(Math.tan(hFov / 2) / aspect) * 180 / Math.PI;
-    return Math.min(adjusted, 120); // 歪み防止の上限
+    let adjusted = base;
+
+    if (aspect < 1) {
+        // Portrait: 水平画角を維持
+        const baseRad = base * Math.PI / 180;
+        const hFov = 2 * Math.atan(Math.tan(baseRad / 2) * REF_ASPECT);
+        adjusted = 2 * Math.atan(Math.tan(hFov / 2) / aspect) * 180 / Math.PI;
+    } else if (height < REF_HEIGHT) {
+        // Landscape short (e.g. 844x390): 高さ比で補正
+        const heightRatio = height / REF_HEIGHT;  // 390/900 ≈ 0.43
+        const boost = 1.0 + (1.0 - heightRatio) * 0.35;  // max ~1.2x
+        adjusted = base * boost;
+    }
+
+    return Math.min(adjusted, 120);
 }
 
 export function updateControls(time, breathVal = 0.5) {
