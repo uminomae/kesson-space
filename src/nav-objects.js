@@ -6,10 +6,13 @@ import { detectLang, t } from './i18n.js';
 import { toggles } from './config.js';
 import { getScrollProgress } from './controls.js';
 
+// --- 正三角形配置 ---
+// 上1つ（設計者向け） + 下2つ（一般向け・学術版）
+// 底辺=16, 高さ≈7 → 見た目の正三角形バランス
 const NAV_POSITIONS = [
-    { position: [-12, -8, -5], color: 0x6688cc },
-    { position: [0, -8, -5],   color: 0x7799dd },
-    { position: [12, -8, -5],  color: 0x5577bb },
+    { position: [8, -12, -5],   color: 0x6688cc },   // 一般向け（右下）
+    { position: [0, -5, -5],    color: 0x7799dd },   // 設計者向け（上中央）
+    { position: [-8, -12, -5],  color: 0x5577bb },   // 学術版（左下）
 ];
 
 const ORB_3D_RADIUS = 2.0;
