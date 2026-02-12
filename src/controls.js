@@ -1,55 +1,26 @@
-// controls.js — カメラ制御
+// controls.js — カメラ制御（スクロールレイアウト版）
+// OrbitControls無効、自動回転 + FOV呼吸のみ
+// モバイルファースト: タッチ操作はすべてページスクロールに渡す
 
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { toggles, breathConfig } from './config.js';
 
 let _camera;
-let _controls;
 
 // デスクトップ基準: 16:9, 高さ900px
 const REF_ASPECT = 16 / 9;
 const REF_HEIGHT = 900;
 
+// 自動回転
+let _autoRotateSpeed = 1.0; // deg/sec
+let _targetY = -1;
+
 export function initControls(camera, container, renderer) {
     _camera = camera;
-
-    _controls = new OrbitControls(camera, renderer.domElement);
-    _controls.target.set(0, -1, -10);
-
-    _controls.enableDamping = true;
-    _controls.dampingFactor = 0.04;
-
-    // --- ズーム無効（スクロールをページに渡す） --- // CHANGED
-    _controls.enableZoom = false;
-
-    _controls.minPolarAngle = Math.PI * 0.15;
-    _controls.maxPolarAngle = Math.PI * 0.75;
-
-    _controls.rotateSpeed = 0.4;
-
-    _controls.enablePan = true;
-    _controls.panSpeed = 0.3;
-
-    _controls.autoRotate = true;
-    _controls.autoRotateSpeed = 1.0;
-
-    let autoRotateTimeout;
-    const resumeAutoRotate = () => {
-        clearTimeout(autoRotateTimeout);
-        _controls.autoRotate = false;
-        autoRotateTimeout = setTimeout(() => {
-            if (toggles.autoRotate) {
-                _controls.autoRotate = true;
-            }
-        }, 8000);
-    };
-
-    renderer.domElement.addEventListener('pointerdown', resumeAutoRotate);
-    renderer.domElement.addEventListener('touchstart', resumeAutoRotate, { passive: true });
+    // OrbitControls不使用 — タッチ/ホイールをページスクロールに渡す
 }
 
 export function setAutoRotateSpeed(speed) {
-    if (_controls) _controls.autoRotateSpeed = speed;
+    _autoRotateSpeed = speed;
 }
 
 export function setCameraPosition(x, y, z) {
@@ -57,13 +28,11 @@ export function setCameraPosition(x, y, z) {
 }
 
 export function setTarget(x, y, z) {
-    if (_controls) _controls.target.set(x, y, z);
+    _targetY = y;
 }
 
 /**
  * アスペクト比 + 画面高さに応じたFOV補正
- * - portrait時: デスクトップの水平画角を維持するようFOVを拡大
- * - landscape短時: 高さが低い場合もFOVを少し拡大（上下の切れ防止）
  */
 function getAdjustedFovBase() {
     const base = breathConfig.fovBase;
@@ -73,14 +42,12 @@ function getAdjustedFovBase() {
     let adjusted = base;
 
     if (aspect < 1) {
-        // Portrait: 水平画角を維持
         const baseRad = base * Math.PI / 180;
         const hFov = 2 * Math.atan(Math.tan(baseRad / 2) * REF_ASPECT);
         adjusted = 2 * Math.atan(Math.tan(hFov / 2) / aspect) * 180 / Math.PI;
     } else if (height < REF_HEIGHT) {
-        // Landscape short (e.g. 844x390): 高さ比で補正
-        const heightRatio = height / REF_HEIGHT;  // 390/900 ≈ 0.43
-        const boost = 1.0 + (1.0 - heightRatio) * 0.35;  // max ~1.2x
+        const heightRatio = height / REF_HEIGHT;
+        const boost = 1.0 + (1.0 - heightRatio) * 0.35;
         adjusted = base * boost;
     }
 
@@ -88,11 +55,11 @@ function getAdjustedFovBase() {
 }
 
 export function updateControls(time, breathVal = 0.5) {
-    if (!_camera || !_controls) return;
+    if (!_camera) return;
 
     const fovBase = getAdjustedFovBase();
 
-    // --- FOV呼吸（熱波）: breathValと同期 ---
+    // --- FOV呼吸 ---
     if (toggles.fovBreath) {
         _camera.fov = fovBase + (breathVal * 2 - 1) * breathConfig.fovAmplitude;
     } else {
@@ -100,10 +67,18 @@ export function updateControls(time, breathVal = 0.5) {
     }
     _camera.updateProjectionMatrix();
 
-    // --- 自動回転 ---
-    if (!toggles.autoRotate) {
-        _controls.autoRotate = false;
-    }
+    // --- 自動回転（Y軸周り） ---
+    if (toggles.autoRotate) {
+        const radius = Math.sqrt(
+            _camera.position.x * _camera.position.x +
+            _camera.position.z * _camera.position.z
+        );
+        const angle = Math.atan2(_camera.position.x, _camera.position.z);
+        const speed = _autoRotateSpeed * 0.002; // ゆっくり
+        const newAngle = angle + speed;
 
-    _controls.update();
+        _camera.position.x = radius * Math.sin(newAngle);
+        _camera.position.z = radius * Math.cos(newAngle);
+        _camera.lookAt(0, _targetY, -10);
+    }
 }
