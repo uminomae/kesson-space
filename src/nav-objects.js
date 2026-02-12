@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { detectLang, t } from './i18n.js';
 import { toggles } from './config.js';
+import { getScrollProgress } from './controls.js';
 
 const NAV_POSITIONS = [
     { position: [-12, -8, -5], color: 0x6688cc },
@@ -127,11 +128,13 @@ export function updateNavLabels(navMeshes, camera) {
     initGazeTracking();
 
     const visible = toggles.navOrbs;
+    const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
+
     navMeshes.forEach((group, i) => {
         const el = _labelElements[i];
         if (!el) return;
 
-        if (!visible) {
+        if (!visible || scrollFade <= 0) {
             el.style.opacity = '0';
             return;
         }
@@ -150,7 +153,6 @@ export function updateNavLabels(navMeshes, camera) {
 
         el.style.left = x + 'px';
         el.style.top = y + 'px';
-        el.style.opacity = '1';
 
         const labelNdcX = x / window.innerWidth;
         const labelNdcY = y / window.innerHeight;
@@ -160,6 +162,9 @@ export function updateNavLabels(navMeshes, camera) {
         const blurPx = Math.max(0, (gazeDist - 0.15) * 8.0);
         const clampedBlur = Math.min(blurPx, 4.0);
         el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
+
+        // スクロール連動フェード
+        el.style.opacity = String(scrollFade);
     });
 }
 
