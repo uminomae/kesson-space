@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { toggles } from './config.js';
 import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
-import { createNavObjects, updateNavObjects } from './nav-objects.js';
+import { createNavObjects, updateNavObjects, setGemHover } from './nav-objects.js';
 import { getScrollProgress } from './controls.js';
 
 let _camera;
@@ -45,15 +45,24 @@ function onPointerUp(event) {
     const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
     if (intersects.length > 0) {
-        let data = intersects[0].object.userData;
+        let hitObj = intersects[0].object;
+        let data = hitObj.userData;
+
+        // Groupの子にヒットした場合は親のcoreからuserDataを取得
         if (!data.url) {
-            const parent = intersects[0].object.parent;
+            const parent = hitObj.parent;
             if (parent && parent.userData.core) {
                 data = parent.userData.core.userData;
             }
         }
+
         if (data.url) {
-            openPdfViewer(data.url, data.label);
+            // CHANGED: 外部リンクはwindow.openで開く（PDFビューアーではない）
+            if (data.external) {
+                window.open(data.url, '_blank', 'noopener,noreferrer');
+            } else {
+                openPdfViewer(data.url, data.label);
+            }
         }
     }
 }
@@ -61,6 +70,7 @@ function onPointerUp(event) {
 function onPointerMove(event) {
     if (isViewerOpen() || !toggles.navOrbs || getScrollProgress() > 0.1) {
         _renderer.domElement.style.cursor = 'default';
+        setGemHover(false);  // CHANGED
         return;
     }
 
@@ -70,7 +80,17 @@ function onPointerMove(event) {
     _raycaster.setFromCamera(_mouse, _camera);
     const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
-    _renderer.domElement.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
+    const isHovering = intersects.length > 0;
+    _renderer.domElement.style.cursor = isHovering ? 'pointer' : 'default';
+
+    // CHANGED: Gemホバー判定
+    if (isHovering) {
+        const hitObj = intersects[0].object;
+        const isGemHit = hitObj.userData.isGem || (hitObj.parent && hitObj.parent.userData.isGem);
+        setGemHover(isGemHit);
+    } else {
+        setGemHover(false);
+    }
 }
 
 export function initNavigation({ scene, camera, renderer }) {

@@ -18,6 +18,10 @@ const STRINGS = {
             { label: '設計者向け', url: PDF_BASE + 'kesson-designer.pdf' },
             { label: '学術版', url: PDF_BASE + 'kesson-academic.pdf' },
         ],
+        gem: {
+            label: 'アドバイザー',
+            url: 'https://gemini.google.com/gem/1KtKkuMSS95qeHBArr3-LgH4Y0XCOs-z-?usp=sharing',
+        },
         devLog: {
             header: 'Development Log',
             date: '2026.02.10 – 02.11',
@@ -48,6 +52,10 @@ const STRINGS = {
             { label: 'For Designers', url: PDF_BASE + 'kesson-designer-en.pdf' },
             { label: 'Academic', url: PDF_BASE + 'kesson-academic-en.pdf' },
         ],
+        gem: {
+            label: 'Advisor',
+            url: 'https://gemini.google.com/gem/1KtKkuMSS95qeHBArr3-LgH4Y0XCOs-z-?usp=sharing',
+        },
         devLog: {
             header: 'Development Log',
             date: '2026.02.10 – 02.11',
