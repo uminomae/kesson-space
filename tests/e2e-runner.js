@@ -1,18 +1,17 @@
 /**
  * e2e-runner.js — kesson-space E2E テストランナー
  *
- * Claude in Chrome MCP の javascript_tool でページに注入して実行する。
+ * 2つの実行モード:
+ *
+ * 1. ブラウザ独立実行（?test パラメータ）:
+ *    index.html が ?test を検出 → このファイルをfetch&eval
+ *    ページ内オーバーレイに結果を表示。Claude不要。
+ *
+ * 2. Claude in Chrome MCP 注入:
+ *    fetch('/tests/e2e-runner.js').then(r=>r.text()).then(eval)
+ *    window.__e2e.run('TC-E2E-01') など
+ *
  * 設計書: tests/e2e-test-design.md
- *
- * 使い方（javascript_tool から）:
- *   全テスト:   fetch('/tests/e2e-runner.js').then(r=>r.text()).then(eval)
- *   個別テスト: 上記実行後、window.__e2e.run('TC-E2E-01')
- *   スモーク:   上記実行後、window.__e2e.smoke()
- *   パフォ:     上記実行後、window.__e2e.run('TC-E2E-11')
- *
- * 注意: ページコンテキストで実行されるため、Three.js のグローバル状態にアクセス可能。
- *       ただし ES Module スコープの変数には直接アクセスできない。
- *       DOM と canvas の状態を中心に検証する。
  */
 
 (async () => {
@@ -51,6 +50,188 @@
             overall: fail === 0 ? 'PASS' : 'FAIL',
             results,
         };
+    }
+
+    // ============================
+    // 結果オーバーレイ（?test モード用）
+    // ============================
+
+    const IS_TEST_MODE = new URLSearchParams(window.location.search).has('test');
+
+    function createOverlay() {
+        if (!IS_TEST_MODE) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'e2e-overlay';
+        overlay.innerHTML = `
+            <style>
+                #e2e-overlay {
+                    position: fixed; top: 0; right: 0;
+                    width: min(420px, 90vw); max-height: 100vh;
+                    z-index: 99999;
+                    background: rgba(10, 14, 20, 0.95);
+                    border-left: 2px solid rgba(100, 150, 255, 0.3);
+                    font-family: 'SF Mono', 'Consolas', monospace;
+                    font-size: 11px;
+                    color: rgba(200, 215, 235, 0.85);
+                    overflow-y: auto;
+                    backdrop-filter: blur(8px);
+                }
+                #e2e-overlay * { box-sizing: border-box; }
+                #e2e-header {
+                    position: sticky; top: 0;
+                    background: rgba(10, 14, 20, 0.98);
+                    padding: 10px 14px;
+                    border-bottom: 1px solid rgba(100, 150, 255, 0.15);
+                    display: flex; justify-content: space-between; align-items: center;
+                }
+                #e2e-header .title { font-size: 13px; font-weight: bold; letter-spacing: 0.05em; }
+                #e2e-header .badge {
+                    padding: 2px 8px; border-radius: 3px;
+                    font-size: 11px; font-weight: bold;
+                }
+                .badge-pass { background: rgba(76, 175, 80, 0.25); color: #81c784; }
+                .badge-fail { background: rgba(244, 67, 54, 0.25); color: #ef9a9a; }
+                .badge-running { background: rgba(255, 193, 7, 0.25); color: #ffd54f; }
+                #e2e-stats {
+                    padding: 6px 14px;
+                    background: rgba(20, 28, 40, 0.6);
+                    font-size: 11px;
+                    border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+                }
+                #e2e-body { padding: 6px 10px; }
+                .e2e-row {
+                    padding: 4px 6px; margin: 2px 0;
+                    border-radius: 3px;
+                    display: flex; align-items: flex-start; gap: 6px;
+                    line-height: 1.4;
+                }
+                .e2e-row:hover { background: rgba(100, 150, 255, 0.06); }
+                .e2e-row .icon { flex-shrink: 0; width: 16px; text-align: center; }
+                .e2e-row .id { flex-shrink: 0; width: 38px; color: rgba(150, 175, 210, 0.5); }
+                .e2e-row .desc { flex: 1; }
+                .e2e-row .detail {
+                    color: rgba(150, 175, 210, 0.4);
+                    font-size: 10px; margin-top: 1px;
+                }
+                .e2e-row.fail { background: rgba(244, 67, 54, 0.08); }
+                .e2e-row.fail .desc { color: #ef9a9a; }
+                .e2e-row.warn { background: rgba(255, 193, 7, 0.06); }
+                .e2e-row.warn .desc { color: #ffd54f; }
+                .e2e-row.pass .desc { color: rgba(200, 215, 235, 0.6); }
+                #e2e-close {
+                    background: none; border: none; color: rgba(200, 215, 235, 0.5);
+                    cursor: pointer; font-size: 16px; padding: 4px 8px;
+                }
+                #e2e-close:hover { color: rgba(200, 215, 235, 0.9); }
+                #e2e-actions {
+                    padding: 8px 14px;
+                    border-top: 1px solid rgba(100, 150, 255, 0.1);
+                    display: flex; gap: 8px;
+                    position: sticky; bottom: 0;
+                    background: rgba(10, 14, 20, 0.98);
+                }
+                #e2e-actions button {
+                    background: rgba(100, 150, 255, 0.12);
+                    border: 1px solid rgba(100, 150, 255, 0.2);
+                    color: rgba(180, 200, 230, 0.7);
+                    padding: 4px 10px; border-radius: 3px;
+                    cursor: pointer; font-size: 10px;
+                    font-family: inherit;
+                }
+                #e2e-actions button:hover {
+                    background: rgba(100, 150, 255, 0.2);
+                    color: rgba(220, 230, 245, 0.9);
+                }
+            </style>
+            <div id="e2e-header">
+                <span class="title">E2E Tests</span>
+                <span id="e2e-badge" class="badge badge-running">RUNNING...</span>
+                <button id="e2e-close">×</button>
+            </div>
+            <div id="e2e-stats"></div>
+            <div id="e2e-body"><div style="padding:20px;color:rgba(255,193,7,0.6)">テスト実行中…</div></div>
+            <div id="e2e-actions">
+                <button id="e2e-rerun">▶ Re-run All</button>
+                <button id="e2e-copy">📋 Copy JSON</button>
+                <button id="e2e-filter-fail">⚠ Failures only</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        qs('#e2e-close').addEventListener('click', () => {
+            overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
+        });
+
+        qs('#e2e-rerun').addEventListener('click', async () => {
+            updateOverlayRunning();
+            const result = await runAll();
+            updateOverlayResults(result);
+        });
+
+        qs('#e2e-copy').addEventListener('click', () => {
+            const json = JSON.stringify(summary(), null, 2);
+            navigator.clipboard.writeText(json).then(() => {
+                const btn = qs('#e2e-copy');
+                btn.textContent = '✓ Copied';
+                setTimeout(() => { btn.textContent = '📋 Copy JSON'; }, 1500);
+            });
+        });
+
+        let showOnlyFail = false;
+        qs('#e2e-filter-fail').addEventListener('click', () => {
+            showOnlyFail = !showOnlyFail;
+            qs('#e2e-filter-fail').textContent = showOnlyFail ? '◉ Show all' : '⚠ Failures only';
+            updateOverlayResults(summary());
+        });
+
+        // Filter state accessor for updateOverlayResults
+        overlay._getShowOnlyFail = () => showOnlyFail;
+    }
+
+    function updateOverlayRunning() {
+        const badge = qs('#e2e-badge');
+        const body = qs('#e2e-body');
+        if (badge) { badge.className = 'badge badge-running'; badge.textContent = 'RUNNING...'; }
+        if (body) body.innerHTML = '<div style="padding:20px;color:rgba(255,193,7,0.6)">テスト実行中…</div>';
+    }
+
+    function updateOverlayResults(result) {
+        if (!IS_TEST_MODE) return;
+
+        const badge = qs('#e2e-badge');
+        if (badge) {
+            badge.className = `badge ${result.overall === 'PASS' ? 'badge-pass' : 'badge-fail'}`;
+            badge.textContent = result.overall;
+        }
+
+        const stats = qs('#e2e-stats');
+        if (stats) {
+            stats.textContent = `✓ ${result.pass}  ✗ ${result.fail}  ⚠ ${result.warn}  / ${result.total} total`;
+        }
+
+        const overlay = qs('#e2e-overlay');
+        const showOnlyFail = overlay?._getShowOnlyFail?.() || false;
+
+        const body = qs('#e2e-body');
+        if (!body) return;
+
+        const filtered = showOnlyFail
+            ? result.results.filter(r => r.status !== 'PASS')
+            : result.results;
+
+        body.innerHTML = filtered.map(r => {
+            const icon = r.status === 'PASS' ? '✓' : r.status === 'FAIL' ? '✗' : '⚠';
+            const cls = r.status.toLowerCase();
+            return `<div class="e2e-row ${cls}">
+                <span class="icon">${icon}</span>
+                <span class="id">${r.id}</span>
+                <div>
+                    <div class="desc">${r.description}</div>
+                    ${r.detail ? `<div class="detail">${r.detail}</div>` : ''}
+                </div>
+            </div>`;
+        }).join('');
     }
 
     // ============================
@@ -445,8 +626,6 @@
     // ============================
     // TC-E2E-11: Google Core Web Vitals & パフォーマンス予算
     // ============================
-    // 参照: https://web.dev/vitals/
-    // PASS/WARN/FAIL の3段階で Google 推奨閾値に対して評価する
 
     async function tc11_webvitals() {
         const nav = performance.getEntriesByType('navigation')[0];
@@ -507,7 +686,6 @@
                     resolve();
                 });
                 observer.observe({ type: 'largest-contentful-paint', buffered: true });
-                // タイムアウト: bufferedエントリがない場合
                 setTimeout(() => { observer.disconnect(); resolve(); }, 500);
             });
         } catch (e) {
@@ -566,7 +744,6 @@
                 measurableCount++;
             }
         }
-        // Navigation document自体の転送量を加算
         if (nav && nav.transferSize) {
             totalTransfer += nav.transferSize;
         }
@@ -585,7 +762,7 @@
         }
 
         // --- 11-7: リクエスト数 < 50 ---
-        const reqCount = resources.length + 1; // +1 for document
+        const reqCount = resources.length + 1;
         if (reqCount < 50) {
             assert('11-7', 'リクエスト数 < 50', true, `${reqCount} requests`);
         } else if (reqCount < 80) {
@@ -595,8 +772,6 @@
         }
 
         // --- 11-8: 404エラーなし ---
-        // Resource Timing APIではステータスコードを取得できないため、
-        // 既知の問題（favicon.ico等）をDOM/linkで検出
         const favicon = qs('link[rel="icon"], link[rel="shortcut icon"]');
         if (!favicon) {
             warn('11-8', 'favicon未設定（404の可能性）', '<link rel="icon"> がHTMLに存在しない');
@@ -668,7 +843,6 @@
         return summary();
     }
 
-    // パフォーマンスのみ実行
     async function perf() {
         results.length = 0;
         try { await tc11_webvitals(); } catch (e) {
@@ -677,11 +851,24 @@
         return summary();
     }
 
+    // MCP用グローバルAPI
     window.__e2e = { run, runAll, smoke, perf, testMap, results: () => summary() };
+
+    // ============================
+    // 実行 & 結果表示
+    // ============================
+
+    if (IS_TEST_MODE) {
+        createOverlay();
+    }
 
     const result = await runAll();
 
-    console.log('%c[E2E] ' + result.overall + ` \u2014 ${result.pass}/${result.total} passed`,
+    if (IS_TEST_MODE) {
+        updateOverlayResults(result);
+    }
+
+    console.log('%c[E2E] ' + result.overall + ` — ${result.pass}/${result.total} passed`,
         result.overall === 'PASS' ? 'color: #4CAF50; font-weight: bold' : 'color: #f44336; font-weight: bold');
 
     if (result.fail > 0) {
