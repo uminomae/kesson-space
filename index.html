@@ -15,6 +15,35 @@
 
   <!-- CHANGED: Bootstrap CSS/JS を削除。dev-panel.js が ?dev 時に動的ロードする -->
 
+  <!-- PERF: CDN TLS接続を先行確立 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <!-- PERF: modulepreload — 深いimportチェーンを並列フェッチ
+       main.js → scene.js → shaders/* の逐次解決を回避 -->
+  <!-- ローカルモジュール（チェーン深度2-4） -->
+  <link rel="modulepreload" href="./src/config.js">
+  <link rel="modulepreload" href="./src/scene.js">
+  <link rel="modulepreload" href="./src/controls.js">
+  <link rel="modulepreload" href="./src/navigation.js">
+  <link rel="modulepreload" href="./src/nav-objects.js">
+  <link rel="modulepreload" href="./src/viewer.js">
+  <link rel="modulepreload" href="./src/i18n.js">
+  <link rel="modulepreload" href="./src/scroll-ui.js">
+  <link rel="modulepreload" href="./src/shaders/noise.glsl.js">
+  <link rel="modulepreload" href="./src/shaders/background.js">
+  <link rel="modulepreload" href="./src/shaders/water.js">
+  <link rel="modulepreload" href="./src/shaders/kesson.js">
+  <link rel="modulepreload" href="./src/shaders/distortion-pass.js">
+  <link rel="modulepreload" href="./src/shaders/fluid-field.js">
+  <!-- CDNモジュール（チェーン深度3-5: main→EffectComposer→CopyShader等） -->
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/Pass.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/CopyShader.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/utils/BufferGeometryUtils.js" crossorigin>
+
   <style>
     /* --- Bootstrapリセットの上書き: 本体UIを保護 --- */
     body {

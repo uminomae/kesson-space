@@ -2,17 +2,23 @@
 // raw.githubusercontent.com から draft.md を fetch → marked.js でパース → HTML レンダリング
 // PDF はダウンロードリンクとして残す
 
-import { marked } from 'marked';
+// CHANGED: marked を動的importに変更（初期ロード時の20.8KB削減）
+// marked はオーブクリック時にのみ必要
+let _markedParser = null;
+async function getMarked() {
+    if (!_markedParser) {
+        const { marked } = await import('marked');
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+        });
+        _markedParser = marked;
+    }
+    return _markedParser;
+}
 
 let _viewer = null;
 let _isOpen = false;
-
-// --- marked.js 設定 ---
-
-marked.setOptions({
-    breaks: true,       // 単一改行を <br> に（GFM互換）
-    gfm: true,          // GitHub Flavored Markdown（テーブル、取り消し線等）
-});
 
 // --- Frontmatter パーサー（自前: YAMLライブラリ不要） ---
 
@@ -129,7 +135,12 @@ export async function openPdfViewer(pdfUrl, label) {
     `);
 
     try {
-        const res = await fetch(draftUrl);
+        // CHANGED: marked を並列でロード（fetch と同時）
+        const [res, marked] = await Promise.all([
+            fetch(draftUrl),
+            getMarked(),
+        ]);
+
         if (!res.ok) throw new Error(`${res.status}`);
         const raw = await res.text();
 
