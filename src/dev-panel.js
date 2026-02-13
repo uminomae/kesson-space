@@ -70,14 +70,14 @@ const SECTIONS = [
         id: 'vortex',
         title: '渦（M2-4）',
         params: {
-            vortexSpeed:     { label: '速度',       min: 0.0, max: 1.0, step: 0.01, default: vortexParams.speed },
-            vortexIntensity: { label: '強度',       min: 0.0, max: 3.0, step: 0.1,  default: vortexParams.intensity },
-            vortexScale:     { label: 'スケール',   min: 0.1, max: 3.0, step: 0.1,  default: vortexParams.scale },
-            vortexOpacity:   { label: '透明度',     min: 0.0, max: 1.0, step: 0.05, default: vortexParams.opacity },
-            vortexPosX:      { label: '位置 X',     min: -50, max: 50,  step: 1,    default: vortexParams.posX },
-            vortexPosY:      { label: '位置 Y',     min: -30, max: 10,  step: 1,    default: vortexParams.posY },
-            vortexPosZ:      { label: '位置 Z',     min: -50, max: 50,  step: 1,    default: vortexParams.posZ },
-            vortexSize:      { label: 'サイズ',     min: 5,   max: 80,  step: 5,    default: vortexParams.size },
+            vortexSpeed:     { label: '速度',       min: 0.0,  max: 2.0,   step: 0.01, default: vortexParams.speed },
+            vortexIntensity: { label: '強度',       min: 0.0,  max: 10.0,  step: 0.1,  default: vortexParams.intensity },
+            vortexScale:     { label: 'スケール',   min: 0.1,  max: 5.0,   step: 0.1,  default: vortexParams.scale },
+            vortexOpacity:   { label: '透明度',     min: 0.0,  max: 1.0,   step: 0.05, default: vortexParams.opacity },
+            vortexPosX:      { label: '位置 X',     min: -100, max: 100,   step: 1,    default: vortexParams.posX },
+            vortexPosY:      { label: '位置 Y',     min: -50,  max: 50,    step: 1,    default: vortexParams.posY },
+            vortexPosZ:      { label: '位置 Z',     min: -100, max: 100,   step: 1,    default: vortexParams.posZ },
+            vortexSize:      { label: 'サイズ',     min: 5,    max: 500,   step: 5,    default: vortexParams.size },
         }
     },
     {
