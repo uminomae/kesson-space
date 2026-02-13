@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #15 E2Eテスト ブラウザ独立実行
+**セッション**: #16 TODO管理体系整備
 
 ---
 
@@ -34,23 +34,19 @@
 - [x] **CI修正・Phase 4検証 #13**: 静的テスト修正、src/versions/ 削除、ライブサイト検証完了
 - [x] **軽量化 #14**: Bootstrap条件付きロード、流体フィールド128化
 - [x] **E2Eブラウザ独立実行 #15**: ?test自動実行 + 結果オーバーレイ
+- [x] **TODO管理体系整備 #16**: TODO.md新設、README.md/CURRENT.md役割分担整理
 
-### セッション#15 E2Eテスト ブラウザ独立実行
-
-Claudeとの対話なしでE2Eテストをブラウザ単体で実行できる仕組みを追加。
+### セッション#16 TODO管理体系整備
 
 | 変更 | 内容 |
 |------|------|
-| e2e-runner.js 拡張 | `?test` 検出時にページ内オーバーレイで結果表示。Re-run / Copy JSON / Failures only フィルタ付き |
-| index.html | `?test` パラメータ検出 → window.load + 3秒待機後にe2e-runner.jsをfetch&eval |
-| 実行方法 | ブックマークレット or `?test` URLパラメータ。Claude不要 |
+| TODO.md 新設 | タスクバックログの正本。優先度(P0-P3)・サイズ(S-XL)・カテゴリ・由来を管理 |
+| README.md v1.2 | TODO.mdをTier1に追加。セッション手順・終了チェックリスト更新 |
+| CURRENT.md 役割変更 | 「未着手」リストをTODO.mdに移管。CURRENT.mdはセッション記録に集中 |
 
-#### テスト結果（localhost）
+### バックログ
 
-41/46 PASS, 1 FAIL, 4 WARN
-
-- FAIL: LCP 10.88s — WebGL SPAの構造的問題（FCP 0.09sなので体感は高速）
-- WARN: lang=en未テスト、devパネル未テスト、オーブ目視、favicon未設定（すべて想定内）
+→ **[TODO.md](./TODO.md)** を参照（T-001〜T-012、12件）
 
 ### 現在のデフォルトパラメータ
 
@@ -75,15 +71,6 @@ Claudeとの対話なしでE2Eテストをブラウザ単体で実行できる�
   }
 }
 ```
-
-### 未着手
-
-- [ ] LCP FAIL対応（閾値緩和 or WARN化の検討）
-- [ ] favicon追加
-- [ ] 欠損データ構造設計
-- [ ] モバイル対応
-- [ ] 音響の検討
-- [ ] パフォーマンスプロファイリング
 
 ---
 
@@ -151,6 +138,7 @@ window.__e2e.run('TC-E2E-11')  // Web Vitals
 ## 参照リンク
 
 - [README.md](./README.md) - 管理ハブ
+- [TODO.md](./TODO.md) - タスクバックログ
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
