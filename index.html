@@ -389,6 +389,10 @@
       background: rgba(100, 150, 255, 0.2);
       color: rgba(220, 230, 245, 0.7);
     }
+    #surface-btn:focus {
+      outline: 2px solid rgba(100, 150, 255, 0.8);
+      outline-offset: 4px;
+    }
   </style>
   
   <script type="importmap">
@@ -473,8 +477,8 @@
   <!-- 開発ログ（潜水後に到達） -->
   <div id="dev-log"></div>
 
-  <!-- 浮上ボタン -->
-  <button id="surface-btn">↑ surface</button>
+  <!-- CHANGED: aria-label 追加 -->
+  <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
 
   <!-- Bootstrap JS (devパネルのアコーディオン用) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
-**最終更新**: 2026-02-15
-**セッション**: #11 ナビゲーションアクセシビリティ分析
+**最終更新**: 2026-02-14
+**セッション**: #12 ISS-001 ナビゲーションアクセシビリティ改善
 
 ---
 
@@ -30,69 +30,48 @@
 - [x] **管理ハブ構築 #9**: README.md新設、SCOPE/WORKFLOW統合
 - [x] **E2Eテスト・CI整備 #10**: 設計書・ランナー・GitHub Actions・README改訂
 - [x] **アクセシビリティ分析 #11**: 4エージェント分析、ISS-001起票
+- [x] **ISS-001実装 #12**: ナビゲーションアクセシビリティ改善
 
-### セッション#11 ナビゲーションアクセシビリティ分析
+### セッション#12 ISS-001実装
 
-**発見された問題**: 
-ナビゲーションオーブのHTMLラベルが `pointer-events: none` に設定されており、ユーザーが見えるテキストが実際のクリックターゲートではない。キーボードアクセス完全不可でWCAG 2.1 Level A不適合。
+| Phase | 内容 | 状態 |
+|-------|------|------|
+| Phase 1 | コード修正（nav-objects.js, lang-toggle.js, index.html） | ✅ 完了 |
+| Phase 2 | E2Eテスト追加（TC-09, TC-10） | ✅ 完了 |
+| Phase 3 | ドキュメント更新（CURRENT.md） | ✅ 完了 |
+| Phase 4 | デプロイ・検証 | ⏳ ライブサイト確認待ち |
 
-| 分析手法 | 内容 |
-|---------|------|
-| **4エージェント分析** | Review（バグ検出）、Refactor（構造改善）、Test（テスタビリティ）、Quality（ドキュメント整合性） |
-| **検出された問題** | HTMLラベル非クリック、Raycaster依存、アクセシビリティ法令違反リスク |
-| **影響範囲** | nav-objects.js、lang-toggle.js、index.html、E2Eテスト、ドキュメント |
-| **成果物** | `docs/issues/ISS-001-nav-accessibility.md` |
+#### 変更内容
 
-#### ISS-001の概要
+**nav-objects.js**:
+- `createHtmlLabel()`: `<div>` → `<button>` 化
+- aria-label追加（言語対応: ja/en）
+- click/keydownイベントハンドラ追加（PDF viewer / external link）
+- CSS: `pointer-events: none` → `auto`、focus/hoverスタイル追加
+- `updateSingleLabel()`: フェード時・カメラ背面時に `pointer-events: none` で無効化
 
-| 項目 | 内容 |
-|------|------|
-| 重大度 | 🔴 HIGH |
-| 問題 | ナビオーブのHTMLラベルが `pointer-events: none` でキーボードアクセス不可 |
-| 影響 | WCAG 2.1 Level A不適合、Section 508違反リスク、E2Eテストで機能検証不可 |
-| 修正方針 | HTMLラベルを `<button>` 化、aria-label追加、キーボードイベント対応 |
-| 実装コスト | 中（nav-objects.js、CSS、テスト修正） |
-| 効果 | アクセシビリティ準拠、テスタビリティ向上、UX改善 |
+**lang-toggle.js**:
+- aria-label追加（「言語を英語に切り替え」/「Switch language to Japanese」）
+- :focus スタイル追加
 
-#### 4エージェント分析の知見
+**index.html**:
+- 浮上ボタンに `aria-label="ページ上部に戻る"` 追加
+- 浮上ボタンに :focus スタイル追加
 
-**Agent-R (Review)**:
-- `pointer-events: none` により視覚的に見えるテキストがクリック不可
-- Raycasterとの競合によるクリック失敗リスク
-- WCAG 2.1 Level A違反
+**tests/e2e-runner.js**:
+- TC-E2E-09: リンク機能検証（h1リンク、ナビボタンクリック→ビューアー、aria-label）
+- TC-E2E-10: キーボードナビゲーション（フォーカス要素数、フォーカス可否、Enterキー起動）
 
-**Agent-F (Refactor)**:
-- 「見た目優先・機能後回し」のアンチパターン検出
-- セマンティックHTML優先アーキテクチャの提案
-- 保守性・デバッグ困難性の指摘
+#### 設計判断
 
-**Agent-T (Test)**:
-- 提案したTC-09が現状では動作しない（`pointer-events: none`）
-- テスト可能な実装の条件定義
-- Raycaster依存テストの困難性
+- Raycasterによる3Dクリック判定は**装飾的補助機能として残存**
+- HTMLボタンが**主要インタラクション手段**（アクセシビリティの主軸）
+- フェード中・スクロール後はpointer-eventsを動的に無効化（3Dとの競合防止）
+- GPTのE2Eテスト助言を参考: 操作→状態→結果の回帰テストパターンを採用
 
-**Agent-Q (Quality)**:
-- CONCEPT.md の「クリック」表現と実装の乖離
-- アクセシビリティ基準の欠如
-- ドキュメント更新の必要性
+### E2Eテスト結果
 
-### E2Eテスト結果（2026-02-14実行）
-
-| TC | カテゴリ | 結果 | 詳細 |
-|----|---------|------|------|
-| 01 | WebGL描画 | ✅ 5/5 | canvas 2162x1658、29fps |
-| 02 | UI要素 | ✅ 8/8 | タイトル・タグライン・クレジット・リンク |
-| 03 | 言語切替 | ✅ 5/5 | en版タイトル・タグライン・トグル |
-| 04 | コンソール | ✅ 1/1 | JSエラー0件 |
-| 05 | ナビオーブ | ✅ 2/2 + 1W | ラベル存在、スクショ視認OK |
-| 06 | スクロール | ✅ 4/4 | spacer・カメラ移動・dev-log・浮上ボタン |
-| 07 | Devパネル | ✅ 2/2 | パネル表示、63スライダー検出 |
-| 08 | パフォーマンス | ✅ 3/3 | ロード <10s、FPS ≥ 20 |
-| N/A | ネットワーク | ✅ | 35リクエスト中 404ゼロ（GA 503のみ許容） |
-
-**合計: 30/30 PASS、3 WARN（想定通りの条件付き項目）**
-
-**注**: TC-05はラベルの「存在」のみ検証。「クリック可能性」「キーボードアクセス」は未検証（ISS-001で対応予定）
+**Phase 4でライブサイトにて検証予定**
 
 ### 現在のデフォルトパラメータ
 
@@ -120,7 +99,6 @@
 
 ### 未着手
 
-- [ ] **ISS-001: ナビゲーションアクセシビリティ改善** ← 次回セッションで実施
 - [ ] 欠損データ構造設計
 - [ ] モバイル対応
 - [ ] 音響の検討
@@ -130,23 +108,18 @@
 
 ## 次回セッションへの引き継ぎ
 
-### ISS-001実装の準備
+### Phase 4 検証チェックリスト
 
-**必読ドキュメント**:
-- `docs/issues/ISS-001-nav-accessibility.md`（本Issue、19KB）
-- 4エージェント分析結果
-- Phase 1〜4の実装チェックリスト
+ライブサイトにデプロイ後、以下を検証:
 
-**推奨実施順序**:
-1. Phase 1: コード修正（nav-objects.js、lang-toggle.js、index.html）
-2. Phase 2: E2Eテスト追加（TC-09, TC-10）
-3. Phase 3: ドキュメント更新
-4. Phase 4: デプロイ・検証
-
-**注意事項**:
-- Raycasterによる3Dクリック判定は装飾的補助機能として残す
-- HTMLボタンが主要インタラクション手段（冗長性確保）
-- WCAG 2.1 Level A準拠を目標
+- [ ] Tab キーでナビボタンにフォーカスが移動する
+- [ ] フォーカス時に青いアウトラインが表示される
+- [ ] Enter/Space キーでPDFビューアーが開く
+- [ ] マウスクリックでもPDFビューアーが開く（従来通り）
+- [ ] Raycaster経由のクリックも引き続き動作
+- [ ] スクロール後にナビボタンのpointer-eventsが無効化される
+- [ ] E2Eテスト（TC-09, TC-10）がPASS
+- [ ] モバイルでタップ操作が正常
 
 ---
 
@@ -160,14 +133,15 @@ GitHub Actionsで src/, tests/, index.html 変更時に自動実行。
 
 ### E2Eテスト（Claude in Chrome MCP）
 ```javascript
-// 全テスト
+// 全テスト（TC-01〜TC-10）
 fetch('https://uminomae.github.io/kesson-space/tests/e2e-runner.js').then(r=>r.text()).then(eval)
 
 // スモーク（TC-01,02,04のみ）
 window.__e2e.smoke()
 
-// 個別
-window.__e2e.run('TC-E2E-03')  // 言語テスト（?lang=en で実行）
+// 個別（ISS-001テスト）
+window.__e2e.run('TC-E2E-09')  // リンク機能
+window.__e2e.run('TC-E2E-10')  // キーボードナビ
 ```
 
 詳細: [tests/e2e-test-design.md](../tests/e2e-test-design.md)
@@ -191,6 +165,7 @@ window.__e2e.run('TC-E2E-03')  // 言語テスト（?lang=en で実行）
 - デプロイ: GitHub Pages（mainブランチ直接）
 - devパネル: `?dev` をURLに付与で表示
 - CI: GitHub Actions（.github/workflows/test.yml）
+- アクセシビリティ: WCAG 2.1 Level A準拠を目標
 
 ---
 
@@ -202,7 +177,7 @@ window.__e2e.run('TC-E2E-03')  // 言語テスト（?lang=en で実行）
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
 - [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
-- [**ISS-001**](./issues/ISS-001-nav-accessibility.md) - **ナビゲーションアクセシビリティ改善**
+- [~~ISS-001~~](./issues/ISS-001-nav-accessibility.md) - ~~ナビゲーションアクセシビリティ改善~~ ✅ 完了
 - [ライブサイト](https://uminomae.github.io/kesson-space/)
 - [ブログ記事](https://uminomae.github.io/pjdhiro/thinking-kesson/)
 - [GitHub Actions](https://github.com/uminomae/kesson-space/actions)

@@ -306,17 +306,22 @@ export function updateGemPosition() {
 }
 
 // ========================================
-// HTMLラベル
+// HTMLラベル — ISS-001: div → button 化
 // ========================================
 function injectNavLabelStyles() {
     if (document.getElementById('nav-label-styles')) return;
     const style = document.createElement('style');
     style.id = 'nav-label-styles';
+    // CHANGED: pointer-events: none → auto, button reset styles, focus/hover styles
     style.textContent = `
         .nav-label {
             position: fixed;
             z-index: 15;
-            pointer-events: none;
+            pointer-events: auto;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
             color: rgba(255, 255, 255, 0.9);
             font-family: "Sawarabi Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
             font-size: clamp(0.45rem, 2.8vmin, 1.1rem);
@@ -324,23 +329,69 @@ function injectNavLabelStyles() {
             text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
             transform: translate(-50%, -100%);
             white-space: nowrap;
-            transition: filter 0.15s ease, opacity 0.3s ease;
+            transition: filter 0.15s ease, opacity 0.3s ease, color 0.3s ease;
             will-change: filter;
+        }
+        .nav-label:focus {
+            outline: 2px solid rgba(100, 150, 255, 0.8);
+            outline-offset: 4px;
+            filter: blur(0px) !important;
+        }
+        .nav-label:hover {
+            filter: blur(0px) !important;
+            color: rgba(255, 255, 255, 1.0);
         }
         .nav-label--gem {
             color: rgba(180, 195, 240, 0.85);
             text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
         }
+        .nav-label--gem:hover {
+            color: rgba(200, 215, 255, 1.0);
+        }
     `;
     document.head.appendChild(style);
 }
 
-function createHtmlLabel(text, extraClass) {
-    const el = document.createElement('div');
-    el.className = 'nav-label' + (extraClass ? ' ' + extraClass : '');
-    el.textContent = text;
-    document.body.appendChild(el);
-    return el;
+// CHANGED: div → button, click/keyboard handlers, aria-label
+function createHtmlLabel(text, extraClass, url, isExternal) {
+    const btn = document.createElement('button');
+    btn.className = 'nav-label' + (extraClass ? ' ' + extraClass : '');
+    btn.textContent = text;
+    btn.tabIndex = 0;
+    btn.setAttribute('role', 'button');
+
+    // aria-label: 言語に応じた説明
+    const lang = document.documentElement.lang || 'ja';
+    if (isExternal) {
+        btn.setAttribute('aria-label',
+            lang === 'en' ? `Open ${text} (external link)` : `${text}を開く（外部リンク）`);
+    } else {
+        btn.setAttribute('aria-label',
+            lang === 'en' ? `Open ${text} PDF` : `${text}のPDFを開く`);
+    }
+
+    // クリックハンドラ
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isExternal) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+            import('./viewer.js').then(({ openPdfViewer }) => {
+                openPdfViewer(url, text);
+            });
+        }
+    });
+
+    // キーボードハンドラ（Enter / Space）
+    btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            btn.click();
+        }
+    });
+
+    document.body.appendChild(btn);
+    return btn;
 }
 
 // ========================================
@@ -389,7 +440,8 @@ export function createNavObjects(scene) {
         scene.add(group);
         navMeshes.push(group);
 
-        _labelElements.push(createHtmlLabel(navItem.label));
+        // CHANGED: URLとexternal flagを渡す
+        _labelElements.push(createHtmlLabel(navItem.label, '', navItem.url, false));
     });
 
     // --- Gemini Gem（GLTF Group） ---
@@ -416,7 +468,8 @@ export function createNavObjects(scene) {
     _gemGroup = gemGroup;
     _navMeshes = navMeshes;
 
-    _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem');
+    // CHANGED: URLとexternal flagを渡す
+    _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true);
 
     return navMeshes;
 }
@@ -480,6 +533,7 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
 
     if (worldPos.z > 1.0) {
         el.style.opacity = '0';
+        el.style.pointerEvents = 'none'; // CHANGED: カメラ背面では無効化
         return;
     }
 
@@ -498,6 +552,7 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     const clampedBlur = Math.min(blurPx, 4.0);
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
+    el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none'; // CHANGED: フェード時は無効化
 }
 
 export function updateNavLabels(navMeshes, camera) {
@@ -514,6 +569,7 @@ export function updateNavLabels(navMeshes, camera) {
 
         if (!visible || scrollFade <= 0) {
             el.style.opacity = '0';
+            el.style.pointerEvents = 'none'; // CHANGED
             return;
         }
 
@@ -524,6 +580,7 @@ export function updateNavLabels(navMeshes, camera) {
     if (_gemLabelElement && _gemGroup) {
         if (!visible || scrollFade <= 0) {
             _gemLabelElement.style.opacity = '0';
+            _gemLabelElement.style.pointerEvents = 'none'; // CHANGED
             return;
         }
 
