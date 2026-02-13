@@ -510,5 +510,20 @@
 
   <!-- CHANGED: Bootstrap JS 削除。dev-panel.js が ?dev 時に動的ロードする -->
   <script type="module" src="./src/main.js"></script>
+
+  <!-- ?test パラメータでE2Eテスト自動実行 -->
+  <script>
+    if (new URLSearchParams(window.location.search).has('test')) {
+      // Three.js初期化完了を待ってからテスト実行（3秒待機）
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          fetch('./tests/e2e-runner.js')
+            .then(function(r) { return r.text(); })
+            .then(function(code) { eval(code); })
+            .catch(function(e) { console.error('[E2E] Failed to load test runner:', e); });
+        }, 3000);
+      });
+    }
+  </script>
 </body>
 </html>
