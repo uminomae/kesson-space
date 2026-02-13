@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #13 CI修正・クリーンアップ・Phase 4検証完了
+**セッション**: #14 軽量化（Bootstrap条件付きロード + 流体128化）
 
 ---
 
@@ -32,31 +32,22 @@
 - [x] **アクセシビリティ分析 #11**: 4エージェント分析、ISS-001起票
 - [x] **ISS-001実装 #12**: ナビゲーションアクセシビリティ改善（Phase 1-3）
 - [x] **CI修正・Phase 4検証 #13**: 静的テスト修正、src/versions/ 削除、ライブサイト検証完了
+- [x] **軽量化 #14**: Bootstrap条件付きロード、流体フィールド128化
 
-### セッション#13
+### セッション#14 軽量化
 
-#### CI修正
+Gemini (flash) + GPT-4o の2モデルにレビュー依頼後、実装。
 
-| 修正 | 内容 |
-|------|------|
-| 静的テスト修正 | Test 3: 正規表現リテラル内 `\.\.\//` → `includes()` ベースに変更 |
-| versions チェック緩和 | Test 5: `src/versions/` 存在を hard fail → 警告に変更 |
-| src/versions/ 削除 | ローカルから `git rm -r` |
+| 変更 | 内容 | 効果 |
+|------|------|------|
+| Bootstrap条件付きロード | index.htmlからCSS/JS削除、dev-panel.jsで?dev時に動的ロード | 一般訪問者 ~270KB削減 |
+| 流体フィールド128化 | fluid-field.js: FIELD_SIZE 256→128 | GPU負荷/メモリ75%削減（influence=0.06で視覚影響なし） |
 
-#### ISS-001 Phase 4 検証結果 ✅ 完了
+#### レビュー結果（Gemini + GPT-4o）
 
-| チェック項目 | 結果 |
-|---|---|
-| JSコンソールエラー | ✅ なし |
-| TC-E2E-09 (リンク機能) | ✅ 7/7 PASS |
-| TC-E2E-10 (キーボードナビ) | ✅ 4/4 PASS |
-| スモーク全体 | ✅ 14/14 PASS |
-
-ISS-001は全4フェーズ完了。ナビゲーションのWCAG 2.1 Level A準拠を達成。
-
-#### 教訓
-
-- `github:push_files` でJSファイルを書き込む際、正規表現リテラル内の `/` が JSON文字列化で問題を起こしやすい。`includes()` や `new RegExp()` の方が安全。
+- Bootstrap条件付きロード: 両者とも✅ 低リスク
+- 流体128化: 両者とも✅ influence=0.06で知覚不可能
+- 追加提案（シェーダーprecision最適化、ポストプロセス統合等）は今回見送り
 
 ### 現在のデフォルトパラメータ
 
@@ -126,7 +117,7 @@ window.__e2e.run('TC-E2E-10')  // キーボードナビ
 ## 技術的メモ
 
 - Three.js 0.160.0（CDN importmap）
-- Bootstrap 5.3.3（CDN、devパネル用）
+- Bootstrap 5.3.3（CDN、devパネル ?dev 時のみ動的ロード）
 - ES Modules（ビルドツールなし）
 - ポート: 3001（pjdhiroの4000と干渉回避）
 - MCP: mcp_servers/gemini_threejs.py
@@ -134,6 +125,7 @@ window.__e2e.run('TC-E2E-10')  // キーボードナビ
 - devパネル: `?dev` をURLに付与で表示
 - CI: GitHub Actions（.github/workflows/test.yml）
 - アクセシビリティ: WCAG 2.1 Level A準拠達成
+- 流体フィールド: 128x128（FIELD_SIZE=128）
 
 ---
 
