@@ -28,14 +28,10 @@ const _fogColor = new THREE.Color();
 
 /**
  * カメラZ距離をアスペクト比から算出
- * - landscape (aspect >= 1): デスクトップ値そのまま (34)
- * - portrait: aspect 0.5→0, aspect 1.0→34 の線形補間
- *   iPhone 9:16 (0.56) → camZ ≈ 4
- *   iPad 3:4  (0.75) → camZ ≈ 17
  */
 function calcCamZ(aspect) {
     if (aspect >= 1) return sceneParams.camZ;
-    const t = Math.max(0, (aspect - 0.5) * 2.0);  // 0.5→0, 1.0→1
+    const t = Math.max(0, (aspect - 0.5) * 2.0);
     return sceneParams.camZ * t;
 }
 
@@ -148,6 +144,11 @@ export function updateScene(time) {
         vu.uIntensity.value = vortexParams.intensity;
         vu.uScale.value = vortexParams.scale;
         vu.uOpacity.value = vortexParams.opacity;
+        vu.uColorR.value = vortexParams.colorR;
+        vu.uColorG.value = vortexParams.colorG;
+        vu.uColorB.value = vortexParams.colorB;
+        vu.uIterations.value = vortexParams.iterations;
+        vu.uInnerIterLimit.value = vortexParams.innerIterLimit;
         _vortexMesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
         _vortexMesh.scale.set(vortexParams.size, vortexParams.size, 1);
     }

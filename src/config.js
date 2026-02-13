@@ -114,14 +114,19 @@ export const gemParams = {
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
 export const vortexParams = {
-    speed:     0.2,
-    intensity: 1.0,
-    scale:     1.0,
-    opacity:   0.8,
-    posX:      0,
-    posY:      -15,
-    posZ:      -10,
-    size:      30,
+    speed:          0.2,
+    intensity:      1.0,
+    scale:          1.0,
+    opacity:        0.8,
+    colorR:         1.0,
+    colorG:         0.7,
+    colorB:         0.3,
+    iterations:     50,
+    innerIterLimit: 500,
+    posX:           0,
+    posY:           -15,
+    posZ:           -10,
+    size:           30,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
