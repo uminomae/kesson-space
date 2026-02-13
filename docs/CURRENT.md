@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #16 TODO管理体系整備
+**セッション**: #17 渦シェーダー実装・フォント修正
 
 ---
 
@@ -35,18 +35,26 @@
 - [x] **軽量化 #14**: Bootstrap条件付きロード、流体フィールド128化
 - [x] **E2Eブラウザ独立実行 #15**: ?test自動実行 + 結果オーバーレイ
 - [x] **TODO管理体系整備 #16**: TODO.md新設、README.md/CURRENT.md役割分担整理
+- [x] **渦シェーダー・フォント修正 #17**: 渦シェーダー実装(OFF)、Noto Serif JP導入、h1白色修正
 
-### セッション#16 TODO管理体系整備
+### セッション#17 渦シェーダー実装・フォント修正
 
 | 変更 | 内容 |
 |------|------|
-| TODO.md 新設 | タスクバックログの正本。優先度(P0-P3)・サイズ(S-XL)・カテゴリ・由来を管理 |
-| README.md v1.2 | TODO.mdをTier1に追加。セッション手順・終了チェックリスト更新 |
-| CURRENT.md 役割変更 | 「未着手」リストをTODO.mdに移管。CURRENT.mdはセッション記録に集中 |
+| 渦シェーダー (vortex.js) | twigl系フラクタルレイマーチング実装。Gemini/Codex/Claude 3社レビュー。XZ平面配置、mod()時間ラップ、RGB色制御。**default: OFF**（ユーザー判断でコード残し） |
+| エージェント呼び出しルール | README.md §7に明文化。Three.js/GLSLコードはGemini MCP経由で実装する方針 |
+| フォント変更 | Sawarabi Mincho → Noto Serif JP (weight 300/400)。Yu Minchoに近い高品質明朝体 |
+| h1色修正 | rgba(255,255,255,0.5) → rgba(255,255,255,0.95) 白くクッキリに |
+| devパネル拡張 | 渦セクション追加（速度・強度・スケール・位置・サイズ・RGB色・イテレーション） |
+
+### 決定事項
+
+- 渦シェーダーはOFFだがコードは残す（将来再検討の余地あり）
+- フォントはNoto Serif JPで確定（全環境で一貫した高品質明朝体）
 
 ### バックログ
 
-→ **[TODO.md](./TODO.md)** を参照（T-001〜T-012、12件）
+→ **[TODO.md](./TODO.md)** を参照
 
 ### 現在のデフォルトパラメータ
 
@@ -68,6 +76,11 @@
     "haloIntensity": 0.2, "haloWidth": 1.0,
     "heatHaze": 0.024, "heatHazeRadius": 0.5, "heatHazeSpeed": 1.0,
     "dofStrength": 0.009, "dofFocusRadius": 0.32
+  },
+  "vortexParams": {
+    "enabled": false, "speed": 1.82, "intensity": 10, "scale": 4.5,
+    "size": 255, "posY": -6, "colorR": 0.15, "colorG": 0.2, "colorB": 1.95,
+    "iterations": 35, "innerIterLimit": 250
   }
 }
 ```
@@ -84,8 +97,6 @@ GitHub Actionsで src/, tests/, index.html 変更時に自動実行。
 
 ### E2Eテスト（ブラウザ独立実行）
 
-ブックマークレットまたは `?test` URLパラメータで実行。Claudeとの対話不要。
-
 ```
 http://localhost:3001/?test          ← 全テスト自動実行
 http://localhost:3001/?test&lang=en  ← 英語版テスト含む
@@ -93,20 +104,6 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 ```
 
 結果は右側オーバーレイに表示。Re-run / Copy JSON / Failures only フィルタ付き。
-
-### E2Eテスト（Claude in Chrome MCP）
-```javascript
-// 全テスト（TC-01〜TC-11）
-fetch('/tests/e2e-runner.js').then(r=>r.text()).then(eval)
-
-// スモーク（TC-01,02,04のみ）
-window.__e2e.smoke()
-
-// 個別
-window.__e2e.run('TC-E2E-09')  // リンク機能
-window.__e2e.run('TC-E2E-10')  // キーボードナビ
-window.__e2e.run('TC-E2E-11')  // Web Vitals
-```
 
 詳細: [tests/e2e-test-design.md](../tests/e2e-test-design.md)
 
@@ -132,6 +129,7 @@ window.__e2e.run('TC-E2E-11')  // Web Vitals
 - CI: GitHub Actions（.github/workflows/test.yml）
 - アクセシビリティ: WCAG 2.1 Level A準拠達成
 - 流体フィールド: 128x128（FIELD_SIZE=128）
+- フォント: Noto Serif JP (Google Fonts) + Yu Mincho/MS PMinchoフォールバック
 
 ---
 
