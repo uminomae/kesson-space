@@ -113,21 +113,21 @@ export const gemParams = {
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
-// ユーザーチューニング値反映 (2026-02-14)
+// ユーザーチューニング値反映 (2026-02-14 #2)
 export const vortexParams = {
-    speed:          1.82,
-    intensity:      10,
-    scale:          4.5,
+    speed:          0.22,
+    intensity:      9.8,
+    scale:          4.4,
     opacity:        0.95,
     colorR:         0.15,
-    colorG:         0.2,
-    colorB:         1.95,
-    iterations:     35,
-    innerIterLimit: 250,
+    colorG:         0.1,
+    colorB:         1.9,
+    iterations:     50,
+    innerIterLimit: 100,
     posX:           0,
-    posY:           -6,
+    posY:           -16,
     posZ:           0,
-    size:           255,
+    size:           145,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
