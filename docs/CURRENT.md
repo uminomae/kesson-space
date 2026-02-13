@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #10 E2Eテスト設計・実装・実行
+**セッション**: #10 E2Eテスト設計・実装・実行・CI整備
 
 ---
 
@@ -28,14 +28,16 @@
 - [x] **品質レビュー #7**: 4エージェント分析、テストスイート作成
 - [x] **参照体系整備 #8**: SCOPE.md新設、参照リンク更新
 - [x] **管理ハブ構築 #9**: README.md新設、SCOPE/WORKFLOW統合
-- [x] **E2Eテスト #10**: 設計書・ランナー作成、ライブサイトで全項目PASS
+- [x] **E2Eテスト・CI整備 #10**: 設計書・ランナー・GitHub Actions・README改訂
 
-### セッション#10 E2Eテスト設計・実装・実行
+### セッション#10 E2Eテスト・CI整備
 
 | 変更 | 内容 |
 |------|--------|
 | `tests/e2e-test-design.md` 新設 | 8カテゴリ・30+項目のテスト設計書。実行手順・判定基準・スコープ定義 |
 | `tests/e2e-runner.js` 新設 | Claude in Chrome MCP で注入実行する自動チェックスクリプト。runAll/smoke/run(tcId) の3モード |
+| `.github/workflows/test.yml` 新設 | pushごとにconfig整合性テストを自動実行するCI |
+| `docs/README.md` v1.1 | §8を三層テスト体制に改訂、§10にテスト・CIカタログ追加 |
 | ライブサイト検証完了 | 日本語版・英語版・devパネル版すべてPASS |
 
 #### E2Eテスト結果（2026-02-14実行）
@@ -89,10 +91,11 @@
 
 ## テスト実行方法
 
-### 静的解析（Node.js）
+### 静的解析（Node.js / CI自動）
 ```bash
 node tests/config-consistency.test.js
 ```
+GitHub Actionsで src/, tests/, index.html 変更時に自動実行。
 
 ### E2Eテスト（Claude in Chrome MCP）
 ```javascript
@@ -126,7 +129,7 @@ window.__e2e.run('TC-E2E-03')  // 言語テスト（?lang=en で実行）
 - MCP: mcp_servers/gemini_threejs.py
 - デプロイ: GitHub Pages（mainブランチ直接）
 - devパネル: `?dev` をURLに付与で表示
-- テスト: `node tests/config-consistency.test.js`
+- CI: GitHub Actions（.github/workflows/test.yml）
 
 ---
 
@@ -140,3 +143,4 @@ window.__e2e.run('TC-E2E-03')  // 言語テスト（?lang=en で実行）
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
 - [ライブサイト](https://uminomae.github.io/kesson-space/)
 - [ブログ記事](https://uminomae.github.io/pjdhiro/thinking-kesson/)
+- [GitHub Actions](https://github.com/uminomae/kesson-space/actions)
