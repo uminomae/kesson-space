@@ -56,8 +56,12 @@
 
 ---
 
-## 関連
+## プロジェクト群
 
-- [欠損駆動思考](https://uminomae.github.io/pjdhiro/thinking-kesson/)
-- [創造5段階（海）](https://uminomae.github.io/pjdhiro/dialogueCreation/)
-- [kesson-driven-thinking](https://github.com/uminomae/kesson-driven-thinking)（理論側）
+本リポジトリは「欠損駆動思考」プロジェクトの体験出力。理論を3D空間として追体験する場所。
+
+| 場所 | 役割 | リンク |
+|------|------|--------|
+| **kesson-space** | 体験する | [ライブ](https://uminomae.github.io/kesson-space/) |
+| pjdhiro ブログ | 読む | [欠損駆動思考](https://uminomae.github.io/pjdhiro/thinking-kesson/) / [創造5段階](https://uminomae.github.io/pjdhiro/dialogueCreation/) |
+| kesson-driven-thinking | 理論の正本 | [GitHub](https://github.com/uminomae/kesson-driven-thinking)（Private） |
