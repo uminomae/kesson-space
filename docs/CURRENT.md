@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
-**最終更新**: 2026-02-12
-**セッション**: #7 品質レビュー完了
+**最終更新**: 2026-02-13
+**セッション**: #8 参照体系整備
 
 ---
 
@@ -26,19 +26,16 @@
 - [x] **リファクタリング #5**: scene.js分割、config抽出、DEV_MODE→URLパラメータ
 - [x] **ブランチマージ #6**: feature/gravitational-lens → main
 - [x] **品質レビュー #7**: 4エージェント分析、テストスイート作成
+- [x] **参照体系整備 #8**: SCOPE.md新設、WORKFLOW/ARCHITECTURE参照更新
 
-### セッション#7 品質レビュー詳細
+### セッション#8 参照体系整備
 
 | 変更 | 内容 |
 |------|--------|
-| config.js 統一 | fluidParams, distortionParams を追加、Single Source of Truth完成 |
-| kesson.js Tint修正 | uTintR/G/B 初期値を sceneParams から参照 |
-| scene.js GC削減 | fogColor をモジュールスコープに事前確保 |
-| main.js 最適化 | findNavMeshes() をフレームで1回に統合 |
-| nav-objects.js GC削減 | Vector3 をキャッシュ化 |
-| versions/ 削除 | 未使用のバージョン履歴ファイルを削除 |
-| テスト追加 | tests/config-consistency.test.js |
-| ドキュメント更新 | ARCHITECTURE.md, CURRENT.md, REVIEW-REPORT.md |
+| SCOPE.md 新設 | プロジェクト群における位置づけ・cross-repo参照プロトコル・PKの読み方を定義 |
+| WORKFLOW.md 更新 | スコープ参照追加、理論的判断チェック項目追加 |
+| ARCHITECTURE.md 更新 | ファイルツリーにSCOPE.md追加 |
+| CURRENT.md 更新 | 参照リンクにSCOPE.md・WORKFLOW.md追加 |
 
 ### 現在のデフォルトパラメータ
 
@@ -96,8 +93,10 @@
 
 ## 参照リンク
 
+- [SCOPE.md](./SCOPE.md) - プロジェクト群における位置づけ・参照体系
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
+- [WORKFLOW.md](./WORKFLOW.md) - セッション管理手順
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
 - [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順

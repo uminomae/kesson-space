@@ -38,6 +38,7 @@ kesson-space/
 │   └── setup-mcp.sh          ← MCP初期設定スクリプト
 │
 └── docs/
+    ├── SCOPE.md              ← プロジェクト群の位置づけ・参照体系
     ├── CURRENT.md
     ├── CONCEPT.md
     ├── ARCHITECTURE.md       ← 本ファイル
