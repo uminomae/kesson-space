@@ -1,11 +1,20 @@
-// viewer.js — draft.md ビューアー（PDF iframe → Markdown HTML）
-// raw.githubusercontent.com から draft.md を fetch → パース → HTML レンダリング
+// viewer.js — draft.md ビューアー（Markdown HTML レンダリング）
+// raw.githubusercontent.com から draft.md を fetch → marked.js でパース → HTML レンダリング
 // PDF はダウンロードリンクとして残す
+
+import { marked } from 'marked';
 
 let _viewer = null;
 let _isOpen = false;
 
-// --- Markdown → HTML 軽量パーサー ---
+// --- marked.js 設定 ---
+
+marked.setOptions({
+    breaks: true,       // 単一改行を <br> に（GFM互換）
+    gfm: true,          // GitHub Flavored Markdown（テーブル、取り消し線等）
+});
+
+// --- Frontmatter パーサー（自前: YAMLライブラリ不要） ---
 
 function parseFrontmatter(text) {
     const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -28,108 +37,6 @@ function escapeHtml(str) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-}
-
-function inlineMarkdown(text) {
-    let s = escapeHtml(text);
-    // bold
-    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    // italic
-    s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    // links
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    return s;
-}
-
-function markdownToHtml(body) {
-    const lines = body.split('\n');
-    const out = [];
-    let inTable = false;
-    let tableRows = [];
-    let inParagraph = false;
-    let paraLines = [];
-
-    function flushParagraph() {
-        if (paraLines.length > 0) {
-            out.push(`<p>${inlineMarkdown(paraLines.join(' '))}</p>`);
-            paraLines = [];
-        }
-        inParagraph = false;
-    }
-
-    function flushTable() {
-        if (tableRows.length < 2) return;
-        let html = '<div class="md-table-wrap"><table>';
-        tableRows.forEach((row, i) => {
-            // skip separator row (|---|---|)
-            if (/^\|[\s\-:|]+\|$/.test(row)) return;
-            const cells = row.split('|').filter((_, idx, arr) =>
-                idx > 0 && idx < arr.length - 1
-            ).map(c => c.trim());
-            const tag = i === 0 ? 'th' : 'td';
-            html += '<tr>' + cells.map(c =>
-                `<${tag}>${inlineMarkdown(c)}</${tag}>`
-            ).join('') + '</tr>';
-        });
-        html += '</table></div>';
-        out.push(html);
-        tableRows = [];
-        inTable = false;
-    }
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const trimmed = line.trim();
-
-        // table
-        if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-            flushParagraph();
-            inTable = true;
-            tableRows.push(trimmed);
-            continue;
-        }
-        if (inTable) flushTable();
-
-        // empty line
-        if (trimmed === '') {
-            flushParagraph();
-            continue;
-        }
-
-        // hr
-        if (/^[-*_]{3,}$/.test(trimmed)) {
-            flushParagraph();
-            out.push('<hr class="md-hr">');
-            continue;
-        }
-
-        // headers
-        const hMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
-        if (hMatch) {
-            flushParagraph();
-            const level = hMatch[1].length;
-            out.push(`<h${level} class="md-h${level}">${inlineMarkdown(hMatch[2])}</h${level}>`);
-            continue;
-        }
-
-        // blockquote
-        if (trimmed.startsWith('>')) {
-            flushParagraph();
-            const content = trimmed.replace(/^>\s*/, '');
-            out.push(`<blockquote class="md-quote">${inlineMarkdown(content)}</blockquote>`);
-            continue;
-        }
-
-        // paragraph continuation
-        paraLines.push(trimmed);
-        inParagraph = true;
-    }
-
-    if (inTable) flushTable();
-    flushParagraph();
-
-    return out.join('\n');
 }
 
 // --- DOM ---
@@ -186,29 +93,19 @@ export function isViewerOpen() {
 
 /**
  * PDF URL (GitHub Pages) から raw.githubusercontent.com の draft.md URL を導出
- *
- * Input:  https://uminomae.github.io/pjdhiro/assets/pdf/kesson-general.pdf
- * Output: https://raw.githubusercontent.com/uminomae/pjdhiro/main/assets/pdf/kesson-general-draft.md
- *
- * Input:  https://uminomae.github.io/pjdhiro/assets/pdf/kesson-general-en.pdf
- * Output: https://raw.githubusercontent.com/uminomae/pjdhiro/main/assets/pdf/kesson-general-en-draft.md
  */
 function deriveDraftUrl(pdfUrl) {
-    // GitHub Pages URL → raw URL
-    // uminomae.github.io/pjdhiro/assets/pdf/X.pdf
-    //   → raw.githubusercontent.com/uminomae/pjdhiro/main/assets/pdf/X-draft.md
     const RAW_BASE = 'https://raw.githubusercontent.com/uminomae/pjdhiro/main/';
     const match = pdfUrl.match(/github\.io\/pjdhiro\/(.+)\.pdf$/);
     if (match) {
         return RAW_BASE + match[1] + '-draft.md';
     }
-    // フォールバック: 単純な拡張子置換
     return pdfUrl.replace(/\.pdf$/, '-draft.md');
 }
 
 /**
  * メイン: オーブクリック時に呼ばれる
- * draft.md を fetch → HTML レンダリング → ビューアー表示
+ * draft.md を fetch → marked.js で HTML レンダリング → ビューアー表示
  * fetch 失敗時は PDF iframe にフォールバック
  */
 export async function openPdfViewer(pdfUrl, label) {
@@ -232,7 +129,7 @@ export async function openPdfViewer(pdfUrl, label) {
         }
 
         const { meta, body } = parseFrontmatter(raw);
-        const html = markdownToHtml(body);
+        const html = marked.parse(body);
 
         const title = meta.title || label || '';
         const audience = meta.audience || '';
@@ -391,29 +288,38 @@ export function injectViewerStyles() {
         .md-body p {
             margin: 0 0 1.2em;
         }
-        .md-body .md-h1 {
+        .md-body h1 {
             font-size: 1.2rem;
             color: rgba(240, 245, 255, 0.92);
             margin: 2rem 0 0.8rem;
             line-height: 1.4;
+            letter-spacing: normal;
+            text-shadow: none;
+            border: none;
+            page-break-before: unset;
         }
-        .md-body .md-h2 {
+        .md-body h2 {
             font-size: 1.05rem;
             color: rgba(230, 240, 255, 0.88);
             margin: 1.8rem 0 0.7rem;
             line-height: 1.4;
         }
-        .md-body .md-h3 {
+        .md-body h3 {
             font-size: 0.95rem;
             color: rgba(220, 230, 250, 0.85);
             margin: 1.4rem 0 0.5rem;
         }
-        .md-body .md-hr {
+        .md-body h4 {
+            font-size: 0.9rem;
+            color: rgba(210, 225, 245, 0.8);
+            margin: 1.2rem 0 0.4rem;
+        }
+        .md-body hr {
             border: none;
             border-top: 1px solid rgba(100, 150, 255, 0.08);
             margin: 2rem 0;
         }
-        .md-body .md-quote {
+        .md-body blockquote {
             border-left: 2px solid rgba(100, 150, 255, 0.15);
             padding-left: 1em;
             margin: 1em 0;
@@ -436,16 +342,60 @@ export function injectViewerStyles() {
             color: rgba(200, 215, 240, 0.8);
         }
 
-        /* table */
-        .md-table-wrap {
-            overflow-x: auto;
+        /* --- code blocks (marked.js output) --- */
+        .md-body pre {
+            background: rgba(8, 12, 24, 0.6);
+            border: 1px solid rgba(100, 150, 255, 0.08);
+            border-radius: 3px;
+            padding: 1em 1.2em;
             margin: 1.2em 0;
+            overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            line-height: 1.5;
         }
+        .md-body pre code {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', monospace;
+            font-size: 0.82rem;
+            color: rgba(180, 200, 230, 0.8);
+            background: none;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            white-space: pre;
+        }
+        .md-body code {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+            color: rgba(180, 210, 255, 0.85);
+            background: rgba(60, 90, 150, 0.12);
+            padding: 0.15em 0.4em;
+            border-radius: 2px;
+        }
+
+        /* --- lists (marked.js output) --- */
+        .md-body ul, .md-body ol {
+            padding-left: 1.5em;
+            margin: 0.8em 0;
+        }
+        .md-body li {
+            margin-bottom: 0.4em;
+            line-height: 1.7;
+        }
+        .md-body li > ul, .md-body li > ol {
+            margin: 0.3em 0;
+        }
+
+        /* --- table (marked.js GFM output) --- */
         .md-body table {
             border-collapse: collapse;
             width: 100%;
             font-size: 0.82rem;
+            margin: 1.2em 0;
+            overflow-x: auto;
+            display: block;
+        }
+        .md-body thead {
+            border-bottom: 1px solid rgba(100, 150, 255, 0.15);
         }
         .md-body th, .md-body td {
             padding: 0.5em 0.8em;
@@ -459,6 +409,14 @@ export function injectViewerStyles() {
         }
         .md-body td {
             color: rgba(200, 215, 240, 0.75);
+        }
+
+        /* --- images --- */
+        .md-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 2px;
+            margin: 1em 0;
         }
 
         /* PDF link */
@@ -519,9 +477,11 @@ export function injectViewerStyles() {
             .md-title {
                 font-size: 1.1rem;
             }
-            .md-body .md-h1 { font-size: 1.05rem; }
-            .md-body .md-h2 { font-size: 0.95rem; }
+            .md-body h1 { font-size: 1.05rem; }
+            .md-body h2 { font-size: 0.95rem; }
             .md-body table { font-size: 0.75rem; }
+            .md-body pre { padding: 0.8em; }
+            .md-body pre code { font-size: 0.75rem; }
         }
     `;
     document.head.appendChild(style);
