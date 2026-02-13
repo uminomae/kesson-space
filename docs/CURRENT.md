@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
-**最終更新**: 2026-02-14
-**セッション**: #10 E2Eテスト設計・実装・実行・CI整備
+**最終更新**: 2026-02-15
+**セッション**: #11 ナビゲーションアクセシビリティ分析
 
 ---
 
@@ -29,18 +29,54 @@
 - [x] **参照体系整備 #8**: SCOPE.md新設、参照リンク更新
 - [x] **管理ハブ構築 #9**: README.md新設、SCOPE/WORKFLOW統合
 - [x] **E2Eテスト・CI整備 #10**: 設計書・ランナー・GitHub Actions・README改訂
+- [x] **アクセシビリティ分析 #11**: 4エージェント分析、ISS-001起票
 
-### セッション#10 E2Eテスト・CI整備
+### セッション#11 ナビゲーションアクセシビリティ分析
 
-| 変更 | 内容 |
-|------|--------|
-| `tests/e2e-test-design.md` 新設 | 8カテゴリ・30+項目のテスト設計書。実行手順・判定基準・スコープ定義 |
-| `tests/e2e-runner.js` 新設 | Claude in Chrome MCP で注入実行する自動チェックスクリプト。runAll/smoke/run(tcId) の3モード |
-| `.github/workflows/test.yml` 新設 | pushごとにconfig整合性テストを自動実行するCI |
-| `docs/README.md` v1.1 | §8を三層テスト体制に改訂、§10にテスト・CIカタログ追加 |
-| ライブサイト検証完了 | 日本語版・英語版・devパネル版すべてPASS |
+**発見された問題**: 
+ナビゲーションオーブのHTMLラベルが `pointer-events: none` に設定されており、ユーザーが見えるテキストが実際のクリックターゲートではない。キーボードアクセス完全不可でWCAG 2.1 Level A不適合。
 
-#### E2Eテスト結果（2026-02-14実行）
+| 分析手法 | 内容 |
+|---------|------|
+| **4エージェント分析** | Review（バグ検出）、Refactor（構造改善）、Test（テスタビリティ）、Quality（ドキュメント整合性） |
+| **検出された問題** | HTMLラベル非クリック、Raycaster依存、アクセシビリティ法令違反リスク |
+| **影響範囲** | nav-objects.js、lang-toggle.js、index.html、E2Eテスト、ドキュメント |
+| **成果物** | `docs/issues/ISS-001-nav-accessibility.md` |
+
+#### ISS-001の概要
+
+| 項目 | 内容 |
+|------|------|
+| 重大度 | 🔴 HIGH |
+| 問題 | ナビオーブのHTMLラベルが `pointer-events: none` でキーボードアクセス不可 |
+| 影響 | WCAG 2.1 Level A不適合、Section 508違反リスク、E2Eテストで機能検証不可 |
+| 修正方針 | HTMLラベルを `<button>` 化、aria-label追加、キーボードイベント対応 |
+| 実装コスト | 中（nav-objects.js、CSS、テスト修正） |
+| 効果 | アクセシビリティ準拠、テスタビリティ向上、UX改善 |
+
+#### 4エージェント分析の知見
+
+**Agent-R (Review)**:
+- `pointer-events: none` により視覚的に見えるテキストがクリック不可
+- Raycasterとの競合によるクリック失敗リスク
+- WCAG 2.1 Level A違反
+
+**Agent-F (Refactor)**:
+- 「見た目優先・機能後回し」のアンチパターン検出
+- セマンティックHTML優先アーキテクチャの提案
+- 保守性・デバッグ困難性の指摘
+
+**Agent-T (Test)**:
+- 提案したTC-09が現状では動作しない（`pointer-events: none`）
+- テスト可能な実装の条件定義
+- Raycaster依存テストの困難性
+
+**Agent-Q (Quality)**:
+- CONCEPT.md の「クリック」表現と実装の乖離
+- アクセシビリティ基準の欠如
+- ドキュメント更新の必要性
+
+### E2Eテスト結果（2026-02-14実行）
 
 | TC | カテゴリ | 結果 | 詳細 |
 |----|---------|------|------|
@@ -55,6 +91,8 @@
 | N/A | ネットワーク | ✅ | 35リクエスト中 404ゼロ（GA 503のみ許容） |
 
 **合計: 30/30 PASS、3 WARN（想定通りの条件付き項目）**
+
+**注**: TC-05はラベルの「存在」のみ検証。「クリック可能性」「キーボードアクセス」は未検証（ISS-001で対応予定）
 
 ### 現在のデフォルトパラメータ
 
@@ -82,10 +120,33 @@
 
 ### 未着手
 
+- [ ] **ISS-001: ナビゲーションアクセシビリティ改善** ← 次回セッションで実施
 - [ ] 欠損データ構造設計
 - [ ] モバイル対応
 - [ ] 音響の検討
 - [ ] パフォーマンスプロファイリング
+
+---
+
+## 次回セッションへの引き継ぎ
+
+### ISS-001実装の準備
+
+**必読ドキュメント**:
+- `docs/issues/ISS-001-nav-accessibility.md`（本Issue、19KB）
+- 4エージェント分析結果
+- Phase 1〜4の実装チェックリスト
+
+**推奨実施順序**:
+1. Phase 1: コード修正（nav-objects.js、lang-toggle.js、index.html）
+2. Phase 2: E2Eテスト追加（TC-09, TC-10）
+3. Phase 3: ドキュメント更新
+4. Phase 4: デプロイ・検証
+
+**注意事項**:
+- Raycasterによる3Dクリック判定は装飾的補助機能として残す
+- HTMLボタンが主要インタラクション手段（冗長性確保）
+- WCAG 2.1 Level A準拠を目標
 
 ---
 
@@ -141,6 +202,7 @@ window.__e2e.run('TC-E2E-03')  // 言語テスト（?lang=en で実行）
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
 - [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
+- [**ISS-001**](./issues/ISS-001-nav-accessibility.md) - **ナビゲーションアクセシビリティ改善**
 - [ライブサイト](https://uminomae.github.io/kesson-space/)
 - [ブログ記事](https://uminomae.github.io/pjdhiro/thinking-kesson/)
 - [GitHub Actions](https://github.com/uminomae/kesson-space/actions)
