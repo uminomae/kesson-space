@@ -39,6 +39,34 @@ function escapeHtml(str) {
         .replace(/"/g, '&quot;');
 }
 
+/**
+ * frontmatter の title と本文先頭の # 見出しが重複する場合、本文側を除去する。
+ * draft.md は frontmatter に title を持ち、本文も # で始まるため二重表示になる。
+ */
+function stripLeadingTitle(body, title) {
+    if (!title) return body;
+    const lines = body.split('\n');
+    // 先頭の空行を飛ばす
+    let i = 0;
+    while (i < lines.length && lines[i].trim() === '') i++;
+    if (i < lines.length) {
+        const headingMatch = lines[i].match(/^#{1,2}\s+(.+)$/);
+        if (headingMatch) {
+            const headingText = headingMatch[1].trim();
+            // 正規化して比較（空白・記号を除去）
+            const normalize = s => s.replace(/[\s\u3000—\-–:：]+/g, '').toLowerCase();
+            if (normalize(headingText) === normalize(title) ||
+                normalize(title).includes(normalize(headingText)) ||
+                normalize(headingText).includes(normalize(title))) {
+                lines.splice(i, 1);
+                while (lines.length > 0 && lines[0].trim() === '') lines.shift();
+                return lines.join('\n');
+            }
+        }
+    }
+    return body;
+}
+
 // --- DOM ---
 
 function createViewer() {
@@ -129,11 +157,13 @@ export async function openPdfViewer(pdfUrl, label) {
         }
 
         const { meta, body } = parseFrontmatter(raw);
-        const html = marked.parse(body);
-
         const title = meta.title || label || '';
         const audience = meta.audience || '';
         const status = meta.status || '';
+
+        // frontmatter title と本文先頭見出しの重複を除去
+        const cleanBody = stripLeadingTitle(body, title);
+        const html = marked.parse(cleanBody);
 
         const headerHtml = title
             ? `<div class="md-title">${escapeHtml(title)}</div>`
