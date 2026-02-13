@@ -8,6 +8,7 @@
  *   全テスト:   fetch('/tests/e2e-runner.js').then(r=>r.text()).then(eval)
  *   個別テスト: 上記実行後、window.__e2e.run('TC-E2E-01')
  *   スモーク:   上記実行後、window.__e2e.smoke()
+ *   パフォ:     上記実行後、window.__e2e.run('TC-E2E-11')
  *
  * 注意: ページコンテキストで実行されるため、Three.js のグローバル状態にアクセス可能。
  *       ただし ES Module スコープの変数には直接アクセスできない。
@@ -442,6 +443,179 @@
     }
 
     // ============================
+    // TC-E2E-11: Google Core Web Vitals & パフォーマンス予算
+    // ============================
+    // 参照: https://web.dev/vitals/
+    // PASS/WARN/FAIL の3段階で Google 推奨閾値に対して評価する
+
+    async function tc11_webvitals() {
+        const nav = performance.getEntriesByType('navigation')[0];
+
+        // --- 11-1: DOMContentLoaded < 2.5s ---
+        if (nav) {
+            const dcl = nav.domContentLoadedEventEnd;
+            const dclSec = (dcl / 1000).toFixed(2);
+            if (dcl < 2500) {
+                assert('11-1', 'DOMContentLoaded < 2.5s', true, `${dclSec}s`);
+            } else if (dcl < 4000) {
+                warn('11-1', 'DOMContentLoaded 2.5-4.0s（改善推奨）', `${dclSec}s`);
+            } else {
+                assert('11-1', 'DOMContentLoaded < 4.0s', false, `${dclSec}s`);
+            }
+        } else {
+            warn('11-1', 'Navigation Timing API 利用不可', '');
+        }
+
+        // --- 11-2: Load完了時間 ---
+        if (nav) {
+            const loadSec = (nav.loadEventEnd / 1000).toFixed(2);
+            if (nav.loadEventEnd < 3000) {
+                assert('11-2', 'Load < 3.0s', true, `${loadSec}s`);
+            } else if (nav.loadEventEnd < 5000) {
+                warn('11-2', 'Load 3.0-5.0s（改善推奨）', `${loadSec}s`);
+            } else {
+                assert('11-2', 'Load < 5.0s', false, `${loadSec}s`);
+            }
+        }
+
+        // --- 11-3: FCP (First Contentful Paint) < 1.8s ---
+        const paintEntries = performance.getEntriesByType('paint');
+        const fcp = paintEntries.find(e => e.name === 'first-contentful-paint');
+        if (fcp) {
+            const fcpSec = (fcp.startTime / 1000).toFixed(2);
+            if (fcp.startTime < 1800) {
+                assert('11-3', 'FCP < 1.8s', true, `${fcpSec}s`);
+            } else if (fcp.startTime < 3000) {
+                warn('11-3', 'FCP 1.8-3.0s（改善推奨）', `${fcpSec}s`);
+            } else {
+                assert('11-3', 'FCP < 3.0s', false, `${fcpSec}s`);
+            }
+        } else {
+            warn('11-3', 'FCP エントリ未取得', 'paint entries: ' + paintEntries.length);
+        }
+
+        // --- 11-4: LCP (Largest Contentful Paint) < 2.5s ---
+        let lcpValue = null;
+        try {
+            await new Promise((resolve) => {
+                const observer = new PerformanceObserver((list) => {
+                    const entries = list.getEntries();
+                    if (entries.length > 0) {
+                        lcpValue = entries[entries.length - 1].startTime;
+                    }
+                    observer.disconnect();
+                    resolve();
+                });
+                observer.observe({ type: 'largest-contentful-paint', buffered: true });
+                // タイムアウト: bufferedエントリがない場合
+                setTimeout(() => { observer.disconnect(); resolve(); }, 500);
+            });
+        } catch (e) {
+            // PerformanceObserver非対応
+        }
+
+        if (lcpValue !== null) {
+            const lcpSec = (lcpValue / 1000).toFixed(2);
+            if (lcpValue < 2500) {
+                assert('11-4', 'LCP < 2.5s（Good）', true, `${lcpSec}s`);
+            } else if (lcpValue < 4000) {
+                warn('11-4', 'LCP 2.5-4.0s（Needs Improvement）', `${lcpSec}s`);
+            } else {
+                assert('11-4', 'LCP < 4.0s', false, `${lcpSec}s`);
+            }
+        } else {
+            warn('11-4', 'LCP 計測不可（PerformanceObserver buffered未対応）', '');
+        }
+
+        // --- 11-5: CLS (Cumulative Layout Shift) < 0.1 ---
+        let clsValue = 0;
+        try {
+            await new Promise((resolve) => {
+                const observer = new PerformanceObserver((list) => {
+                    for (const entry of list.getEntries()) {
+                        if (!entry.hadRecentInput) {
+                            clsValue += entry.value;
+                        }
+                    }
+                    observer.disconnect();
+                    resolve();
+                });
+                observer.observe({ type: 'layout-shift', buffered: true });
+                setTimeout(() => { observer.disconnect(); resolve(); }, 500);
+            });
+        } catch (e) {
+            // PerformanceObserver非対応
+        }
+
+        const clsFixed = clsValue.toFixed(4);
+        if (clsValue < 0.1) {
+            assert('11-5', 'CLS < 0.1（Good）', true, clsFixed);
+        } else if (clsValue < 0.25) {
+            warn('11-5', 'CLS 0.1-0.25（Needs Improvement）', clsFixed);
+        } else {
+            assert('11-5', 'CLS < 0.25', false, clsFixed);
+        }
+
+        // --- 11-6: 転送量 < 1,600KB ---
+        const resources = performance.getEntriesByType('resource');
+        let totalTransfer = 0;
+        let measurableCount = 0;
+        for (const r of resources) {
+            if (r.transferSize > 0) {
+                totalTransfer += r.transferSize;
+                measurableCount++;
+            }
+        }
+        // Navigation document自体の転送量を加算
+        if (nav && nav.transferSize) {
+            totalTransfer += nav.transferSize;
+        }
+        const totalKB = Math.round(totalTransfer / 1024);
+
+        if (totalKB > 0) {
+            if (totalKB < 1600) {
+                assert('11-6', '転送量 < 1,600KB', true, `${totalKB}KB (${measurableCount} resources)`);
+            } else if (totalKB < 3000) {
+                warn('11-6', '転送量 1,600-3,000KB（改善推奨）', `${totalKB}KB`);
+            } else {
+                assert('11-6', '転送量 < 3,000KB', false, `${totalKB}KB`);
+            }
+        } else {
+            warn('11-6', '転送量計測不可（cross-origin制約）', 'transferSize=0');
+        }
+
+        // --- 11-7: リクエスト数 < 50 ---
+        const reqCount = resources.length + 1; // +1 for document
+        if (reqCount < 50) {
+            assert('11-7', 'リクエスト数 < 50', true, `${reqCount} requests`);
+        } else if (reqCount < 80) {
+            warn('11-7', 'リクエスト数 50-80（改善推奨）', `${reqCount} requests`);
+        } else {
+            assert('11-7', 'リクエスト数 < 80', false, `${reqCount} requests`);
+        }
+
+        // --- 11-8: 404エラーなし ---
+        // Resource Timing APIではステータスコードを取得できないため、
+        // 既知の問題（favicon.ico等）をDOM/linkで検出
+        const favicon = qs('link[rel="icon"], link[rel="shortcut icon"]');
+        if (!favicon) {
+            warn('11-8', 'favicon未設定（404の可能性）', '<link rel="icon"> がHTMLに存在しない');
+        } else {
+            assert('11-8', 'faviconが設定済み', true, favicon.href);
+        }
+
+        // --- サマリーログ ---
+        console.log('%c[Web Vitals] DCL:' +
+            (nav ? (nav.domContentLoadedEventEnd / 1000).toFixed(2) + 's' : 'N/A') +
+            ' | FCP:' + (fcp ? (fcp.startTime / 1000).toFixed(2) + 's' : 'N/A') +
+            ' | LCP:' + (lcpValue !== null ? (lcpValue / 1000).toFixed(2) + 's' : 'N/A') +
+            ' | CLS:' + clsFixed +
+            ' | Size:' + totalKB + 'KB' +
+            ' | Reqs:' + reqCount,
+            'color: #2196F3; font-weight: bold');
+    }
+
+    // ============================
     // 実行制御
     // ============================
 
@@ -456,6 +630,7 @@
         'TC-E2E-08': tc08_perf,
         'TC-E2E-09': tc09_links,      // ISS-001
         'TC-E2E-10': tc10_keyboard,   // ISS-001
+        'TC-E2E-11': tc11_webvitals,  // Google Core Web Vitals
     };
 
     async function run(tcId) {
@@ -493,11 +668,20 @@
         return summary();
     }
 
-    window.__e2e = { run, runAll, smoke, testMap, results: () => summary() };
+    // パフォーマンスのみ実行
+    async function perf() {
+        results.length = 0;
+        try { await tc11_webvitals(); } catch (e) {
+            results.push({ id: 'PERF-ERROR', description: e.message, status: 'FAIL', detail: '' });
+        }
+        return summary();
+    }
+
+    window.__e2e = { run, runAll, smoke, perf, testMap, results: () => summary() };
 
     const result = await runAll();
 
-    console.log('%c[E2E] ' + result.overall + ` — ${result.pass}/${result.total} passed`,
+    console.log('%c[E2E] ' + result.overall + ` \u2014 ${result.pass}/${result.total} passed`,
         result.overall === 'PASS' ? 'color: #4CAF50; font-weight: bold' : 'color: #f44336; font-weight: bold');
 
     if (result.fail > 0) {
