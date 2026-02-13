@@ -4,7 +4,8 @@
 import * as THREE from 'three';
 import { fluidParams } from '../config.js';
 
-const FIELD_SIZE = 256;
+// CHANGED: 256→128 (GPU負荷/メモリ75%削減、influence=0.06で視覚影響なし)
+const FIELD_SIZE = 128;
 
 export function createFluidSystem(renderer) {
     const opts = {

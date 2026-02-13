@@ -1,7 +1,26 @@
 // dev-panel.js — Bootstrapベースのdevパネル
 // ★ default値は config.js を参照し、ハードコードしない
+// CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
 import { toggles, breathConfig, sceneParams, fluidParams, distortionParams, gemParams } from './config.js';
+
+// --- CHANGED: Bootstrap動的ローダー ---
+function loadBootstrap() {
+    return new Promise((resolve, reject) => {
+        // CSS
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+        document.head.appendChild(link);
+
+        // JS（CSS注入後にロード開始、onloadで完了を通知）
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Bootstrap JS load failed'));
+        document.body.appendChild(script);
+    });
+}
 
 const TOGGLES = [
     { key: 'background',    label: '背景' },
@@ -405,8 +424,14 @@ function bindExportEvent() {
     });
 }
 
-export function initDevPanel(onChange) {
+// CHANGED: Bootstrap読み込み完了を待ってからパネル生成
+export async function initDevPanel(onChange) {
     _onChange = onChange;
+    try {
+        await loadBootstrap();
+    } catch (err) {
+        console.warn('[dev-panel] Bootstrap load failed:', err.message);
+    }
     createPanel();
     return { ..._values };
 }
