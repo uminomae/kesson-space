@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #14 軽量化（Bootstrap条件付きロード + 流体128化）
+**セッション**: #15 E2Eテスト ブラウザ独立実行
 
 ---
 
@@ -33,21 +33,24 @@
 - [x] **ISS-001実装 #12**: ナビゲーションアクセシビリティ改善（Phase 1-3）
 - [x] **CI修正・Phase 4検証 #13**: 静的テスト修正、src/versions/ 削除、ライブサイト検証完了
 - [x] **軽量化 #14**: Bootstrap条件付きロード、流体フィールド128化
+- [x] **E2Eブラウザ独立実行 #15**: ?test自動実行 + 結果オーバーレイ
 
-### セッション#14 軽量化
+### セッション#15 E2Eテスト ブラウザ独立実行
 
-Gemini (flash) + GPT-4o の2モデルにレビュー依頼後、実装。
+Claudeとの対話なしでE2Eテストをブラウザ単体で実行できる仕組みを追加。
 
-| 変更 | 内容 | 効果 |
-|------|------|------|
-| Bootstrap条件付きロード | index.htmlからCSS/JS削除、dev-panel.jsで?dev時に動的ロード | 一般訪問者 ~270KB削減 |
-| 流体フィールド128化 | fluid-field.js: FIELD_SIZE 256→128 | GPU負荷/メモリ75%削減（influence=0.06で視覚影響なし） |
+| 変更 | 内容 |
+|------|------|
+| e2e-runner.js 拡張 | `?test` 検出時にページ内オーバーレイで結果表示。Re-run / Copy JSON / Failures only フィルタ付き |
+| index.html | `?test` パラメータ検出 → window.load + 3秒待機後にe2e-runner.jsをfetch&eval |
+| 実行方法 | ブックマークレット or `?test` URLパラメータ。Claude不要 |
 
-#### レビュー結果（Gemini + GPT-4o）
+#### テスト結果（localhost）
 
-- Bootstrap条件付きロード: 両者とも✅ 低リスク
-- 流体128化: 両者とも✅ influence=0.06で知覚不可能
-- 追加提案（シェーダーprecision最適化、ポストプロセス統合等）は今回見送り
+41/46 PASS, 1 FAIL, 4 WARN
+
+- FAIL: LCP 10.88s — WebGL SPAの構造的問題（FCP 0.09sなので体感は高速）
+- WARN: lang=en未テスト、devパネル未テスト、オーブ目視、favicon未設定（すべて想定内）
 
 ### 現在のデフォルトパラメータ
 
@@ -75,6 +78,8 @@ Gemini (flash) + GPT-4o の2モデルにレビュー依頼後、実装。
 
 ### 未着手
 
+- [ ] LCP FAIL対応（閾値緩和 or WARN化の検討）
+- [ ] favicon追加
 - [ ] 欠損データ構造設計
 - [ ] モバイル対応
 - [ ] 音響の検討
@@ -90,17 +95,30 @@ node tests/config-consistency.test.js
 ```
 GitHub Actionsで src/, tests/, index.html 変更時に自動実行。
 
+### E2Eテスト（ブラウザ独立実行）
+
+ブックマークレットまたは `?test` URLパラメータで実行。Claudeとの対話不要。
+
+```
+http://localhost:3001/?test          ← 全テスト自動実行
+http://localhost:3001/?test&lang=en  ← 英語版テスト含む
+http://localhost:3001/?test&dev      ← devパネルテスト含む
+```
+
+結果は右側オーバーレイに表示。Re-run / Copy JSON / Failures only フィルタ付き。
+
 ### E2Eテスト（Claude in Chrome MCP）
 ```javascript
-// 全テスト（TC-01〜TC-10）
-fetch('https://uminomae.github.io/kesson-space/tests/e2e-runner.js').then(r=>r.text()).then(eval)
+// 全テスト（TC-01〜TC-11）
+fetch('/tests/e2e-runner.js').then(r=>r.text()).then(eval)
 
 // スモーク（TC-01,02,04のみ）
 window.__e2e.smoke()
 
-// 個別（ISS-001テスト）
+// 個別
 window.__e2e.run('TC-E2E-09')  // リンク機能
 window.__e2e.run('TC-E2E-10')  // キーボードナビ
+window.__e2e.run('TC-E2E-11')  // Web Vitals
 ```
 
 詳細: [tests/e2e-test-design.md](../tests/e2e-test-design.md)
@@ -123,6 +141,7 @@ window.__e2e.run('TC-E2E-10')  // キーボードナビ
 - MCP: mcp_servers/gemini_threejs.py
 - デプロイ: GitHub Pages（mainブランチ直接）
 - devパネル: `?dev` をURLに付与で表示
+- E2Eテスト: `?test` をURLに付与 or ブックマークレットで実行
 - CI: GitHub Actions（.github/workflows/test.yml）
 - アクセシビリティ: WCAG 2.1 Level A準拠達成
 - 流体フィールド: 128x128（FIELD_SIZE=128）
