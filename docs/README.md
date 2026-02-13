@@ -1,7 +1,7 @@
 # docs/README.md — プロジェクト管理ハブ
 
-**バージョン**: 1.0
-**更新日**: 2026-02-13
+**バージョン**: 1.1
+**更新日**: 2026-02-14
 
 本ファイルは、kesson-spaceのセッション起動・運用・同期の**唯一の管理ハブ**である。
 旧 SCOPE.md・WORKFLOW.md の内容を統合し、一本化した。
@@ -205,34 +205,71 @@ MCPツール・セットアップの技術詳細は ARCHITECTURE.md を参照。
 
 ---
 
-## 8. 品質・テスト
+## 8. テスト・品質管理
 
-### 現行テスト
+### 三層テスト体制
+
+| 層 | トリガー | ツール | 内容 |
+|----|---------|--------|------|
+| **CI自動** | `git push`（src/, tests/, index.html変更時） | GitHub Actions + Node.js | config整合性テスト |
+| **E2Eスモーク** | デプロイ後 | Claude in Chrome MCP | TC-01, 02, 04（約2分） |
+| **E2Eフル** | 機能追加後 | Claude in Chrome MCP | TC-01〜08（約5分） |
+
+### ルール
+
+1. **コミット前**: `node tests/config-consistency.test.js` をローカルで実行。CIでも自動実行される
+2. **デプロイ後**: E2Eスモークテストを実行（「E2Eスモーク実行して」でClaude in Chromeが対応）
+3. **機能追加時**: 該当するTCを更新 or 新規TCを設計書に追加してからコード実装（テスト先行）
+4. **テスト結果**: CURRENT.mdに記録
+
+### 実行方法
+
+#### 静的テスト（Node.js / CI）
 
 ```bash
 node tests/config-consistency.test.js
 ```
 
-設定値の整合性（config → shader → dev-panel）を自動検証。
+config ↔ shader ↔ dev-panel の値整合性、i18nキー構造、未使用ファイルを検証。
+`process.exit(1)` でFAIL時に非ゼロ返却 → CIで赤バッジ。
 
-### Chromeベーステスト（目標）
+#### E2Eテスト（Claude in Chrome MCP）
 
-Three.jsの視覚的品質検証には、実際のブラウザ上でのテストが不可欠。
-Claude in Chrome MCPを活用したテストスイートを整備する。
+```javascript
+// 全テスト実行
+fetch('https://uminomae.github.io/kesson-space/tests/e2e-runner.js')
+  .then(r => r.text()).then(eval)
 
-目標とする検証項目：
+// スモーク（TC-01, 02, 04 のみ）
+window.__e2e.smoke()
 
-| カテゴリ | 検証内容 |
-|----------|----------|
-| 描画 | ページロード後にcanvasが描画されているか |
-| ナビ | 鬼火オーブが表示され、クリックでPDFビューアーが開くか |
-| UI | タイトル・クレジット・言語トグルが表示されるか |
-| 言語 | `?lang=en` で英語切替が動作するか |
-| モバイル | レスポンシブ表示、タッチ操作 |
-| コンソール | JSエラーがないか |
-| パフォーマンス | 極端なフレーム落ちがないか |
+// 個別実行
+window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
+```
 
-実装方法：スキルファイルまたはテストスイートとして整備予定。
+#### テストケース一覧
+
+| TC | カテゴリ | 検証内容 |
+|----|---------|----------|
+| 01 | WebGL描画 | canvas存在、WebGLコンテキスト、アニメーション動作 |
+| 02 | UI要素 | タイトル、タグライン、クレジット、操作ガイド、リンク |
+| 03 | 言語切替 | `?lang=en` での英語表示、トグルボタン |
+| 04 | コンソール | JSエラーゼロ、404なし |
+| 05 | ナビオーブ | シーン内存在、ラベル表示、視認性 |
+| 06 | スクロール | カメラ移動、dev-log表示、浮上ボタン |
+| 07 | Devパネル | `?dev` での表示制御、スライダー連動 |
+| 08 | パフォーマンス | ロード時間、FPS、メモリ |
+
+詳細設計: [tests/e2e-test-design.md](../tests/e2e-test-design.md)
+
+### テストファイル
+
+| ファイル | 種別 | 実行環境 |
+|---------|------|---------|
+| `tests/config-consistency.test.js` | 静的解析 | Node.js / CI |
+| `tests/e2e-test-design.md` | E2E設計書 | ドキュメント |
+| `tests/e2e-runner.js` | E2Eランナー | ブラウザ注入 |
+| `.github/workflows/test.yml` | CI定義 | GitHub Actions |
 
 ---
 
@@ -269,7 +306,20 @@ Claude in Chrome MCPを活用したテストスイートを整備する。
 |--------------|------|
 | `src/` | エントリ(main.js), シーン(scene.js), 設定(config.js), カメラ(controls.js), ナビ(navigation.js, nav-objects.js), ビューア(viewer.js), i18n, devパネル |
 | `src/shaders/` | GLSL: 背景, 水面, 光(欠損), ポストプロセス, 流体フィールド, 共有noise |
-| `tests/` | 設定値整合性テスト (config-consistency.test.js) |
+
+### テスト・CI
+
+| パス | 内容 |
+|------|------|
+| `tests/config-consistency.test.js` | 静的解析テスト（Node.js / CI） |
+| `tests/e2e-test-design.md` | E2Eテスト設計書 |
+| `tests/e2e-runner.js` | ブラウザ注入E2Eランナー |
+| `.github/workflows/test.yml` | CI定義（pushトリガー） |
+
+### インフラ
+
+| パス | 内容 |
+|------|------|
 | `mcp_servers/` | Gemini API連携 (gemini_threejs.py) |
 | `scripts/` | MCPセットアップ (setup-mcp.sh) |
 
@@ -293,3 +343,4 @@ Claude in Chrome MCPを活用したテストスイートを整備する。
 | 日付 | バージョン | 内容 |
 |------|-----------|------|
 | 2026-02-13 | 1.0 | 初版作成。SCOPE.md・WORKFLOW.mdを統合。管理ハブ化 |
+| 2026-02-14 | 1.1 | §8 テスト・品質管理を三層体制に改訂。§10 テスト・CIカタログ追加 |
