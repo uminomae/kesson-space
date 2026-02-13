@@ -18,6 +18,10 @@
 
   <!-- PERF: CDN TLS接続を先行確立 -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- FIX: Google Fonts preconnect + Sawarabi Mincho 読み込み -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap" rel="stylesheet">
 
   <!-- PERF: modulepreload — 深いimportチェーンを並列フェッチ
        main.js → scene.js → shaders/* の逐次解決を回避 -->
@@ -150,7 +154,7 @@
     .tagline {
       font-size: clamp(0.5rem, 2.4vmin, 0.85rem);
       color: rgba(255, 255, 255, 0.5);
-      font-family: 'Yu Mincho', 'MS PMincho', serif;
+      font-family: 'Sawarabi Mincho', 'Yu Mincho', 'MS PMincho', serif;
       letter-spacing: 0.05em;
       line-height: 1.8;
       text-shadow: 0 0 30px rgba(100, 150, 255, 0.3);
@@ -382,7 +386,7 @@
     #dev-log .log-paragraph {
       font-size: 0.82rem;
       color: rgba(200, 215, 235, 0.55);
-      font-family: 'Yu Mincho', 'MS PMincho', 'Georgia', serif;
+      font-family: 'Sawarabi Mincho', 'Yu Mincho', 'MS PMincho', 'Georgia', serif;
       line-height: 2.2;
       letter-spacing: 0.04em;
       margin-bottom: 2.0em;
