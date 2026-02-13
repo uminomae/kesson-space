@@ -1,7 +1,7 @@
 // vortex.js — 渦シェーダー（M2 段階4: 個の立ち上がり）
 // Original: @YoheiNishitsuji (つぶやきGLSL)
 // Faithful port from twigl → Three.js ShaderMaterial
-// Shader modifications by Gemini MCP
+// Shader modifications by Gemini MCP, reviewed by Codex (GPT-4o)
 
 import * as THREE from 'three';
 import { vortexParams } from '../config.js';
@@ -25,6 +25,7 @@ export function createVortexMaterial() {
             void main() {
                 vUv = uv;
                 // Billboard: always face camera
+                // Note: assumes uniform scaling (no skew/non-uniform scale)
                 vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
                 mvPosition.xy += position.xy * vec2(
                     length(modelMatrix[0].xyz),
@@ -54,28 +55,30 @@ export function createVortexMaterial() {
             }
 
             void main() {
-                float t = uTime * uSpeed;
+                // FIX(codex): pre-calculate time factor outside loop
+                float tScaled = uTime * uSpeed * 0.2;
 
-                // CHANGED: Rotate UV 90° for horizontal spiral flow
+                // Rotate UV 90° for horizontal spiral flow
                 vec2 rotatedUv = vec2(vUv.y, 1.0 - vUv.x);
 
                 vec3 d = vec3((rotatedUv - 0.5) * uScale + vec2(0.0, 1.0), 1.0);
                 vec3 col = vec3(0.0);
 
                 float e = 0.0;
-                // CHANGED: R=0.5 (was 0.0) — ensures effect is always visible
-                // R=0 caused first iterations to produce no movement (d*e*R*0.18=0)
+                // R=0.5 (not 0.0) ensures effect is always visible from first iteration
                 float R = 0.5;
                 float s;
                 vec3 q = vec3(0.0, -1.0, -1.0);  // q.yz -= 1.0
                 vec3 p;
 
-                // CHANGED: loop limit from uniform for performance control
+                // Outer loop: configurable iteration count for performance
                 for (float i = 1.0; i <= 50.0; i += 1.0) {
                     if (i > uIterations) break;
                     e += i / 5000.0;
 
-                    // d /= -d: each component becomes -1.0 (original twigl behavior)
+                    // d /= -d: each component becomes exactly -1.0
+                    // Safe because d is initialized to non-zero values
+                    // and only modified at i>35 where components are still non-zero
                     if (i > 35.0) d /= -d;
 
                     col += hsv(0.1, e - 0.4, e / 17.0);
@@ -84,14 +87,16 @@ export function createVortexMaterial() {
                     q += d * e * R * 0.18;
                     p = q;
 
-                    R = length(p);
+                    // FIX(codex): clamp R to prevent log(0) = -Inf / NaN
+                    R = max(length(p), 0.001);
                     p = vec3(
-                        log(R) - t * 0.2,
+                        log(R) - tScaled,
                         -p.z / R,
-                        p.y - p.x - t * 0.2
+                        p.y - p.x - tScaled
                     );
 
-                    // e = -p.y (negation, confirmed by Gemini review)
+                    // e = -p.y (negation, not pre-decrement)
+                    // Confirmed correct by both Gemini and Codex reviews
                     for (e = -p.y; s < uInnerIterLimit; s += s) {
                         e += cos(dot(cos(p * s), sin(p.zxy * s))) / s * 0.8;
                     }
@@ -99,10 +104,10 @@ export function createVortexMaterial() {
 
                 col *= uIntensity * 0.02;
 
-                // CHANGED: RGB color tinting
+                // RGB color tinting
                 col *= vec3(uColorR, uColorG, uColorB);
 
-                // Circular edge fade for billboard mesh
+                // Circular edge fade (smoothstep reversed: 1.0→0.3 = outer→inner)
                 float dist = length((vUv - 0.5) * 2.0);
                 float edgeFade = smoothstep(1.0, 0.3, dist);
 

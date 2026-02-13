@@ -18,7 +18,7 @@ export const toggles = {
     heatHaze: false,
     dof: true,
     orbRefraction: true,
-    vortex: false,
+    vortex: false,  // デフォルトOFF（重いため、手動でONにする）
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -113,20 +113,21 @@ export const gemParams = {
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
+// ユーザーチューニング値反映 (2026-02-14)
 export const vortexParams = {
-    speed:          0.2,
-    intensity:      1.0,
-    scale:          1.0,
-    opacity:        0.8,
-    colorR:         1.0,
-    colorG:         0.7,
-    colorB:         0.3,
-    iterations:     50,
-    innerIterLimit: 500,
+    speed:          1.82,
+    intensity:      10,
+    scale:          4.5,
+    opacity:        0.95,
+    colorR:         0.15,
+    colorG:         0.2,
+    colorB:         1.95,
+    iterations:     35,
+    innerIterLimit: 250,
     posX:           0,
-    posY:           -15,
-    posZ:           -10,
-    size:           30,
+    posY:           -6,
+    posZ:           0,
+    size:           255,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
