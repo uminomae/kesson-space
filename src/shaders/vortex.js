@@ -18,7 +18,13 @@ export function createVortexMaterial() {
             varying vec2 vUv;
             void main() {
                 vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                // Billboard: always face camera (same technique as kesson lights)
+                vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+                mvPosition.xy += position.xy * vec2(
+                    length(modelMatrix[0].xyz),
+                    length(modelMatrix[1].xyz)
+                );
+                gl_Position = projectionMatrix * mvPosition;
             }
         `,
         fragmentShader: `
@@ -36,11 +42,13 @@ export function createVortexMaterial() {
 
             void main() {
                 float t = uTime * uSpeed;
+
+                // Centered UV + y+1 offset (original twigl ray direction)
                 vec2 uv = (vUv - 0.5) * 2.0 * uScale;
+                vec3 d = vec3(uv + vec2(0.0, 1.0), 1.0);
 
                 vec3 col = vec3(0.0);
                 vec3 q = vec3(0.0, -1.0, -1.0);
-                vec3 d = vec3(uv, 1.0);
                 float e = 0.0;
                 float R = 0.0;
 
@@ -48,7 +56,8 @@ export function createVortexMaterial() {
                     e += i / 5000.0;
 
                     // Direction reversal after step 35 (reflection fold)
-                    if (i > 35.0) d = vec3(-1.0);
+                    // Original: d/=-d → each component becomes -1
+                    if (i > 35.0) d = -abs(d);
 
                     // HSV color accumulation — warm vortex tones
                     col += hsv2rgb(0.1, e - 0.4, e / 17.0);
@@ -93,9 +102,10 @@ export function createVortexMaterial() {
 }
 
 export function createVortexMesh(material) {
+    // PlaneGeometry; billboard vertex shader handles camera facing
     const geo = new THREE.PlaneGeometry(1, 1);
     const mesh = new THREE.Mesh(geo, material);
-    mesh.rotation.x = -Math.PI / 2;
+    // No rotation needed — billboard VS handles orientation
     mesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
     mesh.scale.set(vortexParams.size, vortexParams.size, 1);
     return mesh;
