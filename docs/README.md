@@ -1,6 +1,6 @@
 # docs/README.md — プロジェクト管理ハブ
 
-**バージョン**: 1.2
+**バージョン**: 1.3
 **更新日**: 2026-02-14
 
 本ファイルは、kesson-spaceのセッション起動・運用・同期の**唯一の管理ハブ**である。
@@ -196,12 +196,37 @@ PKにはkesson-thinking側の管理文書も含まれている。
 
 ## 7. Claude × Gemini 分業体制
 
-| 役割 | 担当 | 強み |
+| 役割 | 担当 | 責務 |
 |------|------|------|
-| マネージャー | Claude | コンテキスト把握、複数ファイル管理、要件整理 |
-| プログラマー | Gemini | シェーダー、視覚的品質の高いThree.jsコード |
+| **マネージャー** | Claude | コンテキスト把握、要件整理、プロンプト設計、複数ファイル管理、config/devパネル/main.js統合 |
+| **プログラマー** | Gemini | Three.js実装、GLSLシェーダー、視覚的品質の最適化 |
 
-**Geminiはユーザーが明示した時のみ使用する。自動呼び出しはしない。**
+### エージェント呼び出しルール
+
+**Three.js / GLSLコードの実装は、必ずGemini MCP経由で行う。**
+
+| 作業内容 | 担当 | 理由 |
+|---------|------|------|
+| シェーダー新規作成・修正 | **Gemini** | 視覚品質・GLSL専門性 |
+| Three.jsメッシュ・マテリアル・ジオメトリ | **Gemini** | 3D実装の専門性 |
+| config.js パラメータ追加 | Claude | 設定管理はClaudeの責務 |
+| dev-panel.js スライダー追加 | Claude | UI統合はClaudeの責務 |
+| main.js applyDevValue 追加 | Claude | ワイヤリングはClaudeの責務 |
+| scene.js 統合・呼び出し追加 | Claude | オーケストレーションはClaudeの責務 |
+| HTML/CSS変更 | Claude | DOM操作はClaudeの責務 |
+| twiglコード→Three.js変換 | **Gemini** | シェーダー移植は専門作業 |
+
+### ワークフロー
+
+```
+1. Claude: 要件整理 + プロンプト設計（PROMPT-STRUCTURE.md参照）
+2. Claude: Gemini MCPにコード生成を依頼
+3. Claude: 生成されたコードをconfig/devパネル/scene.jsに統合
+4. ユーザー: 視覚確認・フィードバック
+5. 必要に応じて 2–4 を繰り返し
+```
+
+**Claudeが直接Three.js/GLSLを書かない。** Claudeが書くと品質差やバグ（UV正規化ミス等）が発生する。
 
 MCPツール・セットアップの技術詳細は ARCHITECTURE.md を参照。
 
@@ -308,7 +333,7 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 | ディレクトリ | 内容 |
 |--------------|------|
 | `src/` | エントリ(main.js), シーン(scene.js), 設定(config.js), カメラ(controls.js), ナビ(navigation.js, nav-objects.js), ビューア(viewer.js), i18n, devパネル |
-| `src/shaders/` | GLSL: 背景, 水面, 光(欠損), ポストプロセス, 流体フィールド, 共有noise |
+| `src/shaders/` | GLSL: 背景, 水面, 光(欠損), ポストプロセス, 流体フィールド, 渦, 共有noise |
 
 ### テスト・CI
 
@@ -348,3 +373,4 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 | 2026-02-13 | 1.0 | 初版作成。SCOPE.md・WORKFLOW.mdを統合。管理ハブ化 |
 | 2026-02-14 | 1.1 | §8 テスト・品質管理を三層体制に改訂。§10 テスト・CIカタログ追加 |
 | 2026-02-14 | 1.2 | TODO.md新設に伴い、Tier1にTODO.md追加。§2,§3,§6,§10更新 |
+| 2026-02-14 | 1.3 | §7 エージェント呼び出しルール追加。Three.js/GLSLはGemini MCP必須 |
