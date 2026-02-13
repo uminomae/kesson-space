@@ -14,7 +14,7 @@ import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
-import { toggles, breathConfig, distortionParams, fluidParams, gemParams } from './config.js';
+import { toggles, breathConfig, distortionParams, fluidParams, gemParams, vortexParams } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 
 let composer;
@@ -174,6 +174,16 @@ function applyDevValue(key, value) {
     if (key === 'gemPosX')                { gemParams.posX = value; updateGemPosition(); }
     if (key === 'gemPosY')                { gemParams.posY = value; updateGemPosition(); }
     if (key === 'gemPosZ')                { gemParams.posZ = value; updateGemPosition(); }
+
+    // --- 渦パラメータ（scene.jsがvortexParamsを毎フレーム参照）---
+    if (key === 'vortexSpeed')     vortexParams.speed = value;
+    if (key === 'vortexIntensity') vortexParams.intensity = value;
+    if (key === 'vortexScale')     vortexParams.scale = value;
+    if (key === 'vortexOpacity')   vortexParams.opacity = value;
+    if (key === 'vortexPosX')      vortexParams.posX = value;
+    if (key === 'vortexPosY')      vortexParams.posY = value;
+    if (key === 'vortexPosZ')      vortexParams.posZ = value;
+    if (key === 'vortexSize')      vortexParams.size = value;
 
     updateOverlay(key, value);
 }

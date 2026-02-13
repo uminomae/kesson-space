@@ -2,13 +2,14 @@
 
 import * as THREE from 'three';
 import {
-    sceneParams, toggles,
+    sceneParams, toggles, vortexParams,
     FOG_V002_COLOR, FOG_V002_DENSITY,
     FOG_V004_COLOR, FOG_V004_DENSITY,
 } from './config.js';
 import { createBackgroundMaterial, createBackgroundMesh } from './shaders/background.js';
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
 import { createKessonMaterial, createKessonMeshes } from './shaders/kesson.js';
+import { createVortexMaterial, createVortexMesh } from './shaders/vortex.js';
 
 export { sceneParams } from './config.js';
 
@@ -19,6 +20,8 @@ let _camera;
 let _bgMat;
 let _bgMesh;
 let _scene;
+let _vortexMaterial;
+let _vortexMesh;
 
 // GC削減: フォグ色を事前確保（毎フレーム new しない）
 const _fogColor = new THREE.Color();
@@ -70,6 +73,11 @@ export function createScene(container) {
     // 光（欠損）
     const kessonMaterial = createKessonMaterial();
     _kessonMeshes = createKessonMeshes(scene, kessonMaterial);
+
+    // 渦（M2-4）
+    _vortexMaterial = createVortexMaterial();
+    _vortexMesh = createVortexMesh(_vortexMaterial);
+    scene.add(_vortexMesh);
 
     return { scene, camera, renderer, kessonMeshes: _kessonMeshes };
 }
@@ -130,4 +138,17 @@ export function updateScene(time) {
         mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
         mesh.lookAt(_camera.position);
     });
+
+    // --- 渦（M2-4）---
+    _vortexMesh.visible = toggles.vortex;
+    if (toggles.vortex) {
+        const vu = _vortexMaterial.uniforms;
+        vu.uTime.value = time;
+        vu.uSpeed.value = vortexParams.speed;
+        vu.uIntensity.value = vortexParams.intensity;
+        vu.uScale.value = vortexParams.scale;
+        vu.uOpacity.value = vortexParams.opacity;
+        _vortexMesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
+        _vortexMesh.scale.set(vortexParams.size, vortexParams.size, 1);
+    }
 }

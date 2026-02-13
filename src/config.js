@@ -18,6 +18,7 @@ export const toggles = {
     heatHaze: false,
     dof: true,
     orbRefraction: true,
+    vortex: false,
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -109,6 +110,18 @@ export const gemParams = {
     posY: 2,
     posZ: 15,
     labelYOffset: 1.25,
+};
+
+// --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
+export const vortexParams = {
+    speed:     0.2,
+    intensity: 1.0,
+    scale:     1.0,
+    opacity:   0.8,
+    posX:      0,
+    posY:      -15,
+    posZ:      -10,
+    size:      30,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---

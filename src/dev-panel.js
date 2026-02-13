@@ -2,7 +2,7 @@
 // ★ default値は config.js を参照し、ハードコードしない
 // CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
-import { toggles, breathConfig, sceneParams, fluidParams, distortionParams, gemParams } from './config.js';
+import { toggles, breathConfig, sceneParams, fluidParams, distortionParams, gemParams, vortexParams } from './config.js';
 
 // --- CHANGED: Bootstrap動的ローダー ---
 function loadBootstrap() {
@@ -36,6 +36,7 @@ const TOGGLES = [
     { key: 'heatHaze',      label: '熱波' },
     { key: 'dof',           label: '被写界深度' },
     { key: 'orbRefraction', label: 'オーブ屈折' },
+    { key: 'vortex',        label: '渦' },
 ];
 
 const SECTIONS = [
@@ -63,6 +64,20 @@ const SECTIONS = [
             tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintR },
             tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintG },
             tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintB },
+        }
+    },
+    {
+        id: 'vortex',
+        title: '渦（M2-4）',
+        params: {
+            vortexSpeed:     { label: '速度',       min: 0.0, max: 1.0, step: 0.01, default: vortexParams.speed },
+            vortexIntensity: { label: '強度',       min: 0.0, max: 3.0, step: 0.1,  default: vortexParams.intensity },
+            vortexScale:     { label: 'スケール',   min: 0.1, max: 3.0, step: 0.1,  default: vortexParams.scale },
+            vortexOpacity:   { label: '透明度',     min: 0.0, max: 1.0, step: 0.05, default: vortexParams.opacity },
+            vortexPosX:      { label: '位置 X',     min: -50, max: 50,  step: 1,    default: vortexParams.posX },
+            vortexPosY:      { label: '位置 Y',     min: -30, max: 10,  step: 1,    default: vortexParams.posY },
+            vortexPosZ:      { label: '位置 Z',     min: -50, max: 50,  step: 1,    default: vortexParams.posZ },
+            vortexSize:      { label: 'サイズ',     min: 5,   max: 80,  step: 5,    default: vortexParams.size },
         }
     },
     {
