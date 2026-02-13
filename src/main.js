@@ -176,14 +176,19 @@ function applyDevValue(key, value) {
     if (key === 'gemPosZ')                { gemParams.posZ = value; updateGemPosition(); }
 
     // --- 渦パラメータ（scene.jsがvortexParamsを毎フレーム参照）---
-    if (key === 'vortexSpeed')     vortexParams.speed = value;
-    if (key === 'vortexIntensity') vortexParams.intensity = value;
-    if (key === 'vortexScale')     vortexParams.scale = value;
-    if (key === 'vortexOpacity')   vortexParams.opacity = value;
-    if (key === 'vortexPosX')      vortexParams.posX = value;
-    if (key === 'vortexPosY')      vortexParams.posY = value;
-    if (key === 'vortexPosZ')      vortexParams.posZ = value;
-    if (key === 'vortexSize')      vortexParams.size = value;
+    if (key === 'vortexSpeed')          vortexParams.speed = value;
+    if (key === 'vortexIntensity')      vortexParams.intensity = value;
+    if (key === 'vortexScale')          vortexParams.scale = value;
+    if (key === 'vortexOpacity')        vortexParams.opacity = value;
+    if (key === 'vortexColorR')         vortexParams.colorR = value;
+    if (key === 'vortexColorG')         vortexParams.colorG = value;
+    if (key === 'vortexColorB')         vortexParams.colorB = value;
+    if (key === 'vortexIterations')     vortexParams.iterations = value;
+    if (key === 'vortexInnerIterLimit') vortexParams.innerIterLimit = value;
+    if (key === 'vortexPosX')           vortexParams.posX = value;
+    if (key === 'vortexPosY')           vortexParams.posY = value;
+    if (key === 'vortexPosZ')           vortexParams.posZ = value;
+    if (key === 'vortexSize')           vortexParams.size = value;
 
     updateOverlay(key, value);
 }
