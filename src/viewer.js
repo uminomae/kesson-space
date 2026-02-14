@@ -2,6 +2,8 @@
 // raw.githubusercontent.com から draft.md を fetch → marked.js でパース → HTML レンダリング
 // PDF はダウンロードリンクとして残す
 
+import { injectStyles } from './dom-utils.js';
+
 // CHANGED: marked を動的importに変更（初期ロード時の20.8KB削減）
 // marked はオーブクリック時にのみ必要
 let _markedParser = null;
@@ -187,8 +189,7 @@ export async function openPdfViewer(pdfUrl, label) {
 // --- スタイル注入 ---
 
 export function injectViewerStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
+    injectStyles('viewer-styles', `
         #kesson-viewer {
             position: fixed;
             top: 0;
@@ -497,6 +498,5 @@ export function injectViewerStyles() {
             .md-body pre { padding: 0.8em; }
             .md-body pre code { font-size: 0.75rem; }
         }
-    `;
-    document.head.appendChild(style);
+    `);
 }

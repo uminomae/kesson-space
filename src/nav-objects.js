@@ -7,6 +7,7 @@ import { toggles, gemParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { gemOrbVertexShader, gemOrbFragmentShader } from './shaders/gem-orb.glsl.js';
 import { getRawMouse } from './mouse-state.js';
+import { injectStyles } from './dom-utils.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
@@ -148,12 +149,9 @@ export function updateGemPosition() {
 // HTMLラベル — ISS-001: div → button 化
 // ========================================
 function injectNavLabelStyles() {
-    if (document.getElementById('nav-label-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'nav-label-styles';
     // CHANGED: pointer-events: none → auto, button reset styles, focus/hover styles
     // FIX: フォントをNoto Serif JPに統一（index.htmlと一致）
-    style.textContent = `
+    injectStyles('nav-label-styles', `
         .nav-label {
             position: fixed;
             z-index: 15;
@@ -188,8 +186,7 @@ function injectNavLabelStyles() {
         .nav-label--gem:hover {
             color: rgba(200, 215, 255, 1.0);
         }
-    `;
-    document.head.appendChild(style);
+    `);
 }
 
 // CHANGED: div → button, click/keyboard handlers, aria-label
