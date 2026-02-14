@@ -6,7 +6,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
-import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, setTarget, getScrollProgress } from './controls.js';
+import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, getScrollProgress } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 import { getOrbScreenData, updateNavLabels } from './nav-objects.js';
 import { rebuildGem, updateGemPosition } from './nav-objects.js';
@@ -137,7 +137,7 @@ function applyDevValue(key, value) {
     if (key === 'camX' || key === 'camY' || key === 'camZ') {
         setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
     }
-    if (key === 'camTargetY') setTarget(0, value, -10);
+    // REMOVED: camTargetY → setTarget() — スクロール潜水モードでは未使用
     if (key === 'autoRotateSpd') setAutoRotateSpeed(value);
 
     if (key === 'distStrength')   distortionPass.uniforms.uStrength.value = value;

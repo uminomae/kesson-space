@@ -181,9 +181,7 @@ export function setCameraPosition(x, y, z) {
     _baseCamZ = z;
 }
 
-export function setTarget(x, y, z) {
-    // unused in scroll mode
-}
+// REMOVED: setTarget() — スクロール潜水モードでは未使用（lookAtはupdateControls内で計算）
 
 export function getScrollProgress() {
     return _scrollProgress;
