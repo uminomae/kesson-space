@@ -108,12 +108,11 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
         touchStartY = e.touches[0].clientY;
     });
 
-    // Detail panel close button
-    const closeBtn = document.getElementById('detail-close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
+    // Bootstrap Modal: zoom out when modal is hidden
+    const modalEl = document.getElementById('devlogModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', () => {
             zoom.zoomOut();
-            hideDetail();
         });
     }
 
@@ -274,29 +273,31 @@ function safeHTML(text) {
 }
 
 function showDetail(session) {
-    const panel = document.getElementById('devlog-detail');
-    if (!panel) return;
-    
+    const modalEl = document.getElementById('devlogModal');
+    if (!modalEl) return;
+
     const start = new Date(session.start);
     const end = new Date(session.end);
-    
+
     // 日付と時刻を個別に生成
     const startDate = `${start.getMonth() + 1}/${start.getDate()}`;
     const endDate = `${end.getMonth() + 1}/${end.getDate()}`;
     const startTime = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
     const endTime = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
-    
+
     // 同日なら日付1回、異なれば両方表示
     const dateStr = startDate === endDate
         ? `${startDate} ${startTime} – ${endTime}`
         : `${startDate} ${startTime} – ${endDate} ${endTime}`;
-    
+
     const dateEl = document.getElementById('detail-date');
     const metaEl = document.getElementById('detail-meta');
     const categoryEl = document.getElementById('detail-category');
     const commitsEl = document.getElementById('detail-commits');
     const insEl = document.getElementById('detail-ins');
     const delsEl = document.getElementById('detail-dels');
+    const filesEl = document.getElementById('detail-files');
+    const messagesEl = document.getElementById('detail-messages');
     const logContentEl = document.getElementById('detail-log-content');
 
     if (dateEl) dateEl.textContent = dateStr;
@@ -309,7 +310,17 @@ function showDetail(session) {
     if (commitsEl) commitsEl.textContent = session.commit_count;
     if (insEl) insEl.textContent = `+${session.insertions}`;
     if (delsEl) delsEl.textContent = `-${session.deletions}`;
-    
+
+    // ファイル一覧
+    if (filesEl && session.files_changed) {
+        filesEl.innerHTML = session.files_changed.map(f => `<li>${f}</li>`).join('');
+    }
+
+    // メッセージ一覧
+    if (messagesEl && session.messages) {
+        messagesEl.innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
+    }
+
     // ログ本文（session.log_contentがあれば表示）
     if (logContentEl) {
         if (session.log_content) {
@@ -325,13 +336,18 @@ function showDetail(session) {
             logContentEl.style.display = 'none';
         }
     }
-    
-    panel.classList.add('visible');
+
+    // Bootstrap Modal を表示
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
 }
 
 function hideDetail() {
-    const panel = document.getElementById('devlog-detail');
-    if (panel) panel.classList.remove('visible');
+    const modalEl = document.getElementById('devlogModal');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
 }
 
 function updateHover() {

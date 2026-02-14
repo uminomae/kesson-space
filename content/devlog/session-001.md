@@ -31,6 +31,17 @@ cover: /assets/devlog/covers/session-001.jpg
 ---
 
 ## ハイライト
+### 変更ファイル
+
+- src/scene.js
+- src/controls.js
+- src/config.js
+- src/i18n.js
+- src/main.js
+- docs/README.md
+- docs/CONCEPT.md
+
+### 主なコミット
 
 - Initial commit: canvas and first light
 - Separate shaders into scene.js
@@ -53,12 +64,13 @@ cover: /assets/devlog/covers/session-001.jpg
 翌朝、コードの分離から手をつけた。scene.jsにシェーダーを切り出し、controls.jsにカメラ制御を分け、config.jsにパラメータを集約する。単一ファイルのプロトタイプから、各モジュールが責務を持つ構造へ。設計という行為そのものが、ひとつの問いへの応答だった。
 
 国際化モジュールを加え、日本語と英語のタグラインを並べた。「欠けを捨てず、問いに変える」——この言葉を闇の中に浮かべたとき、視覚と言語が初めて同じ空間を共有した。
+国際化モジュールを加え、日本語と英語のタグラインを並べた。「欠けを捨てず、問いに変える」——この言葉を闇の中に浮かべたとき、視覚と言語が初めて同じ空間を共有した。
 
 午後、重力レンズのオーブを実装した。MeshPhysicalMaterialの透過率を操り、背景が歪んで見えるガラス球体。しかし視覚的ノイズが多すぎた。revertして元のゴーストファイアに戻す判断。捨てることも設計だ。
 
 そこから呼吸システムの統一に取りかかった。HTMLのオーバーレイとFOVの変動を、ひとつのsin波で同期させる。画面全体が静かに呼吸し始めた。Bootstrap 5でdevパネルを再構築し、13個のトグルとスライダーで全パラメータをリアルタイムに操作できるようにした。
 
-graviational-lensブランチから歪みパスと流体フィールドをマージ。EffectComposerのパイプラインにオーブ屈折、陽炎、被写界深度を組み込む。次にRGBティント制御を光シェーダーに追加——暖色と寒色の重なりで、空間に温度が生まれた。
+gravitational-lensブランチから歪みパスと流体フィールドをマージ。EffectComposerのパイプラインにオーブ屈折、陽炎、被写界深度を組み込む。次にRGBティント制御を光シェーダーに追加——暖色と寒色の重なりで、空間に温度が生まれた。
 
 夜、config.jsを設定値の一元管理として再設計した。シェーダーの初期値がdevパネルのデフォルトと食い違っていた問題を根本から解消。fluidForce、fluidCurl、haloColor——すべてがひとつの真実源から流れるようになった。
 
