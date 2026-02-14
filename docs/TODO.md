@@ -35,12 +35,6 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
-| T-026a | devlog詳細ページHTML雛形作成 | S | コンテンツ | `devlog/session-XXX.html` の基本構造 |
-| T-026b | devlog詳細ページCSS作成 | S | コンテンツ | 世界観に合うスタイル |
-| T-026c | session-001コンテンツ執筆 | S | コンテンツ | 最初の1セッション分 |
-| T-026d | オーブ→詳細ページ遷移実装 | S | コンテンツ | クリック時のリンク/モーダル |
-| T-026e | devlog多言語対応(i18n) | S | コンテンツ | 日英切り替え |
-| T-026f | 残りセッションコンテンツ | M | コンテンツ | session-002〜 |
 
 ### 🟢 P2（急がない）
 
@@ -55,7 +49,6 @@
 | T-017 | devパラメータレジストリ化 | M | リファクタ | dev-panel.jsのSECTIONSとmain.jsのMAP/applyDevValueを統一レジストリに。T-016とセットが効率的 |
 | T-018 | CSS所在整理 | M | リファクタ | index.htmlの巨大`<style>`(約200行)とviewer.js/nav-objects.js/dev-panel.jsのstyle注入を`assets/*.css`に分離 |
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
-| T-020 | CSS注入の共通化 | S | リファクタ | 各ファイル散在のstyle注入を`dom-utils.js`に集約。Quick Win |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 
 ### ⚪ P3（アイデア）
@@ -65,8 +58,6 @@
 | T-011 | 音響の検討 | L | 体験 | 世界観に合う音響設計 |
 | T-012 | 欠損データ構造設計 | L | 設計 | 理論側との連携。kesson-thinkingで先に決定が必要 |
 | T-022 | dev-panel.js UI/Controller分離 | M | リファクタ | HTML生成とロジック混在（約22KB）。UIテンプレートとControllerに分離 |
-| T-023 | Magic Numbers集約 | S | リファクタ | 散在するリテラル値を`constants.js`に集約 |
-| T-024 | 呼吸値・アニメーションhelpers共通化 | S | リファクタ | main.js animate()内のインライン計算をユーティリティ化 |
 | T-025 | ビルドツール導入検討 | L | 設計 | Vite等。現状の「ビルド無し」方針が強みなので今すぐ不要寄り |
 
 ---
@@ -75,6 +66,15 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-026a | devlog詳細ページHTML雛形作成 | #24 |
+| T-026b | devlog詳細ページCSS作成 | #24 |
+| T-026c | session-001コンテンツ執筆 | #24 |
+| T-026d | オーブ→詳細ページ遷移実装 | #24 |
+| T-026e | devlog多言語対応(i18n) | #24 |
+| T-026f | 残りセッションコンテンツ | #24 |
+| T-020 | CSS注入の共通化 | #24 |
+| T-023 | Magic Numbers集約 | #24 |
+| T-024 | 呼吸値・アニメーションhelpers共通化 | #24 |
 | T-027 | devlogカード16:9アスペクト比修正 | #24 |
 | — | `?test` eval排除 → dynamic import() | #23 |
 | T-010 | マウストラッキング統合（mouse-state.js新設） | #22 |
