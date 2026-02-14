@@ -18,6 +18,7 @@ import { createLiquidSystem } from './shaders/liquid.js';
 import { toggles, breathConfig, distortionParams, fluidParams, liquidParams, gemParams, vortexParams } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
+import { breathValue } from './animation-utils.js';
 
 let composer;
 let distortionPass;
@@ -340,7 +341,7 @@ function animate() {
     const time = clock.getElapsedTime();
 
     // --- 統一呼吸値 ---
-    const breathVal = (Math.sin(time * Math.PI / breathConfig.period - Math.PI / 2) + 1) * 0.5;
+    const breathVal = breathValue(time, breathConfig.period);
 
     // --- スクロール進捗 ---
     const scrollProg = getScrollProgress();

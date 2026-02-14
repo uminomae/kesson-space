@@ -8,18 +8,24 @@
 //   ホイール → ページスクロール（そのまま）
 
 import { toggles, breathConfig, sceneParams } from './config.js';
+import {
+    REF_ASPECT,
+    REF_HEIGHT,
+    DIVE_DEPTH,
+    DIVE_SCROLL_VH,
+    LOOKAT_BASE_Y,
+    ROTATE_SENSITIVITY,
+    ZOOM_SENSITIVITY,
+    MIN_ZOOM,
+    MAX_ZOOM,
+    INERTIA_DECAY,
+    VELOCITY_THRESHOLD,
+    AUTO_ROTATE_TIME_SCALE,
+    CAMERA_MAX_FOV,
+} from './constants.js';
 
 let _camera;
 let _canvas;
-
-// デスクトップ基準
-const REF_ASPECT = 16 / 9;
-const REF_HEIGHT = 900;
-
-// スクロール潜水パラメータ
-const DIVE_DEPTH = 30;
-const DIVE_SCROLL_VH = 1.5;
-const LOOKAT_BASE_Y = -1;
 
 // 自動回転
 let _autoRotateSpeed = 1.0;
@@ -32,13 +38,9 @@ let _scrollProgress = 0;
 
 // --- 手動回転 ---
 let _manualAngle = 0;           // ユーザー操作による回転オフセット (rad)
-const ROTATE_SENSITIVITY = 0.006;  // タッチ/マウスの回転感度
 
 // --- ズーム ---
 let _zoomFactor = 1.0;          // 軌道半径の倍率
-const ZOOM_SENSITIVITY = 0.008;
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 2.5;
 
 // --- タッチ状態 ---
 let _touchStartX = 0;
@@ -52,8 +54,6 @@ let _lastMouseX = 0;
 
 // --- 慣性 ---
 let _rotateVelocity = 0;
-const INERTIA_DECAY = 0.92;
-const VELOCITY_THRESHOLD = 0.0001;
 
 // --- クリーンアップ関数（二重バインド防止） ---
 let _cleanupControls = null;
@@ -234,7 +234,7 @@ function getAdjustedFovBase() {
         adjusted = base * boost;
     }
 
-    return Math.min(adjusted, 120);
+    return Math.min(adjusted, CAMERA_MAX_FOV);
 }
 
 export function updateControls(time, breathVal = 0.5) {
@@ -271,7 +271,7 @@ export function updateControls(time, breathVal = 0.5) {
 
     // 自動回転
     if (toggles.autoRotate) {
-        angle += time * _autoRotateSpeed * 0.05;
+        angle += time * _autoRotateSpeed * AUTO_ROTATE_TIME_SCALE;
     }
 
     // 手動回転を加算
