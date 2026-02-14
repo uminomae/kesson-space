@@ -33,6 +33,7 @@ const TOGGLES = [
     { key: 'autoRotate',    label: '自動回転' },
     { key: 'postProcess',   label: 'ポストプロセス' },
     { key: 'fluidField',    label: '流体かき混ぜ' },
+    { key: 'liquid',        label: 'リキッド' },
     { key: 'heatHaze',      label: '熱波' },
     { key: 'dof',           label: '被写界深度' },
     { key: 'orbRefraction', label: 'オーブ屈折' },

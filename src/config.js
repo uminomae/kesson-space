@@ -15,6 +15,7 @@ export const toggles = {
     autoRotate: true,
     postProcess: true,
     fluidField: true,
+    liquid: true,
     heatHaze: false,
     dof: true,
     orbRefraction: true,
@@ -136,6 +137,29 @@ export const gemParams = {
     posY: 2,
     posZ: 15,
     labelYOffset: 1.25,
+};
+
+// --- リキッドエフェクトパラメータ ---
+export const liquidParams = {
+    // シミュレーション
+    timestep:       0.016,
+    dissipation:    0.985,
+    forceRadius:    0.12,
+    forceStrength:  2.0,
+    iterations:     20,
+    // レンダリング
+    densityMul:     1.5,
+    noiseScale:     8.0,
+    noiseSpeed:     0.3,
+    specularPow:    32.0,
+    specularInt:    0.8,
+    // 色（青系）
+    baseColorR:     0.15,
+    baseColorG:     0.25,
+    baseColorB:     0.45,
+    highlightR:     0.8,
+    highlightG:     0.9,
+    highlightB:     1.0,
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
