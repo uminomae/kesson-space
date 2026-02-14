@@ -1,6 +1,6 @@
 # docs/README.md — プロジェクト管理ハブ
 
-**バージョン**: 1.5
+**バージョン**: 1.6
 **更新日**: 2026-02-14
 
 本ファイルは、kesson-spaceのセッション起動・運用・同期の**唯一の管理ハブ**である。
@@ -171,7 +171,7 @@ kesson-driven-thinkingセッションが本リポジトリの状態を確認す�
 
 ---
 
-## 6. PK管理（Claude.ai Project運用）
+## 6. PK管理（Claude.ai Project運用）と🔎PKガード
 
 ### PKに含まれる文書の読み方
 
@@ -190,7 +190,40 @@ PKにはkesson-thinking側の管理文書も含まれている。
 |------|---------|---------------|
 | 1 | README.md, CURRENT.md, TODO.md | セッション開始時に必ず |
 | 2 | CONCEPT.md, ARCHITECTURE.md, AGENT-RULES.md | タスクに応じて |
-| 3 | PROMPT-STRUCTURE.md, REVIEW-REPORT.md, prompts/ | Gemini作業時のみ |
+| 3 | PROMPT-STRUCTURE.md, REVIEW-REPORT.md, prompts/*, ISS-001 | Gemini作業時のみ。**通常セッションでは読まない** |
+
+### 🔎PKガードの運用規則（常駐）
+
+PKガードはClaudeが**常時内部的に実行する**常駐エージェントである。
+PKに全文が存在するドキュメント群のコンテキスト消費を管理し、セッションのフリーズを防止する。
+
+| # | 監視項目 | 判定基準 | アクション |
+|---|---------|---------|-----------|
+| PG-1 | セッション冒頭でTier 2/3を読んでいないか | Tier 1のみ許可 | Tier 2/3の内容はタスクが確定してから参照 |
+| PG-2 | PKに存在する完了済みドキュメントを読んでいないか | ISS-001(✅完了), REVIEW-REPORT(完了済み) | 完了済み文書は無視。必要ならGitHubから該当箇所のみ取得 |
+| PG-3 | Tier 3のprompts/*を不要に参照していないか | Gemini作業が明示された時のみ | P001-P004はGemini依頼時以外は無視 |
+| PG-4 | 1ターンで参照するPKファイル数 | 3ファイル超 | 超過時は本当に全部必要か再確認 |
+| PG-5 | PKの内容とGitHub正本の乖離 | PKの更新日 vs GitHub正本 | 乖離を検出したらユーザーに同期を促す |
+
+### PK推奨構成（最小セット）
+
+セッションの安定性のため、PKには以下の**5ファイルのみ**を推奨する。
+Tier 3のファイルはPKから外し、必要時にGitHub APIで取得する。
+
+| ファイル | Tier | PKに必要 |
+|---------|------|---------|
+| docs/README.md | 1 | ✅ 必須 |
+| docs/CURRENT.md | 1 | ✅ 必須 |
+| docs/TODO.md | 1 | ✅ 必須 |
+| docs/CONCEPT.md | 2 | ✅ 推奨 |
+| docs/ARCHITECTURE.md | 2 | ✅ 推奨 |
+| docs/AGENT-RULES.md | 2 | ⚠️ エージェント作業時のみ |
+| docs/PROMPT-STRUCTURE.md | 3 | ❌ PKから外す |
+| docs/REVIEW-REPORT.md | 3 | ❌ PKから外す（完了済み） |
+| docs/prompts/* | 3 | ❌ PKから外す |
+| docs/issues/ISS-001* | 3 | ❌ PKから外す（完了済み） |
+| docs/SCOPE.md | — | ❌ PKから外す（READMEにリダイレクト済み） |
+| docs/WORKFLOW.md | — | ❌ PKから外す（READMEにリダイレクト済み） |
 
 ---
 
@@ -440,3 +473,4 @@ kesson-driven-thinking の `🩺セッションヘルス`（quality-management.m
 | 2026-02-14 | 1.3 | §7 エージェント呼び出しルール追加。Three.js/GLSLはGemini MCP必須 |
 | 2026-02-14 | 1.4 | §7 AGENT-RULES.md参照に改訂。§10 skills/・context-pack/追加。Tier2にAGENT-RULES.md追加 |
 | 2026-02-14 | 1.5 | §12 セッションヘルスガード新設。kesson-thinking §2.1.2を参考に、kesson-space固有リスク対応 |
+| 2026-02-14 | 1.6 | §6 PKガード常駐化。Tier分類にPG-1〜PG-5監視項目、PK推奨構成（最小5ファイル）を明文化 |
