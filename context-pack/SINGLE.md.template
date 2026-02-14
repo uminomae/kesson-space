@@ -1,0 +1,27 @@
+# Context Pack — マイクロタスク用テンプレート
+
+以下をコピーして使用。4点（TASK/FILES/CONSTRAINTS/ACCEPTANCE）が必ず揃うこと。
+対象ファイルが1つ、変更が10行以下のマイクロタスクに使う。それ以上は4ファイル構成を使う。
+
+---
+
+# TASK
+目的：
+
+## Visual Specs（シェーダータスクの場合）
+- 質感：
+- 色：
+- 動き：
+- 参考：
+
+# FILES
+対象：
+
+# CONSTRAINTS
+守ること：
+SkillBundle：shared-quality（+ 必要に応じて shader-impl / review-gates）
+
+# ACCEPTANCE
+完了条件（省略禁止）：
+- [ ] 
+- [ ] 
