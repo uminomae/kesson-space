@@ -33,10 +33,7 @@
 
 ### 🟡 P1（次に着手）
 
-| ID | タスク | サイズ | カテゴリ | メモ |
-|----|--------|--------|----------|------|
-| T-014 | dispose/cleanupパターン残り | S | リファクタ | controls.js済。main.jsのmousemove/resize、scroll-ui.jsのclickが未対応 |
-| T-010 | マウストラッキング統合 | S | リファクタ | main.js(`_mouseX/Y`) と nav-objects.js(`_gazeX/Y`) で二重リスン。共通化可能 |
+なし
 
 ### 🟢 P2（急がない）
 
@@ -61,13 +58,13 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
-| T-003 | モバイル対応（タッチ操作・レスポンシブ・スクロールUX） | #22で完了確認 |
+| T-010 | マウストラッキング統合（mouse-state.js新設） | #22 |
+| T-014 | 全モジュールdispose/cleanupパターン | #22 |
+| T-003 | モバイル対応（タッチ操作・レスポンシブ・スクロールUX） | #22 確認 |
 | T-013 | PROMPT-STRUCTURE.md → skills/ 吸収 | #22 |
 | — | createGemOrbMaterial抽出 + destroyControls追加 | #21 |
 | T-008 | applyDevValue ifチェーン→ルックアップテーブル | #21 (Codex) |
-| — | AGENT-RULES.md + skills/ + context-pack/ | #18 |
 | T-002 | favicon link rel追加 | #16 |
-| — | ISS-001 ナビアクセシビリティ | #12-#13 |
 
 ## 削除済み
 

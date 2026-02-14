@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #21 リファクタリング提案統合
+**セッション**: #22 TODO棚卸し + T-010/T-014リファクタリング
 
 ---
 
@@ -40,17 +40,29 @@
 - [x] **セッションヘルスガード #19**: README.md §12新設、AGENT-RULES.md常駐エージェント追加
 - [x] **セッションヘルスガード実効性強化 #20**: Memory連携、Step 1.5事前判定、3層担保
 - [x] **リファクタリング提案統合 #21**: createGemOrbMaterial抽出、destroyControls追加
+- [x] **TODO棚卸し + リファクタリング #22**: T-003完了確認、T-010/T-014実装、TODO整理
 
-### セッション#21 リファクタリング提案統合
+### セッション#22 TODO棚卸し + T-010/T-014リファクタリング
 
-**背景**: ClaudeとCodexのリファクタリング提案を4項目吹味し、2件実施。
+**実施内容**:
 
-| 提案 | 判断 | 理由 |
-|------|--------|------|
-| DEV_SETTERS統合 | ❌ 不要 | T-008で実装済。追加抽象化は可読性を損なう |
-| createGemOrbMaterial | ✅ 実施 | 明確なDRY違反。約20行削減、更新漏れリスク解消 |
-| destroyControls | ✅ 実施 | _cleanupControlsパターンで二重バインド防止 |
-| 全モジュールdispose | ❌ 今はやらない | T-003モバイル対応と同時が合理的。T-014として登録 |
+1. **TODO棚卸し**: 未完了タスクの実装状況をコードベースから確認
+   - T-003モバイル対応 → 中核機能すべて実装済み。完了に移動
+   - T-009 → T-014に統合済み。削除
+   - T-013 → 完了確認
+   - T-015新設（モバイル実機検証、P2/S）
+
+2. **T-010 マウストラッキング統合**:
+   - `src/mouse-state.js` 新設（init/destroy/updateSmoothing/getRawMouse）
+   - main.js: 独自mousemove/touchmoveリスナー削除、mouse-state.jsに委譲
+   - nav-objects.js: `_gazeX/_gazeY` + `initGazeTracking()` 削除、`getRawMouse()`に統合
+
+3. **T-014 dispose/cleanupパターン**:
+   - main.js: resizeリスナーを名前付き関数化（将来のcleanup対応）
+   - scroll-ui.js: `_cleanup`パターン導入、`destroyScrollUI()`エクスポート
+   - mouse-state.js: 新規作成時にinit/destroyパターン組み込み済み
+
+4. **E2Eテスト**: 48テスト中 43 PASS / 1 FAIL(既知LCP) / 4 WARN(既知) — リグレッションなし
 
 ### 決定事項
 
@@ -59,11 +71,13 @@
 - 4エージェント分析と実装は別セッションに分割する方針
 - Gemini MCP応答はdiffのみ抽出。全文はGitHub直接コミット
 - ガードの実効性はMemory→Step 1.5→§12の3層で担保する
-- **NEW**: 全モジュールnit-returns-disposeパターンはT-003と同時実施（T-014）
+- PROMPT-STRUCTURE.md → 廃止（skills/体制に移行済み、ローカルでgit rm必要）
 
 ### バックログ
 
 → **[TODO.md](./TODO.md)** を参照
+
+P1タスクなし。P2に5件（テスト系2、コンテンツ1、品質1、QA1）、P3に2件。
 
 ### 現在のデフォルトパラメータ
 
@@ -154,7 +168,6 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
-- [PROMPT-STRUCTURE.md](./PROMPT-STRUCTURE.md) - プロンプトテンプレート
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
 - [~~ISS-001~~](./issues/ISS-001-nav-accessibility.md) - ~~ナビゲーションアクセシビリティ改善~~ ✅ 全Phase完了
 - [ライブサイト](https://uminomae.github.io/kesson-space/)
