@@ -19,6 +19,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    liquid: true,   // Metaball液体エフェクト
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -74,6 +75,31 @@ export const fluidParams = {
     decay:     0.948,
     radius:    0.21,
     influence: 0.06,
+};
+
+// --- リキッド（Metaball液体）パラメータ ---
+export const liquidParams = {
+    // シミュレーション
+    timestep:    0.016,
+    dissipation: 0.985,
+    iterations:  12,
+    // マウス反応
+    forceRadius: 0.15,
+    forceStrength: 3.0,
+    // 見た目
+    densityMul:  1.5,
+    noiseScale:  4.0,
+    noiseSpeed:  0.08,
+    // 光沢
+    specularPow: 24.0,
+    specularInt: 0.6,
+    // 色
+    baseColorR:  0.15,
+    baseColorG:  0.25,
+    baseColorB:  0.45,
+    highlightR:  0.8,
+    highlightG:  0.9,
+    highlightB:  1.0,
 };
 
 // --- ポストプロセス（歪み・オーブ・熱波・DOF）パラメータ ---
