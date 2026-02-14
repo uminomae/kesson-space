@@ -1,5 +1,10 @@
 # ARCHITECTURE - 技術構成
 
+**バージョン**: 1.1
+**更新日**: 2026-02-15
+
+---
+
 ## ファイル構成
 
 ```
@@ -13,6 +18,8 @@ kesson-space/
 │   ├── scene.js              ← シーン構築・更新オーケストレーション
 │   ├── config.js             ← ★ 設定値・定数の唯一の信頼源 (Single Source of Truth)
 │   ├── controls.js           ← カメラ・マウス・インタラクション
+│   ├── mouse-state.js        ← マウス/タッチ状態の一元管理
+│   ├── scroll-ui.js          ← スクロールUI（浮上ボタン等）
 │   ├── navigation.js         ← ナビゲーション統合（イベント処理）
 │   ├── nav-objects.js        ← 3Dナビオブジェクト（鬼火オーブ + HTMLラベル）
 │   ├── viewer.js             ← PDFフロートビューアー（CSS + DOM）
@@ -25,39 +32,46 @@ kesson-space/
 │       ├── water.js          ← 水面シェーダー（FBM波、フレネル反射）
 │       ├── kesson.js         ← 光（欠損）シェーダー（2スタイル補間）
 │       ├── distortion-pass.js ← ポストプロセス（屈折・ハロー・熱波・DOF）
-│       └── fluid-field.js    ← ピンポンバッファ流体フィールド
+│       ├── fluid-field.js    ← ピンポンバッファ流体フィールド
+│       └── vortex.js         ← 渦シェーダー（現在OFF）
 │
 ├── skills/                   ← マルチエージェント運用スキル（AGENT-RULES.md参照）
-│   ├── shared-quality.md     ← 全エージェント共通の品質基準
-│   ├── shader-impl.md        ← Gemini用: Visual Direction、GLSL作法
-│   ├── review-gates.md       ← GPT用: レビュー観点
-│   ├── orchestrator.md       ← Claude用: 分解・委譲手順
-│   └── LEARNINGS.md          ← 運用の教訓（手動更新）
+│   ├── shared-quality.md
+│   ├── shader-impl.md
+│   ├── review-gates.md
+│   ├── orchestrator.md
+│   └── LEARNINGS.md
 │
-├── context-pack/             ← タスク定義テンプレート（AGENT-RULES.md参照）
-│   └── SINGLE.md.template    ← マイクロタスク用テンプレート
+├── context-pack/             ← タスク定義テンプレート
+│   └── SINGLE.md.template
 │
 ├── tests/
-│   └── config-consistency.test.js  ← 設定値整合性テスト
+│   ├── config-consistency.test.js  ← 設定値整合性テスト（CI自動）
+│   ├── e2e-test-design.md          ← E2E設計書
+│   └── e2e-runner.js               ← ブラウザ内E2Eランナー
 │
 ├── mcp_servers/              ← Claude Desktop用MCPサーバー
-│   ├── gemini_threejs.py     ← Gemini API連携
+│   ├── gemini_threejs.py
 │   └── README.md
 │
 ├── scripts/
-│   └── setup-mcp.sh          ← MCP初期設定スクリプト
+│   └── setup-mcp.sh
+│
+├── .github/workflows/
+│   └── test.yml              ← CI定義
 │
 └── docs/
-    ├── README.md             ← 管理ハブ
-    ├── CURRENT.md
-    ├── TODO.md
-    ├── CONCEPT.md
-    ├── ARCHITECTURE.md       ← 本ファイル
-    ├── AGENT-RULES.md        ← マルチエージェント運用ルール
-    ├── PROMPT-STRUCTURE.md   ← Gemini向けプロンプトテンプレート（AGENT-RULES下位）
-    ├── REVIEW-REPORT.md      ← 品質レビュー報告書
-    └── prompts/
-
+    ├── README.md             ← ドキュメントハブ（目次）
+    ├── CURRENT.md            ← 進捗・引き継ぎ
+    ├── TODO.md               ← タスクバックログ
+    ├── WORKFLOW.md           ← セッション運用
+    ├── AGENT-RULES.md        ← エージェント分業
+    ├── ARCHITECTURE.md       ← 本ファイル（技術構成）
+    ├── ENVIRONMENT.md        ← 開発環境（MCP/Codex/Worktree）
+    ├── TESTING.md            ← テスト体制
+    ├── CONCEPT.md            ← 理論↔視覚
+    ├── issues/               ← 大規模タスク設計書
+    └── prompts/              ← Gemini向けプロンプト履歴
 ```
 
 ---
@@ -81,6 +95,8 @@ main.js
 │   └── config.js（fluidParams）
 ├── controls.js
 │   └── config.js（toggles, breathConfig）
+├── mouse-state.js
+├── scroll-ui.js
 ├── i18n.js
 ├── lang-toggle.js
 │   └── i18n.js
@@ -95,10 +111,46 @@ main.js
 
 ## 設計原則
 
-- **config.js が唯一の信頼源 (Single Source of Truth)**: 全デフォルト値はconfig.jsで定義。シェーダーもdevパネルもconfigをimportして参照する
+- **config.js が唯一の信頼源 (Single Source of Truth)**: 全デフォルト値はconfig.jsで定義
 - **各ファイルは1つの責務**: シェーダー、UI、イベント、設定を明確に分離
 - **scene.js は薄いオーケストレーション**: 個別シェーダーの実装は shaders/ に委譲
 - **navigation.js はイベント統合**: 3Dオブジェクト生成とビューアーUIは分離
+- **init/destroy パターン**: 各モジュールはクリーンアップ関数をエクスポート
+
+---
+
+## 技術スタック
+
+### コア
+
+| 技術 | バージョン | 用途 |
+|------|-----------|------|
+| Three.js | 0.160.0 | 3D描画（CDN importmap） |
+| ES Modules | — | ビルドツールなし |
+| GLSL | — | シェーダー（文字列埋め込み） |
+
+### UI/スタイル
+
+| 技術 | バージョン | 用途 |
+|------|-----------|------|
+| Bootstrap | 5.3.3 | devパネル用（CDN、?dev時のみロード） |
+| Noto Serif JP | — | 日本語フォント（Google Fonts） |
+| Yu Mincho / MS PMincho | — | フォールバック |
+
+### インフラ
+
+| 項目 | 値 |
+|------|-----|
+| ホスティング | GitHub Pages（mainブランチ直接） |
+| ローカルポート | 3001（pjdhiroの4000と干渉回避） |
+| CI | GitHub Actions |
+
+### パフォーマンス設定
+
+| 項目 | 値 |
+|------|-----|
+| 流体フィールド解像度 | 128×128（FIELD_SIZE=128） |
+| アクセシビリティ | WCAG 2.1 Level A準拠達成 |
 
 ---
 
@@ -111,7 +163,8 @@ node tests/config-consistency.test.js
 ```
 
 設定値の整合性（config → shader → dev-panel）を自動検証。
-新しいパラメータ追加時はテストも更新すること。
+
+詳細は [TESTING.md](./TESTING.md) を参照。
 
 ### パラメータ追加手順
 
@@ -134,40 +187,7 @@ http://localhost:3001/          ← 通常表示
 
 ---
 
-## マルチエージェント分業体制
-
-**詳細は [AGENT-RULES.md](./AGENT-RULES.md) を参照。**
-
-### 概要
-
-| 役割 | 担当 | 強み |
-|------|------|------|
-| **司令塔** | Claude | コンテキスト把握、複数ファイル管理、要件整理、config/HTML/CSS |
-| **プログラマー** | Gemini | シェーダー実装、視覚品質、GLSL数学 |
-| **レビュアー** | GPT | 俯瞰的構造改善、運用設計、セカンドオピニオン |
-
-### 呼び出しルール
-
-**外部エージェントはユーザーが明示した時のみ使用する。**
-
-### スキルファイル（skills/）
-
-| ファイル | 対象 | 内容 |
-|---------|------|------|
-| `shared-quality.md` | 全員 | 品質基準、禁止事項 |
-| `shader-impl.md` | Gemini | GLSL作法、Visual Direction |
-| `review-gates.md` | GPT | レビュー観点、評価基準 |
-| `orchestrator.md` | Claude | 分解・委譲・統合手順 |
-| `LEARNINGS.md` | 全員 | 運用の教訓（手動更新） |
-
-### MCPツール
-
-| ツール | 用途 |
-|--------|------|
-| `generate_threejs_code` | Three.jsコード生成 |
-| `generate_shader` | GLSLシェーダー生成 |
-| `review_threejs_code` | コードレビュー |
-| `compare_implementations` | Claude vs Gemini 比較 |
+## MCP連携
 
 ### セットアップ
 
@@ -178,13 +198,22 @@ cp .env.example .env
 uv sync
 ```
 
+### MCPツール
+
+| ツール | 用途 |
+|--------|------|
+| `generate_threejs_code` | Three.jsコード生成 |
+| `generate_shader` | GLSLシェーダー生成 |
+| `review_threejs_code` | コードレビュー |
+| `compare_implementations` | Claude vs Gemini 比較 |
+
+詳細は [ENVIRONMENT.md](./ENVIRONMENT.md) および [mcp_servers/README.md](../mcp_servers/README.md) を参照。
+
 ---
 
-## 技術スタック
+## 参照リンク
 
-- Three.js 0.160.0（CDN importmap）
-- Bootstrap 5.3.3（devパネル用、CDN）
-- ES Modules（ビルドツールなし）
-- シェーダー: simplex noise + FBM（GLSL文字列埋め込み）
-- ポート: 3001（ローカル開発）
-- デプロイ: GitHub Pages（mainブランチ直接）
+- [README.md](./README.md) — ドキュメントハブ
+- [ENVIRONMENT.md](./ENVIRONMENT.md) — 開発環境
+- [TESTING.md](./TESTING.md) — テスト体制
+- [AGENT-RULES.md](./AGENT-RULES.md) — エージェント分業
