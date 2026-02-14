@@ -3,6 +3,7 @@
  *
  * コミットセッションをInstagram風3Dグリッドとして表示する。
  * kesson-spaceの闘の中に光のカードが浮かぶ。
+ * 背景は透明でメインThree.jsシーンが透けて見える。
  *
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
@@ -12,10 +13,10 @@ import { createGrid } from './grid.js';
 import { createCard } from './card.js';
 import { ZoomController } from './zoom.js';
 
-const BG_COLOR = new THREE.Color(0x0a0e1a);
-const FOG_COLOR = new THREE.Color(0x0a0e1a);
-const FOG_NEAR = 15;
-const FOG_FAR = 50;
+// 背景透明（メインシーンが見える）
+const FOG_COLOR = new THREE.Color(0x050508);
+const FOG_NEAR = 20;
+const FOG_FAR = 60;
 const SESSIONS_URL = './assets/devlog/sessions.json';
 const SCROLL_SPEED = 0.008;
 
@@ -49,23 +50,26 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
 
     const rect = containerEl.getBoundingClientRect();
     
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    // alpha: true で背景透明
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(rect.width, rect.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0x000000, 0); // 完全透明
     containerEl.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
-    scene.background = BG_COLOR;
+    scene.background = null; // 透明背景
     scene.fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR);
 
     camera = new THREE.PerspectiveCamera(50, rect.width / rect.height, 0.1, 100);
     camera.position.set(0, 0, 12);
 
-    const ambient = new THREE.AmbientLight(0x1a2235, 0.5);
+    // ライティングを調整（背景透明でもカードが見えるように）
+    const ambient = new THREE.AmbientLight(0x2a3550, 0.8);
     scene.add(ambient);
-    const point = new THREE.PointLight(0xf59e0b, 0.3, 30);
-    point.position.set(0, 5, 10);
+    const point = new THREE.PointLight(0xf59e0b, 0.4, 40);
+    point.position.set(0, 5, 15);
     scene.add(point);
 
     gridGroup = new THREE.Group();
@@ -145,7 +149,8 @@ function generateDemoData() {
             color: colors[cat],
             messages: [`commit ${i}`, `fix ${i}`, `update ${i}`],
             intensity: Math.random() * 0.8 + 0.2,
-            texture_url: null
+            texture_url: null,
+            log_content: null // ログ本文（将来用）
         });
     }
     return demo.reverse();
@@ -216,6 +221,7 @@ function showDetail(session) {
     const delsEl = document.getElementById('detail-dels');
     const filesEl = document.getElementById('detail-files');
     const messagesEl = document.getElementById('detail-messages');
+    const logContentEl = document.getElementById('detail-log-content');
 
     if (dateEl) dateEl.textContent = dateStr;
     if (metaEl) metaEl.textContent = `${session.repo} · ${session.duration_min}min`;
@@ -229,6 +235,16 @@ function showDetail(session) {
     if (delsEl) delsEl.textContent = `-${session.deletions}`;
     if (filesEl) filesEl.innerHTML = session.files_changed.slice(0, 20).map(f => `<li>${f}</li>`).join('');
     if (messagesEl) messagesEl.innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
+    
+    // ログ本文（session.log_contentがあれば表示）
+    if (logContentEl) {
+        if (session.log_content) {
+            logContentEl.innerHTML = `<h3>log</h3>${session.log_content.split('\n\n').map(p => `<p>${p}</p>`).join('')}`;
+            logContentEl.style.display = 'block';
+        } else {
+            logContentEl.style.display = 'none';
+        }
+    }
     
     panel.classList.add('visible');
 }
