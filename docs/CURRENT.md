@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #22 TODO棚卸し + T-010/T-014リファクタリング
+**セッション**: #24 devlogセクションJSON対応
 
 ---
 
@@ -41,28 +41,31 @@
 - [x] **セッションヘルスガード実効性強化 #20**: Memory連携、Step 1.5事前判定、3層担保
 - [x] **リファクタリング提案統合 #21**: createGemOrbMaterial抽出、destroyControls追加
 - [x] **TODO棚卸し + リファクタリング #22**: T-003完了確認、T-010/T-014実装、TODO整理
+- [x] **devlogセクションJSON対応 #24**: sessions.json新設、dev-log.js更新
 
-### セッション#22 TODO棚卸し + T-010/T-014リファクタリング
+### セッション#24 devlogセクションJSON対応
+
+**目標**: 最深部スクロール時のdevlogセクションをJSONデータから描画
 
 **実施内容**:
 
-1. **TODO棚卸し**: 未完了タスクの実装状況をコードベースから確認
-   - T-003モバイル対応 → 中核機能すべて実装済み。完了に移動
-   - T-009 → T-014に統合済み。削除
-   - T-013 → 完了確認
-   - T-015新設（モバイル実機検証、P2/S）
+1. **Phase 1**: `assets/devlog/sessions.json` 新設
+   - i18n.jsのdevLog配列から構造化データに移行
+   - DEVLOG-SPEC.mdスキーマに準拠
+   - ja/en両言語のnarrative格納
 
-2. **T-010 マウストラッキング統合**:
-   - `src/mouse-state.js` 新設（init/destroy/updateSmoothing/getRawMouse）
-   - main.js: 独自mousemove/touchmoveリスナー削除、mouse-state.jsに委譲
-   - nav-objects.js: `_gazeX/_gazeY` + `initGazeTracking()` 削除、`getRawMouse()`に統合
+2. **Phase 2**: `src/dev-log.js` 更新
+   - `content/devlog-{lang}.md` → `assets/devlog/sessions.json` に切替
+   - frontmatterパーサー削除、JSON処理に置換
+   - 複数セッション対応（新しい順ソート、セッション間セパレーター）
+   - safeHTML・スクロールフェードインアニメーション維持
 
-3. **T-014 dispose/cleanupパターン**:
-   - main.js: resizeリスナーを名前付き関数化（将来のcleanup対応）
-   - scroll-ui.js: `_cleanup`パターン導入、`destroyScrollUI()`エクスポート
-   - mouse-state.js: 新規作成時にinit/destroyパターン組み込み済み
-
-4. **E2Eテスト**: 48テスト中 43 PASS / 1 FAIL(既知LCP) / 4 WARN(既知) — リグレッションなし
+**残作業** (ローカルで実行):
+```bash
+git rm content/devlog-ja.md content/devlog-en.md
+git commit -m "chore: remove deprecated markdown devlogs (now using sessions.json)"
+git push
+```
 
 ### 決定事項
 
@@ -71,7 +74,7 @@
 - 4エージェント分析と実装は別セッションに分割する方針
 - Gemini MCP応答はdiffのみ抽出。全文はGitHub直接コミット
 - ガードの実効性はMemory→Step 1.5→§12の3層で担保する
-- PROMPT-STRUCTURE.md → 廃止（skills/体制に移行済み、ローカルでgit rm必要）
+- devlogデータは `assets/devlog/sessions.json` に一元管理
 
 ### バックログ
 
@@ -157,6 +160,7 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 - アクセシビリティ: WCAG 2.1 Level A準拠達成
 - 流体フィールド: 128x128（FIELD_SIZE=128）
 - フォント: Noto Serif JP (Google Fonts) + Yu Mincho/MS PMinchoフォールバック
+- devlogデータ: `assets/devlog/sessions.json`
 
 ---
 
