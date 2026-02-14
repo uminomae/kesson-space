@@ -313,6 +313,7 @@ function injectNavLabelStyles() {
     const style = document.createElement('style');
     style.id = 'nav-label-styles';
     // CHANGED: pointer-events: none → auto, button reset styles, focus/hover styles
+    // FIX: フォントをNoto Serif JPに統一（index.htmlと一致）
     style.textContent = `
         .nav-label {
             position: fixed;
@@ -323,7 +324,7 @@ function injectNavLabelStyles() {
             border: none;
             padding: 0;
             color: rgba(255, 255, 255, 0.9);
-            font-family: "Sawarabi Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+            font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
             font-size: clamp(0.45rem, 2.8vmin, 1.1rem);
             letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
             text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
