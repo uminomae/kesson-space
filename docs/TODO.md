@@ -48,6 +48,7 @@
 | T-008 | applyDevValue ifチェーン→マッピング | S | リファクタ | REVIEW #7 保留A | 現状でも読みやすいが改善余地あり |
 | T-009 | dispose()追加 | S | リファクタ | REVIEW #7 保留B | SPAなので実害なし。衛生目的 |
 | T-010 | マウストラッキング統合 | S | リファクタ | REVIEW #7 保留D | main.js/nav-objects.js二重登録 |
+| T-013 | PROMPT-STRUCTURE.md → skills/ 吸収 | S | 管理 | AGENT-RULES #18 | shader-impl.md + TASK.mdテンプレートに分解。当面は併存 |
 
 ### ⚪ P3（アイデア）
 
@@ -62,6 +63,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| — | AGENT-RULES.md + skills/ + context-pack/ | #18 |
 | T-002 | favicon link rel追加 | #16 |
 | — | ISS-001 ナビアクセシビリティ | #12-#13 |
 | — | Bootstrap条件付きロード | #14 |

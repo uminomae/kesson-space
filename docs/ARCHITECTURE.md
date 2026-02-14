@@ -27,6 +27,16 @@ kesson-space/
 │       ├── distortion-pass.js ← ポストプロセス（屈折・ハロー・熱波・DOF）
 │       └── fluid-field.js    ← ピンポンバッファ流体フィールド
 │
+├── skills/                   ← マルチエージェント運用スキル（AGENT-RULES.md参照）
+│   ├── shared-quality.md     ← 全エージェント共通の品質基準
+│   ├── shader-impl.md        ← Gemini用: Visual Direction、GLSL作法
+│   ├── review-gates.md       ← GPT用: レビュー観点
+│   ├── orchestrator.md       ← Claude用: 分解・委譲手順
+│   └── LEARNINGS.md          ← 運用の教訓（手動更新）
+│
+├── context-pack/             ← タスク定義テンプレート（AGENT-RULES.md参照）
+│   └── SINGLE.md.template    ← マイクロタスク用テンプレート
+│
 ├── tests/
 │   └── config-consistency.test.js  ← 設定値整合性テスト
 │
@@ -38,12 +48,13 @@ kesson-space/
 │   └── setup-mcp.sh          ← MCP初期設定スクリプト
 │
 └── docs/
-    ├── SCOPE.md              ← プロジェクト群の位置づけ・参照体系
+    ├── README.md             ← 管理ハブ
     ├── CURRENT.md
+    ├── TODO.md
     ├── CONCEPT.md
     ├── ARCHITECTURE.md       ← 本ファイル
-    ├── WORKFLOW.md
-    ├── PROMPT-STRUCTURE.md
+    ├── AGENT-RULES.md        ← マルチエージェント運用ルール
+    ├── PROMPT-STRUCTURE.md   ← Gemini向けプロンプトテンプレート（AGENT-RULES下位）
     ├── REVIEW-REPORT.md      ← 品質レビュー報告書
     └── prompts/
 
@@ -123,18 +134,31 @@ http://localhost:3001/          ← 通常表示
 
 ---
 
-## Claude × Gemini 分業体制
+## マルチエージェント分業体制
+
+**詳細は [AGENT-RULES.md](./AGENT-RULES.md) を参照。**
 
 ### 概要
 
 | 役割 | 担当 | 強み |
 |------|------|------|
-| **マネージャー** | Claude | コンテキスト把握、複数ファイル管理、要件整理、対話 |
-| **プログラマー** | Gemini | シェーダー、視覚的品質の高いThree.jsコード生成 |
+| **司令塔** | Claude | コンテキスト把握、複数ファイル管理、要件整理、config/HTML/CSS |
+| **プログラマー** | Gemini | シェーダー実装、視覚品質、GLSL数学 |
+| **レビュアー** | GPT | 俯瞰的構造改善、運用設計、セカンドオピニオン |
 
 ### 呼び出しルール
 
-**Geminiはユーザーが明示した時のみ使用する。**
+**外部エージェントはユーザーが明示した時のみ使用する。**
+
+### スキルファイル（skills/）
+
+| ファイル | 対象 | 内容 |
+|---------|------|------|
+| `shared-quality.md` | 全員 | 品質基準、禁止事項 |
+| `shader-impl.md` | Gemini | GLSL作法、Visual Direction |
+| `review-gates.md` | GPT | レビュー観点、評価基準 |
+| `orchestrator.md` | Claude | 分解・委譲・統合手順 |
+| `LEARNINGS.md` | 全員 | 運用の教訓（手動更新） |
 
 ### MCPツール
 

@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #17 渦シェーダー実装・フォント修正
+**セッション**: #18 マルチエージェント運用ルール策定
 
 ---
 
@@ -36,21 +36,23 @@
 - [x] **E2Eブラウザ独立実行 #15**: ?test自動実行 + 結果オーバーレイ
 - [x] **TODO管理体系整備 #16**: TODO.md新設、README.md/CURRENT.md役割分担整理
 - [x] **渦シェーダー・フォント修正 #17**: 渦シェーダー実装(OFF)、Noto Serif JP導入、h1白色修正
+- [x] **マルチエージェント運用ルール #18**: AGENT-RULES.md策定、skills/・context-pack/新設
 
-### セッション#17 渦シェーダー実装・フォント修正
+### セッション#18 マルチエージェント運用ルール策定
 
 | 変更 | 内容 |
 |------|------|
-| 渦シェーダー (vortex.js) | twigl系フラクタルレイマーチング実装。Gemini/Codex/Claude 3社レビュー。XZ平面配置、mod()時間ラップ、RGB色制御。**default: OFF**（ユーザー判断でコード残し） |
-| エージェント呼び出しルール | README.md §7に明文化。Three.js/GLSLコードはGemini MCP経由で実装する方針 |
-| フォント変更 | Sawarabi Mincho → Noto Serif JP (weight 300/400)。Yu Minchoに近い高品質明朝体 |
-| h1色修正 | rgba(255,255,255,0.5) → rgba(255,255,255,0.95) 白くクッキリに |
-| devパネル拡張 | 渦セクション追加（速度・強度・スケール・位置・サイズ・RGB色・イテレーション） |
+| AGENT-RULES.md v1.1 | Context Layer設計（L0-L3）、ハンドオフ規格、責務境界表、権限表。三者協議+相互レビュー経て策定 |
+| skills/ ディレクトリ新設 | shared-quality.md, shader-impl.md, review-gates.md, orchestrator.md, LEARNINGS.md |
+| context-pack/ ディレクトリ新設 | SINGLE.md.template（マイクロタスク用）。通常タスクは4ファイル構成 |
+| レビュー反映 | ChatGPT: 配置整合・HTML例外・ACCEPTANCE省略禁止。Gemini: treeフィルタ・既存コード調和 |
 
 ### 決定事項
 
-- 渦シェーダーはOFFだがコードは残す（将来再検討の余地あり）
-- フォントはNoto Serif JPで確定（全環境で一貫した高品質明朝体）
+- Three.js/GLSLコードはGemini MCP経由で実装（Claudeは擬似コード・IF設計まで）
+- skills/の正本マージ権限はClaude/ユーザーのみ。外部エージェントは提案のみ
+- `// CHANGED` コメントは日付付き（`// CHANGED(YYYY-MM-DD)`）。1ヶ月経過で除去可
+- ACCEPTANCEは省略禁止（全タスクに完了条件を明記）
 
 ### バックログ
 
@@ -111,8 +113,12 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 
 ## ⭐ Three.js作業時の重要ルール
 
-**シェーダーや視覚的品質が重要なThree.jsコードを書く際は、Geminiへの作業依頼を検討すること。**
-**ユーザーが明示した時のみGeminiを使用。自動呼び出しはしない。**
+**→ [AGENT-RULES.md](./AGENT-RULES.md) および [skills/orchestrator.md](../skills/orchestrator.md) を参照**
+
+要約:
+- シェーダー/Three.jsコードはGemini MCP経由で実装する
+- Claudeは擬似コード・インターフェース設計まで。関数の中身は書かない
+- ユーザーが明示した時のみGeminiを使用。自動呼び出しはしない
 
 ---
 
@@ -137,6 +143,7 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 
 - [README.md](./README.md) - 管理ハブ
 - [TODO.md](./TODO.md) - タスクバックログ
+- [AGENT-RULES.md](./AGENT-RULES.md) - マルチエージェント運用ルール
 - [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書

@@ -1,6 +1,6 @@
 # docs/README.md — プロジェクト管理ハブ
 
-**バージョン**: 1.3
+**バージョン**: 1.4
 **更新日**: 2026-02-14
 
 本ファイルは、kesson-spaceのセッション起動・運用・同期の**唯一の管理ハブ**である。
@@ -189,37 +189,41 @@ PKにはkesson-thinking側の管理文書も含まれている。
 | Tier | ファイル | 参照タイミング |
 |------|---------|---------------|
 | 1 | README.md, CURRENT.md, TODO.md | セッション開始時に必ず |
-| 2 | CONCEPT.md, ARCHITECTURE.md | タスクに応じて |
+| 2 | CONCEPT.md, ARCHITECTURE.md, AGENT-RULES.md | タスクに応じて |
 | 3 | PROMPT-STRUCTURE.md, REVIEW-REPORT.md, prompts/ | Gemini作業時のみ |
 
 ---
 
-## 7. Claude × Gemini 分業体制
+## 7. マルチエージェント分業体制
+
+**詳細は [AGENT-RULES.md](./AGENT-RULES.md) を参照。**
 
 | 役割 | 担当 | 責務 |
 |------|------|------|
-| **マネージャー** | Claude | コンテキスト把握、要件整理、プロンプト設計、複数ファイル管理、config/devパネル/main.js統合 |
+| **司令塔** | Claude | コンテキスト把握、要件整理、プロンプト設計、複数ファイル管理、config/devパネル/main.js統合、HTML/CSS |
 | **プログラマー** | Gemini | Three.js実装、GLSLシェーダー、視覚的品質の最適化 |
+| **レビュアー** | GPT | 俯瞰的構造改善、運用設計、セカンドオピニオン |
 
 ### エージェント呼び出しルール
 
-**Three.js / GLSLコードの実装は、必ずGemini MCP経由で行う。**
+**外部エージェント（Gemini/GPT）はユーザーが明示した時のみ使用する。**
 
-| 作業内容 | 担当 | 理由 |
-|---------|------|------|
-| シェーダー新規作成・修正 | **Gemini** | 視覚品質・GLSL専門性 |
-| Three.jsメッシュ・マテリアル・ジオメトリ | **Gemini** | 3D実装の専門性 |
-| config.js パラメータ追加 | Claude | 設定管理はClaudeの責務 |
-| dev-panel.js スライダー追加 | Claude | UI統合はClaudeの責務 |
-| main.js applyDevValue 追加 | Claude | ワイヤリングはClaudeの責務 |
-| scene.js 統合・呼び出し追加 | Claude | オーケストレーションはClaudeの責務 |
-| HTML/CSS変更 | Claude | DOM操作はClaudeの責務 |
-| twiglコード→Three.js変換 | **Gemini** | シェーダー移植は専門作業 |
+### スキルファイル
+
+`skills/` ディレクトリに各エージェント向けのガイドラインを格納:
+
+| ファイル | 対象 |
+|---------|------|
+| `skills/shared-quality.md` | 全エージェント共通の品質基準 |
+| `skills/shader-impl.md` | Gemini用: Visual Direction、GLSL作法 |
+| `skills/review-gates.md` | GPT用: レビュー観点、品質ゲート |
+| `skills/orchestrator.md` | Claude用: 分解・委譲・統合手順 |
+| `skills/LEARNINGS.md` | 運用の教訓（手動更新） |
 
 ### ワークフロー
 
 ```
-1. Claude: 要件整理 + プロンプト設計（PROMPT-STRUCTURE.md参照）
+1. Claude: 要件整理 + context-pack作成（AGENT-RULES.md §2参照）
 2. Claude: Gemini MCPにコード生成を依頼
 3. Claude: 生成されたコードをconfig/devパネル/scene.jsに統合
 4. ユーザー: 視覚確認・フィードバック
@@ -292,7 +296,7 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 ### テストファイル
 
 | ファイル | 種別 | 実行環境 |
-|---------|------|---------|
+|---------|------|----------|
 | `tests/config-consistency.test.js` | 静的解析 | Node.js / CI |
 | `tests/e2e-test-design.md` | E2E設計書 | ドキュメント |
 | `tests/e2e-runner.js` | E2Eランナー | ブラウザ注入 |
@@ -324,9 +328,21 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 | `docs/TODO.md` | タスクバックログ（優先度・分類・サイズ） | 1 |
 | `docs/CONCEPT.md` | 理論↔視覚変換定義。cross-repo報告経路 | 2 |
 | `docs/ARCHITECTURE.md` | 技術構成・ファイル依存関係・設計原則 | 2 |
+| `docs/AGENT-RULES.md` | マルチエージェント運用ルール（Context Layer、ハンドオフ規格） | 2 |
 | `docs/PROMPT-STRUCTURE.md` | Gemini向けプロンプトテンプレート | 3 |
 | `docs/REVIEW-REPORT.md` | 品質レビュー記録（#7） | 3 |
 | `docs/prompts/` | 個別プロンプト履歴（P001–P004） | 3 |
+
+### スキル・テンプレート
+
+| パス | 役割 |
+|------|------|
+| `skills/shared-quality.md` | 全エージェント共通の品質基準 |
+| `skills/shader-impl.md` | Gemini用: GLSL作法、Visual Direction |
+| `skills/review-gates.md` | GPT用: レビュー観点、品質ゲート |
+| `skills/orchestrator.md` | Claude用: 分解・委譲・統合手順 |
+| `skills/LEARNINGS.md` | 運用教訓の継承（手動更新） |
+| `context-pack/SINGLE.md.template` | マイクロタスク用テンプレート |
 
 ### ソースコード
 
@@ -374,3 +390,4 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 | 2026-02-14 | 1.1 | §8 テスト・品質管理を三層体制に改訂。§10 テスト・CIカタログ追加 |
 | 2026-02-14 | 1.2 | TODO.md新設に伴い、Tier1にTODO.md追加。§2,§3,§6,§10更新 |
 | 2026-02-14 | 1.3 | §7 エージェント呼び出しルール追加。Three.js/GLSLはGemini MCP必須 |
+| 2026-02-14 | 1.4 | §7 AGENT-RULES.md参照に改訂。§10 skills/・context-pack/追加。Tier2にAGENT-RULES.md追加 |
