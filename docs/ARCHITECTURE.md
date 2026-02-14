@@ -1,6 +1,6 @@
 # ARCHITECTURE - 技術構成
 
-**バージョン**: 1.1
+**バージョン**: 1.2
 **更新日**: 2026-02-15
 
 ---
@@ -10,7 +10,9 @@
 ```
 kesson-space/
 ├── README.md
+├── CLAUDE.md                 ← Claude Code向けセッション開始ガイド
 ├── index.html                ← メインHTML
+├── devlog.html               ← 開発ログギャラリー
 ├── serve.sh                  ← ローカルサーバー起動
 │
 ├── src/
@@ -26,6 +28,7 @@ kesson-space/
 │   ├── i18n.js               ← 言語切替（?lang=en / ?lang=ja）
 │   ├── lang-toggle.js        ← 言語トグルUI
 │   ├── dev-panel.js          ← 開発用パラメータ調整パネル
+│   ├── devlog/               ← devlogギャラリー用モジュール
 │   └── shaders/
 │       ├── noise.glsl.js     ← 共有simplex noise GLSL
 │       ├── background.js     ← 背景グラデーションシェーダー
@@ -34,6 +37,17 @@ kesson-space/
 │       ├── distortion-pass.js ← ポストプロセス（屈折・ハロー・熱波・DOF）
 │       ├── fluid-field.js    ← ピンポンバッファ流体フィールド
 │       └── vortex.js         ← 渦シェーダー（現在OFF）
+│
+├── content/                  ← 記事・テキストコンテンツ
+│   ├── devlog-ja.md          ← devlog全体説明（日本語）
+│   ├── devlog-en.md          ← devlog全体説明（英語）
+│   └── devlog/               ← 個別エントリ（.md）
+│
+├── assets/                   ← 静的リソース（画像・データ）
+│   ├── devlog/
+│   │   ├── sessions.json     ← セッションメタデータ索引
+│   │   └── covers/           ← カバー画像（.svg/.png）
+│   └── blender/              ← 3Dモデル素材
 │
 ├── skills/                   ← マルチエージェント運用スキル（AGENT-RULES.md参照）
 │   ├── shared-quality.md
@@ -72,6 +86,38 @@ kesson-space/
     ├── CONCEPT.md            ← 理論↔視覚
     ├── issues/               ← 大規模タスク設計書
     └── prompts/              ← Gemini向けプロンプト履歴
+```
+
+---
+
+## コンテンツ構造
+
+### 設計思想
+
+- **content/** — 記事本文（.md）
+- **assets/** — 静的リソース（画像・JSON・モデル）
+- 命名規則で紐付け: `session-XX.md` ↔ `session-XX.svg`
+
+### devlog
+
+| パス | 役割 |
+|------|------|
+| `content/devlog-ja.md` | 全体説明（日本語） |
+| `content/devlog-en.md` | 全体説明（英語） |
+| `content/devlog/*.md` | 個別エントリ本文 |
+| `assets/devlog/sessions.json` | メタデータ索引（日付・カテゴリ・統計） |
+| `assets/devlog/covers/*.svg` | カバー画像（インフォグラフィック） |
+
+### 将来の拡張
+
+```
+content/
+├── devlog/          ← 開発ログ
+└── blog/            ← 一般ブログ（将来）
+
+assets/
+├── devlog/
+└── blog/
 ```
 
 ---
