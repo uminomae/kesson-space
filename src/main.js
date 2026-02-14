@@ -108,6 +108,9 @@ function findNavMeshes() {
 }
 
 // --- HTMLオーバーレイ ---
+// ★ h1/subtitleの color は CSS 固定。inline style で上書きしない。
+//    表示制御は scroll-ui.js の overlay opacity/filter/transform のみで行う。
+//    この方針により、devパネルやLLM修正で色が意図せず変わる問題を防止する。
 function updateOverlay(key, val) {
     const overlay = document.getElementById('overlay');
     const h1 = document.getElementById('title-h1');
@@ -118,9 +121,9 @@ function updateOverlay(key, val) {
         case 'titleLeft':    overlay.style.left = val + 'px'; break;
         case 'titleSize':    h1.style.fontSize = val + 'rem'; break;
         case 'titleSpacing': h1.style.letterSpacing = val + 'em'; break;
-        case 'titleOpacity': h1.style.color = `rgba(255,255,255,${val})`; break;
+        // REMOVED: titleOpacity — h1.style.color による inline 上書きを禁止
+        // REMOVED: subOpacity  — sub.style.color による inline 上書きを禁止
         case 'subSize':      sub.style.fontSize = val + 'rem'; break;
-        case 'subOpacity':   sub.style.color = `rgba(255,255,255,${val})`; break;
         case 'titleGlow':    h1.style.textShadow = `0 0 ${val}px rgba(100,150,255,0.3)`; break;
     }
 }

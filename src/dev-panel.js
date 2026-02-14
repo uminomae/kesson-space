@@ -164,14 +164,16 @@ const SECTIONS = [
     {
         id: 'overlay',
         title: 'HTMLオーバーレイ',
+        // ★ titleOpacity / subOpacity は意図的に除外。
+        //    h1/subtitleのcolorはCSS固定（index.html）であり、inline styleで上書きしない。
+        //    表示制御は scroll-ui.js の overlay opacity/filter/transform で行う。
+        //    この方針により、LLM修正時にdefault値矛盾で色が暗くなる問題を防止する。
         params: {
             titleBottom:   { label: '下からの距離(px)', min: 10, max: 300, step: 5, default: 60 },
             titleLeft:     { label: '左からの距離(px)', min: 10, max: 300, step: 5, default: 40 },
             titleSize:     { label: 'タイトル文字(rem)', min: 0.5, max: 5.0, step: 0.1, default: 2.7 },
             titleSpacing:  { label: '文字間隔(em)',   min: 0.0, max: 2.0, step: 0.05, default: 0.8 },
-            titleOpacity:  { label: 'タイトル透明度', min: 0.0, max: 1.0, step: 0.05, default: 0.5 },
             subSize:       { label: 'サブ文字(rem)',   min: 0.3, max: 3.0, step: 0.1, default: 1.3 },
-            subOpacity:    { label: 'サブ透明度',     min: 0.0, max: 1.0, step: 0.05, default: 0.5 },
             titleGlow:     { label: '発光(px)',       min: 0, max: 80, step: 5, default: 30 },
         }
     },

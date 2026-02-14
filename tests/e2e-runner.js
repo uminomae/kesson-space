@@ -302,6 +302,33 @@
         const h1Link = h1 ? h1.closest('a') : null;
         const href = h1Link ? h1Link.getAttribute('href') : '';
         assert('02-8', 'h1がブログ記事へのリンクを持つ', href.includes('pjdhiro/thinking-kesson'), `href="${href}"`);
+
+        // 02-9: h1の色がCSS指定値（白: alpha >= 0.9）であること
+        // h1の色はCSS固定（rgba(255,255,255,0.95)）であるべき。
+        // inline styleでcolorが上書きされていないことを検証する。
+        if (h1) {
+            const computed = getComputedStyle(h1).color;
+            // computed は "rgba(255, 255, 255, 0.95)" or "rgb(255, 255, 255)" 形式
+            const alphaMatch = computed.match(/[\d.]+/g);
+            let alpha = 1.0;
+            if (alphaMatch && alphaMatch.length >= 4) {
+                alpha = parseFloat(alphaMatch[3]);
+            }
+            // overlay の opacity による視覚的な暗さは computed color には影響しない。
+            // ここで検証するのは h1 要素自体の color プロパティの alpha 値。
+            assert('02-9', 'h1の色が白（alpha >= 0.9）', alpha >= 0.9,
+                `computed: ${computed}, alpha: ${alpha}`);
+        }
+
+        // 02-10: h1にinline styleでcolorが設定されていないこと
+        // inline style による color 上書きは禁止（CSS固定ポリシー）。
+        // devパネルやLLM修正でうっかり設定された場合を検出する。
+        if (h1) {
+            const inlineColor = h1.style.color;
+            assert('02-10', 'h1にinline color未設定（CSS固定ポリシー）',
+                !inlineColor || inlineColor === '',
+                inlineColor ? `inline: "${inlineColor}" ← 不正な上書き検出` : 'inline color なし（正常）');
+        }
     }
 
     // ============================
