@@ -45,10 +45,10 @@
 | T-005 | devパネル E2Eテスト追加 | S | テスト | E2E #15 WARN | `?test&dev` の自動検証 |
 | T-006 | English PDF作成 | M | コンテンツ | ナビ設計 | ナビの英語版リンク先が未作成 |
 | T-007 | パフォーマンスプロファイリング | M | 品質 | CURRENT.md | フレームレート・メモリ使用量の計測 |
-| T-008 | applyDevValue ifチェーン→マッピング | S | リファクタ | REVIEW #7 保留A | 現状でも読みやすいが改善余地あり |
 | T-009 | dispose()追加 | S | リファクタ | REVIEW #7 保留B | SPAなので実害なし。衛生目的 |
 | T-010 | マウストラッキング統合 | S | リファクタ | REVIEW #7 保留D | main.js/nav-objects.js二重登録 |
 | T-013 | PROMPT-STRUCTURE.md → skills/ 吸収 | S | 管理 | AGENT-RULES #18 | shader-impl.md + TASK.mdテンプレートに分解。当面は併存 |
+| T-014 | 全モジュールnit-returns-disposeパターン | M | リファクタ | Codexレビュー | main.jsのmousemove/resize等。T-003と同時が合理的 |
 
 ### ⚪ P3（アイデア）
 
@@ -63,6 +63,9 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| — | createGemOrbMaterial抽出 + destroyControls追加 | #21 |
+| T-008 | applyDevValue ifチェーン→ルックアップテーブル | Codexレビュー |
+| — | GemシェーダーGLSL分離、setTarget削除、modulepreload修正 | Codexレビュー |
 | — | AGENT-RULES.md + skills/ + context-pack/ | #18 |
 | T-002 | favicon link rel追加 | #16 |
 | — | ISS-001 ナビアクセシビリティ | #12-#13 |
