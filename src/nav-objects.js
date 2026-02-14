@@ -6,6 +6,7 @@ import { detectLang, t } from './i18n.js';
 import { toggles, gemParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { gemOrbVertexShader, gemOrbFragmentShader } from './shaders/gem-orb.glsl.js';
+import { getRawMouse } from './mouse-state.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
@@ -348,23 +349,8 @@ export function setGemHover(isHovered) {
 const _labelWorldPos = new THREE.Vector3();
 const LABEL_Y_OFFSET = 3.5;
 
-let _gazeX = 0.5;
-let _gazeY = 0.5;
-
-function initGazeTracking() {
-    if (window._gazeTrackingInit) return;
-    window._gazeTrackingInit = true;
-    window.addEventListener('mousemove', (e) => {
-        _gazeX = e.clientX / window.innerWidth;
-        _gazeY = e.clientY / window.innerHeight;
-    });
-    window.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) {
-            _gazeX = e.touches[0].clientX / window.innerWidth;
-            _gazeY = e.touches[0].clientY / window.innerHeight;
-        }
-    });
-}
+// T-010: _gazeX/_gazeY と initGazeTracking() を除去。
+// mouse-state.js の getRawMouse() で取得する。
 
 function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     worldPos.y += yOffset;
@@ -382,10 +368,14 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     el.style.left = x + 'px';
     el.style.top = y + 'px';
 
+    // T-010: getRawMouse() から視線座標を取得
+    const gaze = getRawMouse();
     const labelNdcX = x / window.innerWidth;
     const labelNdcY = y / window.innerHeight;
-    const dx = labelNdcX - _gazeX;
-    const dy = labelNdcY - _gazeY;
+    const dx = labelNdcX - gaze.x;
+    // getRawMouse().y は Y反転済み (1-clientY/height) なので、ラベル側も合わせる
+    const gazeScreenY = 1.0 - gaze.y;
+    const dy = labelNdcY - gazeScreenY;
     const gazeDist = Math.sqrt(dx * dx + dy * dy);
     const blurPx = Math.max(0, (gazeDist - 0.15) * 8.0);
     const clampedBlur = Math.min(blurPx, 4.0);
@@ -395,8 +385,6 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
 }
 
 export function updateNavLabels(navMeshes, camera) {
-    initGazeTracking();
-
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
 
