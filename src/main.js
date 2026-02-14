@@ -14,13 +14,16 @@ import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
-import { toggles, breathConfig, distortionParams, fluidParams, gemParams, vortexParams } from './config.js';
+import { createLiquidSystem } from './shaders/liquid.js';
+import { toggles, breathConfig, distortionParams, fluidParams, liquidParams, gemParams, vortexParams } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 
 let composer;
 let distortionPass;
 let fluidSystem;
+let liquidSystem;
+let liquidTarget;  // 液体レンダリング用
 let navMeshesCache = [];
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
@@ -68,6 +71,16 @@ const { scene, camera, renderer } = createScene(container);
 // 流体システム
 // ============================
 fluidSystem = createFluidSystem(renderer);
+
+// ============================
+// リキッドシステム
+// ============================
+liquidSystem = createLiquidSystem(renderer);
+liquidTarget = new THREE.WebGLRenderTarget(128, 128, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+});
 
 // ============================
 // EffectComposer
@@ -189,6 +202,25 @@ const VORTEX_MAP = {
     vortexSize:      'size',
 };
 
+// --- liquidParams: config直接代入 ---
+const LIQUID_CONFIG_MAP = {
+    liquidTimestep:     'timestep',
+    liquidDissipation:  'dissipation',
+    liquidForceRadius:  'forceRadius',
+    liquidForceStrength:'forceStrength',
+    liquidDensityMul:   'densityMul',
+    liquidNoiseScale:   'noiseScale',
+    liquidNoiseSpeed:   'noiseSpeed',
+    liquidSpecPow:      'specularPow',
+    liquidSpecInt:      'specularInt',
+    liquidBaseR:        'baseColorR',
+    liquidBaseG:        'baseColorG',
+    liquidBaseB:        'baseColorB',
+    liquidHighR:        'highlightR',
+    liquidHighG:        'highlightG',
+    liquidHighB:        'highlightB',
+};
+
 function applyDevValue(key, value) {
     // --- config直接参照（toggles / breathConfig / sceneParams） ---
     if (key in toggles) { toggles[key] = value; return; }
@@ -240,6 +272,32 @@ function applyDevValue(key, value) {
     // --- vortex ---
     if (key in VORTEX_MAP) {
         vortexParams[VORTEX_MAP[key]] = value;
+        return;
+    }
+
+    // --- liquid ---
+    if (key in LIQUID_CONFIG_MAP) {
+        liquidParams[LIQUID_CONFIG_MAP[key]] = value;
+        // uniformも同時更新
+        if (liquidSystem && liquidSystem.uniforms) {
+            const configKey = LIQUID_CONFIG_MAP[key];
+            if (configKey === 'forceRadius') {
+                liquidSystem.uniforms.force.uRadius.value = value;
+                liquidSystem.uniforms.splat.uRadius.value = value;
+            }
+            if (configKey === 'forceStrength') liquidSystem.uniforms.force.uStrength.value = value;
+            if (configKey === 'densityMul') liquidSystem.uniforms.render.uDensityMul.value = value;
+            if (configKey === 'noiseScale') liquidSystem.uniforms.render.uNoiseScale.value = value;
+            if (configKey === 'noiseSpeed') liquidSystem.uniforms.render.uNoiseSpeed.value = value;
+            if (configKey === 'specularPow') liquidSystem.uniforms.render.uSpecPow.value = value;
+            if (configKey === 'specularInt') liquidSystem.uniforms.render.uSpecInt.value = value;
+            if (configKey === 'baseColorR') liquidSystem.uniforms.render.uBaseColor.value.x = value;
+            if (configKey === 'baseColorG') liquidSystem.uniforms.render.uBaseColor.value.y = value;
+            if (configKey === 'baseColorB') liquidSystem.uniforms.render.uBaseColor.value.z = value;
+            if (configKey === 'highlightR') liquidSystem.uniforms.render.uHighlight.value.x = value;
+            if (configKey === 'highlightG') liquidSystem.uniforms.render.uHighlight.value.y = value;
+            if (configKey === 'highlightB') liquidSystem.uniforms.render.uHighlight.value.z = value;
+        }
         return;
     }
 
@@ -303,6 +361,19 @@ function animate() {
         distortionPass.uniforms.tFluidField.value = fluidSystem.getTexture();
     } else {
         distortionPass.uniforms.uFluidInfluence.value = 0;
+    }
+
+    // --- リキッドエフェクト ---
+    if (toggles.liquid) {
+        const mousePos = new THREE.Vector2(mouse.smoothX, mouse.smoothY);
+        const mouseVel = new THREE.Vector2(mouse.velX, mouse.velY);
+        liquidSystem.update(mousePos, mouseVel);
+        liquidSystem.setTime(time);
+        liquidSystem.copyDensityTo(liquidTarget);  // 密度を白テクスチャとしてコピー
+        distortionPass.uniforms.tLiquid.value = liquidTarget.texture;  // レンダリング結果を使用
+        distortionPass.uniforms.uLiquidStrength.value = liquidParams.densityMul;
+    } else {
+        distortionPass.uniforms.uLiquidStrength.value = 0;
     }
 
     // --- オーブ情報更新 ---

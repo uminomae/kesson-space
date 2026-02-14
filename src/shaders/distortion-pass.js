@@ -1,14 +1,16 @@
 // distortion-pass.js — ポストプロセスシェーダー
-// 流体フィールド + 鬼火屈折 + 熱波 + DOF
-// ★ 初期値は config.js の distortionParams / fluidParams を参照
+// 流体フィールド + 鬼火屈折 + 熱波 + DOF + リキッド
+// ★ 初期値は config.js の distortionParams / fluidParams / liquidParams を参照
 
 import * as THREE from 'three';
-import { distortionParams, fluidParams } from '../config.js';
+import { distortionParams, fluidParams, liquidParams } from '../config.js';
 
 export const DistortionShader = {
     uniforms: {
         'tDiffuse':       { value: null },
         'tFluidField':    { value: null },
+        'tLiquid':        { value: null },
+        'uLiquidStrength':{ value: liquidParams.densityMul },
         'uFluidInfluence':{ value: fluidParams.influence },
         'uOrbs':          { value: [new THREE.Vector2(-1, -1), new THREE.Vector2(-1, -1), new THREE.Vector2(-1, -1)] },
         'uOrbRadii':      { value: [0.0, 0.0, 0.0] },
@@ -43,6 +45,8 @@ export const DistortionShader = {
     fragmentShader: /* glsl */`
         uniform sampler2D tDiffuse;
         uniform sampler2D tFluidField;
+        uniform sampler2D tLiquid;
+        uniform float uLiquidStrength;
         uniform float uFluidInfluence;
         uniform vec2 uOrbs[3];
         uniform float uOrbRadii[3];
@@ -194,6 +198,17 @@ export const DistortionShader = {
             totalInnerGlow = clamp(totalInnerGlow, 0.0, 1.0);
             color += uHaloColor * totalHalo * uHaloIntensity;
             color += uHaloColor * totalInnerGlow * uInnerGlow;
+
+            // 4. リキッドエフェクト（マウス追従・透明屈折のみ）
+            vec4 liquid = texture2D(tLiquid, vUv);
+            if (liquid.a > 0.01 && uLiquidStrength > 0.01) {
+                // 液体の屈折効果のみ（色なし・透明）
+                vec2 liquidOffset = (liquid.rg - 0.5) * 0.05 * uLiquidStrength;
+                vec3 refractedColor = texture2D(tDiffuse, vUv + liquidOffset).rgb;
+                // 屈折した色のみ適用（白色ブレンドなし）
+                color = mix(color, refractedColor, liquid.a * uLiquidStrength);
+            }
+
             gl_FragColor = vec4(color, 1.0);
         }
     `

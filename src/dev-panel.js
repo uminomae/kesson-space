@@ -2,7 +2,7 @@
 // ★ default値は config.js を参照し、ハードコードしない
 // CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
-import { toggles, breathConfig, sceneParams, fluidParams, distortionParams, gemParams, vortexParams } from './config.js';
+import { toggles, breathConfig, sceneParams, fluidParams, liquidParams, distortionParams, gemParams, vortexParams } from './config.js';
 
 // --- CHANGED: Bootstrap動的ローダー ---
 function loadBootstrap() {
@@ -33,10 +33,12 @@ const TOGGLES = [
     { key: 'autoRotate',    label: '自動回転' },
     { key: 'postProcess',   label: 'ポストプロセス' },
     { key: 'fluidField',    label: '流体かき混ぜ' },
+    { key: 'liquid',        label: 'リキッド' },
     { key: 'heatHaze',      label: '熱波' },
     { key: 'dof',           label: '被写界深度' },
     { key: 'orbRefraction', label: 'オーブ屈折' },
     { key: 'vortex',        label: '渦' },
+    { key: 'liquid',        label: 'リキッド' },
 ];
 
 const SECTIONS = [
@@ -128,6 +130,27 @@ const SECTIONS = [
             fluidDecay:    { label: '減衰率',        min: 0.9, max: 0.999, step: 0.001, default: fluidParams.decay },
             fluidRadius:   { label: '影響半径',      min: 0.03, max: 0.4, step: 0.01, default: fluidParams.radius },
             fluidInfluence:{ label: '画面への影響',  min: 0.0, max: 0.06, step: 0.001, default: fluidParams.influence },
+        }
+    },
+    {
+        id: 'liquid',
+        title: 'リキッド（液体）',
+        params: {
+            liquidTimestep:    { label: 'タイムステップ',  min: 0.001, max: 0.05, step: 0.001, default: liquidParams.timestep },
+            liquidDissipation: { label: '減衰率',          min: 0.9, max: 0.999, step: 0.001, default: liquidParams.dissipation },
+            liquidForceRadius: { label: '力の半径',        min: 0.05, max: 0.5, step: 0.01, default: liquidParams.forceRadius },
+            liquidForceStrength:{ label: '力の強さ',       min: 0.5, max: 10.0, step: 0.5, default: liquidParams.forceStrength },
+            liquidDensityMul:  { label: '密度倍率',        min: 0.5, max: 5.0, step: 0.1, default: liquidParams.densityMul },
+            liquidNoiseScale:  { label: 'ノイズスケール',  min: 1.0, max: 10.0, step: 0.5, default: liquidParams.noiseScale },
+            liquidNoiseSpeed:  { label: 'ノイズ速度',      min: 0.01, max: 0.5, step: 0.01, default: liquidParams.noiseSpeed },
+            liquidSpecPow:     { label: '光沢の鋭さ',      min: 4.0, max: 64.0, step: 2.0, default: liquidParams.specularPow },
+            liquidSpecInt:     { label: '光沢の強さ',      min: 0.0, max: 2.0, step: 0.1, default: liquidParams.specularInt },
+            liquidBaseR:       { label: '基本色 R',        min: 0.0, max: 1.0, step: 0.05, default: liquidParams.baseColorR },
+            liquidBaseG:       { label: '基本色 G',        min: 0.0, max: 1.0, step: 0.05, default: liquidParams.baseColorG },
+            liquidBaseB:       { label: '基本色 B',        min: 0.0, max: 1.0, step: 0.05, default: liquidParams.baseColorB },
+            liquidHighR:       { label: 'ハイライト R',    min: 0.0, max: 1.0, step: 0.05, default: liquidParams.highlightR },
+            liquidHighG:       { label: 'ハイライト G',    min: 0.0, max: 1.0, step: 0.05, default: liquidParams.highlightG },
+            liquidHighB:       { label: 'ハイライト B',    min: 0.0, max: 1.0, step: 0.05, default: liquidParams.highlightB },
         }
     },
     {

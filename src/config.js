@@ -15,6 +15,7 @@ export const toggles = {
     autoRotate: true,
     postProcess: true,
     fluidField: true,
+    liquid: true,
     heatHaze: false,
     dof: true,
     orbRefraction: true,
@@ -74,6 +75,32 @@ export const fluidParams = {
     decay:     0.948,
     radius:    0.21,
     influence: 0.06,
+};
+
+// --- リキッド（Metaball液体）パラメータ ---
+// ★ dev panel調整済みデフォルト値
+export const liquidParams = {
+    // シミュレーション
+    timestep:    0.001,
+    dissipation: 0.904,
+    iterations:  12,
+    // マウス反応
+    forceRadius: 0.08,
+    forceStrength: 4.5,
+    // 見た目
+    densityMul:  2.0,
+    noiseScale:  9.5,
+    noiseSpeed:  0.02,
+    // 光沢
+    specularPow: 8.0,
+    specularInt: 1.8,
+    // 色（明るめ）
+    baseColorR:  0.8,
+    baseColorG:  0.85,
+    baseColorB:  0.85,
+    highlightR:  0.9,
+    highlightG:  0.9,
+    highlightB:  0.9,
 };
 
 // --- ポストプロセス（歪み・オーブ・熱波・DOF）パラメータ ---
