@@ -12,7 +12,6 @@ import * as THREE from 'three';
 import { createGrid } from './grid.js';
 import { createCard } from './card.js';
 import { ZoomController } from './zoom.js';
-import { detectLang } from '../i18n.js';
 
 // 背景透明（メインシーンが見える）
 const FOG_COLOR = new THREE.Color(0x050508);
@@ -35,6 +34,17 @@ let isInitialized = false;
 let animationId = null;
 let containerEl = null;
 let devlogContent = null; // ログ本文キャッシュ
+
+/**
+ * 言語検出（i18n.jsに依存しない簡易版）
+ */
+function detectLangLocal() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('lang')) return params.get('lang');
+    const saved = localStorage.getItem('kesson-lang');
+    if (saved) return saved;
+    return navigator.language.startsWith('ja') ? 'ja' : 'en';
+}
 
 /**
  * ギャラリーを初期化
@@ -110,13 +120,14 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
     loadSessions(counterId);
     animate();
     isInitialized = true;
+    console.log('[devlog] Gallery initialized');
 }
 
 /**
  * devlog-{lang}.mdからログ本文を読み込み
  */
 async function loadDevlogContent() {
-    const lang = detectLang();
+    const lang = detectLangLocal();
     try {
         const res = await fetch(`./content/devlog-${lang}.md`);
         if (!res.ok) return null;
@@ -203,6 +214,7 @@ function buildGallery() {
         gridGroup.add(card);
         cards.push(card);
     });
+    console.log('[devlog] Gallery built with', cards.length, 'cards');
 }
 
 function onWheel(e) {
@@ -373,6 +385,7 @@ if (typeof window !== 'undefined') {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && !isInitialized) {
+                console.log('[devlog] Section visible, initializing gallery');
                 initDevlogGallery();
                 observer.disconnect();
             }
@@ -383,10 +396,20 @@ if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             const section = document.getElementById('devlog-gallery-section');
-            if (section) observer.observe(section);
+            if (section) {
+                console.log('[devlog] Observing gallery section');
+                observer.observe(section);
+            } else {
+                console.warn('[devlog] Gallery section not found');
+            }
         });
     } else {
         const section = document.getElementById('devlog-gallery-section');
-        if (section) observer.observe(section);
+        if (section) {
+            console.log('[devlog] Observing gallery section');
+            observer.observe(section);
+        } else {
+            console.warn('[devlog] Gallery section not found');
+        }
     }
 }
