@@ -7,6 +7,7 @@ import {
     FOG_V004_COLOR, FOG_V004_DENSITY,
 } from './config.js';
 import { CAMERA_FOV, CAMERA_NEAR, CAMERA_FAR, CAMERA_LOOK_AT_Z } from './constants.js';
+import { lerp } from './animation-utils.js';
 import { createBackgroundMaterial, createBackgroundMesh } from './shaders/background.js';
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
 import { createKessonMaterial, createKessonMeshes } from './shaders/kesson.js';
@@ -102,7 +103,7 @@ export function updateScene(time) {
         _scene.fog.color.copy(_fogColor);
         const baseFogV002 = FOG_V002_DENSITY;
         const baseFogV004 = sceneParams.fogDensity;
-        _scene.fog.density = baseFogV002 + (baseFogV004 - baseFogV002) * m;
+        _scene.fog.density = lerp(baseFogV002, baseFogV004, m);
     } else {
         _scene.fog.density = 0;
     }
