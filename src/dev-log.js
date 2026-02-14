@@ -1,27 +1,7 @@
 // dev-log.js — 開発ログの描画
-// content/devlog-{lang}.md から読み込み（言語ごとに片方のみ表示）
+// assets/devlog/sessions.json から読み込み（言語ごとにnarrative切替）
 
 import { detectLang } from './i18n.js';
-
-/**
- * 簡易frontmatterパーサー
- */
-function parseFrontmatter(text) {
-    const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-    if (!match) return { meta: {}, body: text.trim() };
-
-    const meta = {};
-    match[1].split('\n').forEach(line => {
-        const idx = line.indexOf(':');
-        if (idx > 0) {
-            const key = line.slice(0, idx).trim();
-            const val = line.slice(idx + 1).trim();
-            meta[key] = val;
-        }
-    });
-
-    return { meta, body: match[2].trim() };
-}
 
 /**
  * 安全なHTML描画（<a> と <hr> のみ許可、他はエスケープ）
@@ -47,7 +27,7 @@ function safeHTML(text) {
 }
 
 /**
- * 開発ログセクションを描画（現在言語のみ）
+ * 開発ログセクションを描画（sessions.jsonから）
  */
 export async function renderDevLog() {
     const container = document.getElementById('dev-log');
@@ -56,47 +36,62 @@ export async function renderDevLog() {
     const lang = detectLang();
 
     try {
-        const res = await fetch(`./content/devlog-${lang}.md`);
+        const res = await fetch('./assets/devlog/sessions.json');
         if (!res.ok) return;
-        const raw = await res.text();
-        const { meta, body } = parseFrontmatter(raw);
-        const paragraphs = body.split(/\n\n+/).filter(p => p.trim());
+        const sessions = await res.json();
 
-        // ヘッダー
-        if (meta.header) {
-            const header = document.createElement('div');
-            header.className = 'log-header';
-            header.textContent = meta.header;
-            container.appendChild(header);
-        }
+        // 新しいセッションが先頭に来るよう降順ソート（startフィールドで）
+        sessions.sort((a, b) => new Date(b.start) - new Date(a.start));
 
-        // 日付
-        if (meta.date) {
-            const date = document.createElement('div');
-            date.className = 'log-date';
-            date.textContent = meta.date;
-            container.appendChild(date);
-        }
+        sessions.forEach((session, index) => {
+            const narrative = session.narrative?.[lang];
+            if (!narrative) return;
 
-        // 段落
-        paragraphs.forEach((text) => {
-            const trimmed = text.trim();
-
-            // <hr> 単独段落はhr要素として描画
-            if (trimmed === '<hr>') {
-                const hr = document.createElement('hr');
-                hr.className = 'log-separator';
-                container.appendChild(hr);
-                return;
+            // セッション間セパレーター（最初以外）
+            if (index > 0) {
+                const sep = document.createElement('hr');
+                sep.className = 'log-separator';
+                container.appendChild(sep);
             }
 
-            const p = document.createElement('p');
-            p.className = 'log-paragraph';
-            p.innerHTML = safeHTML(trimmed);
-            p.style.opacity = '0';
-            p.style.transform = 'translateY(20px)';
-            p.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            container.appendChild(p);
+            // ヘッダー
+            if (narrative.header) {
+                const header = document.createElement('div');
+                header.className = 'log-header';
+                header.textContent = narrative.header;
+                container.appendChild(header);
+            }
+
+            // 日付
+            if (narrative.date) {
+                const date = document.createElement('div');
+                date.className = 'log-date';
+                date.textContent = narrative.date;
+                container.appendChild(date);
+            }
+
+            // 段落
+            if (narrative.paragraphs) {
+                narrative.paragraphs.forEach((text) => {
+                    const trimmed = text.trim();
+
+                    // <hr> 単独段落はhr要素として描画
+                    if (trimmed === '<hr>') {
+                        const hr = document.createElement('hr');
+                        hr.className = 'log-separator';
+                        container.appendChild(hr);
+                        return;
+                    }
+
+                    const p = document.createElement('p');
+                    p.className = 'log-paragraph';
+                    p.innerHTML = safeHTML(trimmed);
+                    p.style.opacity = '0';
+                    p.style.transform = 'translateY(20px)';
+                    p.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    container.appendChild(p);
+                });
+            }
         });
 
         // IntersectionObserver でフェードイン
