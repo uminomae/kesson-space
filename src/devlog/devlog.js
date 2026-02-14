@@ -279,9 +279,17 @@ function showDetail(session) {
     
     const start = new Date(session.start);
     const end = new Date(session.end);
-    const dateStr = `${start.getMonth() + 1}/${start.getDate()} `
-        + `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`
-        + ` – ${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+    
+    // 日付と時刻を個別に生成
+    const startDate = `${start.getMonth() + 1}/${start.getDate()}`;
+    const endDate = `${end.getMonth() + 1}/${end.getDate()}`;
+    const startTime = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+    const endTime = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+    
+    // 同日なら日付1回、異なれば両方表示
+    const dateStr = startDate === endDate
+        ? `${startDate} ${startTime} – ${endTime}`
+        : `${startDate} ${startTime} – ${endDate} ${endTime}`;
     
     const dateEl = document.getElementById('detail-date');
     const metaEl = document.getElementById('detail-meta');
