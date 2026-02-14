@@ -100,15 +100,27 @@ kesson-spaceでは `git worktree` を使い、ブランチごとに別ディレ�
 
 ```
 /Users/uminomae/Documents/GitHub/
-├── kesson-space/          ← main ブランチ
-└── kesson-space-feature/  ← feature/* ブランチ
+├── kesson-space/           ← main ブランチ（本番）
+├── kesson-claudeCode/      ← feature/claude-code（Claude Code専用）
+├── kesson-space-claudeDT/  ← feature/devlog-content（DTアプリ用）
+└── kesson-space-feature/   ← feature/*（その他開発用）
 ```
+
+### Claude Code用ワークツリー
+
+**kesson-claudeCode** は Claude Code（CLI）専用のワークツリー。
+
+- **対象リポジトリ**: kesson-space
+- **ブランチ**: feature/claude-code
+- **用途**: Claude Codeでkesson-spaceリポジトリを操作する際に使用
+- **mainへの直接編集禁止**: 必ずこのワークツリーで作業し、完了後にmainへマージ
 
 ### メリット
 
 - main と feature を同時に開ける
 - ブランチ切り替えでファイルが入れ替わらない
 - 比較しながら作業できる
+- Claude Code と DTアプリで作業ディレクトリを分離
 
 ### Codex経由でのWorktree操作
 
