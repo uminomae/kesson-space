@@ -13,10 +13,15 @@ let _scrollHintBottom;
 let _scrollHintTop;
 let _surfaceBtn;
 
+// --- T-014: クリーンアップ ---
+let _cleanup = null;
+
 /**
  * DOM要素の取得とイベント登録
  */
 export function initScrollUI() {
+    _cleanup?.();
+
     _overlay = document.getElementById('overlay');
     _credit = document.getElementById('credit');
     _controlGuide = document.getElementById('control-guide');
@@ -36,6 +41,20 @@ export function initScrollUI() {
 
     // 操作ガイドの言語切替
     applyGuideLang();
+
+    // --- クリーンアップ関数を登録 ---
+    _cleanup = () => {
+        if (_surfaceBtn) _surfaceBtn.removeEventListener('click', scrollToTop);
+        if (_scrollHintTop) _scrollHintTop.removeEventListener('click', scrollToTop);
+    };
+}
+
+/**
+ * 全リスナーを解除。
+ */
+export function destroyScrollUI() {
+    _cleanup?.();
+    _cleanup = null;
 }
 
 function scrollToTop() {
