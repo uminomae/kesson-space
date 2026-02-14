@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-14
-**セッション**: #18 マルチエージェント運用ルール策定
+**セッション**: #19 セッションヘルスガード導入
 
 ---
 
@@ -37,22 +37,22 @@
 - [x] **TODO管理体系整備 #16**: TODO.md新設、README.md/CURRENT.md役割分担整理
 - [x] **渦シェーダー・フォント修正 #17**: 渦シェーダー実装(OFF)、Noto Serif JP導入、h1白色修正
 - [x] **マルチエージェント運用ルール #18**: AGENT-RULES.md策定、skills/・context-pack/新設
+- [x] **セッションヘルスガード #19**: README.md §12新設、AGENT-RULES.md常駐エージェント追加
 
-### セッション#18 マルチエージェント運用ルール策定
+### セッション#19 セッションヘルスガード導入
 
 | 変更 | 内容 |
 |------|------|
-| AGENT-RULES.md v1.1 | Context Layer設計（L0-L3）、ハンドオフ規格、責務境界表、権限表。三者協議+相互レビュー経て策定 |
-| skills/ ディレクトリ新設 | shared-quality.md, shader-impl.md, review-gates.md, orchestrator.md, LEARNINGS.md |
-| context-pack/ ディレクトリ新設 | SINGLE.md.template（マイクロタスク用）。通常タスクは4ファイル構成 |
-| レビュー反映 | ChatGPT: 配置整合・HTML例外・ACCEPTANCE省略禁止。Gemini: treeフィルタ・既存コード調和 |
+| README.md §12 新設 | 🩺セッションヘルスガード（SH-1〜SH-6）。kesson-thinking §2.1.2をベースに、kesson-space固有の高リスクパターン（シェーダー全文ループ、Gemini出力蓄積、4エージェント+実装の同一セッション）に対応 |
+| AGENT-RULES.md v1.2 | 🩺セッションヘルスを常駐エージェントとして§1に追加 |
+| h1色バグ確認 | dev-panel.js, main.js, e2e-runner.js の3箇所とも既に修正済みであることを検証完了 |
 
 ### 決定事項
 
-- Three.js/GLSLコードはGemini MCP経由で実装（Claudeは擬似コード・IF設計まで）
-- skills/の正本マージ権限はClaude/ユーザーのみ。外部エージェントは提案のみ
-- `// CHANGED` コメントは日付付き（`// CHANGED(YYYY-MM-DD)`）。1ヶ月経過で除去可
-- ACCEPTANCEは省略禁止（全タスクに完了条件を明記）
+- 🩺セッションヘルスはClaude内部の常駐ガード。明示的な呼び出し不要
+- シェーダーファイルの全文読み込みは1セッション2ファイルまで。超過時はセクション指定
+- 4エージェント分析と実装は別セッションに分割する方針
+- Gemini MCP応答はdiffのみ抽出。全文はGitHub直接コミット
 
 ### バックログ
 
