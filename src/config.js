@@ -80,6 +80,8 @@ export const fluidParams = {
 // --- リキッド（Metaball液体）パラメータ ---
 // ★ dev panel調整済みデフォルト値
 export const liquidParams = {
+    // テクスチャ解像度（シミュレーション用RT / コピー用RT）
+    textureSize: 128,
     // シミュレーション
     timestep:    0.001,
     dissipation: 0.904,
@@ -87,13 +89,25 @@ export const liquidParams = {
     // マウス反応
     forceRadius: 0.08,
     forceStrength: 4.5,
+    // 密度付与（マウスのスプラット量）
+    splatGain:   5.0,
     // 見た目
     densityMul:  2.0,
     noiseScale:  9.5,
     noiseSpeed:  0.02,
+    noiseAmp:    0.1,
     // 光沢
     specularPow: 8.0,
     specularInt: 1.8,
+    // レンダリング微調整（magic number のconfig.js化）
+    normalZ:     0.3,
+    diffuseGain: 0.3,
+    densityEdge: 0.5,
+    alphaEdge:   0.3,
+    alphaMax:    0.9,
+    // ポスト（屈折）側の微調整
+    refractOffsetScale: 0.05,
+    refractThreshold:   0.01,
     // 色（明るめ）
     baseColorR:  0.8,
     baseColorG:  0.85,

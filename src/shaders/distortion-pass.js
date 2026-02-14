@@ -11,6 +11,8 @@ export const DistortionShader = {
         'tFluidField':    { value: null },
         'tLiquid':        { value: null },
         'uLiquidStrength':{ value: liquidParams.densityMul },
+        'uLiquidOffsetScale': { value: liquidParams.refractOffsetScale },
+        'uLiquidThreshold':   { value: liquidParams.refractThreshold },
         'uFluidInfluence':{ value: fluidParams.influence },
         'uOrbs':          { value: [new THREE.Vector2(-1, -1), new THREE.Vector2(-1, -1), new THREE.Vector2(-1, -1)] },
         'uOrbRadii':      { value: [0.0, 0.0, 0.0] },
@@ -47,6 +49,8 @@ export const DistortionShader = {
         uniform sampler2D tFluidField;
         uniform sampler2D tLiquid;
         uniform float uLiquidStrength;
+        uniform float uLiquidOffsetScale;
+        uniform float uLiquidThreshold;
         uniform float uFluidInfluence;
         uniform vec2 uOrbs[3];
         uniform float uOrbRadii[3];
@@ -201,9 +205,9 @@ export const DistortionShader = {
 
             // 4. リキッドエフェクト（マウス追従・透明屈折のみ）
             vec4 liquid = texture2D(tLiquid, vUv);
-            if (liquid.a > 0.01 && uLiquidStrength > 0.01) {
+            if (liquid.a > uLiquidThreshold && uLiquidStrength > uLiquidThreshold) {
                 // 液体の屈折効果のみ（色なし・透明）
-                vec2 liquidOffset = (liquid.rg - 0.5) * 0.05 * uLiquidStrength;
+                vec2 liquidOffset = (liquid.rg - 0.5) * uLiquidOffsetScale * uLiquidStrength;
                 vec3 refractedColor = texture2D(tDiffuse, vUv + liquidOffset).rgb;
                 // 屈折した色のみ適用（白色ブレンドなし）
                 color = mix(color, refractedColor, liquid.a * uLiquidStrength);

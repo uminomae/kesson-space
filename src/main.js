@@ -27,6 +27,8 @@ let liquidTarget;  // 液体レンダリング用
 let navMeshesCache = [];
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
+const liquidMousePos = new THREE.Vector2();
+const liquidMouseVel = new THREE.Vector2();
 
 // ============================
 // マウストラッキング（T-010: mouse-state.js に統合）
@@ -76,7 +78,7 @@ fluidSystem = createFluidSystem(renderer);
 // リキッドシステム
 // ============================
 liquidSystem = createLiquidSystem(renderer);
-liquidTarget = new THREE.WebGLRenderTarget(128, 128, {
+liquidTarget = new THREE.WebGLRenderTarget(liquidParams.textureSize, liquidParams.textureSize, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     format: THREE.RGBAFormat,
@@ -90,6 +92,8 @@ composer.addPass(new RenderPass(scene, camera));
 
 distortionPass = new ShaderPass(DistortionShader);
 composer.addPass(distortionPass);
+distortionPass.uniforms.uLiquidOffsetScale.value = liquidParams.refractOffsetScale;
+distortionPass.uniforms.uLiquidThreshold.value = liquidParams.refractThreshold;
 
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer });
@@ -281,6 +285,8 @@ function applyDevValue(key, value) {
         // uniformも同時更新
         if (liquidSystem && liquidSystem.uniforms) {
             const configKey = LIQUID_CONFIG_MAP[key];
+            if (configKey === 'timestep') liquidSystem.uniforms.simulation.uTimestep.value = value;
+            if (configKey === 'dissipation') liquidSystem.uniforms.simulation.uDissipation.value = value;
             if (configKey === 'forceRadius') {
                 liquidSystem.uniforms.force.uRadius.value = value;
                 liquidSystem.uniforms.splat.uRadius.value = value;
@@ -365,9 +371,9 @@ function animate() {
 
     // --- リキッドエフェクト ---
     if (toggles.liquid) {
-        const mousePos = new THREE.Vector2(mouse.smoothX, mouse.smoothY);
-        const mouseVel = new THREE.Vector2(mouse.velX, mouse.velY);
-        liquidSystem.update(mousePos, mouseVel);
+        liquidMousePos.set(mouse.smoothX, mouse.smoothY);
+        liquidMouseVel.set(mouse.velX, mouse.velY);
+        liquidSystem.update(liquidMousePos, liquidMouseVel);
         liquidSystem.setTime(time);
         liquidSystem.copyDensityTo(liquidTarget);  // 密度を白テクスチャとしてコピー
         distortionPass.uniforms.tLiquid.value = liquidTarget.texture;  // レンダリング結果を使用
