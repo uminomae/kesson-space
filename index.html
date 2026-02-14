@@ -497,15 +497,15 @@
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
 
   <!-- ?test パラメータでE2Eテスト自動実行 -->
-  <script>
+  <!-- FIX: eval() → dynamic import() for security/maintainability -->
+  <script type="module">
     if (new URLSearchParams(window.location.search).has('test')) {
       // Three.js初期化完了を待ってからテスト実行（3秒待機）
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          fetch('./tests/e2e-runner.js')
-            .then(function(r) { return r.text(); })
-            .then(function(code) { eval(code); })
-            .catch(function(e) { console.error('[E2E] Failed to load test runner:', e); });
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          import('./tests/e2e-runner.js').catch(e => {
+            console.error('[E2E] Failed to load test runner:', e);
+          });
         }, 3000);
       });
     }
