@@ -16,6 +16,7 @@ import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
 import { toggles, breathConfig, distortionParams, fluidParams, gemParams, vortexParams } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
+import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 
 let composer;
 let distortionPass;
@@ -25,22 +26,9 @@ let navMeshesCache = [];
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
 // ============================
-// マウストラッキング
+// マウストラッキング（T-010: mouse-state.js に統合）
 // ============================
-let _mouseX = 0.5, _mouseY = 0.5;
-let _smoothMouseX = 0.5, _smoothMouseY = 0.5;
-let _prevMouseX = 0.5, _prevMouseY = 0.5;
-
-window.addEventListener('mousemove', (e) => {
-    _mouseX = e.clientX / window.innerWidth;
-    _mouseY = 1.0 - (e.clientY / window.innerHeight);
-});
-window.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0) {
-        _mouseX = e.touches[0].clientX / window.innerWidth;
-        _mouseY = 1.0 - (e.touches[0].clientY / window.innerHeight);
-    }
-});
+initMouseTracking();
 
 // ============================
 // 言語初期化
@@ -273,6 +261,15 @@ import('./dev-log.js').then(({ renderDevLog }) => {
 
 const clock = new THREE.Clock();
 
+// --- T-014: resizeリスナーをクリーンアップ可能に ---
+function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onResize);
+
 function animate() {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
@@ -286,13 +283,8 @@ function animate() {
     // --- スクロールUI更新 ---
     updateScrollUI(scrollProg, breathVal);
 
-    // --- マウススムージング ---
-    _smoothMouseX += (_mouseX - _smoothMouseX) * 0.08;
-    _smoothMouseY += (_mouseY - _smoothMouseY) * 0.08;
-    const velX = _smoothMouseX - _prevMouseX;
-    const velY = _smoothMouseY - _prevMouseY;
-    _prevMouseX = _smoothMouseX;
-    _prevMouseY = _smoothMouseY;
+    // --- マウススムージング（T-010: mouse-state.js から取得） ---
+    const mouse = updateMouseSmoothing();
 
     updateControls(time, breathVal);
     updateScene(time);
@@ -303,8 +295,8 @@ function animate() {
 
     // --- 流体フィールド ---
     if (toggles.fluidField) {
-        fluidSystem.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
-        fluidSystem.uniforms.uMouseVelocity.value.set(velX, velY);
+        fluidSystem.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
+        fluidSystem.uniforms.uMouseVelocity.value.set(mouse.velX, mouse.velY);
         fluidSystem.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
         fluidSystem.update();
         distortionPass.uniforms.tFluidField.value = fluidSystem.getTexture();
@@ -335,7 +327,7 @@ function animate() {
 
     distortionPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     distortionPass.uniforms.uTime.value = time;
-    distortionPass.uniforms.uMouse.value.set(_smoothMouseX, _smoothMouseY);
+    distortionPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
 
     if (!toggles.heatHaze) distortionPass.uniforms.uHeatHaze.value = 0;
     if (!toggles.dof) distortionPass.uniforms.uDofStrength.value = 0;
@@ -348,12 +340,5 @@ function animate() {
         renderer.render(scene, camera);
     }
 }
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
-});
 
 animate();
