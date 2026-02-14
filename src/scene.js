@@ -135,7 +135,7 @@ export function updateScene(time) {
         mesh.lookAt(_camera.position);
     });
 
-    // --- 渦（M2-4）---
+    // --- 渦（M2-4: FBM spiral）---
     _vortexMesh.visible = toggles.vortex;
     if (toggles.vortex) {
         const vu = _vortexMaterial.uniforms;
@@ -147,8 +147,7 @@ export function updateScene(time) {
         vu.uColorR.value = vortexParams.colorR;
         vu.uColorG.value = vortexParams.colorG;
         vu.uColorB.value = vortexParams.colorB;
-        vu.uIterations.value = vortexParams.iterations;
-        vu.uInnerIterLimit.value = vortexParams.innerIterLimit;
+        vu.uArmCount.value = vortexParams.armCount;
         _vortexMesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
         _vortexMesh.scale.set(vortexParams.size, vortexParams.size, 1);
     }

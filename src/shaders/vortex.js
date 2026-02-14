@@ -1,26 +1,24 @@
 // vortex.js — 渦シェーダー（M2 段階4: 個の立ち上がり）
-// Original: @YoheiNishitsuji (つぶやきGLSL)
-// Faithful port from twigl → Three.js ShaderMaterial
-// Shader modifications by Gemini MCP, reviewed by Codex (GPT-4o)
+// FBM-based stable spiral vortex — replaces twigl raymarching
+// Shader concept by Gemini MCP, integration by Claude
 
 import * as THREE from 'three';
 import { vortexParams } from '../config.js';
+import { noiseGLSL } from './noise.glsl.js';
 
 export function createVortexMaterial() {
     return new THREE.ShaderMaterial({
         uniforms: {
-            uTime:           { value: 0.0 },
-            uSpeed:          { value: vortexParams.speed },
-            uIntensity:      { value: vortexParams.intensity },
-            uScale:          { value: vortexParams.scale },
-            uOpacity:        { value: vortexParams.opacity },
-            uColorR:         { value: vortexParams.colorR },
-            uColorG:         { value: vortexParams.colorG },
-            uColorB:         { value: vortexParams.colorB },
-            uIterations:     { value: vortexParams.iterations },
-            uInnerIterLimit: { value: vortexParams.innerIterLimit },
+            uTime:      { value: 0.0 },
+            uSpeed:     { value: vortexParams.speed },
+            uIntensity: { value: vortexParams.intensity },
+            uScale:     { value: vortexParams.scale },
+            uOpacity:   { value: vortexParams.opacity },
+            uColorR:    { value: vortexParams.colorR },
+            uColorG:    { value: vortexParams.colorG },
+            uColorB:    { value: vortexParams.colorB },
+            uArmCount:  { value: vortexParams.armCount },
         },
-        // CHANGED: Standard VS (no billboard) — orientation controlled by mesh.rotation
         vertexShader: `
             varying vec2 vUv;
             void main() {
@@ -37,69 +35,81 @@ export function createVortexMaterial() {
             uniform float uColorR;
             uniform float uColorG;
             uniform float uColorB;
-            uniform float uIterations;
-            uniform float uInnerIterLimit;
+            uniform float uArmCount;
             varying vec2 vUv;
 
-            vec3 hsv(float h, float s, float v) {
-                vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-                vec3 p = abs(fract(vec3(h) + K.xyz) * 6.0 - K.www);
-                return v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s);
+            ${noiseGLSL}
+
+            // FBM with 4 octaves
+            float fbm(vec2 p) {
+                float value = 0.0;
+                float amp = 0.5;
+                float freq = 1.0;
+                for (int i = 0; i < 4; i++) {
+                    value += amp * snoise(p * freq);
+                    amp *= 0.5;
+                    freq *= 2.02;
+                }
+                return value;
             }
 
             void main() {
-                // FIX: mod() wrap prevents tScaled from growing unbounded
-                // This was the root cause of intermittent disappearance
-                float tScaled = mod(uTime * uSpeed * 0.2, 6.28318530718);
+                // Center UV: PlaneGeometry UV is 0-1, shift to -0.5..0.5
+                vec2 centered = (vUv - 0.5) * uScale;
 
-                // Rotate UV 90° for horizontal spiral flow
-                vec2 rotatedUv = vec2(vUv.y, 1.0 - vUv.x);
+                // Polar coordinates
+                float radius = length(centered);
+                float theta = atan(centered.y, centered.x);
 
-                vec3 d = vec3((rotatedUv - 0.5) * uScale + vec2(0.0, 1.0), 1.0);
-                vec3 col = vec3(0.0);
+                // Rotating time
+                float t = uTime * uSpeed;
 
-                float e = 0.0;
-                float R = 0.5;
-                float s;
-                vec3 q = vec3(0.0, -1.0, -1.0);
-                vec3 p;
+                // FBM distortion for organic feel
+                float distortion = fbm(centered * 1.5 + t * 0.1) * 0.8;
 
-                for (float i = 1.0; i <= 50.0; i += 1.0) {
-                    if (i > uIterations) break;
-                    e += i / 5000.0;
+                // Spiral arms: cos(armCount * theta - radius * twist + time)
+                float twist = 3.0 + fbm(centered * 0.8) * 1.5;
+                float spiral = cos(uArmCount * (theta + distortion) - radius * twist + t);
+                // Soften to 0..1 range
+                spiral = spiral * 0.5 + 0.5;
+                // Sharpen arms slightly
+                spiral = smoothstep(0.3, 0.7, spiral);
 
-                    // d /= -d: each component becomes -1.0
-                    // Safe: d initialized to non-zero values
-                    if (i > 35.0) d /= -d;
+                // Secondary fine detail layer
+                float detail = fbm(centered * 3.0 - t * 0.15) * 0.3 + 0.7;
+                spiral *= detail;
 
-                    col += hsv(0.1, e - 0.4, e / 17.0);
+                // Radial fade: strong in center, fades at edges
+                // Using scaled radius relative to half the UV scale
+                float halfScale = uScale * 0.5;
+                float normR = radius / halfScale;
+                float edgeFade = smoothstep(1.0, 0.2, normR);
 
-                    s = 1.0;
-                    q += d * e * R * 0.18;
-                    p = q;
+                // Center dimming: slight hole in the very center for realism
+                float centerDim = smoothstep(0.0, 0.15, normR);
 
-                    R = max(length(p), 0.001);
-                    p = vec3(
-                        log(R) - tScaled,
-                        -p.z / R,
-                        p.y - p.x - tScaled
-                    );
+                float mask = spiral * edgeFade * centerDim;
 
-                    for (e = -p.y; s < uInnerIterLimit; s += s) {
-                        e += cos(dot(cos(p * s), sin(p.zxy * s))) / s * 0.8;
-                    }
-                }
+                // Color: water-matched dark navy palette
+                vec3 baseColor = vec3(0.04, 0.06, 0.14);  // deep water
+                vec3 armColor  = vec3(0.08, 0.12, 0.22);  // lighter swirl
+                vec3 color = mix(baseColor, armColor, mask);
 
-                col *= uIntensity * 0.02;
-                col *= vec3(uColorR, uColorG, uColorB);
+                // Apply tint multiplier
+                color *= vec3(uColorR, uColorG, uColorB);
 
-                float dist = length((vUv - 0.5) * 2.0);
-                float edgeFade = smoothstep(1.0, 0.3, dist);
+                // Subtle luminance along arms
+                float glow = mask * 0.15;
+                color += glow;
 
-                float alpha = clamp(length(col) * 0.5, 0.0, 1.0) * edgeFade * uOpacity;
+                // Overall intensity
+                color *= uIntensity;
+
+                // Alpha: based on mask + minimum base for subtle presence
+                float alpha = (mask * 0.6 + 0.05) * edgeFade * uOpacity;
 
                 if (alpha < 0.001) discard;
-                gl_FragColor = vec4(col, alpha);
+                gl_FragColor = vec4(color, alpha);
             }
         `,
         transparent: true,
@@ -114,7 +124,7 @@ export function createVortexMesh(material) {
     const mesh = new THREE.Mesh(geo, material);
     mesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
     mesh.scale.set(vortexParams.size, vortexParams.size, 1);
-    // CHANGED: Lay flat on XZ plane (horizontal, perpendicular to Y axis)
+    // Lay flat on XZ plane (horizontal, like water surface)
     mesh.rotation.x = -Math.PI / 2;
     return mesh;
 }

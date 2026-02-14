@@ -18,7 +18,7 @@ export const toggles = {
     heatHaze: false,
     dof: true,
     orbRefraction: true,
-    vortex: false,  // デフォルトOFF（重いため、手動でONにする）
+    vortex: false,  // デフォルトOFF（手動でONにする）
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -113,21 +113,20 @@ export const gemParams = {
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
-// ユーザーチューニング値反映 (2026-02-14 #2)
+// CHANGED: FBM spiral vortex, water-matched colors
 export const vortexParams = {
-    speed:          0.22,
-    intensity:      9.8,
-    scale:          4.4,
-    opacity:        0.95,
-    colorR:         0.15,
-    colorG:         0.1,
-    colorB:         1.9,
-    iterations:     50,
-    innerIterLimit: 100,
-    posX:           0,
-    posY:           -16,
-    posZ:           0,
-    size:           145,
+    speed:    0.3,
+    intensity: 1.0,
+    scale:    4.0,
+    opacity:  0.8,
+    colorR:   1.0,
+    colorG:   1.0,
+    colorB:   1.0,
+    armCount: 3.0,
+    posX:     0,
+    posY:     -20,   // water surface level
+    posZ:     0,
+    size:     200,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
