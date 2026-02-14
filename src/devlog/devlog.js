@@ -12,6 +12,7 @@ import * as THREE from 'three';
 import { createGrid } from './grid.js';
 import { createCard } from './card.js';
 import { ZoomController } from './zoom.js';
+import { detectLang } from '../i18n.js';
 
 // 背景透明（メインシーンが見える）
 const FOG_COLOR = new THREE.Color(0x050508);
@@ -33,6 +34,7 @@ let hoveredCard = null;
 let isInitialized = false;
 let animationId = null;
 let containerEl = null;
+let devlogContent = null; // ログ本文キャッシュ
 
 /**
  * ギャラリーを初期化
@@ -110,17 +112,51 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
     isInitialized = true;
 }
 
+/**
+ * devlog-{lang}.mdからログ本文を読み込み
+ */
+async function loadDevlogContent() {
+    const lang = detectLang();
+    try {
+        const res = await fetch(`./content/devlog-${lang}.md`);
+        if (!res.ok) return null;
+        const raw = await res.text();
+        // frontmatterを除去して本文のみ取得
+        const match = raw.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+        return match ? match[1].trim() : raw.trim();
+    } catch (e) {
+        console.warn('[devlog] Failed to load devlog content:', e);
+        return null;
+    }
+}
+
 async function loadSessions(counterId) {
     const countEl = document.getElementById(counterId);
+    
+    // ログ本文を先に読み込み
+    devlogContent = await loadDevlogContent();
+    
     try {
         const res = await fetch(SESSIONS_URL);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         sessions = await res.json();
+        
+        // 最新セッション（配列の先頭）にログ本文を設定
+        if (sessions.length > 0 && devlogContent) {
+            sessions[0].log_content = devlogContent;
+        }
+        
         if (countEl) countEl.textContent = `${sessions.length} sessions`;
         buildGallery();
     } catch (e) {
         console.warn('sessions.json not found, using demo data:', e.message);
         sessions = generateDemoData();
+        
+        // デモデータでも最新セッションにログ本文を設定
+        if (sessions.length > 0 && devlogContent) {
+            sessions[0].log_content = devlogContent;
+        }
+        
         if (countEl) countEl.textContent = `${sessions.length} sessions (demo)`;
         buildGallery();
     }
@@ -150,7 +186,7 @@ function generateDemoData() {
             messages: [`commit ${i}`, `fix ${i}`, `update ${i}`],
             intensity: Math.random() * 0.8 + 0.2,
             texture_url: null,
-            log_content: null // ログ本文（将来用）
+            log_content: null
         });
     }
     return demo.reverse();
@@ -203,6 +239,28 @@ function onResize() {
     renderer.setSize(rect.width, rect.height);
 }
 
+/**
+ * 安全なHTML描画（<a> と <hr> のみ許可）
+ */
+function safeHTML(text) {
+    let escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    // <a href="...">...</a> だけ復元（https:// のみ許可）
+    escaped = escaped.replace(
+        /&lt;a\s+href=&quot;(https:\/\/[^&]+)&quot;&gt;([^&]*?)&lt;\/a&gt;/g,
+        '<a href="$1" target="_blank" rel="noopener">$2</a>'
+    );
+
+    // <hr> を復元
+    escaped = escaped.replace(/&lt;hr&gt;/g, '<hr>');
+
+    return escaped;
+}
+
 function showDetail(session) {
     const panel = document.getElementById('devlog-detail');
     if (!panel) return;
@@ -239,7 +297,13 @@ function showDetail(session) {
     // ログ本文（session.log_contentがあれば表示）
     if (logContentEl) {
         if (session.log_content) {
-            logContentEl.innerHTML = `<h3>log</h3>${session.log_content.split('\n\n').map(p => `<p>${p}</p>`).join('')}`;
+            const paragraphs = session.log_content.split(/\n\n+/).filter(p => p.trim());
+            const html = paragraphs.map(p => {
+                const trimmed = p.trim();
+                if (trimmed === '<hr>') return '<hr class="log-separator">';
+                return `<p>${safeHTML(trimmed)}</p>`;
+            }).join('');
+            logContentEl.innerHTML = `<h3>log</h3>${html}`;
             logContentEl.style.display = 'block';
         } else {
             logContentEl.style.display = 'none';
