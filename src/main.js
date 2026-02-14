@@ -254,10 +254,11 @@ if (DEV_MODE) {
     });
 }
 
-// --- スクロールコンテンツ（常時有効） ---
-import('./dev-log.js').then(({ renderDevLog }) => {
-    renderDevLog();
-});
+// --- テキストログ描画を削除 ---
+// dev-log.js の呼び出しを削除。ログはギャラリーの詳細パネルで表示する。
+
+// --- Devlog Gallery（IntersectionObserverで遅延初期化） ---
+import('./devlog/devlog.js');
 
 const clock = new THREE.Clock();
 

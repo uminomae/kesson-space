@@ -316,66 +316,157 @@
       #control-guide .guide-desktop { display: none; }
     }
 
-    /* --- 開発ログセクション --- */
-    #dev-log {
+    /* ============================
+       Devlog Gallery (3D cards) — 透明背景
+       ============================ */
+    #devlog-gallery-section {
       position: relative;
       z-index: 5;
-      min-height: 100vh;
-      padding: 80px 40px 120px;
-      max-width: 720px;
+      width: 100%;
+      height: 100vh;
+      background: transparent;
     }
-
-    #dev-log .log-header {
-      font-size: 1.0rem;
-      color: rgba(180, 200, 230, 0.8);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.15em;
-      margin-bottom: 8px;
+    #devlog-gallery-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
-
-    .log-separator {
-      border: none;
-      border-top: 1px solid rgba(180, 200, 230, 0.7);
-      margin: 2rem 0;
+    #devlog-gallery-header {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      z-index: 20;
+      pointer-events: none;
     }
-
-    .log-paragraph a {
-      color: rgba(160, 200, 255, 0.7);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(160, 200, 255, 0.3);
-      transition: color 0.3s, border-color 0.3s;
-    }
-
-    .log-paragraph a:hover {
-      color: rgba(180, 215, 255, 0.95);
-      border-bottom-color: rgba(180, 215, 255, 0.6);
-    }
-
-    #dev-log .log-date {
-      font-size: 0.85rem;
+    #devlog-gallery-header h2 {
+      font-size: 0.75rem;
+      font-weight: 400;
       color: rgba(180, 200, 230, 0.5);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.08em;
-      margin-bottom: 40px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(100, 150, 255, 0.08);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin: 0;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+    #devlog-gallery-header .count {
+      font-size: 0.65rem;
+      color: rgba(180, 200, 230, 0.35);
+      margin-top: 4px;
     }
 
-    #dev-log .log-paragraph {
-      font-size: 0.82rem;
-      color: rgba(200, 215, 235, 0.55);
+    /* --- Devlog Detail Panel --- */
+    #devlog-detail {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 380px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(5,5,8,0.95) 20%);
+      padding: 60px 24px 24px 48px;
+      z-index: 100;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    #devlog-detail.visible {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    #devlog-detail .detail-header { margin-bottom: 20px; }
+    #devlog-detail .date {
+      display: block;
+      font-size: 0.9rem;
+      color: rgba(220, 230, 245, 0.9);
+      font-weight: 600;
+    }
+    #devlog-detail .meta {
+      font-size: 0.7rem;
+      color: rgba(180, 200, 230, 0.5);
+      margin-top: 4px;
+    }
+    #devlog-detail .category-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 8px;
+    }
+    #devlog-detail .stats {
+      display: flex;
+      gap: 16px;
+      margin: 16px 0;
+      font-size: 0.7rem;
+      color: rgba(180, 200, 230, 0.5);
+    }
+    #devlog-detail .stat-val {
+      font-size: 1.2rem;
+      color: rgba(220, 230, 245, 0.9);
+      font-weight: 600;
+      display: block;
+    }
+    #devlog-detail h3 {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: rgba(180, 200, 230, 0.5);
+      margin: 20px 0 8px;
+    }
+    #devlog-detail .file-list {
+      list-style: none;
+      font-size: 0.7rem;
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+    #devlog-detail .file-list li {
+      color: rgba(180, 200, 230, 0.4);
+      word-break: break-all;
+    }
+    #devlog-detail .msg-list {
+      list-style: none;
+      font-size: 0.7rem;
+      line-height: 1.8;
+      padding: 0;
+      margin: 0;
+    }
+    #devlog-detail .msg-list li {
+      color: rgba(180, 200, 230, 0.4);
+      padding-left: 12px;
+      border-left: 2px solid rgba(100, 150, 255, 0.15);
+    }
+    /* ログ本文エリア */
+    #devlog-detail .log-content {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(100, 150, 255, 0.1);
+    }
+    #devlog-detail .log-content p {
+      font-size: 0.78rem;
+      color: rgba(200, 215, 235, 0.6);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", 'Georgia', serif;
-      line-height: 2.2;
-      letter-spacing: 0.04em;
-      margin-bottom: 2.0em;
-      text-shadow: 0 0 12px rgba(60, 100, 180, 0.1);
+      line-height: 2.0;
+      letter-spacing: 0.03em;
+      margin-bottom: 1.2em;
     }
-
-    @media (max-width: 600px) {
-      #dev-log {
-        padding: 60px 20px 80px;
-      }
+    #devlog-detail .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: rgba(180, 200, 230, 0.4);
+      font-size: 1.2rem;
+      cursor: pointer;
     }
+    #devlog-detail .close-btn:hover { color: #f59e0b; }
+    #devlog-detail::-webkit-scrollbar { width: 4px; }
+    #devlog-detail::-webkit-scrollbar-track { background: transparent; }
+    #devlog-detail::-webkit-scrollbar-thumb { background: rgba(100, 150, 255, 0.15); border-radius: 2px; }
 
     /* --- 浮上ボタン --- */
     #surface-btn {
@@ -490,8 +581,34 @@
   <!-- 潜水スペーサー（カメラ下降のスクロール余白） -->
   <div id="hero-spacer"></div>
 
-  <!-- 開発ログ（潜水後に到達） -->
-  <div id="dev-log"></div>
+  <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
+  <section id="devlog-gallery-section">
+    <div id="devlog-gallery-container"></div>
+    <div id="devlog-gallery-header">
+      <h2>devlog</h2>
+      <div class="count" id="gallery-session-count"></div>
+    </div>
+  </section>
+
+  <!-- Devlog Detail Panel（ログ本文表示エリア追加） -->
+  <div id="devlog-detail">
+    <button class="close-btn" id="detail-close">✕</button>
+    <div class="detail-header">
+      <span class="date" id="detail-date"></span>
+      <span class="meta" id="detail-meta"></span>
+      <span class="category-badge" id="detail-category"></span>
+    </div>
+    <div class="stats">
+      <div><span class="stat-val" id="detail-commits">0</span>commits</div>
+      <div><span class="stat-val" id="detail-ins">0</span>insertions</div>
+      <div><span class="stat-val" id="detail-dels">0</span>deletions</div>
+    </div>
+    <h3>files</h3>
+    <ul class="file-list" id="detail-files"></ul>
+    <h3>messages</h3>
+    <ul class="msg-list" id="detail-messages"></ul>
+    <div class="log-content" id="detail-log-content"></div>
+  </div>
 
   <!-- CHANGED: aria-label 追加 -->
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>

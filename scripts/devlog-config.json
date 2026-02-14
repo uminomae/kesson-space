@@ -1,0 +1,42 @@
+{
+  "approved_repos": [
+    {
+      "name": "kesson-space",
+      "owner": "uminomae",
+      "local_path": "~/Documents/GitHub/kesson-space",
+      "remote": "git@github.com:uminomae/kesson-space.git",
+      "permissions": ["read_log", "push_assets", "push_branch"]
+    },
+    {
+      "name": "pjdhiro",
+      "owner": "uminomae",
+      "local_path": "~/Documents/GitHub/pjdhiro",
+      "remote": "git@github.com:uminomae/pjdhiro.git",
+      "permissions": ["read_log"]
+    },
+    {
+      "name": "kesson-driven-thinking",
+      "owner": "uminomae",
+      "local_path": "~/Documents/GitHub/kesson-driven-thinking",
+      "remote": "git@github.com:uminomae/kesson-driven-thinking.git",
+      "permissions": ["read_log"]
+    }
+  ],
+  "session_gap_hours": 3,
+  "auto_approve": true,
+  "output_path": "assets/devlog/sessions.json",
+  "grid": {
+    "columns": 3,
+    "card_size": 2.0,
+    "gap": 0.3,
+    "z_depth": 0.0
+  },
+  "categories": {
+    "shader":   { "pattern": ["shaders/", ".glsl"],     "color": "#1a237e" },
+    "document": { "pattern": ["docs/", ".md"],           "color": "#f59e0b" },
+    "config":   { "pattern": ["config.", ".json"],       "color": "#94a3b8" },
+    "code":     { "pattern": ["src/", ".js"],            "color": "#22c55e" },
+    "asset":    { "pattern": ["assets/", ".svg", ".png"],"color": "#a855f7" },
+    "infra":    { "pattern": ["scripts/", ".github/", ".yml"], "color": "#ef4444" }
+  }
+}
