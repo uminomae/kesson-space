@@ -44,6 +44,12 @@
 | T-006 | English PDF作成 | M | コンテンツ | ナビの英語版リンク先が未作成 |
 | T-007 | パフォーマンスプロファイリング | M | 品質 | フレームレート・メモリ使用量の計測 |
 | T-015 | モバイル実機テスト検証 | S | QA | T-003の残り。主要デバイスでの動作確認・エッジケース |
+| T-016 | Uniform管理の一元化 | M | リファクタ | main.jsの6つの`*_MAP`をconfig.js側メタデータに統合。Issue #5 残項目 |
+| T-017 | devパラメータレジストリ化 | M | リファクタ | dev-panel.jsのSECTIONSとmain.jsのMAP/applyDevValueを統一レジストリに。T-016とセットが効率的 |
+| T-018 | CSS所在整理 | M | リファクタ | index.htmlの巨大`<style>`(約200行)とviewer.js/nav-objects.js/dev-panel.jsのstyle注入を`assets/*.css`に分離 |
+| T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
+| T-020 | CSS注入の共通化 | S | リファクタ | 各ファイル散在のstyle注入を`dom-utils.js`に集約。Quick Win |
+| T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 
 ### ⚪ P3（アイデア）
 
@@ -51,6 +57,10 @@
 |----|--------|--------|----------|------|
 | T-011 | 音響の検討 | L | 体験 | 世界観に合う音響設計 |
 | T-012 | 欠損データ構造設計 | L | 設計 | 理論側との連携。kesson-thinkingで先に決定が必要 |
+| T-022 | dev-panel.js UI/Controller分離 | M | リファクタ | HTML生成とロジック混在（約22KB）。UIテンプレートとControllerに分離 |
+| T-023 | Magic Numbers集約 | S | リファクタ | 散在するリテラル値を`constants.js`に集約 |
+| T-024 | 呼吸値・アニメーションhelpers共通化 | S | リファクタ | main.js animate()内のインライン計算をユーティリティ化 |
+| T-025 | ビルドツール導入検討 | L | 設計 | Vite等。現状の「ビルド無し」方針が強みなので今すぐ不要寄り |
 
 ---
 
@@ -58,6 +68,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| — | `?test` eval排除 → dynamic import() | #23 |
 | T-010 | マウストラッキング統合（mouse-state.js新設） | #22 |
 | T-014 | 全モジュールdispose/cleanupパターン | #22 |
 | T-003 | モバイル対応（タッチ操作・レスポンシブ・スクロールUX） | #22 確認 |
