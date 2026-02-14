@@ -316,76 +316,15 @@
       #control-guide .guide-desktop { display: none; }
     }
 
-    /* --- 開発ログセクション --- */
-    #dev-log {
-      position: relative;
-      z-index: 5;
-      min-height: 100vh;
-      padding: 80px 40px 120px;
-      max-width: 720px;
-    }
-
-    #dev-log .log-header {
-      font-size: 1.0rem;
-      color: rgba(180, 200, 230, 0.8);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.15em;
-      margin-bottom: 8px;
-    }
-
-    .log-separator {
-      border: none;
-      border-top: 1px solid rgba(180, 200, 230, 0.7);
-      margin: 2rem 0;
-    }
-
-    .log-paragraph a {
-      color: rgba(160, 200, 255, 0.7);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(160, 200, 255, 0.3);
-      transition: color 0.3s, border-color 0.3s;
-    }
-
-    .log-paragraph a:hover {
-      color: rgba(180, 215, 255, 0.95);
-      border-bottom-color: rgba(180, 215, 255, 0.6);
-    }
-
-    #dev-log .log-date {
-      font-size: 0.85rem;
-      color: rgba(180, 200, 230, 0.5);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.08em;
-      margin-bottom: 40px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(100, 150, 255, 0.08);
-    }
-
-    #dev-log .log-paragraph {
-      font-size: 0.82rem;
-      color: rgba(200, 215, 235, 0.55);
-      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", 'Georgia', serif;
-      line-height: 2.2;
-      letter-spacing: 0.04em;
-      margin-bottom: 2.0em;
-      text-shadow: 0 0 12px rgba(60, 100, 180, 0.1);
-    }
-
-    @media (max-width: 600px) {
-      #dev-log {
-        padding: 60px 20px 80px;
-      }
-    }
-
     /* ============================
-       Devlog Gallery (3D cards)
+       Devlog Gallery (3D cards) — 透明背景
        ============================ */
     #devlog-gallery-section {
       position: relative;
       z-index: 5;
       width: 100%;
       height: 100vh;
-      background: #0a0e1a;
+      background: transparent;
     }
     #devlog-gallery-container {
       position: absolute;
@@ -404,7 +343,7 @@
     #devlog-gallery-header h2 {
       font-size: 0.75rem;
       font-weight: 400;
-      color: #475569;
+      color: rgba(180, 200, 230, 0.5);
       letter-spacing: 0.15em;
       text-transform: uppercase;
       margin: 0;
@@ -412,7 +351,7 @@
     }
     #devlog-gallery-header .count {
       font-size: 0.65rem;
-      color: #334155;
+      color: rgba(180, 200, 230, 0.35);
       margin-top: 4px;
     }
 
@@ -421,10 +360,10 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 340px;
+      width: 380px;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(10,14,26,0.95) 30%);
-      padding: 60px 24px 24px 40px;
+      background: linear-gradient(90deg, transparent, rgba(5,5,8,0.95) 20%);
+      padding: 60px 24px 24px 48px;
       z-index: 100;
       overflow-y: auto;
       transform: translateX(100%);
@@ -439,12 +378,12 @@
     #devlog-detail .date {
       display: block;
       font-size: 0.9rem;
-      color: #e2e8f0;
+      color: rgba(220, 230, 245, 0.9);
       font-weight: 600;
     }
     #devlog-detail .meta {
       font-size: 0.7rem;
-      color: #475569;
+      color: rgba(180, 200, 230, 0.5);
       margin-top: 4px;
     }
     #devlog-detail .category-badge {
@@ -462,11 +401,11 @@
       gap: 16px;
       margin: 16px 0;
       font-size: 0.7rem;
-      color: #94a3b8;
+      color: rgba(180, 200, 230, 0.5);
     }
     #devlog-detail .stat-val {
       font-size: 1.2rem;
-      color: #e2e8f0;
+      color: rgba(220, 230, 245, 0.9);
       font-weight: 600;
       display: block;
     }
@@ -474,7 +413,7 @@
       font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #475569;
+      color: rgba(180, 200, 230, 0.5);
       margin: 20px 0 8px;
     }
     #devlog-detail .file-list {
@@ -485,7 +424,7 @@
       margin: 0;
     }
     #devlog-detail .file-list li {
-      color: #64748b;
+      color: rgba(180, 200, 230, 0.4);
       word-break: break-all;
     }
     #devlog-detail .msg-list {
@@ -496,9 +435,23 @@
       margin: 0;
     }
     #devlog-detail .msg-list li {
-      color: #64748b;
+      color: rgba(180, 200, 230, 0.4);
       padding-left: 12px;
-      border-left: 2px solid #1e293b;
+      border-left: 2px solid rgba(100, 150, 255, 0.15);
+    }
+    /* ログ本文エリア */
+    #devlog-detail .log-content {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(100, 150, 255, 0.1);
+    }
+    #devlog-detail .log-content p {
+      font-size: 0.78rem;
+      color: rgba(200, 215, 235, 0.6);
+      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", 'Georgia', serif;
+      line-height: 2.0;
+      letter-spacing: 0.03em;
+      margin-bottom: 1.2em;
     }
     #devlog-detail .close-btn {
       position: absolute;
@@ -506,14 +459,14 @@
       right: 20px;
       background: none;
       border: none;
-      color: #475569;
+      color: rgba(180, 200, 230, 0.4);
       font-size: 1.2rem;
       cursor: pointer;
     }
     #devlog-detail .close-btn:hover { color: #f59e0b; }
     #devlog-detail::-webkit-scrollbar { width: 4px; }
     #devlog-detail::-webkit-scrollbar-track { background: transparent; }
-    #devlog-detail::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+    #devlog-detail::-webkit-scrollbar-thumb { background: rgba(100, 150, 255, 0.15); border-radius: 2px; }
 
     /* --- 浮上ボタン --- */
     #surface-btn {
@@ -628,10 +581,7 @@
   <!-- 潜水スペーサー（カメラ下降のスクロール余白） -->
   <div id="hero-spacer"></div>
 
-  <!-- 開発ログ（潜水後に到達） -->
-  <div id="dev-log"></div>
-
-  <!-- Devlog Gallery Section -->
+  <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
   <section id="devlog-gallery-section">
     <div id="devlog-gallery-container"></div>
     <div id="devlog-gallery-header">
@@ -640,7 +590,7 @@
     </div>
   </section>
 
-  <!-- Devlog Detail Panel -->
+  <!-- Devlog Detail Panel（ログ本文表示エリア追加） -->
   <div id="devlog-detail">
     <button class="close-btn" id="detail-close">✕</button>
     <div class="detail-header">
@@ -657,6 +607,7 @@
     <ul class="file-list" id="detail-files"></ul>
     <h3>messages</h3>
     <ul class="msg-list" id="detail-messages"></ul>
+    <div class="log-content" id="detail-log-content"></div>
   </div>
 
   <!-- CHANGED: aria-label 追加 -->
