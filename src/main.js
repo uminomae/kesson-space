@@ -259,6 +259,9 @@ import('./dev-log.js').then(({ renderDevLog }) => {
     renderDevLog();
 });
 
+// --- Devlog Gallery（IntersectionObserverで遅延初期化） ---
+import('./devlog/devlog.js');
+
 const clock = new THREE.Clock();
 
 // --- T-014: resizeリスナーをクリーンアップ可能に ---
