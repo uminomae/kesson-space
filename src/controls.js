@@ -55,7 +55,13 @@ let _rotateVelocity = 0;
 const INERTIA_DECAY = 0.92;
 const VELOCITY_THRESHOLD = 0.0001;
 
+// --- クリーンアップ関数（二重バインド防止） ---
+let _cleanupControls = null;
+
 export function initControls(camera, container, renderer) {
+    // 既存リスナーをクリーンアップ（再初期化時の二重バインド防止）
+    _cleanupControls?.();
+
     _camera = camera;
     _canvas = renderer.domElement;
     _baseCamY = sceneParams.camY;
@@ -78,6 +84,27 @@ export function initControls(camera, container, renderer) {
 
     // --- デスクトップ: Ctrl+ホイール でズーム（通常ホイールはページスクロール） ---
     _canvas.addEventListener('wheel', onWheel, { passive: false });
+
+    // --- クリーンアップ関数を登録 ---
+    _cleanupControls = () => {
+        _canvas.removeEventListener('touchstart', onTouchStart);
+        _canvas.removeEventListener('touchmove', onTouchMove);
+        _canvas.removeEventListener('touchend', onTouchEnd);
+        _canvas.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        _canvas.removeEventListener('wheel', onWheel);
+    };
+}
+
+/**
+ * 全イベントリスナーを解除。再初期化前や破棄時に呼び出す。
+ */
+export function destroyControls() {
+    _cleanupControls?.();
+    _cleanupControls = null;
+    _camera = null;
+    _canvas = null;
 }
 
 // =============================

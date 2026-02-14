@@ -25,6 +25,32 @@ let _scene = null;
 let _navMeshes = null;
 
 // ========================================
+// Gem ShaderMaterial ファクトリ
+// GLTFロード成功時・フォールバック時で共通
+// ========================================
+function createGemOrbMaterial() {
+    return new THREE.ShaderMaterial({
+        uniforms: {
+            uTime:                 { value: 0.0 },
+            uGlowStrength:         { value: gemParams.glowStrength },
+            uRimPower:             { value: gemParams.rimPower },
+            uInnerGlow:            { value: gemParams.innerGlow },
+            uHover:                { value: 0.0 },
+            uTurbulence:           { value: gemParams.turbulence },
+            uHaloWidth:            { value: gemParams.haloWidth },
+            uHaloIntensity:        { value: gemParams.haloIntensity },
+            uChromaticAberration:  { value: gemParams.chromaticAberration },
+        },
+        vertexShader: gemOrbVertexShader,
+        fragmentShader: gemOrbFragmentShader,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+    });
+}
+
+// ========================================
 // Gem Group 生成（hitSprite + GLTFメッシュ）
 // ========================================
 function createGemGroup() {
@@ -60,28 +86,7 @@ function createGemGroup() {
                 loadedMesh.geometry.computeVertexNormals();
             }
 
-            // ShaderMaterial（Gemini設計）
-            const mat = new THREE.ShaderMaterial({
-                uniforms: {
-                    uTime:                 { value: 0.0 },
-                    uGlowStrength:         { value: gemParams.glowStrength },
-                    uRimPower:             { value: gemParams.rimPower },
-                    uInnerGlow:            { value: gemParams.innerGlow },
-                    uHover:                { value: 0.0 },
-                    uTurbulence:           { value: gemParams.turbulence },
-                    uHaloWidth:            { value: gemParams.haloWidth },
-                    uHaloIntensity:        { value: gemParams.haloIntensity },
-                    uChromaticAberration:  { value: gemParams.chromaticAberration },
-                },
-                vertexShader: gemOrbVertexShader,
-                fragmentShader: gemOrbFragmentShader,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                side: THREE.DoubleSide,
-            });
-
-            loadedMesh.material = mat;
+            loadedMesh.material = createGemOrbMaterial();
             loadedMesh.scale.setScalar(gemParams.meshScale);
             loadedMesh.renderOrder = 10;
 
@@ -98,26 +103,7 @@ function createGemGroup() {
         (err) => {
             console.warn('[Gem] GLTF load failed, using fallback sphere:', err.message);
             const fallbackGeom = new THREE.IcosahedronGeometry(1.0, 2);
-            const mat = new THREE.ShaderMaterial({
-                uniforms: {
-                    uTime:                 { value: 0.0 },
-                    uGlowStrength:         { value: gemParams.glowStrength },
-                    uRimPower:             { value: gemParams.rimPower },
-                    uInnerGlow:            { value: gemParams.innerGlow },
-                    uHover:                { value: 0.0 },
-                    uTurbulence:           { value: gemParams.turbulence },
-                    uHaloWidth:            { value: gemParams.haloWidth },
-                    uHaloIntensity:        { value: gemParams.haloIntensity },
-                    uChromaticAberration:  { value: gemParams.chromaticAberration },
-                },
-                vertexShader: gemOrbVertexShader,
-                fragmentShader: gemOrbFragmentShader,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                side: THREE.DoubleSide,
-            });
-            const fallback = new THREE.Mesh(fallbackGeom, mat);
+            const fallback = new THREE.Mesh(fallbackGeom, createGemOrbMaterial());
             fallback.scale.setScalar(gemParams.meshScale);
             fallback.renderOrder = 10;
             group.add(fallback);
