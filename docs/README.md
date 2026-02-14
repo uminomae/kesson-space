@@ -1,6 +1,6 @@
 # docs/README.md — プロジェクト管理ハブ
 
-**バージョン**: 1.7
+**バージョン**: 1.8
 **更新日**: 2026-02-14
 
 本ファイルは、kesson-spaceのセッション起動・運用・同期の**唯一の管理ハブ**である。
@@ -224,7 +224,7 @@ PKガードはClaudeが**常時内部的に実行する**常駐エージェン�
 PKに全文が存在するドキュメント群のコンテキスト消費を管理し、セッションのフリーズを防止する。
 
 | # | 監視項目 | 判定基準 | アクション |
-|---|---------|---------|-----------
+|---|---------|---------|----------
 | PG-1 | セッション冒頭でTier 2/3を読んでいないか | Tier 1のみ許可 | Tier 2/3の内容はタスクが確定してから参照 |
 | PG-2 | PKに存在する完了済みドキュメントを読んでいないか | ISS-001(✅完了), REVIEW-REPORT(完了済み) | 完了済み文書は無視。必要ならGitHubから該当箇所のみ取得 |
 | PG-3 | Tier 3のprompts/*を不要に参照していないか | Gemini作業が明示された時のみ | P001-P004はGemini依頼時以外は無視 |
@@ -374,6 +374,68 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 - 大きな変更は feature/* で作業し、レビュー後にマージ
 - **セッション終了時に必ず確認**: 作業ブランチが残っていたら、mainにマージするかをユーザーに確認
 
+### 9.1 Worktree運用
+
+featureブランチでの開発中にブラウザ動作確認が必要な場合、git worktreeを使用して複数ブランチを同時展開する。
+
+#### ディレクトリ構成
+
+```
+~/Documents/GitHub/
+├── kesson-space/              # main (本番確認用)
+├── kesson-space-feature/      # feature/* (開発用)
+└── kesson-space-hotfix/       # hotfix/* (緊急修正用、必要時のみ)
+```
+
+#### 初期セットアップ
+
+```bash
+# featureブランチ用worktree作成
+cd ~/Documents/GitHub/kesson-space
+git worktree add ../kesson-space-feature feature/test-enhancements
+
+# worktree一覧確認
+git worktree list
+```
+
+#### サーバー起動（ポート分離）
+
+```bash
+# main: ポート3001
+cd ~/Documents/GitHub/kesson-space
+./serve.sh  # または python3 -m http.server 3001
+
+# feature: ポート3002
+cd ~/Documents/GitHub/kesson-space-feature
+python3 -m http.server 3002
+```
+
+| Worktree | ブランチ | ポート | 用途 |
+|----------|---------|--------|------|
+| kesson-space/ | main | 3001 | 本番確認・比較基準 |
+| kesson-space-feature/ | feature/* | 3002 | 開発・テスト |
+
+#### ブランチ切り替え
+
+```bash
+# featureブランチを変更したい場合
+cd ~/Documents/GitHub/kesson-space-feature
+git checkout feature/new-feature
+```
+
+#### worktree削除
+
+```bash
+# 開発完了・マージ後
+git worktree remove ../kesson-space-feature
+```
+
+#### 注意事項
+
+- 同じブランチを複数worktreeで同時にチェックアウトできない
+- worktree内での `git stash` は独立して管理される
+- mainへのマージ前に、featureのworktreeで十分にテストする
+
 ---
 
 ## 10. ファイルカタログ
@@ -435,7 +497,7 @@ window.__e2e.run('TC-E2E-03')  // 例: 言語テスト（?lang=en で実行）
 - Three.js 0.160.0（CDN importmap）
 - Bootstrap 5.3.3（CDN、devパネル用）
 - ES Modules（ビルドツールなし）
-- ポート: 3001（ローカル開発）
+- ポート: 3001（ローカル開発）、3002（feature worktree）
 - デプロイ: GitHub Pages（mainブランチ直接）
 - devパネル: `?dev` をURLに付与で表示
 
@@ -514,3 +576,4 @@ kesson-driven-thinking の `🩺セッションヘルス`（quality-management.m
 | 2026-02-14 | 1.5 | §12 セッションヘルスガード新設。kesson-thinking §2.1.2を参考に、kesson-space固有リスク対応 |
 | 2026-02-14 | 1.6 | §6 PKガード常駐化。Tier分類にPG-1〜PG-5監視項目、PK推奨構成（最小5ファイル）を明文化 |
 | 2026-02-14 | 1.7 | §2 Step 1.5新設（コンテキスト負荷事前判定）。§12にMemory連携・3層担保仕様・事前判定フローを追記 |
+| 2026-02-14 | 1.8 | §9.1 Worktree運用新設。featureブランチ開発時のブラウザ確認手順を明文化。§11 ポート情報追記 |
