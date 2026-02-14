@@ -1,8 +1,10 @@
 /**
- * devlog.js — Devlog Gallery エントリポイント
+ * devlog.js — Devlog Gallery (index.html統合版)
  *
  * コミットセッションをInstagram風3Dグリッドとして表示する。
- * kesson-spaceの闇の中に光のカードが浮かぶ。
+ * kesson-spaceの闘の中に光のカードが浮かぶ。
+ *
+ * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
 import * as THREE from 'three';
@@ -17,51 +19,105 @@ const FOG_FAR = 50;
 const SESSIONS_URL = './assets/devlog/sessions.json';
 const SCROLL_SPEED = 0.008;
 
-const container = document.getElementById('canvas-container');
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-container.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = BG_COLOR;
-scene.fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR);
-
-const camera = new THREE.PerspectiveCamera(
-    50, window.innerWidth / window.innerHeight, 0.1, 100
-);
-camera.position.set(0, 0, 12);
-
-const ambient = new THREE.AmbientLight(0x1a2235, 0.5);
-scene.add(ambient);
-const point = new THREE.PointLight(0xf59e0b, 0.3, 30);
-point.position.set(0, 5, 10);
-scene.add(point);
-
+let renderer, scene, camera;
 let sessions = [];
 let cards = [];
 let scrollY = 0;
 let targetScrollY = 0;
-let gridGroup = new THREE.Group();
-scene.add(gridGroup);
-
-const zoom = new ZoomController(camera, gridGroup);
+let gridGroup;
+let zoom;
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let hoveredCard = null;
+let isInitialized = false;
+let animationId = null;
+let containerEl = null;
 
-async function loadSessions() {
+/**
+ * ギャラリーを初期化
+ * @param {string} containerId - canvas container の ID
+ * @param {string} counterId - session count 表示要素の ID
+ */
+export function initDevlogGallery(containerId = 'devlog-gallery-container', counterId = 'gallery-session-count') {
+    if (isInitialized) return;
+
+    containerEl = document.getElementById(containerId);
+    if (!containerEl) {
+        console.warn('[devlog] Container not found:', containerId);
+        return;
+    }
+
+    const rect = containerEl.getBoundingClientRect();
+    
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(rect.width, rect.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    containerEl.appendChild(renderer.domElement);
+
+    scene = new THREE.Scene();
+    scene.background = BG_COLOR;
+    scene.fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR);
+
+    camera = new THREE.PerspectiveCamera(50, rect.width / rect.height, 0.1, 100);
+    camera.position.set(0, 0, 12);
+
+    const ambient = new THREE.AmbientLight(0x1a2235, 0.5);
+    scene.add(ambient);
+    const point = new THREE.PointLight(0xf59e0b, 0.3, 30);
+    point.position.set(0, 5, 10);
+    scene.add(point);
+
+    gridGroup = new THREE.Group();
+    scene.add(gridGroup);
+
+    zoom = new ZoomController(camera, gridGroup);
+
+    // Event listeners
+    containerEl.addEventListener('wheel', onWheel, { passive: true });
+    containerEl.addEventListener('mousemove', onMouseMove);
+    containerEl.addEventListener('click', onClick);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+
+    // Touch events
+    let touchStartY = 0;
+    containerEl.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+    containerEl.addEventListener('touchmove', (e) => {
+        if (zoom.isZoomed) return;
+        const dy = touchStartY - e.touches[0].clientY;
+        targetScrollY += dy * 0.005;
+        const maxScroll = Math.max(0, (Math.ceil(sessions.length / 3) - 2) * 2.3);
+        targetScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
+        touchStartY = e.touches[0].clientY;
+    });
+
+    // Detail panel close button
+    const closeBtn = document.getElementById('detail-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            zoom.zoomOut();
+            hideDetail();
+        });
+    }
+
+    loadSessions(counterId);
+    animate();
+    isInitialized = true;
+}
+
+async function loadSessions(counterId) {
+    const countEl = document.getElementById(counterId);
     try {
         const res = await fetch(SESSIONS_URL);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         sessions = await res.json();
-        document.getElementById('session-count').textContent = `${sessions.length} sessions`;
+        if (countEl) countEl.textContent = `${sessions.length} sessions`;
         buildGallery();
     } catch (e) {
         console.warn('sessions.json not found, using demo data:', e.message);
         sessions = generateDemoData();
-        document.getElementById('session-count').textContent = `${sessions.length} sessions (demo)`;
+        if (countEl) countEl.textContent = `${sessions.length} sessions (demo)`;
         buildGallery();
     }
 }
@@ -116,8 +172,10 @@ function onWheel(e) {
 }
 
 function onMouseMove(e) {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    if (!containerEl) return;
+    const rect = containerEl.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 }
 
 function onClick() {
@@ -132,34 +190,53 @@ function onKeyDown(e) {
     if (e.key === 'Escape' && zoom.isZoomed) { zoom.zoomOut(); hideDetail(); }
 }
 
+function onResize() {
+    if (!containerEl || !renderer || !camera) return;
+    const rect = containerEl.getBoundingClientRect();
+    camera.aspect = rect.width / rect.height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(rect.width, rect.height);
+}
+
 function showDetail(session) {
     const panel = document.getElementById('devlog-detail');
+    if (!panel) return;
+    
     const start = new Date(session.start);
     const end = new Date(session.end);
     const dateStr = `${start.getMonth() + 1}/${start.getDate()} `
         + `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`
         + ` – ${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
-    document.getElementById('detail-date').textContent = dateStr;
-    document.getElementById('detail-meta').textContent = `${session.repo} · ${session.duration_min}min`;
-    const badge = document.getElementById('detail-category');
-    badge.textContent = session.dominant_category;
-    badge.style.background = session.color + '33';
-    badge.style.color = session.color;
-    document.getElementById('detail-commits').textContent = session.commit_count;
-    document.getElementById('detail-ins').textContent = `+${session.insertions}`;
-    document.getElementById('detail-dels').textContent = `-${session.deletions}`;
-    document.getElementById('detail-files').innerHTML = session.files_changed.slice(0, 20).map(f => `<li>${f}</li>`).join('');
-    document.getElementById('detail-messages').innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
+    
+    const dateEl = document.getElementById('detail-date');
+    const metaEl = document.getElementById('detail-meta');
+    const categoryEl = document.getElementById('detail-category');
+    const commitsEl = document.getElementById('detail-commits');
+    const insEl = document.getElementById('detail-ins');
+    const delsEl = document.getElementById('detail-dels');
+    const filesEl = document.getElementById('detail-files');
+    const messagesEl = document.getElementById('detail-messages');
+
+    if (dateEl) dateEl.textContent = dateStr;
+    if (metaEl) metaEl.textContent = `${session.repo} · ${session.duration_min}min`;
+    if (categoryEl) {
+        categoryEl.textContent = session.dominant_category;
+        categoryEl.style.background = session.color + '33';
+        categoryEl.style.color = session.color;
+    }
+    if (commitsEl) commitsEl.textContent = session.commit_count;
+    if (insEl) insEl.textContent = `+${session.insertions}`;
+    if (delsEl) delsEl.textContent = `-${session.deletions}`;
+    if (filesEl) filesEl.innerHTML = session.files_changed.slice(0, 20).map(f => `<li>${f}</li>`).join('');
+    if (messagesEl) messagesEl.innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
+    
     panel.classList.add('visible');
 }
 
 function hideDetail() {
-    document.getElementById('devlog-detail').classList.remove('visible');
+    const panel = document.getElementById('devlog-detail');
+    if (panel) panel.classList.remove('visible');
 }
-
-document.getElementById('detail-close').addEventListener('click', () => {
-    zoom.zoomOut(); hideDetail();
-});
 
 function updateHover() {
     if (zoom.isAnimating) return;
@@ -169,11 +246,11 @@ function updateHover() {
     if (hoveredCard && hoveredCard !== newHovered) hoveredCard.userData.setHover(false);
     if (newHovered && newHovered !== hoveredCard) newHovered.userData.setHover(true);
     hoveredCard = newHovered;
-    renderer.domElement.style.cursor = hoveredCard ? 'pointer' : 'default';
+    if (renderer) renderer.domElement.style.cursor = hoveredCard ? 'pointer' : 'default';
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
     scrollY += (targetScrollY - scrollY) * 0.08;
     gridGroup.position.y = scrollY;
     zoom.update();
@@ -185,26 +262,51 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-window.addEventListener('wheel', onWheel, { passive: true });
-window.addEventListener('mousemove', onMouseMove);
-window.addEventListener('click', onClick);
-window.addEventListener('keydown', onKeyDown);
+/**
+ * ギャラリーを破棄
+ */
+export function destroyDevlogGallery() {
+    if (!isInitialized) return;
+    
+    if (animationId) cancelAnimationFrame(animationId);
+    
+    if (containerEl) {
+        containerEl.removeEventListener('wheel', onWheel);
+        containerEl.removeEventListener('mousemove', onMouseMove);
+        containerEl.removeEventListener('click', onClick);
+    }
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('resize', onResize);
+    
+    if (renderer) {
+        renderer.dispose();
+        if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
+    }
+    
+    isInitialized = false;
+}
 
-let touchStartY = 0;
-window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
-window.addEventListener('touchmove', (e) => {
-    if (zoom.isZoomed) return;
-    const dy = touchStartY - e.touches[0].clientY;
-    targetScrollY += dy * 0.005;
-    const maxScroll = Math.max(0, (Math.ceil(sessions.length / 3) - 2) * 2.3);
-    targetScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
-    touchStartY = e.touches[0].clientY;
-});
+// Auto-initialize when gallery section is visible (IntersectionObserver)
+if (typeof window !== 'undefined') {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !isInitialized) {
+                initDevlogGallery();
+                observer.disconnect();
+            }
+        });
+    }, { threshold: 0.1 });
 
-loadSessions();
-animate();
+    // Defer observation until DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            const section = document.getElementById('devlog-gallery-section');
+            if (section) observer.observe(section);
+        });
+    } else {
+        const section = document.getElementById('devlog-gallery-section');
+        if (section) observer.observe(section);
+    }
+}
