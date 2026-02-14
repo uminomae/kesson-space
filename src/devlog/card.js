@@ -8,28 +8,31 @@
 
 import * as THREE from 'three';
 
-const CARD_SIZE = 2.0;
+const CARD_WIDTH = 2.0;
+const CARD_HEIGHT = CARD_WIDTH * (9 / 16);  // = 1.125 (16:9)
 
 /**
  * サンプル画像をCanvasで生成
  */
 function generatePlaceholderTexture(session) {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    const W = 512;   // 16:9 アスペクト比
+    const H = 288;   // 512 * 9/16 = 288
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext('2d');
 
     // 背景グラデーション
     const color = session.color || '#94a3b8';
-    const gradient = ctx.createLinearGradient(0, 0, 256, 256);
+    const gradient = ctx.createLinearGradient(0, 0, W, H);
     gradient.addColorStop(0, '#0a0e1a');
     gradient.addColorStop(0.5, color + '40');
     gradient.addColorStop(1, '#0a0e1a');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 256, 256);
+    ctx.fillRect(0, 0, W, H);
 
     // ノイズパターン
-    const imageData = ctx.getImageData(0, 0, 256, 256);
+    const imageData = ctx.getImageData(0, 0, W, H);
     for (let i = 0; i < imageData.data.length; i += 4) {
         const noise = (Math.random() - 0.5) * 15;
         imageData.data[i] = Math.max(0, Math.min(255, imageData.data[i] + noise));
@@ -42,22 +45,22 @@ function generatePlaceholderTexture(session) {
     const gridSize = Math.max(8, 32 - Math.floor((session.commit_count || 5) / 2));
     ctx.strokeStyle = color + '30';
     ctx.lineWidth = 1;
-    for (let x = 0; x < 256; x += gridSize) {
+    for (let x = 0; x < W; x += gridSize) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, 256);
+        ctx.lineTo(x, H);
         ctx.stroke();
     }
-    for (let y = 0; y < 256; y += gridSize) {
+    for (let y = 0; y < H; y += gridSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(256, y);
+        ctx.lineTo(W, y);
         ctx.stroke();
     }
 
     // 中央にカテゴリアイコン風の形状
     ctx.save();
-    ctx.translate(128, 128);
+    ctx.translate(W / 2, H / 2);
     const intensity = session.intensity || 0.5;
     ctx.globalAlpha = 0.3 + intensity * 0.4;
     
@@ -143,13 +146,13 @@ function generatePlaceholderTexture(session) {
         ctx.font = 'bold 16px monospace';
         ctx.fillStyle = color;
         ctx.textAlign = 'right';
-        ctx.fillText(`${session.commit_count}`, 244, 244);
+        ctx.fillText(`${session.commit_count}`, W - 12, H - 12);
     }
 
     // ボーダー
     ctx.strokeStyle = color + '60';
     ctx.lineWidth = 3;
-    ctx.strokeRect(2, 2, 252, 252);
+    ctx.strokeRect(2, 2, W - 4, H - 4);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
@@ -204,7 +207,7 @@ const fragmentShader = `
 `;
 
 export function createCard(session, position) {
-    const geometry = new THREE.PlaneGeometry(CARD_SIZE, CARD_SIZE);
+    const geometry = new THREE.PlaneGeometry(CARD_WIDTH, CARD_HEIGHT);
     const color = new THREE.Color(session.color || '#94a3b8');
     
     // テクスチャ生成（texture_urlがあれば読み込み、なければCanvas生成）
