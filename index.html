@@ -415,6 +415,11 @@
       }
     }
   </script>
+
+  <!-- PERF: module scripts are deferred by default — placing after import map
+       lets the browser start fetching the module graph earlier than end-of-body,
+       without reintroducing the modulepreload/import-map ordering conflict (Issue #4) -->
+  <script type="module" src="./src/main.js"></script>
 </head>
 <body>
   <div id="canvas-container"></div>
@@ -490,9 +495,6 @@
 
   <!-- CHANGED: aria-label 追加 -->
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
-
-  <!-- CHANGED: Bootstrap JS 削除。dev-panel.js が ?dev 時に動的ロードする -->
-  <script type="module" src="./src/main.js"></script>
 
   <!-- ?test パラメータでE2Eテスト自動実行 -->
   <script>
