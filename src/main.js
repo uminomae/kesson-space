@@ -128,70 +128,134 @@ function updateOverlay(key, val) {
     }
 }
 
-// --- devパネル用：スライダー値をユニフォームに反映 ---
+// ========================================
+// T-008: devパネル用 applyDevValue ルックアップテーブル
+// if-elseチェーンをカテゴリ別Mapに置換
+// ========================================
+
+// --- distortionPass uniform直接代入 ---
+const DISTORTION_UNIFORM_MAP = {
+    distStrength:   'uStrength',
+    distAberration: 'uAberration',
+    turbulence:     'uTurbulence',
+    baseBlur:       'uBaseBlur',
+    orbBlur:        'uBlurAmount',
+    innerGlow:      'uInnerGlow',
+    haloIntensity:  'uHaloIntensity',
+    haloWidth:      'uHaloWidth',
+    heatHaze:       'uHeatHaze',
+    heatHazeRadius: 'uHeatHazeRadius',
+    heatHazeSpeed:  'uHeatHazeSpeed',
+    dofStrength:    'uDofStrength',
+    dofFocusRadius: 'uDofFocusRadius',
+    fluidInfluence: 'uFluidInfluence',
+};
+
+// --- distortionPass haloColor成分 (.value.x/y/z) ---
+const HALO_COLOR_MAP = {
+    haloColorR: 'x',
+    haloColorG: 'y',
+    haloColorB: 'z',
+};
+
+// --- fluidSystem uniform直接代入 ---
+const FLUID_UNIFORM_MAP = {
+    fluidForce:  'uForce',
+    fluidCurl:   'uCurl',
+    fluidDecay:  'uDecay',
+    fluidRadius: 'uRadius',
+};
+
+// --- gemParams: config代入 + rebuildGem() ---
+const GEM_REBUILD_MAP = {
+    gemMeshScale:           'meshScale',
+    gemGlowStrength:        'glowStrength',
+    gemRimPower:            'rimPower',
+    gemInnerGlow:           'innerGlow',
+    gemTurbulence:          'turbulence',
+    gemHaloWidth:           'haloWidth',
+    gemHaloIntensity:       'haloIntensity',
+    gemChromaticAberration: 'chromaticAberration',
+};
+
+// --- gemParams: config代入 + updateGemPosition() ---
+const GEM_POSITION_MAP = {
+    gemPosX: 'posX',
+    gemPosY: 'posY',
+    gemPosZ: 'posZ',
+};
+
+// --- vortexParams: config直接代入 ---
+const VORTEX_MAP = {
+    vortexSpeed:     'speed',
+    vortexIntensity: 'intensity',
+    vortexScale:     'scale',
+    vortexOpacity:   'opacity',
+    vortexArmCount:  'armCount',
+    vortexColorR:    'colorR',
+    vortexColorG:    'colorG',
+    vortexColorB:    'colorB',
+    vortexPosX:      'posX',
+    vortexPosY:      'posY',
+    vortexPosZ:      'posZ',
+    vortexSize:      'size',
+};
+
 function applyDevValue(key, value) {
+    // --- config直接参照（toggles / breathConfig / sceneParams） ---
     if (key in toggles) { toggles[key] = value; return; }
     if (key in breathConfig) { breathConfig[key] = value; return; }
     if (key in sceneParams) sceneParams[key] = value;
 
+    // --- カメラ位置 ---
     if (key === 'camX' || key === 'camY' || key === 'camZ') {
         setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+        return;
     }
-    // REMOVED: camTargetY → setTarget() — スクロール潜水モードでは未使用
-    if (key === 'autoRotateSpd') setAutoRotateSpeed(value);
+    if (key === 'autoRotateSpd') { setAutoRotateSpeed(value); return; }
 
-    if (key === 'distStrength')   distortionPass.uniforms.uStrength.value = value;
-    if (key === 'distAberration') distortionPass.uniforms.uAberration.value = value;
-    if (key === 'turbulence')     distortionPass.uniforms.uTurbulence.value = value;
-    if (key === 'baseBlur')       distortionPass.uniforms.uBaseBlur.value = value;
-    if (key === 'orbBlur')        distortionPass.uniforms.uBlurAmount.value = value;
-    if (key === 'innerGlow')      distortionPass.uniforms.uInnerGlow.value = value;
-    if (key === 'haloIntensity')  distortionPass.uniforms.uHaloIntensity.value = value;
-    if (key === 'haloWidth')      distortionPass.uniforms.uHaloWidth.value = value;
-    if (key === 'haloColorR')     distortionPass.uniforms.uHaloColor.value.x = value;
-    if (key === 'haloColorG')     distortionPass.uniforms.uHaloColor.value.y = value;
-    if (key === 'haloColorB')     distortionPass.uniforms.uHaloColor.value.z = value;
+    // --- distortion uniform ---
+    if (key in DISTORTION_UNIFORM_MAP) {
+        distortionPass.uniforms[DISTORTION_UNIFORM_MAP[key]].value = value;
+        return;
+    }
 
-    if (key === 'fluidForce')     fluidSystem.uniforms.uForce.value = value;
-    if (key === 'fluidCurl')      fluidSystem.uniforms.uCurl.value = value;
-    if (key === 'fluidDecay')     fluidSystem.uniforms.uDecay.value = value;
-    if (key === 'fluidRadius')    fluidSystem.uniforms.uRadius.value = value;
-    if (key === 'fluidInfluence') distortionPass.uniforms.uFluidInfluence.value = value;
+    // --- haloColor成分 ---
+    if (key in HALO_COLOR_MAP) {
+        distortionPass.uniforms.uHaloColor.value[HALO_COLOR_MAP[key]] = value;
+        return;
+    }
 
-    if (key === 'heatHaze')       distortionPass.uniforms.uHeatHaze.value = value;
-    if (key === 'heatHazeRadius') distortionPass.uniforms.uHeatHazeRadius.value = value;
-    if (key === 'heatHazeSpeed')  distortionPass.uniforms.uHeatHazeSpeed.value = value;
-    if (key === 'dofStrength')    distortionPass.uniforms.uDofStrength.value = value;
-    if (key === 'dofFocusRadius') distortionPass.uniforms.uDofFocusRadius.value = value;
+    // --- fluid uniform ---
+    if (key in FLUID_UNIFORM_MAP) {
+        fluidSystem.uniforms[FLUID_UNIFORM_MAP[key]].value = value;
+        return;
+    }
 
-    // --- Gemパラメータ ---
-    if (key === 'gemMeshScale')           { gemParams.meshScale = value; rebuildGem(); }
-    if (key === 'gemGlowStrength')        { gemParams.glowStrength = value; rebuildGem(); }
-    if (key === 'gemRimPower')            { gemParams.rimPower = value; rebuildGem(); }
-    if (key === 'gemInnerGlow')           { gemParams.innerGlow = value; rebuildGem(); }
-    if (key === 'gemTurbulence')          { gemParams.turbulence = value; rebuildGem(); }
-    if (key === 'gemHaloWidth')           { gemParams.haloWidth = value; rebuildGem(); }
-    if (key === 'gemHaloIntensity')       { gemParams.haloIntensity = value; rebuildGem(); }
-    if (key === 'gemChromaticAberration') { gemParams.chromaticAberration = value; rebuildGem(); }
-    if (key === 'gemLabelYOffset')        { gemParams.labelYOffset = value; }
-    if (key === 'gemPosX')                { gemParams.posX = value; updateGemPosition(); }
-    if (key === 'gemPosY')                { gemParams.posY = value; updateGemPosition(); }
-    if (key === 'gemPosZ')                { gemParams.posZ = value; updateGemPosition(); }
+    // --- gem: パラメータ更新 + rebuild ---
+    if (key in GEM_REBUILD_MAP) {
+        gemParams[GEM_REBUILD_MAP[key]] = value;
+        rebuildGem();
+        return;
+    }
 
-    // --- 渦パラメータ（scene.jsがvortexParamsを毎フレーム参照）---
-    if (key === 'vortexSpeed')     vortexParams.speed = value;
-    if (key === 'vortexIntensity') vortexParams.intensity = value;
-    if (key === 'vortexScale')     vortexParams.scale = value;
-    if (key === 'vortexOpacity')   vortexParams.opacity = value;
-    if (key === 'vortexArmCount')  vortexParams.armCount = value;
-    if (key === 'vortexColorR')    vortexParams.colorR = value;
-    if (key === 'vortexColorG')    vortexParams.colorG = value;
-    if (key === 'vortexColorB')    vortexParams.colorB = value;
-    if (key === 'vortexPosX')      vortexParams.posX = value;
-    if (key === 'vortexPosY')      vortexParams.posY = value;
-    if (key === 'vortexPosZ')      vortexParams.posZ = value;
-    if (key === 'vortexSize')      vortexParams.size = value;
+    // --- gem: labelYOffset（rebuildなし） ---
+    if (key === 'gemLabelYOffset') { gemParams.labelYOffset = value; return; }
 
+    // --- gem: 位置更新 ---
+    if (key in GEM_POSITION_MAP) {
+        gemParams[GEM_POSITION_MAP[key]] = value;
+        updateGemPosition();
+        return;
+    }
+
+    // --- vortex ---
+    if (key in VORTEX_MAP) {
+        vortexParams[VORTEX_MAP[key]] = value;
+        return;
+    }
+
+    // --- HTMLオーバーレイ（title/subtitle位置・サイズ） ---
     updateOverlay(key, value);
 }
 
