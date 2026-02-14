@@ -103,7 +103,7 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
         if (zoom.isZoomed) return;
         const dy = touchStartY - e.touches[0].clientY;
         targetScrollY += dy * 0.005;
-        const maxScroll = Math.max(0, (Math.ceil(sessions.length / 3) - 2) * 2.3);
+        const maxScroll = Math.max(0, (Math.ceil(sessions.length / 3) - 2) * 1.425);
         targetScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
         touchStartY = e.touches[0].clientY;
     });
@@ -206,7 +206,7 @@ function generateDemoData() {
 function buildGallery() {
     while (gridGroup.children.length) gridGroup.remove(gridGroup.children[0]);
     cards = [];
-    const positions = createGrid(sessions.length, { columns: 3, cardSize: 2.0, gap: 0.3 });
+    const positions = createGrid(sessions.length, { columns: 3, cardWidth: 2.0, gap: 0.3 });
     sessions.forEach((session, i) => {
         const card = createCard(session, positions[i]);
         card.userData.session = session;
@@ -220,7 +220,7 @@ function buildGallery() {
 function onWheel(e) {
     if (zoom.isZoomed) return;
     targetScrollY += e.deltaY * SCROLL_SPEED;
-    const maxScroll = Math.max(0, (Math.ceil(sessions.length / 3) - 2) * 2.3);
+    const maxScroll = Math.max(0, (Math.ceil(sessions.length / 3) - 2) * 1.425);
     targetScrollY = Math.max(0, Math.min(targetScrollY, maxScroll));
 }
 
