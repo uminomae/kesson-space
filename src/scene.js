@@ -6,6 +6,7 @@ import {
     FOG_V002_COLOR, FOG_V002_DENSITY,
     FOG_V004_COLOR, FOG_V004_DENSITY,
 } from './config.js';
+import { CAMERA_FOV, CAMERA_NEAR, CAMERA_FAR, CAMERA_LOOK_AT_Z } from './constants.js';
 import { createBackgroundMaterial, createBackgroundMesh } from './shaders/background.js';
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
 import { createKessonMaterial, createKessonMeshes } from './shaders/kesson.js';
@@ -50,9 +51,9 @@ export function createScene(container) {
     const aspect = window.innerWidth / window.innerHeight;
     const camZ = calcCamZ(aspect);
 
-    const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(CAMERA_FOV, aspect, CAMERA_NEAR, CAMERA_FAR);
     camera.position.set(sceneParams.camX, sceneParams.camY, camZ);
-    camera.lookAt(0, sceneParams.camTargetY, -10);
+    camera.lookAt(0, sceneParams.camTargetY, CAMERA_LOOK_AT_Z);
     _camera = camera;
 
     // レンダラー
