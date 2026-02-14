@@ -23,6 +23,7 @@ let composer;
 let distortionPass;
 let fluidSystem;
 let liquidSystem;
+let liquidTarget;  // 液体レンダリング用
 let navMeshesCache = [];
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
@@ -75,6 +76,11 @@ fluidSystem = createFluidSystem(renderer);
 // リキッドシステム
 // ============================
 liquidSystem = createLiquidSystem(renderer);
+liquidTarget = new THREE.WebGLRenderTarget(128, 128, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+});
 
 // ============================
 // EffectComposer
@@ -362,7 +368,8 @@ function animate() {
         const mouseVel = new THREE.Vector2(mouse.velX, mouse.velY);
         liquidSystem.update(mousePos, mouseVel);
         liquidSystem.setTime(time);
-        distortionPass.uniforms.tLiquid.value = liquidSystem.getDensityTexture();
+        liquidSystem.copyDensityTo(liquidTarget);  // 密度を白テクスチャとしてコピー
+        distortionPass.uniforms.tLiquid.value = liquidTarget.texture;  // レンダリング結果を使用
         distortionPass.uniforms.uLiquidStrength.value = liquidParams.densityMul;
     } else {
         distortionPass.uniforms.uLiquidStrength.value = 0;

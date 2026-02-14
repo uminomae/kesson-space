@@ -234,6 +234,30 @@ export function createLiquidSystem(renderer) {
         depthWrite: false,
     });
 
+    // --- 密度コピー（白テクスチャ化）シェーダー ---
+    const copyMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            tDensity: { value: null },
+        },
+        vertexShader: /* glsl */`
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: /* glsl */`
+            uniform sampler2D tDensity;
+            varying vec2 vUv;
+            void main() {
+                float d = texture2D(tDensity, vUv).r;
+                gl_FragColor = vec4(d, d, d, d);  // 白いエフェクト
+            }
+        `,
+        depthTest: false,
+        depthWrite: false,
+    });
+
     // --- Liquid Render シェーダー ---
     const renderMaterial = new THREE.ShaderMaterial({
         uniforms: {
@@ -392,6 +416,15 @@ export function createLiquidSystem(renderer) {
         render(target) {
             renderMaterial.uniforms.tDensity.value = denRead.texture;
             quad.material = renderMaterial;
+            renderer.setRenderTarget(target);
+            renderer.render(scene, camera);
+            renderer.setRenderTarget(null);
+        },
+
+        // 密度を白いテクスチャとしてコピー（フィードバックループ回避用）
+        copyDensityTo(target) {
+            copyMaterial.uniforms.tDensity.value = denRead.texture;
+            quad.material = copyMaterial;
             renderer.setRenderTarget(target);
             renderer.render(scene, camera);
             renderer.setRenderTarget(null);

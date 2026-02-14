@@ -20,7 +20,6 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
-    liquid: true,   // Metaball液体エフェクト
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -79,28 +78,29 @@ export const fluidParams = {
 };
 
 // --- リキッド（Metaball液体）パラメータ ---
+// ★ dev panel調整済みデフォルト値
 export const liquidParams = {
     // シミュレーション
-    timestep:    0.016,
-    dissipation: 0.985,
+    timestep:    0.001,
+    dissipation: 0.904,
     iterations:  12,
     // マウス反応
-    forceRadius: 0.15,
-    forceStrength: 3.0,
+    forceRadius: 0.08,
+    forceStrength: 4.5,
     // 見た目
-    densityMul:  1.5,
-    noiseScale:  4.0,
-    noiseSpeed:  0.08,
+    densityMul:  2.0,
+    noiseScale:  9.5,
+    noiseSpeed:  0.02,
     // 光沢
-    specularPow: 24.0,
-    specularInt: 0.6,
-    // 色
-    baseColorR:  0.15,
-    baseColorG:  0.25,
-    baseColorB:  0.45,
-    highlightR:  0.8,
+    specularPow: 8.0,
+    specularInt: 1.8,
+    // 色（明るめ）
+    baseColorR:  0.8,
+    baseColorG:  0.85,
+    baseColorB:  0.85,
+    highlightR:  0.9,
     highlightG:  0.9,
-    highlightB:  1.0,
+    highlightB:  0.9,
 };
 
 // --- ポストプロセス（歪み・オーブ・熱波・DOF）パラメータ ---
@@ -137,29 +137,6 @@ export const gemParams = {
     posY: 2,
     posZ: 15,
     labelYOffset: 1.25,
-};
-
-// --- リキッドエフェクトパラメータ ---
-export const liquidParams = {
-    // シミュレーション
-    timestep:       0.016,
-    dissipation:    0.985,
-    forceRadius:    0.12,
-    forceStrength:  2.0,
-    iterations:     20,
-    // レンダリング
-    densityMul:     1.5,
-    noiseScale:     8.0,
-    noiseSpeed:     0.3,
-    specularPow:    32.0,
-    specularInt:    0.8,
-    // 色（青系）
-    baseColorR:     0.15,
-    baseColorG:     0.25,
-    baseColorB:     0.45,
-    highlightR:     0.8,
-    highlightG:     0.9,
-    highlightB:     1.0,
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---

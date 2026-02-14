@@ -199,14 +199,14 @@ export const DistortionShader = {
             color += uHaloColor * totalHalo * uHaloIntensity;
             color += uHaloColor * totalInnerGlow * uInnerGlow;
 
-            // 4. リキッドエフェクト（マウス追従）
+            // 4. リキッドエフェクト（マウス追従・透明屈折のみ）
             vec4 liquid = texture2D(tLiquid, vUv);
             if (liquid.a > 0.01 && uLiquidStrength > 0.01) {
-                // 液体の屈折効果
-                vec2 liquidOffset = (liquid.rg - 0.5) * 0.03 * uLiquidStrength;
+                // 液体の屈折効果のみ（色なし・透明）
+                vec2 liquidOffset = (liquid.rg - 0.5) * 0.05 * uLiquidStrength;
                 vec3 refractedColor = texture2D(tDiffuse, vUv + liquidOffset).rgb;
-                // 液体色とシーン色をブレンド
-                color = mix(color, liquid.rgb + refractedColor * 0.3, liquid.a * uLiquidStrength * 0.5);
+                // 屈折した色のみ適用（白色ブレンドなし）
+                color = mix(color, refractedColor, liquid.a * uLiquidStrength);
             }
 
             gl_FragColor = vec4(color, 1.0);
