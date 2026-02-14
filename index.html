@@ -377,6 +377,144 @@
       }
     }
 
+    /* ============================
+       Devlog Gallery (3D cards)
+       ============================ */
+    #devlog-gallery-section {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      height: 100vh;
+      background: #0a0e1a;
+    }
+    #devlog-gallery-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #devlog-gallery-header {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      z-index: 20;
+      pointer-events: none;
+    }
+    #devlog-gallery-header h2 {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #475569;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin: 0;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+    #devlog-gallery-header .count {
+      font-size: 0.65rem;
+      color: #334155;
+      margin-top: 4px;
+    }
+
+    /* --- Devlog Detail Panel --- */
+    #devlog-detail {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 340px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(10,14,26,0.95) 30%);
+      padding: 60px 24px 24px 40px;
+      z-index: 100;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    #devlog-detail.visible {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    #devlog-detail .detail-header { margin-bottom: 20px; }
+    #devlog-detail .date {
+      display: block;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    #devlog-detail .meta {
+      font-size: 0.7rem;
+      color: #475569;
+      margin-top: 4px;
+    }
+    #devlog-detail .category-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 8px;
+    }
+    #devlog-detail .stats {
+      display: flex;
+      gap: 16px;
+      margin: 16px 0;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+    #devlog-detail .stat-val {
+      font-size: 1.2rem;
+      color: #e2e8f0;
+      font-weight: 600;
+      display: block;
+    }
+    #devlog-detail h3 {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #475569;
+      margin: 20px 0 8px;
+    }
+    #devlog-detail .file-list {
+      list-style: none;
+      font-size: 0.7rem;
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+    #devlog-detail .file-list li {
+      color: #64748b;
+      word-break: break-all;
+    }
+    #devlog-detail .msg-list {
+      list-style: none;
+      font-size: 0.7rem;
+      line-height: 1.8;
+      padding: 0;
+      margin: 0;
+    }
+    #devlog-detail .msg-list li {
+      color: #64748b;
+      padding-left: 12px;
+      border-left: 2px solid #1e293b;
+    }
+    #devlog-detail .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: #475569;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    #devlog-detail .close-btn:hover { color: #f59e0b; }
+    #devlog-detail::-webkit-scrollbar { width: 4px; }
+    #devlog-detail::-webkit-scrollbar-track { background: transparent; }
+    #devlog-detail::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+
     /* --- 浮上ボタン --- */
     #surface-btn {
       position: fixed;
@@ -492,6 +630,34 @@
 
   <!-- 開発ログ（潜水後に到達） -->
   <div id="dev-log"></div>
+
+  <!-- Devlog Gallery Section -->
+  <section id="devlog-gallery-section">
+    <div id="devlog-gallery-container"></div>
+    <div id="devlog-gallery-header">
+      <h2>devlog</h2>
+      <div class="count" id="gallery-session-count"></div>
+    </div>
+  </section>
+
+  <!-- Devlog Detail Panel -->
+  <div id="devlog-detail">
+    <button class="close-btn" id="detail-close">✕</button>
+    <div class="detail-header">
+      <span class="date" id="detail-date"></span>
+      <span class="meta" id="detail-meta"></span>
+      <span class="category-badge" id="detail-category"></span>
+    </div>
+    <div class="stats">
+      <div><span class="stat-val" id="detail-commits">0</span>commits</div>
+      <div><span class="stat-val" id="detail-ins">0</span>insertions</div>
+      <div><span class="stat-val" id="detail-dels">0</span>deletions</div>
+    </div>
+    <h3>files</h3>
+    <ul class="file-list" id="detail-files"></ul>
+    <h3>messages</h3>
+    <ul class="msg-list" id="detail-messages"></ul>
+  </div>
 
   <!-- CHANGED: aria-label 追加 -->
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
