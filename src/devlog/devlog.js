@@ -289,8 +289,6 @@ function showDetail(session) {
     const commitsEl = document.getElementById('detail-commits');
     const insEl = document.getElementById('detail-ins');
     const delsEl = document.getElementById('detail-dels');
-    const filesEl = document.getElementById('detail-files');
-    const messagesEl = document.getElementById('detail-messages');
     const logContentEl = document.getElementById('detail-log-content');
 
     if (dateEl) dateEl.textContent = dateStr;
@@ -303,8 +301,6 @@ function showDetail(session) {
     if (commitsEl) commitsEl.textContent = session.commit_count;
     if (insEl) insEl.textContent = `+${session.insertions}`;
     if (delsEl) delsEl.textContent = `-${session.deletions}`;
-    if (filesEl) filesEl.innerHTML = session.files_changed.slice(0, 20).map(f => `<li>${f}</li>`).join('');
-    if (messagesEl) messagesEl.innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
     
     // ログ本文（session.log_contentがあれば表示）
     if (logContentEl) {
