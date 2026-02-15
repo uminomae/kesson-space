@@ -356,30 +356,6 @@
       margin-top: 4px;
     }
 
-    /* Show Lessボタン */
-    .btn-show-less {
-      margin-top: 12px;
-      pointer-events: auto;
-      background: rgba(100, 150, 255, 0.1);
-      border: 1px solid rgba(100, 150, 255, 0.2);
-      color: rgba(180, 200, 230, 0.5);
-      font-family: 'Georgia', serif;
-      font-size: clamp(0.45rem, 2.0vmin, 0.65rem);
-      letter-spacing: 0.08em;
-      padding: 6px 12px;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-    .btn-show-less:hover {
-      background: rgba(100, 150, 255, 0.2);
-      color: rgba(220, 230, 245, 0.7);
-    }
-    .btn-show-less:focus {
-      outline: 2px solid rgba(100, 150, 255, 0.8);
-      outline-offset: 4px;
-    }
-
     /* Read Moreボタン */
     .btn-read-more {
       background: rgba(100, 150, 255, 0.1);
@@ -402,16 +378,23 @@
       outline-offset: 4px;
     }
 
-    /* 展開可能カード（初期状態）— シンプルなフェード + 高さ展開 */
-    .devlog-card.expandable {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease, opacity 0.3s ease;
+    /* Offcanvas内カードスタイル */
+    #offcanvas-gallery .card {
+      background: rgba(20, 25, 40, 0.9);
+      border: 1px solid rgba(100, 150, 255, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .devlog-card.expandable.expanded {
-      max-height: 800px;
-      opacity: 1;
+    #offcanvas-gallery .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(100, 150, 255, 0.15);
+    }
+
+    /* 無限スクロールローディング */
+    #offcanvas-loading {
+      text-align: center;
+      padding: 20px;
+      color: rgba(180, 200, 230, 0.5);
     }
 
     /* --- 浮上ボタン --- */
@@ -647,6 +630,25 @@
       <div class="count" id="gallery-session-count"></div>
     </div>
   </section>
+
+  <!-- Bootstrap Offcanvas（右からスライドイン） -->
+  <div class="offcanvas offcanvas-end"
+       tabindex="-1"
+       id="devlogOffcanvas"
+       data-bs-backdrop="true"
+       style="width: 85%; background: rgba(10, 14, 26, 0.98);">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <div>
+        <h5 class="text-light mb-0" style="letter-spacing: 0.15em;">DEVLOG</h5>
+        <small class="text-muted" id="offcanvas-session-count"></small>
+      </div>
+      <button type="button" class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0" id="offcanvas-gallery">
+      <!-- 動的にカード生成 -->
+    </div>
+  </div>
 
   <!-- Devlog Session Modal (Bootstrap) -->
   <div class="modal fade" id="devlogSessionModal" tabindex="-1" aria-labelledby="devlogSessionModalLabel" aria-hidden="true">
