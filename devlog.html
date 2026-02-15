@@ -17,6 +17,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&amp;display=swap" rel="stylesheet">
 
   <style>
+    :root {
+      --overlay-bg-rgb: 5, 5, 8;
+      --overlay-opacity-top: 0.3;
+      --overlay-opacity-mid: 0.5;
+      --overlay-opacity-bottom: 0.7;
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -41,9 +48,9 @@
       z-index: 1;
       background: linear-gradient(
         to bottom,
-        rgba(5, 5, 8, 0.3) 0%,
-        rgba(5, 5, 8, 0.5) 30%,
-        rgba(5, 5, 8, 0.7) 100%
+        rgba(var(--overlay-bg-rgb), var(--overlay-opacity-top)) 0%,
+        rgba(var(--overlay-bg-rgb), var(--overlay-opacity-mid)) 30%,
+        rgba(var(--overlay-bg-rgb), var(--overlay-opacity-bottom)) 100%
       );
       min-height: 100vh;
     }
@@ -156,7 +163,7 @@
         animation: none !important;
       }
       #content-overlay {
-        background: rgba(5, 5, 8, 1);
+        background: rgba(var(--overlay-bg-rgb), 1);
       }
     }
   </style>
@@ -172,7 +179,7 @@
   </script>
 </head>
 <body>
-  <div class="version-badge">v0.2.3</div>
+  <div class="version-badge">v0.3.0-t046</div>
   <!-- Three.js背景 -->
   <div id="bg-container"></div>
 

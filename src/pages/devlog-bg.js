@@ -1,43 +1,23 @@
-// devlog-bg.js — devlog.html用Three.js背景（フルシーン版）
+// devlog-bg.js — devlog.html用Three.js背景
+// 設定値は devlog-config.js で一元管理
 
 import * as THREE from 'three';
 import { createScene, updateScene } from '../scene.js';
-import { sceneParams, toggles } from '../config.js';
+import { toggles } from '../config.js';
+import { devlogParams } from '../devlog-config.js';
 
-console.log('[devlog-bg] Script loaded');
-
-// prefers-reduced-motion対応
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// 背景コンテナ取得
-const container = document.getElementById('bg-container');
-let scene = null;
-let camera = null;
-let renderer = null;
+// --- 初期化 ---
 
-if (container && !prefersReducedMotion) {
-  console.log('[devlog-bg] container:', container);
-
-  // devlogでもフルシーンを使用
+function initBackground(container) {
   const sceneBundle = createScene(container);
-  scene = sceneBundle.scene;
-  camera = sceneBundle.camera;
-  renderer = sceneBundle.renderer;
+  const { scene, camera, renderer } = sceneBundle;
   renderer.setClearColor(0x000000, 0);
 
-  // devlog用に視覚要素を有効化
-  toggles.background = true;
-  toggles.water = true;
-  toggles.kessonLights = true;
-  toggles.vortex = true;
-  toggles.fog = true;
+  applyToggles();
+  applyCamera(camera);
 
-  // カメラY位置を深海レベルに設定
-  camera.position.y = -50;
-  camera.lookAt(0, -50, 0);
-  console.log('[devlog-bg] Scene created, camera at Y:', camera.position.y);
-
-  // リサイズハンドラ
   const onResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -45,7 +25,30 @@ if (container && !prefersReducedMotion) {
   };
   window.addEventListener('resize', onResize);
 
-  // アニメーションループ
+  startAnimationLoop(scene, camera, renderer);
+
+  window.addEventListener('beforeunload', () => {
+    renderer.dispose();
+  });
+
+  return { scene, camera, renderer };
+}
+
+function applyToggles() {
+  const t = devlogParams.toggles;
+  toggles.background = t.background;
+  toggles.water = t.water;
+  toggles.kessonLights = t.kessonLights;
+  toggles.vortex = t.vortex;
+  toggles.fog = t.fog;
+}
+
+function applyCamera(camera) {
+  camera.position.y = devlogParams.camera.positionY;
+  camera.lookAt(0, devlogParams.camera.lookAtY, 0);
+}
+
+function startAnimationLoop(scene, camera, renderer) {
   const clock = new THREE.Clock();
   const animate = () => {
     requestAnimationFrame(animate);
@@ -53,22 +56,30 @@ if (container && !prefersReducedMotion) {
     updateScene(time);
     renderer.render(scene, camera);
   };
-
-  console.log('[devlog-bg] Starting animation loop');
   animate();
-
-  // ページ離脱時にクリーンアップ
-  window.addEventListener('beforeunload', () => {
-    renderer.dispose();
-  });
-} else if (prefersReducedMotion) {
-  console.log('[devlog-bg] Reduced motion preference detected, skipping animation');
 }
 
-// === Dev Panel（?dev パラメータで表示） ===
+// --- メイン実行 ---
+
+const container = document.getElementById('bg-container');
+let scene = null;
+let camera = null;
+
+if (container && !prefersReducedMotion) {
+  const bundle = initBackground(container);
+  scene = bundle.scene;
+  camera = bundle.camera;
+}
+
+// --- Dev Panel（?dev パラメータで表示） ---
+
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
 if (DEV_MODE && container) {
+  initDevPanel(scene, camera);
+}
+
+function initDevPanel(sceneRef, cameraRef) {
   const panel = document.createElement('div');
   panel.id = 'devlog-dev-panel';
   panel.innerHTML = `
@@ -104,16 +115,16 @@ if (DEV_MODE && container) {
         float: right;
       }
     </style>
-    <h4>🎛️ Devlog Background</h4>
-    
-    <label>Overlay Opacity <span class="value" id="val-overlay">0.50</span></label>
-    <input type="range" id="slider-overlay" min="0" max="1" step="0.05" value="0.5">
-    
-    <label>Camera Y <span class="value" id="val-camY">-50</span></label>
-    <input type="range" id="slider-camY" min="-100" max="50" step="5" value="-50">
-    
-    <label>Fog Density <span class="value" id="val-fog">0.012</span></label>
-    <input type="range" id="slider-fog" min="0" max="0.05" step="0.001" value="0.012">
+    <h4>Devlog Background</h4>
+
+    <label>Overlay Opacity <span class="value" id="val-overlay">${devlogParams.overlay.opacityMid.toFixed(2)}</span></label>
+    <input type="range" id="slider-overlay" min="0" max="1" step="0.05" value="${devlogParams.overlay.opacityMid}">
+
+    <label>Camera Y <span class="value" id="val-camY">${devlogParams.camera.positionY}</span></label>
+    <input type="range" id="slider-camY" min="-100" max="50" step="5" value="${devlogParams.camera.positionY}">
+
+    <label>Fog Density <span class="value" id="val-fog">${devlogParams.fog.density.toFixed(3)}</span></label>
+    <input type="range" id="slider-fog" min="0" max="0.05" step="0.001" value="${devlogParams.fog.density}">
   `;
   document.body.appendChild(panel);
 
@@ -121,42 +132,41 @@ if (DEV_MODE && container) {
   const sliderOverlay = document.getElementById('slider-overlay');
   const valOverlay = document.getElementById('val-overlay');
   const contentOverlay = document.getElementById('content-overlay');
-  
+  const bgColor = devlogParams.overlay.bgColor;
+
   sliderOverlay.addEventListener('input', (e) => {
     const v = parseFloat(e.target.value);
     valOverlay.textContent = v.toFixed(2);
     if (contentOverlay) {
+      const start = Math.min(1, v * 0.6);
       const mid = v;
       const end = Math.min(1, v * 1.4);
-      const start = Math.min(1, v * 0.6);
-      contentOverlay.style.background = `linear-gradient(\n        to bottom,\n        rgba(5, 5, 8, ${start}) 0%,\n        rgba(5, 5, 8, ${mid}) 30%,\n        rgba(5, 5, 8, ${end}) 100%\n      )`;
+      contentOverlay.style.background = `linear-gradient(to bottom, rgba(${bgColor}, ${start}) 0%, rgba(${bgColor}, ${mid}) 30%, rgba(${bgColor}, ${end}) 100%)`;
     }
   });
 
   // Camera Y
   const sliderCamY = document.getElementById('slider-camY');
   const valCamY = document.getElementById('val-camY');
-  
+
   sliderCamY.addEventListener('input', (e) => {
     const v = parseFloat(e.target.value);
     valCamY.textContent = v.toString();
-    if (camera) {
-      camera.position.y = v;
-      camera.lookAt(0, v, 0);
+    if (cameraRef) {
+      cameraRef.position.y = v;
+      cameraRef.lookAt(0, v, 0);
     }
   });
 
   // Fog Density
   const sliderFog = document.getElementById('slider-fog');
   const valFog = document.getElementById('val-fog');
-  
+
   sliderFog.addEventListener('input', (e) => {
     const v = parseFloat(e.target.value);
     valFog.textContent = v.toFixed(3);
-    if (scene && scene.fog) {
-      scene.fog.density = v;
+    if (sceneRef && sceneRef.fog) {
+      sceneRef.fog.density = v;
     }
   });
-
-  console.log('[devlog-bg] Dev panel enabled');
 }
