@@ -91,6 +91,8 @@ async function loadSessions(counterId) {
       session.log_content = await loadSessionContent(session.id);
     }));
 
+    sessions = sortSessionsByEndDate(sessions);
+
     if (countEl) {
       countEl.classList.remove('mb-5');
       countEl.classList.add('mb-4');
@@ -99,6 +101,7 @@ async function loadSessions(counterId) {
   } catch (e) {
     console.warn('sessions.json not found, using demo data:', e.message);
     sessions = generateDemoData();
+    sessions = sortSessionsByEndDate(sessions);
 
     if (countEl) {
       countEl.classList.remove('mb-5');
@@ -119,6 +122,37 @@ function generateDemoData() {
     { id: 'session-004', title_ja: 'Part 4: コンテンツ統合', title_en: 'Part 4: Content Integration', date_range: '2025/02-14', cover: './assets/devlog/covers/session-004.jpg', log_content: null },
     { id: 'session-005', title_ja: 'Part 5: Read More UI', title_en: 'Part 5: Read More UI', date_range: '2025/02-15', cover: './assets/devlog/covers/session-005.jpg', log_content: null },
   ];
+}
+
+function sortSessionsByEndDate(list) {
+  const sessionsCopy = [...list];
+  sessionsCopy.sort((a, b) => getSessionEndDate(b) - getSessionEndDate(a));
+  return sessionsCopy;
+}
+
+function getSessionEndDate(session) {
+  if (session.end) {
+    const endTime = Date.parse(session.end);
+    return Number.isNaN(endTime) ? 0 : endTime;
+  }
+
+  const range = session.date_range || '';
+  if (!range) return 0;
+
+  const parts = range.split('〜').map(part => part.trim()).filter(Boolean);
+  const startStr = parts[0] || '';
+  const endStr = parts[parts.length - 1] || '';
+  const startYearMatch = startStr.match(/(\\d{4})/);
+  const startYear = startYearMatch ? startYearMatch[1] : '';
+
+  let endCandidate = endStr;
+  if (startYear && !/\\d{4}/.test(endStr)) {
+    endCandidate = `${startYear}-${endStr}`;
+  }
+
+  const normalized = endCandidate.replace(/[./]/g, '-').replace(/\\s+/g, '');
+  const parsed = Date.parse(normalized);
+  return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 /**
