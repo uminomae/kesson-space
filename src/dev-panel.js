@@ -3,6 +3,7 @@
 // CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
 import { toggles, breathConfig, sceneParams, fluidParams, liquidParams, distortionParams, gemParams, vortexParams } from './config.js';
+import { injectStyles } from './dom-utils.js';
 
 // --- CHANGED: Bootstrap動的ローダー ---
 function loadBootstrap() {
@@ -220,8 +221,7 @@ function createPanel() {
         });
     });
 
-    const style = document.createElement('style');
-    style.textContent = `
+    injectStyles('dev-panel-styles', `
         #dev-toggle {
             position: fixed;
             top: 50%;
@@ -340,8 +340,7 @@ function createPanel() {
             display: none;
             user-select: all;
         }
-    `;
-    document.head.appendChild(style);
+    `);
 
     const tab = document.createElement('div');
     tab.id = 'dev-toggle';

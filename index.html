@@ -14,7 +14,8 @@
   <title>欠損駆動思考 - Kesson Space</title>
   <link rel="icon" href="./favicon.ico">
 
-  <!-- CHANGED: Bootstrap CSS/JS を削除。dev-panel.js が ?dev 時に動的ロードする -->
+  <!-- Bootstrap CSS (for devlog modal) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- PERF: CDN TLS接続を先行確立 -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -185,7 +186,7 @@
     /* --- 潜水スペーサー（スクロール余白） --- */
     #hero-spacer {
       position: relative;
-      height: 250vh;
+      height: 125vh;
       z-index: 5;
       pointer-events: none;
     }
@@ -355,119 +356,6 @@
       margin-top: 4px;
     }
 
-    /* --- Devlog Detail Panel --- */
-    #devlog-detail {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 380px;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(5,5,8,0.95) 20%);
-      padding: 60px 40px 80px 48px;
-      z-index: 100;
-      overflow-y: auto;
-      transform: translateX(100%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: none;
-    }
-    #devlog-detail.visible {
-      transform: translateX(0);
-      pointer-events: auto;
-    }
-    #devlog-detail .detail-header { margin-bottom: 20px; }
-    #devlog-detail .date {
-      display: block;
-      font-size: 0.9rem;
-      color: rgba(220, 230, 245, 0.9);
-      font-weight: 600;
-    }
-    #devlog-detail .meta {
-      font-size: 0.7rem;
-      color: rgba(180, 200, 230, 0.5);
-      margin-top: 4px;
-    }
-    #devlog-detail .category-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
-      font-size: 0.6rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-top: 8px;
-    }
-    #devlog-detail .stats {
-      display: flex;
-      gap: 16px;
-      margin: 16px 0;
-      font-size: 0.7rem;
-      color: rgba(180, 200, 230, 0.5);
-    }
-    #devlog-detail .stat-val {
-      font-size: 1.2rem;
-      color: rgba(220, 230, 245, 0.9);
-      font-weight: 600;
-      display: block;
-    }
-    #devlog-detail h3 {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: rgba(180, 200, 230, 0.5);
-      margin: 20px 0 8px;
-    }
-    #devlog-detail .file-list {
-      list-style: none;
-      font-size: 0.7rem;
-      line-height: 1.6;
-      padding: 0;
-      margin: 0;
-    }
-    #devlog-detail .file-list li {
-      color: rgba(180, 200, 230, 0.4);
-      word-break: break-all;
-    }
-    #devlog-detail .msg-list {
-      list-style: none;
-      font-size: 0.7rem;
-      line-height: 1.8;
-      padding: 0;
-      margin: 0;
-    }
-    #devlog-detail .msg-list li {
-      color: rgba(180, 200, 230, 0.4);
-      padding-left: 12px;
-      border-left: 2px solid rgba(100, 150, 255, 0.15);
-    }
-    /* ログ本文エリア */
-    #devlog-detail .log-content {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(100, 150, 255, 0.1);
-    }
-    #devlog-detail .log-content p {
-      font-size: 0.78rem;
-      color: rgba(200, 215, 235, 0.6);
-      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", 'Georgia', serif;
-      line-height: 2.0;
-      letter-spacing: 0.03em;
-      margin-bottom: 1.2em;
-    }
-    #devlog-detail .close-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: none;
-      color: rgba(180, 200, 230, 0.4);
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-    #devlog-detail .close-btn:hover { color: #f59e0b; }
-    #devlog-detail::-webkit-scrollbar { width: 4px; }
-    #devlog-detail::-webkit-scrollbar-track { background: transparent; }
-    #devlog-detail::-webkit-scrollbar-thumb { background: rgba(100, 150, 255, 0.15); border-radius: 2px; }
-
     /* --- 浮上ボタン --- */
     #surface-btn {
       position: fixed;
@@ -495,6 +383,118 @@
       outline: 2px solid rgba(100, 150, 255, 0.8);
       outline-offset: 4px;
     }
+
+    /* ============================
+       Devlog Session Modal
+       ============================ */
+    #devlogSessionModal .modal-content {
+      background: rgba(10, 14, 26, 0.98);
+      border: 1px solid rgba(100, 150, 255, 0.1);
+      color: #94a3b8;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+    #devlogSessionModal .modal-header {
+      border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+      padding: 1rem 1.5rem;
+    }
+    #devlogSessionModal .modal-body {
+      padding: 1.5rem;
+      max-height: 80vh;
+    }
+    #devlogSessionModal .session-header { margin-bottom: 0; }
+    #devlogSessionModal .session-date {
+      display: block;
+      font-size: 1rem;
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    #devlogSessionModal .session-id {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-top: 4px;
+      display: block;
+    }
+    #devlogSessionModal .session-category {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 8px;
+    }
+    #devlogSessionModal .session-cover {
+      margin-bottom: 1.5rem;
+    }
+    #devlogSessionModal .session-cover img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid rgba(100, 150, 255, 0.1);
+    }
+    #devlogSessionModal .session-stats {
+      display: flex;
+      gap: 20px;
+      margin: 20px 0;
+      font-size: 0.75rem;
+    }
+    #devlogSessionModal .stat-val {
+      font-size: 1.3rem;
+      color: #e2e8f0;
+      font-weight: 600;
+      display: block;
+    }
+    #devlogSessionModal .session-content {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(100, 150, 255, 0.1);
+    }
+    #devlogSessionModal .session-content h1,
+    #devlogSessionModal .session-content h2,
+    #devlogSessionModal .session-content h3 {
+      color: #e2e8f0;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    #devlogSessionModal .session-content h1 { font-size: 1.3rem; }
+    #devlogSessionModal .session-content h2 { font-size: 1.1rem; }
+    #devlogSessionModal .session-content h3 { font-size: 0.95rem; }
+    #devlogSessionModal .session-content p {
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: #94a3b8;
+      margin-bottom: 1em;
+      font-family: "Noto Serif JP", "Yu Mincho", serif;
+    }
+    #devlogSessionModal .session-content ul,
+    #devlogSessionModal .session-content ol {
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: #94a3b8;
+      padding-left: 1.5em;
+    }
+    #devlogSessionModal .session-content code {
+      background: rgba(100, 150, 255, 0.1);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.8em;
+    }
+    #devlogSessionModal .session-content pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1em;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    #devlogSessionModal .session-content a {
+      color: #f59e0b;
+    }
+    #devlogSessionModal .btn-close-white {
+      filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    .modal-body::-webkit-scrollbar { width: 6px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
   </style>
   
   <script type="importmap">
@@ -590,20 +590,47 @@
     </div>
   </section>
 
-  <!-- Devlog Detail Panel（ログ本文表示エリア追加） -->
-  <div id="devlog-detail">
-    <button class="close-btn" id="detail-close">✕</button>
-    <div class="detail-header">
-      <span class="date" id="detail-date"></span>
-      <span class="meta" id="detail-meta"></span>
-      <span class="category-badge" id="detail-category"></span>
+  <!-- Devlog Session Modal (Bootstrap) -->
+  <div class="modal fade" id="devlogSessionModal" tabindex="-1" aria-labelledby="devlogSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="session-header">
+            <span class="session-date" id="session-date"></span>
+            <span class="session-id" id="session-id"></span>
+            <span class="session-category" id="session-category"></span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Cover Image -->
+          <div class="session-cover" id="session-cover">
+            <img src="" alt="Session cover" id="session-cover-img">
+          </div>
+          <!-- Stats -->
+          <div class="session-stats" id="session-stats">
+            <div><span class="stat-val" id="session-commits">0</span>commits</div>
+            <div><span class="stat-val" id="session-ins">+0</span>insertions</div>
+            <div><span class="stat-val" id="session-dels">-0</span>deletions</div>
+          </div>
+          <!-- Markdown Content (from content/devlog/session-xxx.md) -->
+          <div class="session-content" id="session-content">
+            <!-- Rendered markdown will be inserted here -->
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="stats">
-      <div><span class="stat-val" id="detail-commits">0</span>commits</div>
-      <div><span class="stat-val" id="detail-ins">0</span>lines</div>
-      <div><span class="stat-val" id="detail-dels">0</span>deletions</div>
+  </div>
+
+  <!-- Image Lightbox Modal -->
+  <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center">
+          <img id="lightbox-image" class="img-fluid" style="max-height: 80vh; cursor: pointer;" alt="Enlarged cover">
+        </div>
+      </div>
     </div>
-    <div class="log-content" id="detail-log-content"></div>
   </div>
 
   <!-- CHANGED: aria-label 追加 -->
@@ -623,5 +650,8 @@
       });
     }
   </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
