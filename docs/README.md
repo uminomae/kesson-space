@@ -53,13 +53,20 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 → [WORKFLOW.md §1](./WORKFLOW.md) を参照
 
-### エージェント分業
+### エージェント体制
 
-| 役割 | 担当 |
-|------|------|
-| 司令塔（要件整理、ファイル管理） | Claude |
-| プログラマー（Three.js/GLSL） | Gemini |
-| レビュアー（構造改善） | GPT |
+| 役割 | 担当 | 責務 |
+|------|------|------|
+| 戦略・最終承認 | DT (Claude Desktop) | 方針決定、スキル作成 |
+| 常駐PM | Claude Code | タスク管理、スキル呼び出し、品質管理、マージ |
+| 実装 | OpenAI Codex x2 | コーディング |
+
+#### スキル
+- [docs/skills/devlog-writing.md](./skills/devlog-writing.md): devlog作成ルール
+
+#### 品質ルール
+- CSS: Bootstrap使用（カスタムCSS最小限）
+- devlog: レポート調（小説調NG）
 
 → [AGENT-RULES.md](./AGENT-RULES.md) を参照
 
