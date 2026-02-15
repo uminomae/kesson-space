@@ -127,10 +127,33 @@ git pull origin main --rebase
 | ワークツリー | パス | ブランチ | 用途 |
 |--------------|------|----------|------|
 | main | /Users/uminomae/Documents/GitHub/kesson-space | main | 本番（直接コミット非推奨） |
+| 🖥️ **DT確認用** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | (任意) | **サーバー起動・ブラウザ確認** |
 | Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
 | Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
 | Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
-| DT | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | feature/devlog-content | DT直接作業用 |
+
+### 🖥️ DT確認用ワークツリー（kesson-space-claudeDT）
+
+**役割**: DTがローカルサーバーを起動してブラウザで動作確認するためのワークツリー
+
+**運用フロー**:
+```
+1. エージェント（Claude Code / Codex）が各ワークツリーで実装
+2. 実装完了 → featureブランチをpush
+3. DTがkesson-space-claudeDTで該当ブランチをcheckout/merge
+4. python3 -m http.server 8000 でサーバー起動
+5. ブラウザで動作確認
+6. 問題なければmainへPRマージ承認
+```
+
+**確認コマンド例**:
+```bash
+cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+git fetch origin
+git checkout feature/t045-background-modular  # 確認したいブランチ
+python3 -m http.server 8000
+# → http://localhost:8000/ で確認
+```
 
 ### ワークツリー割り当てルール
 
@@ -139,6 +162,7 @@ git pull origin main --rebase
 3. **依存関係あり**: 同一ワークツリーで順次実行
 4. **コンフリクトリスク高**: 別ワークツリー必須
 5. **mainへの直接コミット**: 緊急時のみ（ドキュメント更新等）
+6. **動作確認**: kesson-space-claudeDT で実施
 
 ### 指示書へのワークツリー記載（必須）
 
@@ -147,6 +171,11 @@ git pull origin main --rebase
 📁 ワークツリー: kesson-claudeCode2
 📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode2
 🌿 ブランチ: feature/claude-code-2
+
+### 確認方法
+DTがkesson-space-claudeDTで以下を実行:
+git checkout feature/claude-code-2
+python3 -m http.server 8000
 ```
 
 ---
@@ -183,6 +212,13 @@ type: T-XXX description
 
 ### 完了条件
 - [ ] 条件
+
+### DT確認手順
+cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+git fetch origin
+git checkout [ブランチ名]
+python3 -m http.server 8000
+# → http://localhost:8000/[確認URL]
 ```
 
 ### OpenAI Codex 向け
@@ -216,6 +252,12 @@ git pull origin main --rebase
 
 ### コミット
 type: T-XXX description
+
+### DT確認手順
+cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+git fetch origin
+git checkout feature/codex-tasks
+python3 -m http.server 8000
 ```
 
 ### Gemini MCP 向け（実装依頼）
@@ -281,6 +323,9 @@ DTが見ているワークツリー: [確認 or 推測結果]
 
 ## 指示書
 [テンプレートに従った指示書（出力先セクション必須）]
+
+## DT確認手順
+[kesson-space-claudeDTでの確認コマンド]
 
 ## 並列実行可否
 [可能 / 依存関係あり]
