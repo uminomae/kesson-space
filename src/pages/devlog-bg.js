@@ -33,8 +33,8 @@ if (container && !prefersReducedMotion) {
   toggles.fog = true;
 
   // カメラY位置を深海レベルに設定
-  camera.position.y = -40;
-  camera.lookAt(0, -40, 0);
+  camera.position.y = -50;
+  camera.lookAt(0, -50, 0);
   console.log('[devlog-bg] Scene created, camera at Y:', camera.position.y);
 
   // リサイズハンドラ
@@ -109,8 +109,8 @@ if (DEV_MODE && container) {
     <label>Overlay Opacity <span class="value" id="val-overlay">0.50</span></label>
     <input type="range" id="slider-overlay" min="0" max="1" step="0.05" value="0.5">
     
-    <label>Camera Y <span class="value" id="val-camY">-40</span></label>
-    <input type="range" id="slider-camY" min="-100" max="50" step="5" value="-40">
+    <label>Camera Y <span class="value" id="val-camY">-50</span></label>
+    <input type="range" id="slider-camY" min="-100" max="50" step="5" value="-50">
     
     <label>Fog Density <span class="value" id="val-fog">0.012</span></label>
     <input type="range" id="slider-fog" min="0" max="0.05" step="0.001" value="0.012">
