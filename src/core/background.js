@@ -27,19 +27,6 @@ export function createBackground({ container, preset = 'full', options = {} }) {
     scene.fog = new THREE.FogExp2(0x050510, 0.015);
   }
 
-  // === DEBUG: 赤い平面を追加して描画確認 ===
-  const debugGeometry = new THREE.PlaneGeometry(100, 100);
-  const debugMaterial = new THREE.MeshBasicMaterial({
-    color: 0xff0000,
-    transparent: true,
-    opacity: 0.5,
-  });
-  const debugMesh = new THREE.Mesh(debugGeometry, debugMaterial);
-  debugMesh.position.z = -10;
-  scene.add(debugMesh);
-  console.log('[background] DEBUG: Red plane added');
-  // === END DEBUG ===
-  
   // カメラ
   const aspect = window.innerWidth / window.innerHeight;
   const camera = new THREE.PerspectiveCamera(CAMERA_FOV, aspect, CAMERA_NEAR, CAMERA_FAR);
@@ -69,6 +56,17 @@ export function createBackground({ container, preset = 'full', options = {} }) {
     vortexMaterial = createVortexMaterial();
     vortexMesh = createVortexMesh(vortexMaterial);
     scene.add(vortexMesh);
+    if (vortexMesh) {
+      vortexMesh.position.set(0, 0, 0);
+      vortexMesh.scale.set(50, 50, 1);
+      console.log('[background] vortexMesh positioned at:', vortexMesh.position);
+    }
+    console.log('[background] vortexMesh:', {
+      visible: vortexMesh?.visible,
+      position: vortexMesh?.position,
+      scale: vortexMesh?.scale,
+      material: vortexMaterial,
+    });
   }
   
   // リサイズハンドラ
