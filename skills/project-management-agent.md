@@ -164,42 +164,45 @@ python3 -m http.server 8000
 5. **mainへの直接コミット**: 緊急時のみ（ドキュメント更新等）
 6. **動作確認**: kesson-space-claudeDT で実施
 
-### 指示書へのワークツリー記載（必須）
+---
+
+## Step 4: 指示書生成
+
+タスク認識時、以下の**基本フォーマット**で指示書を生成する。
+
+### 🔴 基本フォーマット（必須）
 
 ```markdown
-### 出力先
-📁 ワークツリー: kesson-claudeCode2
-📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode2
-🌿 ブランチ: feature/claude-code-2
+## 📋 プロジェクト管理エージェント起動
 
-### 確認方法
-DTがkesson-space-claudeDTで以下を実行:
-git checkout feature/claude-code-2
-python3 -m http.server 8000
-```
+### ワークツリー確認
+DTが見ているワークツリー: **[kesson-space-claudeDT / その他]**
+
+### タスク分析
+
+| ID | 内容 | 分類 | 委譲先 | 出力先ワークツリー |
+|----|------|------|--------|-------------------|
+| T-XXX | [タスク概要] | [実装/修正/etc] | [Claude Code/Codex/etc] | [kesson-claudeCode/etc] |
 
 ---
 
-## Step 4: 指示書テンプレート
-
-### Claude Code 向け
-
-```markdown
-## Claude Code 指示書: T-XXX
+## [委譲先] 指示書: T-XXX
 
 ### タスク概要
-[1行]
+[1行で説明]
 
 ### 出力先
-📁 ワークツリー: [kesson-claudeCode / kesson-claudeCode2]
+📁 ワークツリー: [kesson-claudeCode / kesson-claudeCode2 / kesson-codex]
 📂 パス: /Users/uminomae/Documents/GitHub/[ワークツリー名]
-🌿 ブランチ: feature/claude-code[-N]
+🌿 ブランチ: [feature/xxx]
 
 ### 🔴 ブランチ同期（必須 — 作業開始前に実行）
+```bash
 cd /Users/uminomae/Documents/GitHub/[ワークツリー名]
 git fetch origin
 git checkout [ブランチ名]
 git pull origin main --rebase
+```
 
 ### 対象ファイル
 - [ファイルパス]
@@ -208,12 +211,16 @@ git pull origin main --rebase
 [具体的な指示]
 
 ### コミット
-type: T-XXX description
+```
+type(T-XXX): description
+```
 
 ### 完了条件
-- [ ] 条件
+- [ ] 条件1
+- [ ] 条件2
 
 ### DT確認手順
+```bash
 cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
 git fetch origin
 git checkout [ブランチ名]
@@ -221,44 +228,31 @@ python3 -m http.server 8000
 # → http://localhost:8000/[確認URL]
 ```
 
+---
+
+## 並列実行可否
+[可能 / 不可（理由）]
+
+---
+
+**この指示書を[Claude Code / Codex]に渡してください。**
+```
+
+---
+
+## 指示書テンプレート詳細
+
+### Claude Code 向け
+
+上記基本フォーマットに加え、以下を含める:
+- 設計判断が必要な場合は背景・制約を明記
+- 複数ファイルの場合は変更順序を指定
+
 ### OpenAI Codex 向け
 
-```markdown
-## Codex 指示書: T-XXX
-
-### 概要
-[1行]
-
-### 出力先
-📁 ワークツリー: kesson-codex
-📂 パス: /Users/uminomae/Documents/GitHub/kesson-codex
-🌿 ブランチ: feature/codex-tasks
-
-### 🔴 ブランチ同期（必須 — 作業開始前に実行）
-cd /Users/uminomae/Documents/GitHub/kesson-codex
-git fetch origin
-git checkout feature/codex-tasks
-git pull origin main --rebase
-
-### 入力
-[入力ファイル/データ]
-
-### 出力
-[期待する成果物]
-
-### 手順
-1. [ステップ]
-2. [ステップ]
-
-### コミット
-type: T-XXX description
-
-### DT確認手順
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
-git fetch origin
-git checkout feature/codex-tasks
-python3 -m http.server 8000
-```
+基本フォーマットに加え:
+- 手順を番号付きで明確に
+- 入力/出力を明示
 
 ### Gemini MCP 向け（実装依頼）
 
@@ -306,37 +300,11 @@ python3 -m http.server 8000
 
 ---
 
-## 自動出力フォーマット
-
-タスク認識時、以下を自動生成して提示:
-
-```
-📋 プロジェクト管理エージェント起動
-
-## ワークツリー確認
-DTが見ているワークツリー: [確認 or 推測結果]
-
-## タスク分析
-| ID | 内容 | 分類 | 委譲先 | 出力先ワークツリー |
-|-------|------|------|--------|-------------------|
-| T-XXX | ... | 実装 | Claude Code | kesson-claudeCode2 |
-
-## 指示書
-[テンプレートに従った指示書（出力先セクション必須）]
-
-## DT確認手順
-[kesson-space-claudeDTでの確認コマンド]
-
-## 並列実行可否
-[可能 / 依存関係あり]
-```
-
----
-
 ## 禁止事項
 
 - **ワークツリー指定なしで指示書を作成すること** ← 最重要
 - **同期せずに作業を開始すること** ← コンフリクトの原因
+- **DT確認手順を省略すること** ← 動作確認できない
 - 委譲判断をスキップして直接実装に飛ぶこと
 - Gemini MCPをユーザー許可なく呼び出すこと
 - 複数タスクを同一ワークツリーに割り当てて並列指示すること
