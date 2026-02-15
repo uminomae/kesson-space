@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #32 T-040完了・devlog Offcanvas内ビュー切替
+**セッション**: #33 プロジェクト管理体系再設計・devlog詳細ページ分離
 
 ---
 
@@ -48,22 +48,31 @@
 - [x] **ワークフロー標準化・並列委譲 #29**: skills作成、AGENT-RULES v1.4、T-039並列委譲
 - [x] **T-039b完了・カバー画像自動生成 #30**: Puppeteerスクリプト作成
 - [x] **T-041完了・devlog日付整合性修正 #31**: session-002〜005書き直し、カバー画像再生成
+- [x] **T-040完了・devlog Offcanvas内ビュー切替 #32**: Modal廃止、Offcanvas内2ビュー構造
 
-### セッション#32 T-040完了・devlog Offcanvas内ビュー切替
+### セッション#33 プロジェクト管理体系再設計・devlog詳細ページ分離
 
 **実施内容**:
 
-1. **T-040: devlog詳細画面遷移のBootstrap対応**
-   - devlogSessionModal廃止（Bootstrap非推奨パターン: Modal inside Offcanvas）
-   - Offcanvas内に一覧/詳細の2ビュー構造を実装
-   - 戻るボタン追加（showListView）
-   - Offcanvas閉じた時にリストビューにリセット
-   - imageLightboxModalは維持（カバー画像拡大用）
+1. **プロジェクト管理体系再設計**
+   - ルートREADME.mdをセッション起動スクリプト化
+   - 常駐エージェント起動を明示（📋プロジェクト管理、🩺セッションヘルス、🔎PKガード）
+   - docs/WORKFLOW.md §1をルートREADMEへの参照に簡素化
+   - docs/README.mdの監督構造を参照リンク化（AGENT-RULES.mdに一本化）
+   - skills/project-management-agent.mdにワークツリー同期必須ルールを追加
+
+2. **T-044: devlog詳細ページ分離**
+   - アコーディオン型の問題（長いコンテンツでレイアウト崩れ）を解決
+   - devlog.html?id=XXX 方式に変更（通常のページ遷移）
+   - ブラウザ戻るボタンが自然に動作
+   - collapse/accordion関連を削除
+   - ライトボックスをdevlog.htmlに移植
 
 ### 決定事項
 
-- Modal inside OffcanvasはBootstrap非推奨のため廃止
-- 詳細表示はOffcanvas内でビュー切替方式に変更
+- プロジェクト管理はルートREADME.mdを単一起点とする
+- devlog詳細はアコーディオンではなく別ページ遷移方式
+- 指示書には必ずワークツリー同期手順を含める
 
 ### 次セッションのタスク
 
@@ -79,7 +88,7 @@
 
 → **[TODO.md](./TODO.md)** を参照
 
-P0なし。P1に1件（T-043）。P2に10件、P3に4件。
+P0なし。P1に1件（T-043）。P2に10件、P3に5件。
 
 ### 現在のデフォルトパラメータ
 
@@ -164,7 +173,8 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 
 ## 参照リンク
 
-- [README.md](./README.md) - 管理ハブ・監督構造
+- [README.md](../README.md) - セッション起動（エントリーポイント）
+- [docs/README.md](./README.md) - ドキュメントハブ
 - [TODO.md](./TODO.md) - タスクバックログ
 - [AGENT-RULES.md](./AGENT-RULES.md) - マルチエージェント運用ルール
 - [CONCEPT.md](./CONCEPT.md) - 理論↔視覚の対応

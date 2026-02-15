@@ -60,6 +60,7 @@
 | T-012 | 欠損データ構造設計 | L | 設計 | 理論側との連携。kesson-thinkingで先に決定が必要 |
 | T-022 | dev-panel.js UI/Controller分離 | M | リファクタ | HTML生成とロジック混在（約22KB）。UIテンプレートとControllerに分離 |
 | T-025 | ビルドツール導入検討 | L | 設計 | Vite等。現状の「ビルド無し」方針が強みなので今すぐ不要寄り |
+| T-045 | devlog.html背景にThree.js検討 | M | 体験 | 詳細ページにも3D背景を適用できるか検討 |
 
 ---
 
@@ -67,6 +68,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-044 | devlog詳細ページ分離（devlog.html?id=XXX方式） | #33 |
 | T-040 | devlog詳細画面遷移のBootstrap対応（Modal→Offcanvas内ビュー切替） | #32 |
 | T-041 | devlog session/image日付整合性確認・修正 | #31 |
 | T-039b | カバー画像自動生成スクリプト | #30 |
