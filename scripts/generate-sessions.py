@@ -24,11 +24,25 @@ SCRIPT_DIR = Path(__file__).parent
 CONFIG_PATH = SCRIPT_DIR / "devlog-config.json"
 PROJECT_ROOT = SCRIPT_DIR.parent
 
+DEFAULT_CATEGORIES = {
+    "shader":   {"pattern": ["shaders/", ".glsl"],      "color": "#1a237e"},
+    "document": {"pattern": ["docs/", ".md"],           "color": "#f59e0b"},
+    "config":   {"pattern": ["config.", ".json"],       "color": "#94a3b8"},
+    "code":     {"pattern": ["src/", ".js"],            "color": "#22c55e"},
+    "asset":    {"pattern": ["assets/", ".svg", ".png"],"color": "#a855f7"},
+    "infra":    {"pattern": ["scripts/", ".github/", ".yml"], "color": "#ef4444"},
+}
+
 def load_config():
+    if not CONFIG_PATH.exists():
+        return {}
     with open(CONFIG_PATH) as f:
         return json.load(f)
 
-def check_approval(repo_name, config):
+def check_approval(repo_name, config, repo_def=None):
+    if repo_def and repo_def.get("auto_approve"):
+        print(f"  ✓ auto-approved: {repo_name}", file=sys.stderr)
+        return repo_def
     for repo in config["approved_repos"]:
         if repo["name"] == repo_name:
             if config.get("auto_approve", False):
@@ -161,33 +175,48 @@ def build_session_json(sessions, repo_name, categories):
 def main():
     parser = argparse.ArgumentParser(description="git log → sessions.json")
     parser.add_argument("--repo", help="対象リポジトリ名")
+    parser.add_argument("--path", help="リポジトリのローカルパス（CI用。configのlocal_pathを上書き）")
     parser.add_argument("--since", help="開始日 (YYYY-MM-DD)")
     parser.add_argument("--dry-run", action="store_true", help="標準出力のみ")
     parser.add_argument("--output", help="出力先パス")
     args = parser.parse_args()
 
     config = load_config()
-    categories = config.get("categories", {})
+    categories = config.get("categories", DEFAULT_CATEGORIES) or DEFAULT_CATEGORIES
     gap_hours = config.get("session_gap_hours", 3)
 
-    if args.repo:
-        targets = [r for r in config["approved_repos"] if r["name"] == args.repo]
+    ci_workspace = os.getenv("GITHUB_WORKSPACE") if os.getenv("GITHUB_ACTIONS") == "true" else None
+    if ci_workspace and not args.repo and not args.path:
+        repo_name = os.getenv("GITHUB_REPOSITORY", Path(ci_workspace).name).split("/")[-1]
+        targets = [{
+            "name": repo_name,
+            "local_path": ci_workspace,
+            "permissions": ["read_log"],
+            "auto_approve": True,
+        }]
+    elif args.repo:
+        targets = [r for r in config.get("approved_repos", []) if r["name"] == args.repo]
         if not targets:
             print(f"✗ '{args.repo}' は approved_repos に含まれない", file=sys.stderr)
             sys.exit(1)
     else:
-        targets = config["approved_repos"]
+        targets = config.get("approved_repos", [])
+
+    if not targets:
+        print("✗ approved_repos が空です。--path か --repo を指定してください。", file=sys.stderr)
+        sys.exit(1)
 
     all_sessions = []
     for repo_def in targets:
         repo_name = repo_def["name"]
         print(f"\n--- {repo_name} ---", file=sys.stderr)
-        approved = check_approval(repo_name, config)
+        approved = check_approval(repo_name, config, repo_def)
         if not approved: continue
         if "read_log" not in approved.get("permissions", []):
             print(f"  ✗ read_log 権限なし", file=sys.stderr)
             continue
-        commits = get_git_log(repo_def["local_path"], since=args.since)
+        repo_path = args.path if args.path else repo_def["local_path"]
+        commits = get_git_log(repo_path, since=args.since)
         print(f"  コミット数: {len(commits)}", file=sys.stderr)
         if not commits: continue
         sessions = split_sessions(commits, gap_hours)
