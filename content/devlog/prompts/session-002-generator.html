@@ -24,7 +24,6 @@
         const ctx = canvas.getContext('2d');
         const W = canvas.width;
         const H = canvas.height;
-        const S = 1.5; // scale factor (1920/1280)
 
         const blue = '#4a90d9';
         const cyan = '#00d4ff';
@@ -51,7 +50,7 @@
         // Subtitle
         ctx.font = `${33}px "Noto Sans JP", sans-serif`;
         ctx.fillStyle = blue;
-        ctx.fillText('02-12 〜 02-13', W / 2, 195);
+        ctx.fillText('2026-02-12', W / 2, 195);
 
         // Timeline
         const tlY = 360;
@@ -70,10 +69,10 @@
             { text: '統一ブレス\nシステム', sub: 'HTML+FOV+Shader同期' },
             { text: 'Bootstrap 5\ndevパネル', sub: '13トグル' },
             { text: 'OrbitControls\n撤廃', sub: 'スクロール駆動ダイブ' },
-            { text: 'モバイルファースト\nスクロール', sub: 'scroll-ui.js分離' },
-            { text: '横スワイプ回転\n+ ピンチズーム', sub: 'タッチ操作対応' },
-            { text: 'vmin基準\nレスポンシブ', sub: 'フォント統一' },
+            { text: 'スクロール駆動\nUI分離', sub: 'scroll-ui.js' },
             { text: 'Gemシェーダー\n探求', sub: 'Sprite→Fresnel orb' },
+            { text: 'vmin基準\nレスポンシブ', sub: 'フォント統一' },
+            { text: '4エージェント\nレビュー', sub: '品質分析' },
         ];
 
         const spacing = (tlRight - tlLeft) / (items.length - 1);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devlog Cover - Part 3: コンテンツ統合</title>
+    <title>Devlog Cover - Part 3: モバイル対応</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #0a0e1a; font-family: sans-serif; }
@@ -45,12 +45,12 @@
         ctx.font = 'bold 78px "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif';
         ctx.fillStyle = cyan;
         ctx.textAlign = 'center';
-        ctx.fillText('Part 3: コンテンツ統合', W / 2, 135);
+        ctx.fillText('Part 3: モバイル対応', W / 2, 135);
 
         // Subtitle
         ctx.font = '33px "Noto Sans JP", sans-serif';
         ctx.fillStyle = blue;
-        ctx.fillText('02-14 〜 02-15', W / 2, 195);
+        ctx.fillText('2026-02-13', W / 2, 195);
 
         // Three column layout
         const colW = 525;
@@ -62,34 +62,33 @@
 
         const columns = [
             {
-                title: 'テスト & CI',
-                color: blue,
+                title: 'タッチ操作',
+                color: cyan,
                 items: [
-                    'E2Eテスト設計書',
+                    'vmin基準レスポンシブ統一',
+                    '横スワイプ回転対応',
+                    'ピンチズーム対応',
+                    'タッチ/マウス統合処理',
+                ]
+            },
+            {
+                title: 'テスト & CI',
+                color: amber,
+                items: [
+                    'E2Eテスト設計書作成',
                     'ブラウザ内テストランナー',
+                    '?test パラメータ実行',
                     'GitHub Actions CI構築',
                 ]
             },
             {
-                title: 'ビジュアル & UI',
-                color: cyan,
+                title: 'アクセシビリティ',
+                color: blue,
                 items: [
+                    'ISS-001起票',
+                    'WCAG 2.1 Level A対応',
                     'Bootstrap条件付きロード',
                     '流体フィールド128x128化',
-                    '渦シェーダー追加 (FBM spiral)',
-                    '液体屈折エフェクト',
-                    'devlogギャラリー (Bootstrap カード)',
-                ]
-            },
-            {
-                title: 'アーキテクチャ',
-                color: amber,
-                items: [
-                    'WCAG 2.1 Level A対応',
-                    'AGENT-RULES v1.1策定',
-                    'マルチエージェント運用',
-                    'CLAUDE.md新設',
-                    'ドキュメント階層再構成',
                 ]
             }
         ];
@@ -153,9 +152,9 @@
         ctx.fillText('技術的決定', startX + 30, barY + 45);
 
         const decisions = [
-            'devlog表示をThree.js 3Dカードから Bootstrap HTMLカードに変更（保守性優先）',
-            'セッション粒度を18件 → 3パートに統合（ユーザー視点の読みやすさ重視）',
-            'marked.jsでmarkdownレンダリング（カスタムパーサー置換）',
+            'モバイルではスクロールUXを最優先、カメラ操作は最小限に',
+            'タッチ操作: 横スワイプでカメラ回転、縦スクロールでページスクロール',
+            'CI自動テストで品質ゲートを確立',
         ];
 
         ctx.font = '21px "Noto Sans JP", sans-serif';
@@ -170,7 +169,7 @@
         ctx.font = '21px "Noto Sans JP", sans-serif';
         ctx.fillStyle = dimGray;
         ctx.textAlign = 'center';
-        ctx.fillText('kesson-space devlog — Bootstrap + marked.js 統合', W / 2, H - 30);
+        ctx.fillText('kesson-space devlog — モバイルファースト + E2Eテスト基盤', W / 2, H - 30);
 
         // Download via html2canvas
         document.getElementById('downloadButton').addEventListener('click', () => {
