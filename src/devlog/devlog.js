@@ -113,6 +113,10 @@ function generateDemoData() {
 function buildGallery() {
     containerEl.innerHTML = '';
 
+    // Bootstrap container for horizontal padding
+    const galleryContainer = document.createElement('div');
+    galleryContainer.className = 'container px-4';
+
     // Bootstrap row with responsive columns
     const row = document.createElement('div');
     row.className = 'row g-4 justify-content-center';
@@ -186,7 +190,8 @@ function buildGallery() {
         card.addEventListener('click', () => showDetail(session));
     });
 
-    containerEl.appendChild(row);
+    galleryContainer.appendChild(row);
+    containerEl.appendChild(galleryContainer);
     console.log('[devlog] Gallery built with', sessions.length, 'cards');
 }
 
