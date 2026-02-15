@@ -52,6 +52,7 @@
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 | T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中。generate-sessions.py修正済み。マージ後に再有効化可能 |
 | T-041 | devlog session/image日付整合性確認 | S | QA | session-001〜005の記事内容がコミット日付と整合しているか確認。カバー画像も同様 |
+| T-042 | ワークツリー同期チェック機能 | M | プロセス | 委譲指示時にワークツリー同期状態を確認・促進。開始ブランチ明示、同期用gitスクリプト作成。project-management-agent.md改善 |
 
 ### ⚪ P3（アイデア）
 
