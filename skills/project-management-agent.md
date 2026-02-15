@@ -24,45 +24,165 @@
 2. **P0/P1タスクを検出した時**
 3. **「指示書を作成」と言われた時**
 
-### 判断フロー
+---
+
+## 🔴 指示書作成の流れ（必須）
+
+タスク認識時、**必ずこの流れで指示書を生成する**。
+
+### Flow
 
 ```
-タスク認識
-    ↓
-┌─────────────────────────────────┐
-│ Step 1: タスク分類              │
-└─────────────────────────────────┘
-    ↓
-┌─────────────────────────────────┐
-│ Step 2: 委譲先判断              │
-└─────────────────────────────────┘
-    ↓
-┌─────────────────────────────────┐
-│ Step 3: 出力先ワークツリー確認  │  ← 🔴 必須
-└─────────────────────────────────┘
-    ↓
-┌─────────────────────────────────┐
-│ Step 4: 指示書生成              │
-└─────────────────────────────────┘
-    ↓
-ユーザーに提示
+1. 📋 プロジェクト管理エージェント起動を宣言
+2. ワークツリー確認（DTが今どこを見ているか）
+3. タスク分析テーブル出力
+4. 指示書本体を生成
+5. 並列実行可否を明記
+6. 「この指示書を○○に渡してください」で締める
 ```
 
 ---
 
-## Step 1: タスク分類
+## 指示書フォーマット
 
-| 分類 | 特徴 | 例 |
-|------|------|-----|
-| **実装** | 新規コード作成、機能追加 | スクリプト作成、UI実装 |
-| **修正** | バグ修正、リファクタリング | ソート修正、マージモード |
-| **コンテンツ** | 文章、ドキュメント、記事 | session記事、README更新 |
-| **レビュー** | コード品質、設計確認 | 構造レビュー、パフォーマンス |
-| **シェーダー** | GLSL、Three.js | フラグメントシェーダー |
+### 完全な出力例
+
+以下は実際の指示書出力例。**このフォーマットに従うこと**。
+
+```markdown
+## 📋 プロジェクト管理エージェント起動
+
+### ワークツリー確認
+DTが見ているワークツリー: **kesson-space-claudeDT** (ブラウザ確認用)
+
+### タスク分析
+
+| ID | 内容 | 分類 | 委譲先 | 出力先ワークツリー |
+|----|------|------|--------|-------------------|
+| T-045-fix | マージコンフリクト解決 + devlogアセット統合 | 実装 | **Claude Code** | kesson-claudeCode |
 
 ---
 
-## Step 2: 委譲先判断マトリクス
+## Claude Code 指示書: T-045-fix
+
+### タスク概要
+feature/t045-background-modular に devlog-content のアセットを統合し、devlog.htmlのThree.js背景を動作させる
+
+### 出力先
+📁 ワークツリー: kesson-claudeCode
+📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode
+🌿 ブランチ: feature/t045-background-modular
+
+### 🔴 ブランチ同期（必須 — 作業開始前に実行）
+cd /Users/uminomae/Documents/GitHub/kesson-claudeCode
+git fetch origin
+git checkout feature/t045-background-modular
+git pull origin feature/t045-background-modular
+
+### 対象ファイル
+- assets/devlog/ (devlog-contentからコピー)
+- content/devlog/ (devlog-contentからコピー)
+
+### 変更内容
+
+#### Phase 1: devlog-contentアセットの取り込み
+git checkout origin/feature/devlog-content -- assets/devlog/
+git checkout origin/feature/devlog-content -- content/devlog/
+git add -A
+git commit -m "chore(T-045): Import devlog assets from feature/devlog-content"
+git push origin feature/t045-background-modular
+
+### コミット
+chore(T-045): Import devlog assets from feature/devlog-content
+
+### 完了条件
+- [ ] assets/devlog/ が存在
+- [ ] content/devlog/ が存在
+- [ ] pushが完了
+
+### DT確認手順
+cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+git fetch origin
+git checkout feature/t045-background-modular
+python3 -m http.server 8000
+# → http://localhost:8000/devlog.html?id=session-001
+
+---
+
+## 並列実行可否
+不可（DTの確認後にmainマージ）
+
+---
+
+**この指示書をClaude Codeに渡してください。**
+```
+
+---
+
+## 各セクションの説明
+
+### 1. プロジェクト管理エージェント起動
+必ず `## 📋 プロジェクト管理エージェント起動` から始める。
+
+### 2. ワークツリー確認
+DTが今見ているワークツリーを明示。不明な場合は確認を求める。
+
+### 3. タスク分析テーブル
+| 列 | 内容 |
+|----|------|
+| ID | T-XXX形式 |
+| 内容 | 1行で概要 |
+| 分類 | 実装/修正/コンテンツ/レビュー/シェーダー |
+| 委譲先 | Claude Code / Codex / Gemini MCP / Claude直接 |
+| 出力先ワークツリー | kesson-claudeCode / kesson-codex / etc |
+
+### 4. 指示書本体
+
+必須セクション:
+- **タスク概要**: 1行
+- **出力先**: ワークツリー名、パス、ブランチ（📁📂🌿アイコン付き）
+- **ブランチ同期**: 🔴マーク付きで必須を強調
+- **対象ファイル**: 箇条書き
+- **変更内容**: 具体的な手順・コード
+- **コミット**: type(T-XXX): description 形式
+- **完了条件**: チェックボックス形式
+- **DT確認手順**: kesson-space-claudeDTでの確認コマンド
+
+### 5. 並列実行可否
+「可能」または「不可（理由）」
+
+### 6. 締め
+**この指示書を[委譲先]に渡してください。** で終える。
+
+---
+
+## ワークツリー構成
+
+| ワークツリー | パス | ブランチ | 用途 |
+|--------------|------|----------|------|
+| main | /Users/uminomae/Documents/GitHub/kesson-space | main | 本番（直接コミット非推奨） |
+| 🖥️ **DT確認用** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | (任意) | **サーバー起動・ブラウザ確認** |
+| Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
+| Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
+| Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
+
+### 🖥️ DT確認用ワークツリー（kesson-space-claudeDT）
+
+**役割**: DTがローカルサーバーを起動してブラウザで動作確認するためのワークツリー
+
+**運用フロー**:
+```
+1. エージェント（Claude Code / Codex）が各ワークツリーで実装
+2. 実装完了 → featureブランチをpush
+3. DTがkesson-space-claudeDTで該当ブランチをcheckout
+4. python3 -m http.server 8000 でサーバー起動
+5. ブラウザで動作確認
+6. 問題なければmainへPRマージ承認
+```
+
+---
+
+## 委譲先判断マトリクス
 
 ### 実装タスク
 
@@ -81,7 +201,6 @@
 | シェーダーレビュー | **Gemini MCP** (review mode) | GLSL専門性 |
 | 構造/アーキテクチャ | **GPT/Claude Code** | 俯瞰視点 |
 | パフォーマンス | **Gemini MCP** or **GPT** | 計測知見 |
-| セキュリティ | **GPT** | 幅広い知識 |
 
 ### コンテンツタスク
 
@@ -93,168 +212,9 @@
 
 ---
 
-## Step 3: 出力先ワークツリー確認 🔴
+## Gemini MCP向けテンプレート
 
-### 確認フロー
-
-```
-指示書作成前に必ず確認:
-
-Q: DTは今どのワークツリーを見ていますか？
-   → ユーザーに確認 or 直前の発言から推測
-
-デフォルト: DTが見ているワークツリーへ出力
-例外: 並列処理で別ワークツリーが必要な場合は明示的に指定
-```
-
-### 🔴 同期必須ルール
-
-**作業開始前に必ずワークツリーを最新状態に同期すること。**
-
-```bash
-# 指示書の「ブランチ同期」セクションを必ず実行してから作業開始
-git fetch origin
-git pull origin main --rebase
-```
-
-同期せずに作業を開始すると：
-- 他ワークツリーの変更とコンフリクト
-- mainへのマージ時に問題発生
-- 作業のやり直しが必要になる
-
-### ワークツリー構成
-
-| ワークツリー | パス | ブランチ | 用途 |
-|--------------|------|----------|------|
-| main | /Users/uminomae/Documents/GitHub/kesson-space | main | 本番（直接コミット非推奨） |
-| 🖥️ **DT確認用** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | (任意) | **サーバー起動・ブラウザ確認** |
-| Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
-| Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
-| Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
-
-### 🖥️ DT確認用ワークツリー（kesson-space-claudeDT）
-
-**役割**: DTがローカルサーバーを起動してブラウザで動作確認するためのワークツリー
-
-**運用フロー**:
-```
-1. エージェント（Claude Code / Codex）が各ワークツリーで実装
-2. 実装完了 → featureブランチをpush
-3. DTがkesson-space-claudeDTで該当ブランチをcheckout/merge
-4. python3 -m http.server 8000 でサーバー起動
-5. ブラウザで動作確認
-6. 問題なければmainへPRマージ承認
-```
-
-**確認コマンド例**:
-```bash
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
-git fetch origin
-git checkout feature/t045-background-modular  # 確認したいブランチ
-python3 -m http.server 8000
-# → http://localhost:8000/ で確認
-```
-
-### ワークツリー割り当てルール
-
-1. **基本**: DTが見ているワークツリーへ出力
-2. **並列実行**: 異なるワークツリーに割り当て（明示的に指定）
-3. **依存関係あり**: 同一ワークツリーで順次実行
-4. **コンフリクトリスク高**: 別ワークツリー必須
-5. **mainへの直接コミット**: 緊急時のみ（ドキュメント更新等）
-6. **動作確認**: kesson-space-claudeDT で実施
-
----
-
-## Step 4: 指示書生成
-
-タスク認識時、以下の**基本フォーマット**で指示書を生成する。
-
-### 🔴 基本フォーマット（必須）
-
-```markdown
-## 📋 プロジェクト管理エージェント起動
-
-### ワークツリー確認
-DTが見ているワークツリー: **[kesson-space-claudeDT / その他]**
-
-### タスク分析
-
-| ID | 内容 | 分類 | 委譲先 | 出力先ワークツリー |
-|----|------|------|--------|-------------------|
-| T-XXX | [タスク概要] | [実装/修正/etc] | [Claude Code/Codex/etc] | [kesson-claudeCode/etc] |
-
----
-
-## [委譲先] 指示書: T-XXX
-
-### タスク概要
-[1行で説明]
-
-### 出力先
-📁 ワークツリー: [kesson-claudeCode / kesson-claudeCode2 / kesson-codex]
-📂 パス: /Users/uminomae/Documents/GitHub/[ワークツリー名]
-🌿 ブランチ: [feature/xxx]
-
-### 🔴 ブランチ同期（必須 — 作業開始前に実行）
-```bash
-cd /Users/uminomae/Documents/GitHub/[ワークツリー名]
-git fetch origin
-git checkout [ブランチ名]
-git pull origin main --rebase
-```
-
-### 対象ファイル
-- [ファイルパス]
-
-### 変更内容
-[具体的な指示]
-
-### コミット
-```
-type(T-XXX): description
-```
-
-### 完了条件
-- [ ] 条件1
-- [ ] 条件2
-
-### DT確認手順
-```bash
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
-git fetch origin
-git checkout [ブランチ名]
-python3 -m http.server 8000
-# → http://localhost:8000/[確認URL]
-```
-
----
-
-## 並列実行可否
-[可能 / 不可（理由）]
-
----
-
-**この指示書を[Claude Code / Codex]に渡してください。**
-```
-
----
-
-## 指示書テンプレート詳細
-
-### Claude Code 向け
-
-上記基本フォーマットに加え、以下を含める:
-- 設計判断が必要な場合は背景・制約を明記
-- 複数ファイルの場合は変更順序を指定
-
-### OpenAI Codex 向け
-
-基本フォーマットに加え:
-- 手順を番号付きで明確に
-- 入力/出力を明示
-
-### Gemini MCP 向け（実装依頼）
+### 実装依頼
 
 ```markdown
 ## Gemini 実装依頼: T-XXX
@@ -278,7 +238,7 @@ python3 -m http.server 8000
 // CHANGED(YYYY-MM-DD) コメント付与
 ```
 
-### Gemini MCP 向け（レビュー依頼）
+### レビュー依頼
 
 ```markdown
 ## Gemini レビュー依頼: T-XXX
@@ -302,19 +262,18 @@ python3 -m http.server 8000
 
 ## 禁止事項
 
-- **ワークツリー指定なしで指示書を作成すること** ← 最重要
+- **指示書フォーマットを省略すること** ← 最重要
+- **ワークツリー指定なしで指示書を作成すること**
 - **同期せずに作業を開始すること** ← コンフリクトの原因
 - **DT確認手順を省略すること** ← 動作確認できない
 - 委譲判断をスキップして直接実装に飛ぶこと
 - Gemini MCPをユーザー許可なく呼び出すこと
 - 複数タスクを同一ワークツリーに割り当てて並列指示すること
-- DTが見ていないワークツリーに無断で出力すること
 
 ---
 
 ## 関連スキル
 
-- `skills/session-workflow.md` — セッション全体の流れ
 - `skills/devlog-generation.md` — devlog固有のワークフロー
 - `skills/orchestrator.md` — Claude用タスク分解手順
 - `docs/AGENT-RULES.md` — エージェント構成と責務
