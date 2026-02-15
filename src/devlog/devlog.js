@@ -71,7 +71,8 @@ async function loadSessions(counterId) {
         }));
 
         if (countEl) {
-            countEl.classList.add('mb-5');
+            countEl.classList.remove('mb-5');
+            countEl.classList.add('mb-4');
             countEl.textContent = `${sessions.length} sessions`;
         }
         buildGallery();
@@ -80,7 +81,8 @@ async function loadSessions(counterId) {
         sessions = generateDemoData();
 
         if (countEl) {
-            countEl.classList.add('mb-5');
+            countEl.classList.remove('mb-5');
+            countEl.classList.add('mb-4');
             countEl.textContent = `${sessions.length} sessions (demo)`;
         }
         buildGallery();
@@ -121,7 +123,8 @@ function buildGallery() {
 
     // Bootstrap container for horizontal padding
     const galleryContainer = document.createElement('div');
-    galleryContainer.className = 'container px-4 mt-5';
+    galleryContainer.className = 'container px-4';
+    galleryContainer.style.marginTop = '6.5rem';
 
     // Bootstrap row with responsive columns
     const row = document.createElement('div');
