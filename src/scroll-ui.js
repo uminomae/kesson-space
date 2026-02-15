@@ -12,6 +12,8 @@ let _langToggle;
 let _scrollHintBottom;
 let _scrollHintTop;
 let _surfaceBtn;
+let _devlogHeader;
+let _devlogSection;
 
 // --- T-014: クリーンアップ ---
 let _cleanup = null;
@@ -29,6 +31,12 @@ export function initScrollUI() {
     _scrollHintBottom = document.getElementById('scroll-hint');
     _scrollHintTop = document.getElementById('scroll-hint-top');
     _surfaceBtn = document.getElementById('surface-btn');
+    _devlogHeader = document.getElementById('devlog-gallery-header');
+    _devlogSection = document.getElementById('devlog-gallery-section');
+
+    if (_devlogHeader) {
+        _devlogHeader.classList.remove('is-visible');
+    }
 
     // 浮上ボタン: クリックでページ最上部へ
     if (_surfaceBtn) {
@@ -141,6 +149,19 @@ export function updateScrollUI(scrollProg, breathVal) {
         _surfaceBtn.style.opacity = showSurface ? '1' : '0';
         _surfaceBtn.style.pointerEvents = showSurface ? 'auto' : 'none';
     }
+
+    // --- Devlogタイトル: セクション内でのみ表示 ---
+    updateDevlogHeaderVisibility();
+}
+
+function updateDevlogHeaderVisibility() {
+    if (!_devlogHeader || !_devlogSection) return;
+    const rect = _devlogSection.getBoundingClientRect();
+    const windowH = window.innerHeight || document.documentElement.clientHeight;
+    const enterLine = windowH * 0.35;
+    const exitLine = windowH * 0.2;
+    const isVisible = rect.top <= enterLine && rect.bottom >= exitLine;
+    _devlogHeader.classList.toggle('is-visible', isVisible);
 }
 
 /**
