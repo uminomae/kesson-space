@@ -107,6 +107,21 @@ Q: DTは今どのワークツリーを見ていますか？
 例外: 並列処理で別ワークツリーが必要な場合は明示的に指定
 ```
 
+### 🔴 同期必須ルール
+
+**作業開始前に必ずワークツリーを最新状態に同期すること。**
+
+```bash
+# 指示書の「ブランチ同期」セクションを必ず実行してから作業開始
+git fetch origin
+git pull origin main --rebase
+```
+
+同期せずに作業を開始すると：
+- 他ワークツリーの変更とコンフリクト
+- mainへのマージ時に問題発生
+- 作業のやり直しが必要になる
+
 ### ワークツリー構成
 
 | ワークツリー | パス | ブランチ | 用途 |
@@ -115,6 +130,7 @@ Q: DTは今どのワークツリーを見ていますか？
 | Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
 | Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
 | Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
+| DT | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | feature/devlog-content | DT直接作業用 |
 
 ### ワークツリー割り当てルール
 
@@ -150,7 +166,7 @@ Q: DTは今どのワークツリーを見ていますか？
 📂 パス: /Users/uminomae/Documents/GitHub/[ワークツリー名]
 🌿 ブランチ: feature/claude-code[-N]
 
-### ブランチ準備
+### 🔴 ブランチ同期（必須 — 作業開始前に実行）
 cd /Users/uminomae/Documents/GitHub/[ワークツリー名]
 git fetch origin
 git checkout [ブランチ名]
@@ -182,7 +198,7 @@ type: T-XXX description
 📂 パス: /Users/uminomae/Documents/GitHub/kesson-codex
 🌿 ブランチ: feature/codex-tasks
 
-### ブランチ準備
+### 🔴 ブランチ同期（必須 — 作業開始前に実行）
 cd /Users/uminomae/Documents/GitHub/kesson-codex
 git fetch origin
 git checkout feature/codex-tasks
@@ -275,6 +291,7 @@ DTが見ているワークツリー: [確認 or 推測結果]
 ## 禁止事項
 
 - **ワークツリー指定なしで指示書を作成すること** ← 最重要
+- **同期せずに作業を開始すること** ← コンフリクトの原因
 - 委譲判断をスキップして直接実装に飛ぶこと
 - Gemini MCPをユーザー許可なく呼び出すこと
 - 複数タスクを同一ワークツリーに割り当てて並列指示すること
