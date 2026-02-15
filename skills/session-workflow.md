@@ -5,6 +5,46 @@
 
 ---
 
+## 🔴 最重要原則: 委譲優先・並列処理
+
+### 判断フロー
+```
+タスク受領
+    ↓
+┌─────────────────────────────────────────┐
+│ Q: Claude Code / Codex に委譲できるか？ │
+└─────────────────────────────────────────┘
+    ↓
+  YES → 指示書作成 → 委譲（並列実行可能）
+    ↓
+   NO → Claude直接実装（GitHub API経由）
+```
+
+### 委譲のメリット
+- **並列処理**: 複数タスクを同時進行
+- **ワークツリー分離**: main を汚さずに作業
+- **品質**: 専門エージェントによる実装
+
+### 委譲先の選択
+| 委譲先 | 適用条件 | ワークツリー |
+|--------|----------|--------------|
+| Claude Code | 複数ファイル、設計判断が必要 | /kesson-claudeCode |
+| Codex | 単純実装、定型作業 | /kesson-codex |
+| Gemini MCP | シェーダー/Three.js | Claude経由で呼び出し |
+
+### 並列処理パターン
+```
+セッション中の並列実行例:
+
+[Claude Code] T-039a: devlog.js ソート修正
+[Codex]       T-039b: sessions.json 再生成
+[Codex]       T-039c: カバー画像生成スクリプト
+
+→ 各完了後 main にマージ
+```
+
+---
+
 ## Phase 1: セッション開始
 
 ### 1.1 状態読み込み
@@ -45,16 +85,18 @@ P0（即対応） → P1（次に着手） → P2（急がない） → P3（ア
 
 ## Phase 3: タスク実行
 
-### 3.1 実行モード判定
+### 3.1 実行モード判定（委譲優先）
 
-| 条件 | モード |
-|------|--------|
-| シェーダー/Three.js | Claude Code指示書 → Codex/Gemini委譲 |
-| config/HTML/CSS/ドキュメント | Claude直接実装 |
-| 複数ファイル横断 | Claude Code指示書 |
-| 軽微な修正（1ファイル） | Claude直接実装 |
+**まず委譲を検討する。直接実装は最後の選択肢。**
 
-### 3.2 Claude Code指示書テンプレート
+| 条件 | モード | 理由 |
+|------|--------|------|
+| 複数ファイル | Claude Code指示書 | 並列可能、品質担保 |
+| シェーダー/Three.js | Claude Code → Gemini | 専門性 |
+| 単純な定型作業 | Codex指示書 | 高速、並列可能 |
+| 1ファイル・即時必要 | Claude直接実装 | 例外的に許可 |
+
+### 3.2 Claude Code 指示書テンプレート
 ```markdown
 ## Claude Code 指示書: T-XXX
 
@@ -62,9 +104,9 @@ P0（即対応） → P1（次に着手） → P2（急がない） → P3（ア
 [1行で概要]
 
 ### ブランチ
-cd /Users/uminomae/kesson-codex  # or kesson-claudeCode
+cd /Users/uminomae/kesson-claudeCode  # or kesson-codex
 git fetch origin
-git checkout feature/codex-tasks  # or feature/claude-code
+git checkout feature/claude-code  # or feature/codex-tasks
 git pull origin main
 
 ### 対象ファイル
@@ -82,7 +124,28 @@ feat/fix/docs: T-XXX [簡潔な説明]
 - [ ] 条件2
 ```
 
-### 3.3 直接実装時のルール
+### 3.3 Codex 指示書テンプレート（定型作業向け）
+```markdown
+## Codex 指示書: T-XXX
+
+### 概要
+[1行]
+
+### 入力
+[入力ファイル/データ]
+
+### 出力
+[期待する出力]
+
+### 手順
+1. [ステップ1]
+2. [ステップ2]
+
+### コミット
+type: T-XXX description
+```
+
+### 3.4 直接実装時のルール（例外的）
 - GitHub API経由でコミット
 - コミットメッセージ形式: `type: T-XXX description`
 - type: feat, fix, docs, refactor, test, ci
@@ -120,6 +183,11 @@ feat/fix/docs: T-XXX [簡潔な説明]
 - [ ] コミット履歴との整合性確認済み
 - [ ] ユーザーにタスク提案済み
 
+### タスク実行時
+- [ ] 委譲可能か検討した
+- [ ] 並列実行できるタスクを分離した
+- [ ] 指示書を作成した（委譲の場合）
+
 ### セッション終了時
 - [ ] CURRENT.md更新済み
 - [ ] TODO.md更新済み
@@ -130,6 +198,7 @@ feat/fix/docs: T-XXX [簡潔な説明]
 
 ## 禁止事項
 
+- **委譲検討をスキップして直接実装に飛ぶこと**
 - セッション終了時のCURRENT/TODO更新を省略すること
 - ユーザー未確認でのタスク着手
 - コミット履歴との乖離を放置すること
