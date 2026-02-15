@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
-**最終更新**: 2026-02-14
-**セッション**: #22 TODO棚卸し + T-010/T-014リファクタリング
+**最終更新**: 2026-02-15
+**セッション**: #25 devlog Bootstrap化 + インフォグラフィック生成
 
 ---
 
@@ -72,6 +72,16 @@
 - Gemini MCP応答はdiffのみ抽出。全文はGitHub直接コミット
 - ガードの実効性はMemory→Step 1.5→§12の3層で担保する
 - PROMPT-STRUCTURE.md → 廃止（skills/体制に移行済み、ローカルでgit rm必要）
+
+## 未完了タスク (Session #25)
+
+- [ ] Bug: カードメタ情報を画像下に移動（card-img-overlay → card-body）
+- [ ] T-031: インフォグラフィック画像化（ジェネレータHTML → PNG）
+  - content/devlog/prompts/session-002-generator.html
+  - content/devlog/prompts/session-003-generator.html
+  → ブラウザで開いてダウンロード → assets/devlog/covers/ に配置
+- [ ] T-032: README.md監督構造セクション追加・階層化
+- [ ] feature/devlog-content → main マージ（デバッグ完了後）
 
 ### バックログ
 
