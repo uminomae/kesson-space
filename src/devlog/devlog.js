@@ -33,18 +33,6 @@ let hoveredCard = null;
 let isInitialized = false;
 let animationId = null;
 let containerEl = null;
-let devlogContent = null; // ログ本文キャッシュ
-
-/**
- * 言語検出（i18n.jsに依存しない簡易版）
- */
-function detectLangLocal() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('lang')) return params.get('lang');
-    const saved = localStorage.getItem('kesson-lang');
-    if (saved) return saved;
-    return navigator.language.startsWith('ja') ? 'ja' : 'en';
-}
 
 /**
  * ギャラリーを初期化
@@ -109,7 +97,7 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
     });
 
     // Bootstrap Modal: zoom out when modal is hidden
-    const modalEl = document.getElementById('devlogModal');
+    const modalEl = document.getElementById('devlogSessionModal');
     if (modalEl) {
         modalEl.addEventListener('hidden.bs.modal', () => {
             zoom.zoomOut();
@@ -123,50 +111,43 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
 }
 
 /**
- * devlog-{lang}.mdからログ本文を読み込み
+ * 個別セッションの.mdファイルを読み込み
+ * @param {string} sessionId - セッションID（例: "session-001"）
+ * @returns {Promise<string|null>} - 本文またはnull
  */
-async function loadDevlogContent() {
-    const lang = detectLangLocal();
+async function loadSessionContent(sessionId) {
     try {
-        const res = await fetch(`./content/devlog-${lang}.md`);
+        const res = await fetch(`./content/devlog/${sessionId}.md`);
         if (!res.ok) return null;
         const raw = await res.text();
-        // frontmatterを除去して本文のみ取得
+        // frontmatter除去（---で囲まれた部分をスキップ）
         const match = raw.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
         return match ? match[1].trim() : raw.trim();
     } catch (e) {
-        console.warn('[devlog] Failed to load devlog content:', e);
+        console.warn(`[devlog] Failed to load ${sessionId}.md:`, e);
         return null;
     }
 }
 
 async function loadSessions(counterId) {
     const countEl = document.getElementById(counterId);
-    
-    // ログ本文を先に読み込み
-    devlogContent = await loadDevlogContent();
-    
+
     try {
         const res = await fetch(SESSIONS_URL);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         sessions = await res.json();
-        
-        // 最新セッション（配列の先頭）にログ本文を設定
-        if (sessions.length > 0 && devlogContent) {
-            sessions[0].log_content = devlogContent;
-        }
-        
+
+        // 各セッションの.mdを並列読み込み
+        await Promise.all(sessions.map(async (session) => {
+            session.log_content = await loadSessionContent(session.id);
+        }));
+
         if (countEl) countEl.textContent = `${sessions.length} sessions`;
         buildGallery();
     } catch (e) {
         console.warn('sessions.json not found, using demo data:', e.message);
         sessions = generateDemoData();
-        
-        // デモデータでも最新セッションにログ本文を設定
-        if (sessions.length > 0 && devlogContent) {
-            sessions[0].log_content = devlogContent;
-        }
-        
+
         if (countEl) countEl.textContent = `${sessions.length} sessions (demo)`;
         buildGallery();
     }
@@ -273,7 +254,7 @@ function safeHTML(text) {
 }
 
 function showDetail(session) {
-    const modalEl = document.getElementById('devlogModal');
+    const modalEl = document.getElementById('devlogSessionModal');
     if (!modalEl) return;
 
     const start = new Date(session.start);
@@ -290,18 +271,17 @@ function showDetail(session) {
         ? `${startDate} ${startTime} – ${endTime}`
         : `${startDate} ${startTime} – ${endDate} ${endTime}`;
 
-    const dateEl = document.getElementById('detail-date');
-    const metaEl = document.getElementById('detail-meta');
-    const categoryEl = document.getElementById('detail-category');
-    const commitsEl = document.getElementById('detail-commits');
-    const insEl = document.getElementById('detail-ins');
-    const delsEl = document.getElementById('detail-dels');
-    const filesEl = document.getElementById('detail-files');
-    const messagesEl = document.getElementById('detail-messages');
-    const logContentEl = document.getElementById('detail-log-content');
+    const dateEl = document.getElementById('session-date');
+    const idEl = document.getElementById('session-id');
+    const categoryEl = document.getElementById('session-category');
+    const commitsEl = document.getElementById('session-commits');
+    const insEl = document.getElementById('session-ins');
+    const delsEl = document.getElementById('session-dels');
+    const coverEl = document.getElementById('session-cover');
+    const contentEl = document.getElementById('session-content');
 
     if (dateEl) dateEl.textContent = dateStr;
-    if (metaEl) metaEl.textContent = `${session.repo} · ${session.duration_min}min`;
+    if (idEl) idEl.textContent = `${session.repo} · ${session.id} · ${session.duration_min}min`;
     if (categoryEl) {
         categoryEl.textContent = session.dominant_category;
         categoryEl.style.background = session.color + '33';
@@ -311,18 +291,19 @@ function showDetail(session) {
     if (insEl) insEl.textContent = `+${session.insertions}`;
     if (delsEl) delsEl.textContent = `-${session.deletions}`;
 
-    // ファイル一覧
-    if (filesEl && session.files_changed) {
-        filesEl.innerHTML = session.files_changed.map(f => `<li>${f}</li>`).join('');
+    // カバー画像（texture_urlがあれば表示）
+    if (coverEl) {
+        const coverImg = document.getElementById('session-cover-img');
+        if (session.texture_url && coverImg) {
+            coverImg.src = session.texture_url;
+            coverEl.classList.remove('d-none');
+        } else {
+            coverEl.classList.add('d-none');
+        }
     }
 
-    // メッセージ一覧
-    if (messagesEl && session.messages) {
-        messagesEl.innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
-    }
-
-    // ログ本文（session.log_contentがあれば表示）
-    if (logContentEl) {
+    // セッションコンテンツ（log_content を描画）
+    if (contentEl) {
         if (session.log_content) {
             const paragraphs = session.log_content.split(/\n\n+/).filter(p => p.trim());
             const html = paragraphs.map(p => {
@@ -330,10 +311,11 @@ function showDetail(session) {
                 if (trimmed === '<hr>') return '<hr class="log-separator">';
                 return `<p>${safeHTML(trimmed)}</p>`;
             }).join('');
-            logContentEl.innerHTML = `<h3>log</h3>${html}`;
-            logContentEl.style.display = 'block';
+            contentEl.innerHTML = html;
+            contentEl.classList.remove('d-none');
         } else {
-            logContentEl.style.display = 'none';
+            contentEl.innerHTML = '';
+            contentEl.classList.add('d-none');
         }
     }
 
@@ -343,7 +325,7 @@ function showDetail(session) {
 }
 
 function hideDetail() {
-    const modalEl = document.getElementById('devlogModal');
+    const modalEl = document.getElementById('devlogSessionModal');
     if (modalEl) {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
