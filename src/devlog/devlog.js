@@ -6,11 +6,17 @@
  */
 
 import { marked } from 'marked';
+import { slideInCards, slideOutCards } from './animations.js';
+import { createReadMoreButton, createShowLessButton } from './toggle-buttons.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
 
 let sessions = [];
 let isInitialized = false;
+let galleryState = {
+    isExpanded: false,
+    totalSessions: 0
+};
 let containerEl = null;
 
 // markedの設定（セキュリティ・スタイル）
@@ -141,9 +147,14 @@ function buildGallery() {
 
     const lang = document.documentElement.lang || 'ja';
 
-    sessions.forEach(session => {
+    sessions.forEach((session, index) => {
         const col = document.createElement('div');
         col.className = 'col-12 col-md-6 col-lg-4 p-2';
+        if (index < 3) {
+            col.classList.add('devlog-card', 'visible');
+        } else {
+            col.classList.add('devlog-card', 'expandable');
+        }
 
         const card = document.createElement('div');
         card.className = 'card bg-dark border-0 overflow-hidden h-100';
@@ -208,8 +219,51 @@ function buildGallery() {
     });
 
     galleryContainer.appendChild(row);
+    if (sessions.length > 3) {
+        galleryState.totalSessions = sessions.length;
+
+        const readMoreContainer = document.createElement('div');
+        readMoreContainer.className = 'text-center mt-4';
+        readMoreContainer.id = 'read-more-container';
+        const readMoreBtn = createReadMoreButton(expandGallery);
+        readMoreContainer.appendChild(readMoreBtn);
+        galleryContainer.appendChild(readMoreContainer);
+
+        const headerEl = document.getElementById('devlog-gallery-header');
+        if (headerEl) {
+            const showLessBtn = createShowLessButton(collapseGallery);
+            showLessBtn.classList.add('d-none');
+            headerEl.appendChild(showLessBtn);
+        }
+    }
     containerEl.appendChild(galleryContainer);
     console.log('[devlog] Gallery built with', sessions.length, 'cards');
+}
+
+async function expandGallery() {
+    const expandableCards = document.querySelectorAll('.devlog-card.expandable');
+    await slideInCards(expandableCards);
+    document.getElementById('read-more-container').classList.add('d-none');
+    const showLessBtn = document.getElementById('show-less-btn');
+    showLessBtn.classList.remove('d-none');
+    showLessBtn.setAttribute('aria-expanded', 'true');
+    const countEl = document.getElementById('gallery-session-count');
+    if (countEl) countEl.textContent = `${galleryState.totalSessions} sessions`;
+    galleryState.isExpanded = true;
+}
+
+async function collapseGallery() {
+    const expandableCards = document.querySelectorAll('.devlog-card.expandable');
+    await slideOutCards(expandableCards);
+    const showLessBtn = document.getElementById('show-less-btn');
+    showLessBtn.classList.add('d-none');
+    showLessBtn.setAttribute('aria-expanded', 'false');
+    document.getElementById('read-more-container').classList.remove('d-none');
+    const countEl = document.getElementById('gallery-session-count');
+    if (countEl) countEl.textContent = '3 sessions';
+    const gallerySection = document.getElementById('devlog-gallery-section');
+    if (gallerySection) gallerySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    galleryState.isExpanded = false;
 }
 
 function showDetail(session) {
