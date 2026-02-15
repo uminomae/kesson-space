@@ -222,9 +222,9 @@ def merge_sessions(existing, generated, preserve_fields):
     for session_id, gen in generated_map.items():
         if session_id in existing_map:
             cur = existing_map[session_id]
-            merged_entry = dict(cur)
-            for key, val in gen.items():
-                if key not in merged_entry or merged_entry[key] in (None, ""):
+            merged_entry = dict(gen)
+            for key, val in cur.items():
+                if key not in merged_entry:
                     merged_entry[key] = val
             for key in preserve_fields:
                 if key in cur and cur[key] not in (None, ""):
