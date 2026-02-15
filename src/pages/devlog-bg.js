@@ -34,6 +34,7 @@ if (container) {
   
   // アニメーション開始
   animate();
+  console.log('[devlog-bg] animate() called');
   
   // ページ離脱時にクリーンアップ
   window.addEventListener('beforeunload', dispose);

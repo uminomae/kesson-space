@@ -22,6 +22,7 @@ export function createBackground({ container, preset = 'full', options = {} }) {
   
   // シーン
   const scene = new THREE.Scene();
+  scene.background = null; // 透明背景
   if (config.fog) {
     scene.fog = new THREE.FogExp2(0x050510, 0.015);
   }
@@ -91,6 +92,8 @@ export function createBackground({ container, preset = 'full', options = {} }) {
       const m = (Math.sin(time * Math.PI / 20) + 1.0) * 0.5;
       bgMaterial.uniforms.uMix.value = m;
     }
+
+    console.log('[background] rendering frame');
     
     // 渦更新
     if (vortexMaterial && vortexMesh) {

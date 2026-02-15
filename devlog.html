@@ -35,6 +35,9 @@
       z-index: 0;
       pointer-events: none;
     }
+    #bg-container canvas {
+      border: 3px solid red;
+    }
 
     /* コンテンツオーバーレイ（可読性確保） */
     #content-overlay {
@@ -173,7 +176,7 @@
   </script>
 </head>
 <body>
-  <div class="version-badge">v0.1.1-t045</div>
+  <div class="version-badge">v0.1.2-t045</div>
   <!-- Three.js背景 -->
   <div id="bg-container"></div>
 
@@ -243,8 +246,9 @@
         const res = await fetch(`./content/devlog/${id}.md`);
         if (!res.ok) return null;
         const raw = await res.text();
-        const match = raw.match(/^---\\n[\\s\\S]*?\\n---\\n([\\s\\S]*)$/);
-        return match ? match[1].trim() : raw.trim();
+        const match = raw.match(/^---\\s*[\\s\\S]*?---\\s*([\\s\\S]*)$/);
+        if (match) return match[1].trim();
+        return raw.replace(/^---\\s*[\\s\\S]*?---\\s*/, '').trim();
       } catch (e) {
         console.warn(`[devlog] Failed to load ${id}.md:`, e);
         return null;
