@@ -106,3 +106,34 @@ window.__e2e.run('TC-E2E-03')
 - [README.md](./README.md) — ドキュメントハブ
 - [tests/e2e-test-design.md](../tests/e2e-test-design.md) — E2E詳細設計
 - [GitHub Actions](https://github.com/uminomae/kesson-space/actions) — CI実行履歴
+
+---
+
+## 8. Bootstrap CSS制御ルール
+
+### 8.1 表示/非表示の切り替え
+
+データ有無による要素の表示制御は、Bootstrapの`d-none`クラスを使用する:
+
+```javascript
+// 良い例
+if (data) {
+    element.classList.remove('d-none');
+} else {
+    element.classList.add('d-none');
+}
+
+// 避けるべき例（style直接操作との混在）
+element.style.display = data ? 'block' : 'none';
+```
+
+### 8.2 モーダルの制御
+
+- モーダル表示: `bootstrap.Modal.getOrCreateInstance(el).show()`
+- モーダル非表示: `bootstrap.Modal.getInstance(el).hide()`
+- モーダル内セクションの表示/非表示: `d-none`クラス
+
+### 8.3 ダークテーマ
+
+devlog.htmlでは`modal-content`に独自ダークスタイルを適用。
+Bootstrapデフォルトクラスと競合しないよう注意。
