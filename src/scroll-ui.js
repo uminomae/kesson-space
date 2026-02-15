@@ -34,10 +34,6 @@ export function initScrollUI() {
     _devlogHeader = document.getElementById('devlog-gallery-header');
     _devlogSection = document.getElementById('devlog-gallery-section');
 
-    if (_devlogHeader) {
-        _devlogHeader.classList.remove('is-visible');
-    }
-
     // 浮上ボタン: クリックでページ最上部へ
     if (_surfaceBtn) {
         _surfaceBtn.addEventListener('click', scrollToTop);
@@ -143,25 +139,24 @@ export function updateScrollUI(scrollProg, breathVal) {
         }
     }
 
+    // --- devlog header: devlogセクション到達時のみ表示 ---
+    if (_devlogHeader && _devlogSection) {
+        const rect = _devlogSection.getBoundingClientRect();
+        const triggerY = window.innerHeight * 0.35;
+        const showDevlogHeader = rect.top <= triggerY && rect.bottom >= triggerY;
+        if (showDevlogHeader) {
+            _devlogHeader.classList.add('visible');
+        } else {
+            _devlogHeader.classList.remove('visible');
+        }
+    }
+
     // --- 浮上ボタン: 80%以上で表示 ---
     if (_surfaceBtn) {
         const showSurface = scrollProg > 0.8;
         _surfaceBtn.style.opacity = showSurface ? '1' : '0';
         _surfaceBtn.style.pointerEvents = showSurface ? 'auto' : 'none';
     }
-
-    // --- Devlogタイトル: セクション内でのみ表示 ---
-    updateDevlogHeaderVisibility();
-}
-
-function updateDevlogHeaderVisibility() {
-    if (!_devlogHeader || !_devlogSection) return;
-    const rect = _devlogSection.getBoundingClientRect();
-    const windowH = window.innerHeight || document.documentElement.clientHeight;
-    const enterLine = windowH * 0.35;
-    const exitLine = windowH * 0.2;
-    const isVisible = rect.top <= enterLine && rect.bottom >= exitLine;
-    _devlogHeader.classList.toggle('is-visible', isVisible);
 }
 
 /**

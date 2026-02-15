@@ -341,10 +341,12 @@
       z-index: 20;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.4s ease;
+      visibility: hidden;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
     }
-    #devlog-gallery-header.is-visible {
+    #devlog-gallery-header.visible {
       opacity: 1;
+      visibility: visible;
     }
     #devlog-gallery-header h2 {
       font-size: 0.75rem;
