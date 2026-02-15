@@ -3,7 +3,7 @@
  *
  * - メイン画面: 3件カード表示
  * - Read More → Offcanvas右スライドイン（全セッション一覧）
- * - カードクリック → Offcanvas内で詳細ビューに切替
+ * - カードクリック → devlog.html?id=xxx に遷移
  * - 無限スクロールで10件ずつ追加読み込み
  *
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
@@ -163,6 +163,7 @@ function buildGallery() {
 
 /**
  * カードDOM要素を生成（メイン画面・Offcanvas共用）
+ * カードクリックで devlog.html?id=xxx に遷移
  */
 function createCardElement(session, lang) {
   const card = document.createElement('div');
@@ -216,7 +217,10 @@ function createCardElement(session, lang) {
     card.style.boxShadow = '';
   });
 
-  card.addEventListener('click', () => showDetail(session));
+  // カードクリックで devlog.html に遷移
+  card.addEventListener('click', () => {
+    window.location.href = `./devlog.html?id=${session.id}`;
+  });
 
   return card;
 }
@@ -318,64 +322,12 @@ function updateSessionCount() {
 }
 
 // ============================================================
-// 詳細ビュー（Offcanvas内）
+// 詳細ビュー（Offcanvas内）— 使用しないが互換性のため残す
 // ============================================================
 
 function showDetail(session) {
-  // Offcanvasが開いていない場合（メイン画面カードクリック）→ 先にOffcanvasを開く
-  const offcanvasEl = document.getElementById('devlogOffcanvas');
-  if (!galleryState.offcanvas) {
-    galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
-  }
-
-  const isOffcanvasOpen = offcanvasEl.classList.contains('show');
-  if (!isOffcanvasOpen) {
-    galleryState.displayedCount = 0;
-    document.getElementById('offcanvas-gallery').innerHTML = '';
-    loadMoreSessions();
-    galleryState.offcanvas.show();
-  }
-
-  const listView = document.getElementById('offcanvas-list-view');
-  const detailView = document.getElementById('offcanvas-detail-view');
-  const backBtn = document.getElementById('offcanvas-back-btn');
-
-  listView.classList.add('d-none');
-  detailView.classList.remove('d-none');
-  backBtn.classList.remove('d-none');
-
-  const lang = document.documentElement.lang || 'ja';
-  document.getElementById('detail-title').textContent =
-    (lang === 'en' ? session.title_en : session.title_ja) || '';
-  document.getElementById('detail-date').textContent = session.date_range || '';
-
-  // カバー画像
-  const coverEl = document.getElementById('detail-cover');
-  const coverImg = document.getElementById('detail-cover-img');
-  if (session.cover && coverImg) {
-    coverImg.src = session.cover;
-    coverImg.onerror = () => {
-      coverImg.src = './assets/devlog/covers/default.svg';
-    };
-    coverImg.onclick = () => openLightbox(session.cover);
-    coverEl.classList.remove('d-none');
-  } else {
-    coverEl.classList.add('d-none');
-  }
-
-  // Markdownコンテンツ
-  const contentEl = document.getElementById('detail-content');
-  if (session.log_content) {
-    contentEl.innerHTML = marked.parse(session.log_content);
-  } else {
-    contentEl.innerHTML = '';
-  }
-
-  // 詳細ビューのスクロール位置をトップにリセット
-  const offcanvasBody = offcanvasEl.querySelector('.offcanvas-body');
-  if (offcanvasBody) offcanvasBody.scrollTop = 0;
-
-  currentView = 'detail';
+  // 新仕様: devlog.html に遷移
+  window.location.href = `./devlog.html?id=${session.id}`;
 }
 
 function showListView() {

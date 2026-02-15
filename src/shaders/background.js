@@ -14,6 +14,7 @@ export function createBackgroundMaterial() {
             uColorCenterB: { value: BG_V004_CENTER },
             uColorEdgeB:   { value: BG_V004_EDGE },
             uMix: { value: 1.0 },
+            uOpacity: { value: 1.0 },
         },
         vertexShader: `
             varying vec2 vUv;
@@ -28,6 +29,7 @@ export function createBackgroundMaterial() {
             uniform vec3 uColorCenterB;
             uniform vec3 uColorEdgeB;
             uniform float uMix;
+            uniform float uOpacity;
             varying vec2 vUv;
             void main() {
                 float dist = length(vUv - 0.5);
@@ -40,7 +42,7 @@ export function createBackgroundMaterial() {
                 float noise = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
                 color += (noise - 0.5) * 0.015;
 
-                gl_FragColor = vec4(color, 1.0);
+                gl_FragColor = vec4(color * uOpacity, uOpacity);
             }
         `,
         depthWrite: false,
