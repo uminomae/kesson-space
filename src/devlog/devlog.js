@@ -110,7 +110,7 @@ function generateDemoData() {
             id: 'session-001',
             title_ja: 'Part 1: 基盤構築',
             title_en: 'Part 1: Foundation',
-            date_range: '02-10 〜 02-11',
+            date_range: '2025/02-10 〜 02-11',
             cover: './assets/devlog/covers/session-001.jpg',
             log_content: null
         },
@@ -118,16 +118,32 @@ function generateDemoData() {
             id: 'session-002',
             title_ja: 'Part 2: UX実装',
             title_en: 'Part 2: UX Implementation',
-            date_range: '02-12 〜 02-13',
+            date_range: '2025/02-12',
             cover: './assets/devlog/covers/session-002.jpg',
             log_content: null
         },
         {
             id: 'session-003',
-            title_ja: 'Part 3: コンテンツ統合',
-            title_en: 'Part 3: Content Integration',
-            date_range: '02-14 〜 02-15',
+            title_ja: 'Part 3: モバイル対応',
+            title_en: 'Part 3: Mobile Support',
+            date_range: '2025/02-13',
             cover: './assets/devlog/covers/session-003.jpg',
+            log_content: null
+        },
+        {
+            id: 'session-004',
+            title_ja: 'Part 4: コンテンツ統合',
+            title_en: 'Part 4: Content Integration',
+            date_range: '2025/02-14',
+            cover: './assets/devlog/covers/session-004.jpg',
+            log_content: null
+        },
+        {
+            id: 'session-005',
+            title_ja: 'Part 5: Read More UI',
+            title_en: 'Part 5: Read More UI',
+            date_range: '2025/02-15',
+            cover: './assets/devlog/covers/session-005.jpg',
             log_content: null
         }
     ];
