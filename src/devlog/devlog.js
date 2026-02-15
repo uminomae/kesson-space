@@ -1,14 +1,13 @@
 /**
- * devlog.js — Devlog Gallery (Accordion collapse)
+ * devlog.js — Devlog Gallery (Card -> detail page)
  *
  * - メイン画面: 3件カード表示
  * - 「もっと見る」→ 残り全件をDOMに追加
- * - カードクリック → その場で詳細が展開/折りたたみ（Bootstrap collapse）
+ * - カードクリック → devlog.html?id=XXX に遷移
  *
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
-import { marked } from 'marked';
 import { createReadMoreButton } from './toggle-buttons.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
@@ -16,13 +15,6 @@ const SESSIONS_URL = './assets/devlog/sessions.json';
 let sessions = [];
 let isInitialized = false;
 let containerEl = null;
-
-// markedの設定
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  headerIds: false,
-});
 
 function getSessionEndValue(session) {
   const end = session.end || session.start;
@@ -47,22 +39,6 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
   console.log('[devlog] Gallery initialized');
 }
 
-/**
- * 個別セッションの.mdファイルを読み込み
- */
-async function loadSessionContent(sessionId) {
-  try {
-    const res = await fetch(`./content/devlog/${sessionId}.md`);
-    if (!res.ok) return null;
-    const raw = await res.text();
-    const match = raw.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
-    return match ? match[1].trim() : raw.trim();
-  } catch (e) {
-    console.warn(`[devlog] Failed to load ${sessionId}.md:`, e);
-    return null;
-  }
-}
-
 async function loadSessions(counterId) {
   const countEl = document.getElementById(counterId);
 
@@ -72,10 +48,6 @@ async function loadSessions(counterId) {
     sessions = await res.json();
 
     sessions.sort((a, b) => getSessionEndValue(b) - getSessionEndValue(a));
-
-    await Promise.all(sessions.map(async (session) => {
-      session.log_content = await loadSessionContent(session.id);
-    }));
 
     if (countEl) {
       countEl.classList.remove('mb-5');
@@ -98,11 +70,11 @@ async function loadSessions(counterId) {
 
 function generateDemoData() {
   return [
-    { id: 'session-001', title_ja: 'Part 1: 基盤構築', title_en: 'Part 1: Foundation', date_range: '2025/02-10 〜 02-11', cover: './assets/devlog/covers/session-001.jpg', log_content: null },
-    { id: 'session-002', title_ja: 'Part 2: UX実装', title_en: 'Part 2: UX Implementation', date_range: '2025/02-12', cover: './assets/devlog/covers/session-002.jpg', log_content: null },
-    { id: 'session-003', title_ja: 'Part 3: モバイル対応', title_en: 'Part 3: Mobile Support', date_range: '2025/02-13', cover: './assets/devlog/covers/session-003.jpg', log_content: null },
-    { id: 'session-004', title_ja: 'Part 4: コンテンツ統合', title_en: 'Part 4: Content Integration', date_range: '2025/02-14', cover: './assets/devlog/covers/session-004.jpg', log_content: null },
-    { id: 'session-005', title_ja: 'Part 5: Read More UI', title_en: 'Part 5: Read More UI', date_range: '2025/02-15', cover: './assets/devlog/covers/session-005.jpg', log_content: null },
+    { id: 'session-001', title_ja: 'Part 1: 基盤構築', title_en: 'Part 1: Foundation', date_range: '2025/02-10 〜 02-11', cover: './assets/devlog/covers/session-001.jpg' },
+    { id: 'session-002', title_ja: 'Part 2: UX実装', title_en: 'Part 2: UX Implementation', date_range: '2025/02-12', cover: './assets/devlog/covers/session-002.jpg' },
+    { id: 'session-003', title_ja: 'Part 3: モバイル対応', title_en: 'Part 3: Mobile Support', date_range: '2025/02-13', cover: './assets/devlog/covers/session-003.jpg' },
+    { id: 'session-004', title_ja: 'Part 4: コンテンツ統合', title_en: 'Part 4: Content Integration', date_range: '2025/02-14', cover: './assets/devlog/covers/session-004.jpg' },
+    { id: 'session-005', title_ja: 'Part 5: Read More UI', title_en: 'Part 5: Read More UI', date_range: '2025/02-15', cover: './assets/devlog/covers/session-005.jpg' },
   ];
 }
 
@@ -147,12 +119,9 @@ function renderSessions(rowEl, lang, startIndex, endIndex) {
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4 p-2 devlog-card visible';
 
-    const detailId = `detail-${session.id}`;
-    const card = createCardElement(session, lang, detailId);
-    const detail = createDetailCollapse(session, lang, detailId);
+    const card = createCardElement(session, lang);
 
     col.appendChild(card);
-    col.appendChild(detail);
     rowEl.appendChild(col);
   });
 }
@@ -160,15 +129,13 @@ function renderSessions(rowEl, lang, startIndex, endIndex) {
 /**
  * カードDOM要素を生成
  */
-function createCardElement(session, lang, detailId) {
+function createCardElement(session, lang) {
   const card = document.createElement('div');
   card.className = 'card bg-dark border-0 overflow-hidden h-100';
   card.style.cursor = 'pointer';
   card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-  card.setAttribute('data-bs-toggle', 'collapse');
-  card.setAttribute('data-bs-target', `#${detailId}`);
-  card.setAttribute('aria-expanded', 'false');
-  card.setAttribute('aria-controls', detailId);
+  card.setAttribute('role', 'link');
+  card.setAttribute('tabindex', '0');
 
   const img = document.createElement('img');
   img.className = 'card-img-top';
@@ -216,61 +183,18 @@ function createCardElement(session, lang, detailId) {
     card.style.boxShadow = '';
   });
 
+  const navigateToDetail = () => {
+    window.location.href = `devlog.html?id=${encodeURIComponent(session.id)}`;
+  };
+  card.addEventListener('click', navigateToDetail);
+  card.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      navigateToDetail();
+    }
+  });
+
   return card;
-}
-
-function createDetailCollapse(session, lang, detailId) {
-  const collapse = document.createElement('div');
-  collapse.className = 'collapse';
-  collapse.id = detailId;
-  collapse.style.marginTop = '0.75rem';
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'card bg-dark border-0 p-3 devlog-detail-card';
-
-  if (session.cover) {
-    const cover = document.createElement('img');
-    cover.className = 'img-fluid rounded mb-3';
-    cover.alt = 'Session cover';
-    cover.src = session.cover;
-    cover.style.cursor = 'pointer';
-    cover.onerror = () => {
-      cover.onerror = null;
-      cover.src = './assets/devlog/covers/default.svg';
-    };
-    cover.addEventListener('click', () => openLightbox(session.cover));
-    wrapper.appendChild(cover);
-  }
-
-  const title = document.createElement('h5');
-  title.className = 'text-light mb-1';
-  title.textContent = (lang === 'en' ? session.title_en : session.title_ja) || '';
-
-  const date = document.createElement('small');
-  date.className = 'text-muted d-block mb-3';
-  date.textContent = session.date_range || '';
-
-  const content = document.createElement('div');
-  content.className = 'session-content';
-  content.innerHTML = session.log_content ? marked.parse(session.log_content) : '';
-
-  wrapper.appendChild(title);
-  wrapper.appendChild(date);
-  wrapper.appendChild(content);
-  collapse.appendChild(wrapper);
-
-  return collapse;
-}
-
-function openLightbox(src) {
-  const lightboxImg = document.getElementById('lightbox-image');
-  if (lightboxImg) {
-    lightboxImg.src = src;
-    const lightboxModal = bootstrap.Modal.getOrCreateInstance(
-      document.getElementById('imageLightboxModal')
-    );
-    lightboxModal.show();
-  }
 }
 
 /**
@@ -280,17 +204,6 @@ export function destroyDevlogGallery() {
   if (!isInitialized) return;
   if (containerEl) containerEl.innerHTML = '';
   isInitialized = false;
-}
-
-// ライトボックス画像クリックで閉じる
-if (typeof window !== 'undefined') {
-  const lbImg = document.getElementById('lightbox-image');
-  if (lbImg) {
-    lbImg.addEventListener('click', () => {
-      const m = bootstrap.Modal.getInstance(document.getElementById('imageLightboxModal'));
-      if (m) m.hide();
-    });
-  }
 }
 
 // Auto-initialize when gallery section is visible (IntersectionObserver)

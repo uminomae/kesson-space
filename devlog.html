@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>devlog - Kesson Space</title>
+  <link rel="icon" href="./favicon.ico">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- PERF: CDN TLS接続を先行確立 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- FIX: Google Fonts — Noto Serif JP (高品質明朝体) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #050508;
+      color: #e2e8f0;
+      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+    }
+    .devlog-shell {
+      max-width: 960px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(220, 230, 245, 0.8);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(100, 150, 255, 0.25);
+      padding: 8px 14px;
+      border-radius: 2px;
+      background: rgba(100, 150, 255, 0.08);
+      transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+    }
+    .back-link:hover {
+      color: rgba(255, 255, 255, 0.95);
+      border-color: rgba(100, 150, 255, 0.5);
+      background: rgba(100, 150, 255, 0.16);
+    }
+    .devlog-cover {
+      width: 100%;
+      max-height: 60vh;
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 10px 28px rgba(10, 14, 26, 0.6);
+    }
+    .devlog-meta {
+      font-size: 0.85rem;
+      color: rgba(180, 200, 230, 0.6);
+      letter-spacing: 0.08em;
+    }
+    .devlog-error {
+      padding: 16px 18px;
+      border: 1px solid rgba(100, 150, 255, 0.2);
+      background: rgba(12, 16, 30, 0.8);
+      color: rgba(220, 230, 245, 0.85);
+      border-radius: 6px;
+    }
+
+    /* ============================
+       Devlog detail content
+       ============================ */
+    .session-content {
+      color: #94a3b8;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+    .session-content h1,
+    .session-content h2,
+    .session-content h3 {
+      color: #e2e8f0;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    .session-content h1 { font-size: 1.3rem; }
+    .session-content h2 { font-size: 1.1rem; }
+    .session-content h3 { font-size: 0.95rem; }
+    .session-content p {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: #94a3b8;
+      margin-bottom: 1em;
+      font-family: "Noto Serif JP", "Yu Mincho", serif;
+    }
+    .session-content ul,
+    .session-content ol {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: #94a3b8;
+      padding-left: 1.5em;
+    }
+    .session-content code {
+      background: rgba(100, 150, 255, 0.1);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    .session-content pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1em;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .session-content a {
+      color: #f59e0b;
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "marked": "https://cdn.jsdelivr.net/npm/marked@15.0.7/lib/marked.esm.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="container py-5 devlog-shell">
+    <a class="back-link mb-4" href="index.html#devlog-gallery-section">← 一覧に戻る</a>
+
+    <div class="mb-4">
+      <div class="devlog-meta mb-2" id="devlog-meta"></div>
+      <h1 class="h3 text-light mb-3" id="devlog-title">Loading...</h1>
+      <img id="devlog-cover" class="devlog-cover mb-4 d-none" alt="Session cover">
+    </div>
+
+    <div id="devlog-error" class="devlog-error d-none"></div>
+    <div id="devlog-content" class="session-content"></div>
+  </main>
+
+  <!-- Image Lightbox Modal -->
+  <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center">
+          <img id="lightbox-image" class="img-fluid" style="max-height: 80vh; cursor: pointer;" alt="Enlarged cover">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { marked } from 'marked';
+
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      headerIds: false,
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('id');
+    const lang = params.get('lang') || document.documentElement.lang || 'ja';
+
+    const titleEl = document.getElementById('devlog-title');
+    const metaEl = document.getElementById('devlog-meta');
+    const coverEl = document.getElementById('devlog-cover');
+    const contentEl = document.getElementById('devlog-content');
+    const errorEl = document.getElementById('devlog-error');
+
+    function showError(message) {
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove('d-none');
+      }
+      if (contentEl) contentEl.innerHTML = '';
+    }
+
+    async function loadSessionContent(id) {
+      try {
+        const res = await fetch(`./content/devlog/${id}.md`);
+        if (!res.ok) return null;
+        const raw = await res.text();
+        const match = raw.match(/^---\\n[\\s\\S]*?\\n---\\n([\\s\\S]*)$/);
+        return match ? match[1].trim() : raw.trim();
+      } catch (e) {
+        console.warn(`[devlog] Failed to load ${id}.md:`, e);
+        return null;
+      }
+    }
+
+    async function loadSession() {
+      if (!sessionId) {
+        showError('セッションIDが見つかりません。');
+        titleEl.textContent = 'devlog';
+        return;
+      }
+
+      try {
+        const res = await fetch('./assets/devlog/sessions.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const sessions = await res.json();
+        const session = sessions.find((item) => item.id === sessionId);
+
+        if (!session) {
+          showError('指定されたセッションが見つかりません。');
+          titleEl.textContent = sessionId;
+          return;
+        }
+
+        const sessionTitle = (lang === 'en' ? session.title_en : session.title_ja) || session.id;
+        titleEl.textContent = sessionTitle;
+        metaEl.textContent = session.date_range ? session.date_range : session.id;
+        document.title = `${sessionTitle} - devlog`;
+
+        if (session.cover) {
+          coverEl.src = session.cover;
+          coverEl.classList.remove('d-none');
+          coverEl.onerror = () => {
+            coverEl.onerror = null;
+            coverEl.src = './assets/devlog/covers/default.svg';
+          };
+          coverEl.addEventListener('click', () => {
+            const lightboxImg = document.getElementById('lightbox-image');
+            if (lightboxImg) {
+              lightboxImg.src = coverEl.src;
+              const lightboxModal = bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('imageLightboxModal')
+              );
+              lightboxModal.show();
+            }
+          });
+        }
+
+        const rawContent = await loadSessionContent(session.id);
+        contentEl.innerHTML = rawContent ? marked.parse(rawContent) : '';
+      } catch (e) {
+        console.warn('[devlog] Failed to load sessions.json:', e);
+        showError('セッションデータの読み込みに失敗しました。');
+      }
+    }
+
+    const lbImg = document.getElementById('lightbox-image');
+    if (lbImg) {
+      lbImg.addEventListener('click', () => {
+        const m = bootstrap.Modal.getInstance(document.getElementById('imageLightboxModal'));
+        if (m) m.hide();
+      });
+    }
+
+    loadSession();
+  </script>
+</body>
+</html>
