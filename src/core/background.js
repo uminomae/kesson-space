@@ -26,6 +26,19 @@ export function createBackground({ container, preset = 'full', options = {} }) {
   if (config.fog) {
     scene.fog = new THREE.FogExp2(0x050510, 0.015);
   }
+
+  // === DEBUG: 赤い平面を追加して描画確認 ===
+  const debugGeometry = new THREE.PlaneGeometry(100, 100);
+  const debugMaterial = new THREE.MeshBasicMaterial({
+    color: 0xff0000,
+    transparent: true,
+    opacity: 0.5,
+  });
+  const debugMesh = new THREE.Mesh(debugGeometry, debugMaterial);
+  debugMesh.position.z = -10;
+  scene.add(debugMesh);
+  console.log('[background] DEBUG: Red plane added');
+  // === END DEBUG ===
   
   // カメラ
   const aspect = window.innerWidth / window.innerHeight;
