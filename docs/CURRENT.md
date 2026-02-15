@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #26 README.md監督構造セクション
+**セッション**: #28 プロジェクト管理ルール整備
 
 ---
 
@@ -43,16 +43,20 @@
 - [x] **TODO棚卸し + リファクタリング #22**: T-003完了確認、T-010/T-014実装、TODO整理
 - [x] **devlog Bootstrap化 #25**: hero-spacer 125vh、インフォグラフィックジェネレータ作成
 - [x] **T-032 README.md監督構造 #26**: 3層階層体制・ワークツリー構成・品質ルール明文化
+- [x] **devlog機能拡張 #27**: T-004/T-005/T-035/T-036完了、E2Eテスト拡充
+- [x] **devlog改善・CI修正 #28前半**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
 
-### セッション#26 README.md監督構造セクション
+### セッション#28 プロジェクト管理ルール整備
 
 **実施内容**:
 
-1. **README.md v2.1**: 監督構造セクション新設
-   - 3層階層体制を図示（DT→Claude Code→Codex）
-   - ワークツリー構成（4ブランチ）を表形式で追加
-   - 品質ルール（CSS/devlog/日本語文章/シェーダー）を明文化
-   - スキルファイルへの参照を追加
+1. **codex-tasksマージ**: T-031, T-032, T-033完了
+2. **devlog.yml CI無効化**: 本番データ破壊問題のため一時停止
+3. **sessions.json復元**: 手動フォーマット、end_date追加（ソート用）
+4. **devlogヘッダー表示制御**: スクロール連動でフェードイン/アウト
+5. **TC-E2E-12追加**: sessions.json ↔ .md整合性チェック
+6. **session-004/005プレースホルダー**: コンテンツ執筆待ち
+7. **TODO.md運用ルール追記**: 対話終了時のClaude更新義務を明文化
 
 ### 決定事項
 
@@ -65,18 +69,14 @@
 
 ## 未完了タスク
 
-- [ ] Bug: カードメタ情報を画像下に移動（card-img-overlay → card-body）
-- [ ] T-031: インフォグラフィック画像化（ジェネレータHTML → PNG）
-  - content/devlog/prompts/session-002-generator.html
-  - content/devlog/prompts/session-003-generator.html
-  → ブラウザで開いてダウンロード → assets/devlog/covers/ に配置
-- [ ] feature/devlog-content → main マージ（デバッグ完了後）
+- [ ] T-037: session-004/005コンテンツ執筆（プレースホルダー作成済み）
+- [ ] T-038: devlog.yml CI再有効化（generate-sessions.js修正後）
 
 ### バックログ
 
 → **[TODO.md](./TODO.md)** を参照
 
-P1タスクなし。P2に5件（テスト系2、コンテンツ1、品質1、QA1）、P3に2件。
+P1タスクなし。P2に10件（リファクタ6、コンテンツ2、品質1、QA1）、P3に4件。
 
 ### 現在のデフォルトパラメータ
 
