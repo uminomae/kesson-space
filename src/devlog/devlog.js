@@ -97,7 +97,7 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
     });
 
     // Bootstrap Modal: zoom out when modal is hidden
-    const modalEl = document.getElementById('devlogModal');
+    const modalEl = document.getElementById('devlogSessionModal');
     if (modalEl) {
         modalEl.addEventListener('hidden.bs.modal', () => {
             zoom.zoomOut();
@@ -254,7 +254,7 @@ function safeHTML(text) {
 }
 
 function showDetail(session) {
-    const modalEl = document.getElementById('devlogModal');
+    const modalEl = document.getElementById('devlogSessionModal');
     if (!modalEl) return;
 
     const start = new Date(session.start);
@@ -271,18 +271,17 @@ function showDetail(session) {
         ? `${startDate} ${startTime} – ${endTime}`
         : `${startDate} ${startTime} – ${endDate} ${endTime}`;
 
-    const dateEl = document.getElementById('detail-date');
-    const metaEl = document.getElementById('detail-meta');
-    const categoryEl = document.getElementById('detail-category');
-    const commitsEl = document.getElementById('detail-commits');
-    const insEl = document.getElementById('detail-ins');
-    const delsEl = document.getElementById('detail-dels');
-    const filesEl = document.getElementById('detail-files');
-    const messagesEl = document.getElementById('detail-messages');
-    const logContentEl = document.getElementById('detail-log-content');
+    const dateEl = document.getElementById('session-date');
+    const idEl = document.getElementById('session-id');
+    const categoryEl = document.getElementById('session-category');
+    const commitsEl = document.getElementById('session-commits');
+    const insEl = document.getElementById('session-ins');
+    const delsEl = document.getElementById('session-dels');
+    const coverEl = document.getElementById('session-cover');
+    const contentEl = document.getElementById('session-content');
 
     if (dateEl) dateEl.textContent = dateStr;
-    if (metaEl) metaEl.textContent = `${session.repo} · ${session.duration_min}min`;
+    if (idEl) idEl.textContent = `${session.repo} · ${session.id} · ${session.duration_min}min`;
     if (categoryEl) {
         categoryEl.textContent = session.dominant_category;
         categoryEl.style.background = session.color + '33';
@@ -292,18 +291,19 @@ function showDetail(session) {
     if (insEl) insEl.textContent = `+${session.insertions}`;
     if (delsEl) delsEl.textContent = `-${session.deletions}`;
 
-    // ファイル一覧
-    if (filesEl && session.files_changed) {
-        filesEl.innerHTML = session.files_changed.map(f => `<li>${f}</li>`).join('');
+    // カバー画像（texture_urlがあれば表示）
+    if (coverEl) {
+        const coverImg = document.getElementById('session-cover-img');
+        if (session.texture_url && coverImg) {
+            coverImg.src = session.texture_url;
+            coverEl.classList.remove('d-none');
+        } else {
+            coverEl.classList.add('d-none');
+        }
     }
 
-    // メッセージ一覧
-    if (messagesEl && session.messages) {
-        messagesEl.innerHTML = session.messages.map(m => `<li>${m}</li>`).join('');
-    }
-
-    // ログ本文（session.log_contentがあれば表示）
-    if (logContentEl) {
+    // セッションコンテンツ（log_content を描画）
+    if (contentEl) {
         if (session.log_content) {
             const paragraphs = session.log_content.split(/\n\n+/).filter(p => p.trim());
             const html = paragraphs.map(p => {
@@ -311,11 +311,11 @@ function showDetail(session) {
                 if (trimmed === '<hr>') return '<hr class="log-separator">';
                 return `<p>${safeHTML(trimmed)}</p>`;
             }).join('');
-            logContentEl.innerHTML = `<h3>log</h3>${html}`;
-            logContentEl.classList.remove('d-none');
+            contentEl.innerHTML = html;
+            contentEl.classList.remove('d-none');
         } else {
-            logContentEl.innerHTML = '';
-            logContentEl.classList.add('d-none');
+            contentEl.innerHTML = '';
+            contentEl.classList.add('d-none');
         }
     }
 
@@ -325,7 +325,7 @@ function showDetail(session) {
 }
 
 function hideDetail() {
-    const modalEl = document.getElementById('devlogModal');
+    const modalEl = document.getElementById('devlogSessionModal');
     if (modalEl) {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
