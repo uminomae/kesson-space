@@ -250,6 +250,18 @@ function showDetail(session) {
                 coverImg.src = './assets/devlog/covers/default.svg';
             };
             coverEl.classList.remove('d-none');
+            // カバー画像クリックで拡大
+            coverImg.style.cursor = 'pointer';
+            coverImg.onclick = () => {
+                const lightboxImg = document.getElementById('lightbox-image');
+                if (lightboxImg) {
+                    lightboxImg.src = coverImg.src;
+                    const lightboxModal = bootstrap.Modal.getOrCreateInstance(
+                        document.getElementById('imageLightboxModal')
+                    );
+                    lightboxModal.show();
+                }
+            };
         } else {
             coverEl.classList.add('d-none');
         }
@@ -294,6 +306,17 @@ export function destroyDevlogGallery() {
     if (containerEl) containerEl.innerHTML = '';
 
     isInitialized = false;
+}
+
+// ライトボックス画像クリックで閉じる
+if (typeof window !== 'undefined') {
+    const lbImg = document.getElementById('lightbox-image');
+    if (lbImg) {
+        lbImg.addEventListener('click', () => {
+            const m = bootstrap.Modal.getInstance(document.getElementById('imageLightboxModal'));
+            if (m) m.hide();
+        });
+    }
 }
 
 // Auto-initialize when gallery section is visible (IntersectionObserver)
