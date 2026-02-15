@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #25 devlog Bootstrap化 + インフォグラフィック生成
+**セッション**: #26 README.md監督構造セクション
 
 ---
 
@@ -41,28 +41,18 @@
 - [x] **セッションヘルスガード実効性強化 #20**: Memory連携、Step 1.5事前判定、3層担保
 - [x] **リファクタリング提案統合 #21**: createGemOrbMaterial抽出、destroyControls追加
 - [x] **TODO棚卸し + リファクタリング #22**: T-003完了確認、T-010/T-014実装、TODO整理
+- [x] **devlog Bootstrap化 #25**: hero-spacer 125vh、インフォグラフィックジェネレータ作成
+- [x] **T-032 README.md監督構造 #26**: 3層階層体制・ワークツリー構成・品質ルール明文化
 
-### セッション#22 TODO棚卸し + T-010/T-014リファクタリング
+### セッション#26 README.md監督構造セクション
 
 **実施内容**:
 
-1. **TODO棚卸し**: 未完了タスクの実装状況をコードベースから確認
-   - T-003モバイル対応 → 中核機能すべて実装済み。完了に移動
-   - T-009 → T-014に統合済み。削除
-   - T-013 → 完了確認
-   - T-015新設（モバイル実機検証、P2/S）
-
-2. **T-010 マウストラッキング統合**:
-   - `src/mouse-state.js` 新設（init/destroy/updateSmoothing/getRawMouse）
-   - main.js: 独自mousemove/touchmoveリスナー削除、mouse-state.jsに委譲
-   - nav-objects.js: `_gazeX/_gazeY` + `initGazeTracking()` 削除、`getRawMouse()`に統合
-
-3. **T-014 dispose/cleanupパターン**:
-   - main.js: resizeリスナーを名前付き関数化（将来のcleanup対応）
-   - scroll-ui.js: `_cleanup`パターン導入、`destroyScrollUI()`エクスポート
-   - mouse-state.js: 新規作成時にinit/destroyパターン組み込み済み
-
-4. **E2Eテスト**: 48テスト中 43 PASS / 1 FAIL(既知LCP) / 4 WARN(既知) — リグレッションなし
+1. **README.md v2.1**: 監督構造セクション新設
+   - 3層階層体制を図示（DT→Claude Code→Codex）
+   - ワークツリー構成（4ブランチ）を表形式で追加
+   - 品質ルール（CSS/devlog/日本語文章/シェーダー）を明文化
+   - スキルファイルへの参照を追加
 
 ### 決定事項
 
@@ -73,14 +63,13 @@
 - ガードの実効性はMemory→Step 1.5→§12の3層で担保する
 - PROMPT-STRUCTURE.md → 廃止（skills/体制に移行済み、ローカルでgit rm必要）
 
-## 未完了タスク (Session #25)
+## 未完了タスク
 
 - [ ] Bug: カードメタ情報を画像下に移動（card-img-overlay → card-body）
 - [ ] T-031: インフォグラフィック画像化（ジェネレータHTML → PNG）
   - content/devlog/prompts/session-002-generator.html
   - content/devlog/prompts/session-003-generator.html
   → ブラウザで開いてダウンロード → assets/devlog/covers/ に配置
-- [ ] T-032: README.md監督構造セクション追加・階層化
 - [ ] feature/devlog-content → main マージ（デバッグ完了後）
 
 ### バックログ
@@ -172,10 +161,10 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 
 ## 参照リンク
 
-- [README.md](./README.md) - 管理ハブ
+- [README.md](./README.md) - 管理ハブ・監督構造
 - [TODO.md](./TODO.md) - タスクバックログ
 - [AGENT-RULES.md](./AGENT-RULES.md) - マルチエージェント運用ルール
-- [CONCEPT.md](./CONCEPT.md) - 理論とビジュアルの対応
+- [CONCEPT.md](./CONCEPT.md) - 理論↔視覚の対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
 - [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
 - [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
