@@ -70,13 +70,19 @@ async function loadSessions(counterId) {
             session.log_content = await loadSessionContent(session.id);
         }));
 
-        if (countEl) countEl.textContent = `${sessions.length} sessions`;
+        if (countEl) {
+            countEl.classList.add('mb-5');
+            countEl.textContent = `${sessions.length} sessions`;
+        }
         buildGallery();
     } catch (e) {
         console.warn('sessions.json not found, using demo data:', e.message);
         sessions = generateDemoData();
 
-        if (countEl) countEl.textContent = `${sessions.length} sessions (demo)`;
+        if (countEl) {
+            countEl.classList.add('mb-5');
+            countEl.textContent = `${sessions.length} sessions (demo)`;
+        }
         buildGallery();
     }
 }
@@ -116,7 +122,6 @@ function buildGallery() {
     // Bootstrap container for horizontal padding
     const galleryContainer = document.createElement('div');
     galleryContainer.className = 'container px-4 mt-5';
-    galleryContainer.style.marginTop = '7rem';
 
     // Bootstrap row with responsive columns
     const row = document.createElement('div');
