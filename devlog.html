@@ -176,7 +176,7 @@
   </script>
 </head>
 <body>
-  <div class="version-badge">v0.1.3-t045</div>
+  <div class="version-badge">v0.1.4-t045</div>
   <!-- Three.js背景 -->
   <div id="bg-container"></div>
 
@@ -246,7 +246,7 @@
         const res = await fetch(`./content/devlog/${id}.md`);
         if (!res.ok) return null;
         const raw = await res.text();
-        const content = raw.replace(/^---[\\s\\S]*?---\\n*/m, '').trim();
+        const content = raw.replace(/^---\n[\s\S]*?\n---\n*/m, '').trim();
         return content;
       } catch (e) {
         console.warn(`[devlog] Failed to load ${id}.md:`, e);

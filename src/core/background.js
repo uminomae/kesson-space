@@ -42,6 +42,9 @@ export function createBackground({ container, preset = 'full', options = {} }) {
   let bgMesh = null;
   if (config.background) {
     bgMaterial = createBackgroundMaterial();
+    if (config.backgroundOpacity !== undefined) {
+      bgMaterial.uniforms.uOpacity.value = config.backgroundOpacity;
+    }
     bgMesh = createBackgroundMesh(bgMaterial);
     scene.add(bgMesh);
   }
