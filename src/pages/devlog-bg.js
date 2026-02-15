@@ -2,6 +2,8 @@
 
 import { createBackground } from '../core/background.js';
 
+console.log('[devlog-bg] Script loaded');
+
 // prefers-reduced-motion対応
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -19,6 +21,7 @@ if (prefersReducedMotion) {
 
 // 背景コンテナ取得
 const container = document.getElementById('bg-container');
+console.log('[devlog-bg] container:', container);
 
 if (container) {
   const { animate, dispose } = createBackground({

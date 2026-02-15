@@ -18,6 +18,7 @@ import { CAMERA_FOV, CAMERA_NEAR, CAMERA_FAR } from '../constants.js';
  */
 export function createBackground({ container, preset = 'full', options = {} }) {
   const config = mergePreset(preset, options);
+  console.log('[background] createBackground called', { container, preset, options, config });
   
   // シーン
   const scene = new THREE.Scene();
@@ -32,6 +33,8 @@ export function createBackground({ container, preset = 'full', options = {} }) {
   
   // レンダラー
   const renderer = createRenderer({ container, alpha: true });
+  console.log('[background] renderer created:', renderer);
+  console.log('[background] scene created:', scene);
   
   // 背景メッシュ
   let bgMaterial = null;
