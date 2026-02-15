@@ -50,7 +50,6 @@
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 | T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中。generate-sessions.py修正済み。マージ後に再有効化可能 |
-| T-041 | devlog session/image日付整合性確認 | S | QA | session-001〜005の記事内容がコミット日付と整合しているか確認。カバー画像も同様 |
 | T-042 | ワークツリー同期チェック機能 | M | プロセス | 委譲指示時にワークツリー同期状態を確認・促進。開始ブランチ明示、同期用gitスクリプト作成。project-management-agent.md改善 |
 
 ### ⚪ P3（アイデア）
@@ -68,6 +67,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-041 | devlog session/image日付整合性確認・修正 | #31 |
 | T-039b | カバー画像自動生成スクリプト | #30 |
 | T-039a | generate-sessions.py マージモード修正 | #29 |
 | T-039c | session-004/005記事下書き生成 | #29 |

@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #30 T-039b完了・カバー画像自動生成
+**セッション**: #31 T-041完了・devlog日付整合性修正
 
 ---
 
@@ -46,35 +46,33 @@
 - [x] **devlog機能拡張 #27**: T-004/T-005/T-035/T-036完了、E2Eテスト拡充
 - [x] **devlog改善・CI修正 #28**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
 - [x] **ワークフロー標準化・並列委譲 #29**: skills作成、AGENT-RULES v1.4、T-039並列委譲
+- [x] **T-039b完了・カバー画像自動生成 #30**: Puppeteerスクリプト作成
 
-### セッション#30 T-039b完了・カバー画像自動生成
+### セッション#31 T-041完了・devlog日付整合性修正
 
 **実施内容**:
 
-1. **T-039b完了**: カバー画像自動生成スクリプト作成
-   - `scripts/generate-cover-images.js`（Puppeteer）
-   - `package.json`（puppeteer devDependency）
-   - 入力: `content/devlog/prompts/session-XXX-generator.html`
-   - 出力: `assets/devlog/covers/session-XXX.png`
-2. **session-004/005インフォグラフィックHTML作成**
-3. **TODO追加**: T-041（日付整合性確認）、T-042（ワークツリー同期チェック）
-4. **feature/claude-code-2 → main マージ**
+1. **T-041: devlog session/image日付整合性確認・修正**
+   - session-002.md: 日付を`02-12`に修正
+   - session-003.md: 「コンテンツ統合」→「モバイル対応」に全面書き直し
+   - session-004.md, session-005.md: 内容整理
+   - インフォグラフィックHTML修正（session-002/003）
+   - カバー画像PNG再生成（session-002/003）
 
 ### 決定事項
 
-- パス構成は実ディレクトリに合わせる（指示書ではなく現状維持）
-  - 入力: `content/devlog/prompts/`
-  - 出力: `assets/devlog/covers/`
+- sessions.jsonの日付を正とし、.mdファイル側を修正
+- Part 3は「モバイル対応」（02-13）、Part 4は「コンテンツ統合」（02-14）
 
 ## 未完了タスク
 
-なし（T-039全サブタスク完了）
+なし
 
 ### バックログ
 
 → **[TODO.md](./TODO.md)** を参照
 
-P0なし。P1に1件（T-040）。P2に11件、P3に4件。
+P0なし。P1に1件（T-040）。P2に10件、P3に4件。
 
 ### 現在のデフォルトパラメータ
 
@@ -153,7 +151,7 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 - CI: GitHub Actions（.github/workflows/test.yml）
 - アクセシビリティ: WCAG 2.1 Level A準拠達成
 - 流体フィールド: 128x128（FIELD_SIZE=128）
-- フォント: Noto Serif JP (Google Fonts) + Yu Mincho/MS PMinchoフォールバック
+- フォント: Noto Serif JP (Google Fonts) + Yu Mincho/MS PMichoフォールバック
 
 ---
 
