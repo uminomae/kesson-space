@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devlog Cover - Part 3: コンテンツ統合</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0a0e1a; font-family: sans-serif; }
+        #coverCanvas { display: block; }
+        #downloadButton {
+            position: absolute; top: 10px; right: 10px;
+            padding: 8px 16px; background-color: #4a90d9; color: white;
+            border: none; cursor: pointer; border-radius: 4px; font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="coverCanvas" width="1280" height="720"></canvas>
+    <button id="downloadButton">ダウンロード (PNG)</button>
+
+    <script>
+        const canvas = document.getElementById('coverCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        const blue = '#4a90d9';
+        const cyan = '#00d4ff';
+        const amber = '#f59e0b';
+        const dimWhite = 'rgba(255,255,255,0.85)';
+        const dimGray = 'rgba(180,200,230,0.4)';
+
+        // Background
+        ctx.fillStyle = '#0a0e1a';
+        ctx.fillRect(0, 0, W, H);
+
+        // Subtle grid
+        ctx.strokeStyle = 'rgba(74,144,217,0.06)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+        // Title
+        ctx.font = 'bold 52px "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif';
+        ctx.fillStyle = cyan;
+        ctx.textAlign = 'center';
+        ctx.fillText('Part 3: コンテンツ統合', W / 2, 90);
+
+        // Subtitle
+        ctx.font = '22px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = blue;
+        ctx.fillText('02-14 〜 02-15', W / 2, 130);
+
+        // Three column layout
+        const colW = 350;
+        const colGap = 30;
+        const totalW = colW * 3 + colGap * 2;
+        const startX = (W - totalW) / 2;
+        const colY = 170;
+        const colH = 350;
+
+        const columns = [
+            {
+                title: 'テスト & CI',
+                color: blue,
+                items: [
+                    'E2Eテスト設計書',
+                    'ブラウザ内テストランナー',
+                    'GitHub Actions CI構築',
+                ]
+            },
+            {
+                title: 'ビジュアル & UI',
+                color: cyan,
+                items: [
+                    'Bootstrap条件付きロード',
+                    '流体フィールド128x128化',
+                    '渦シェーダー追加 (FBM spiral)',
+                    '液体屈折エフェクト',
+                    'devlogギャラリー (Bootstrap カード)',
+                ]
+            },
+            {
+                title: 'アーキテクチャ',
+                color: amber,
+                items: [
+                    'WCAG 2.1 Level A対応',
+                    'AGENT-RULES v1.1策定',
+                    'マルチエージェント運用',
+                    'CLAUDE.md新設',
+                    'ドキュメント階層再構成',
+                ]
+            }
+        ];
+
+        columns.forEach((col, ci) => {
+            const x = startX + ci * (colW + colGap);
+
+            // Column background
+            ctx.fillStyle = 'rgba(74,144,217,0.06)';
+            ctx.strokeStyle = col.color + '33';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(x, colY, colW, colH, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Top accent bar
+            ctx.fillStyle = col.color;
+            ctx.beginPath();
+            ctx.roundRect(x, colY, colW, 4, [8, 8, 0, 0]);
+            ctx.fill();
+
+            // Column title
+            ctx.font = 'bold 20px "Noto Sans JP", sans-serif';
+            ctx.fillStyle = col.color;
+            ctx.textAlign = 'left';
+            ctx.fillText(col.title, x + 20, colY + 40);
+
+            // Column items
+            ctx.font = '15px "Noto Sans JP", sans-serif';
+            col.items.forEach((item, ii) => {
+                const iy = colY + 75 + ii * 42;
+
+                // Bullet
+                ctx.beginPath();
+                ctx.arc(x + 28, iy - 4, 4, 0, Math.PI * 2);
+                ctx.fillStyle = col.color + '80';
+                ctx.fill();
+
+                // Text
+                ctx.fillStyle = dimWhite;
+                ctx.textAlign = 'left';
+                ctx.fillText(item, x + 44, iy);
+            });
+        });
+
+        // Technical decisions bar
+        const barY = 550;
+        const barH = 120;
+        ctx.fillStyle = 'rgba(10,14,26,0.9)';
+        ctx.strokeStyle = 'rgba(74,144,217,0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(startX, barY, totalW, barH, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 16px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = cyan;
+        ctx.textAlign = 'left';
+        ctx.fillText('技術的決定', startX + 20, barY + 30);
+
+        const decisions = [
+            'devlog表示をThree.js 3Dカードから Bootstrap HTMLカードに変更（保守性優先）',
+            'セッション粒度を18件 → 3パートに統合（ユーザー視点の読みやすさ重視）',
+            'marked.jsでmarkdownレンダリング（カスタムパーサー置換）',
+        ];
+
+        ctx.font = '14px "Noto Sans JP", sans-serif';
+        decisions.forEach((d, i) => {
+            ctx.fillStyle = amber;
+            ctx.fillText('▸', startX + 20, barY + 58 + i * 26);
+            ctx.fillStyle = dimWhite;
+            ctx.fillText(d, startX + 40, barY + 58 + i * 26);
+        });
+
+        // Footer
+        ctx.font = '14px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = dimGray;
+        ctx.textAlign = 'center';
+        ctx.fillText('kesson-space devlog — Bootstrap + marked.js 統合', W / 2, H - 20);
+
+        // Download
+        document.getElementById('downloadButton').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'session-003.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    </script>
+</body>
+</html>
