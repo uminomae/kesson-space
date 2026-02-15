@@ -3,6 +3,7 @@
  *
  * - メイン画面: 3件カード表示
  * - Read More → Offcanvas右スライドイン（全セッション一覧）
+ * - カードクリック → Offcanvas内で詳細ビューに切替
  * - 無限スクロールで10件ずつ追加読み込み
  *
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
@@ -24,6 +25,8 @@ let galleryState = {
   isLoading: false,       // 読み込み中フラグ
   offcanvas: null          // Bootstrap Offcanvasインスタンス
 };
+
+let currentView = 'list'; // 'list' | 'detail'
 
 // markedの設定
 marked.setOptions({
@@ -50,13 +53,10 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
     return;
   }
 
-  const modalEl = document.getElementById('devlogSessionModal');
-  if (modalEl) {
-    modalEl.addEventListener('hidden.bs.modal', () => {});
-  }
-
   loadSessions(counterId);
   setupInfiniteScroll();
+  setupBackButton();
+  setupOffcanvasReset();
   isInitialized = true;
   console.log('[devlog] Gallery initialized');
 }
@@ -148,7 +148,6 @@ function buildGallery() {
 
   galleryContainer.appendChild(row);
 
-  // Read More ボタン（セッションが3件超ある場合）
   if (sessions.length > 3) {
     const readMoreContainer = document.createElement('div');
     readMoreContainer.className = 'text-center mt-4';
@@ -171,7 +170,6 @@ function createCardElement(session, lang) {
   card.style.cursor = 'pointer';
   card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
 
-  // Cover image
   const img = document.createElement('img');
   img.className = 'card-img-top';
   img.src = session.cover;
@@ -183,7 +181,6 @@ function createCardElement(session, lang) {
     img.src = './assets/devlog/covers/default.svg';
   };
 
-  // Card body
   const cardBody = document.createElement('div');
   cardBody.className = 'card-body p-0';
 
@@ -210,7 +207,6 @@ function createCardElement(session, lang) {
   card.appendChild(img);
   card.appendChild(cardBody);
 
-  // Hover effects
   card.addEventListener('mouseenter', () => {
     card.style.transform = 'translateY(-4px)';
     card.style.boxShadow = '0 8px 24px rgba(100, 150, 255, 0.15)';
@@ -220,7 +216,6 @@ function createCardElement(session, lang) {
     card.style.boxShadow = '';
   });
 
-  // Click → detail modal
   card.addEventListener('click', () => showDetail(session));
 
   return card;
@@ -230,28 +225,22 @@ function createCardElement(session, lang) {
 // Offcanvas + 無限スクロール
 // ============================================================
 
-/**
- * Offcanvasを開いて全セッション一覧を表示
- */
 function openOffcanvas() {
   const offcanvasEl = document.getElementById('devlogOffcanvas');
   if (!galleryState.offcanvas) {
     galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
   }
 
-  // 初期化
   galleryState.displayedCount = 0;
   document.getElementById('offcanvas-gallery').innerHTML = '';
+  showListView();
   loadMoreSessions();
 
   galleryState.offcanvas.show();
 }
 
-/**
- * 無限スクロールのセットアップ
- */
 function setupInfiniteScroll() {
-  const container = document.getElementById('offcanvas-gallery');
+  const container = document.getElementById('offcanvas-list-view');
   if (!container) return;
 
   container.addEventListener('scroll', () => {
@@ -264,9 +253,6 @@ function setupInfiniteScroll() {
   });
 }
 
-/**
- * 次のバッチを読み込み
- */
 function loadMoreSessions() {
   if (galleryState.isLoading) return;
   if (galleryState.displayedCount >= galleryState.sessions.length) return;
@@ -287,9 +273,6 @@ function loadMoreSessions() {
   updateSessionCount();
 }
 
-/**
- * Offcanvas内にカードを描画
- */
 function renderSessionCards(sessionsToRender) {
   const container = document.getElementById('offcanvas-gallery');
   let row = container.querySelector('.row');
@@ -335,63 +318,103 @@ function updateSessionCount() {
 }
 
 // ============================================================
-// セッション詳細モーダル
+// 詳細ビュー（Offcanvas内）
 // ============================================================
 
 function showDetail(session) {
-  const modalEl = document.getElementById('devlogSessionModal');
-  if (!modalEl) return;
+  // Offcanvasが開いていない場合（メイン画面カードクリック）→ 先にOffcanvasを開く
+  const offcanvasEl = document.getElementById('devlogOffcanvas');
+  if (!galleryState.offcanvas) {
+    galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
+  }
 
-  const dateEl = document.getElementById('session-date');
-  const idEl = document.getElementById('session-id');
-  const coverEl = document.getElementById('session-cover');
-  const contentEl = document.getElementById('session-content');
-  const statsEl = document.getElementById('session-stats');
+  const isOffcanvasOpen = offcanvasEl.classList.contains('show');
+  if (!isOffcanvasOpen) {
+    galleryState.displayedCount = 0;
+    document.getElementById('offcanvas-gallery').innerHTML = '';
+    loadMoreSessions();
+    galleryState.offcanvas.show();
+  }
+
+  const listView = document.getElementById('offcanvas-list-view');
+  const detailView = document.getElementById('offcanvas-detail-view');
+  const backBtn = document.getElementById('offcanvas-back-btn');
+
+  listView.classList.add('d-none');
+  detailView.classList.remove('d-none');
+  backBtn.classList.remove('d-none');
 
   const lang = document.documentElement.lang || 'ja';
-  if (dateEl) dateEl.textContent = (lang === 'en' ? session.title_en : session.title_ja) || '';
-  if (idEl) idEl.textContent = session.date_range || '';
-
-  if (statsEl) statsEl.classList.add('d-none');
+  document.getElementById('detail-title').textContent =
+    (lang === 'en' ? session.title_en : session.title_ja) || '';
+  document.getElementById('detail-date').textContent = session.date_range || '';
 
   // カバー画像
-  if (coverEl) {
-    const coverImg = document.getElementById('session-cover-img');
-    if (session.cover && coverImg) {
-      coverImg.src = session.cover;
-      coverImg.onerror = () => {
-        coverImg.src = './assets/devlog/covers/default.svg';
-      };
-      coverEl.classList.remove('d-none');
-      coverImg.style.cursor = 'pointer';
-      coverImg.onclick = () => {
-        const lightboxImg = document.getElementById('lightbox-image');
-        if (lightboxImg) {
-          lightboxImg.src = coverImg.src;
-          const lightboxModal = bootstrap.Modal.getOrCreateInstance(
-            document.getElementById('imageLightboxModal')
-          );
-          lightboxModal.show();
-        }
-      };
-    } else {
-      coverEl.classList.add('d-none');
-    }
+  const coverEl = document.getElementById('detail-cover');
+  const coverImg = document.getElementById('detail-cover-img');
+  if (session.cover && coverImg) {
+    coverImg.src = session.cover;
+    coverImg.onerror = () => {
+      coverImg.src = './assets/devlog/covers/default.svg';
+    };
+    coverImg.onclick = () => openLightbox(session.cover);
+    coverEl.classList.remove('d-none');
+  } else {
+    coverEl.classList.add('d-none');
   }
 
-  // セッションコンテンツ（Markdown→HTML）
-  if (contentEl) {
-    if (session.log_content) {
-      contentEl.innerHTML = marked.parse(session.log_content);
-      contentEl.classList.remove('d-none');
-    } else {
-      contentEl.innerHTML = '';
-      contentEl.classList.add('d-none');
-    }
+  // Markdownコンテンツ
+  const contentEl = document.getElementById('detail-content');
+  if (session.log_content) {
+    contentEl.innerHTML = marked.parse(session.log_content);
+  } else {
+    contentEl.innerHTML = '';
   }
 
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-  modal.show();
+  // 詳細ビューのスクロール位置をトップにリセット
+  const offcanvasBody = offcanvasEl.querySelector('.offcanvas-body');
+  if (offcanvasBody) offcanvasBody.scrollTop = 0;
+
+  currentView = 'detail';
+}
+
+function showListView() {
+  const listView = document.getElementById('offcanvas-list-view');
+  const detailView = document.getElementById('offcanvas-detail-view');
+  const backBtn = document.getElementById('offcanvas-back-btn');
+
+  if (detailView) detailView.classList.add('d-none');
+  if (listView) listView.classList.remove('d-none');
+  if (backBtn) backBtn.classList.add('d-none');
+
+  currentView = 'list';
+}
+
+function setupBackButton() {
+  const backBtn = document.getElementById('offcanvas-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', showListView);
+  }
+}
+
+function setupOffcanvasReset() {
+  const offcanvasEl = document.getElementById('devlogOffcanvas');
+  if (offcanvasEl) {
+    offcanvasEl.addEventListener('hidden.bs.offcanvas', () => {
+      showListView();
+    });
+  }
+}
+
+function openLightbox(src) {
+  const lightboxImg = document.getElementById('lightbox-image');
+  if (lightboxImg) {
+    lightboxImg.src = src;
+    const lightboxModal = bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('imageLightboxModal')
+    );
+    lightboxModal.show();
+  }
 }
 
 /**
