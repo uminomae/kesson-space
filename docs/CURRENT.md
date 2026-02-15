@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #29 ワークフロー標準化・並列委譲
+**セッション**: #30 T-039b完了・カバー画像自動生成
 
 ---
 
@@ -45,38 +45,36 @@
 - [x] **T-032 README.md監督構造 #26**: 3層階層体制・ワークツリー構成・品質ルール明文化
 - [x] **devlog機能拡張 #27**: T-004/T-005/T-035/T-036完了、E2Eテスト拡充
 - [x] **devlog改善・CI修正 #28**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
+- [x] **ワークフロー標準化・並列委譲 #29**: skills作成、AGENT-RULES v1.4、T-039並列委譲
 
-### セッション#29 ワークフロー標準化・並列委譲
+### セッション#30 T-039b完了・カバー画像自動生成
 
 **実施内容**:
 
-1. **skills/session-workflow.md作成・更新**: 委譲優先・並列処理原則を確立
-2. **skills/devlog-generation.md作成**: devlog記事・画像生成ワークフロー文書化
-3. **skills/project-management-agent.md作成**: 📋常駐エージェント、委譲判断マトリクス、指示書テンプレート
-4. **docs/AGENT-RULES.md更新 v1.4**: §0常駐エージェント一覧、Claude Code/Codex委譲先追加
-5. **T-039並列委譲実行**:
-   - T-039a (Codex): generate-sessions.py マージモード ✅ 完了・push済
-   - T-039b (Claude Code 2): カバー画像生成スクリプト 🔄 実行中
-   - T-039c (Claude Code 1): session-004/005記事 ✅ 完了
+1. **T-039b完了**: カバー画像自動生成スクリプト作成
+   - `scripts/generate-cover-images.js`（Puppeteer）
+   - `package.json`（puppeteer devDependency）
+   - 入力: `content/devlog/prompts/session-XXX-generator.html`
+   - 出力: `assets/devlog/covers/session-XXX.png`
+2. **session-004/005インフォグラフィックHTML作成**
+3. **TODO追加**: T-041（日付整合性確認）、T-042（ワークツリー同期チェック）
+4. **feature/claude-code-2 → main マージ**
 
 ### 決定事項
 
-- 📋プロジェクト管理エージェントを常駐エージェントに追加
-- 指示書作成時は必ず出力先ワークツリーを明示
-- 委譲先: シェーダー→Gemini、複数ファイル→Claude Code、定型作業→Codex
-- DTが見ているワークツリーをデフォルト出力先とする
+- パス構成は実ディレクトリに合わせる（指示書ではなく現状維持）
+  - 入力: `content/devlog/prompts/`
+  - 出力: `assets/devlog/covers/`
 
 ## 未完了タスク
 
-- [ ] T-039b: カバー画像自動生成スクリプト（Claude Code 2で実行中）
-- [ ] feature/codex-tasks → main マージ（T-039a）
-- [ ] feature/claude-code → main マージ（T-039c）
+なし（T-039全サブタスク完了）
 
 ### バックログ
 
 → **[TODO.md](./TODO.md)** を参照
 
-P0なし。P1に2件（T-039b実行中、T-040）。P2に9件、P3に4件。
+P0なし。P1に1件（T-040）。P2に11件、P3に4件。
 
 ### 現在のデフォルトパラメータ
 
