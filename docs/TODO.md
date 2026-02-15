@@ -52,6 +52,7 @@
 | T-018 | CSS所在整理 | M | リファクタ | index.htmlの巨大`<style>`(約200行)とviewer.js/nav-objects.js/dev-panel.jsのstyle注入を`assets/*.css`に分離 |
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
+| T-033 | Bootstrap未使用箇所の洗い出し | M | リファクタ | エージェントで吟味し、修正可能なものを特定。指示書をTODOに追加 |
 
 ### ⚪ P3（アイデア）
 
