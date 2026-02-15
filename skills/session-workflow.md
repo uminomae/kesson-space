@@ -25,20 +25,21 @@
 - **ワークツリー分離**: main を汚さずに作業
 - **品質**: 専門エージェントによる実装
 
-### 委譲先の選択
-| 委譲先 | 適用条件 | ワークツリー |
-|--------|----------|--------------|
-| Claude Code | 複数ファイル、設計判断が必要 | /kesson-claudeCode |
-| Codex | 単純実装、定型作業 | /kesson-codex |
+### ワークツリー構成
+| 委譲先 | 適用条件 | パス |
+|--------|----------|------|
+| main | 本番 | /Users/uminomae/Documents/GitHub/kesson-space |
+| Claude Code | 複数ファイル、設計判断 | /Users/uminomae/Documents/GitHub/kesson-claudeCode |
+| Codex | 単純実装、定型作業 | /Users/uminomae/Documents/GitHub/kesson-codex |
 | Gemini MCP | シェーダー/Three.js | Claude経由で呼び出し |
 
 ### 並列処理パターン
 ```
 セッション中の並列実行例:
 
-[Claude Code] T-039a: devlog.js ソート修正
-[Codex]       T-039b: sessions.json 再生成
-[Codex]       T-039c: カバー画像生成スクリプト
+[Claude Code] T-039b: カバー画像生成スクリプト
+[Claude Code] T-039c: session記事下書き
+[Codex]       T-039a: generate-sessions.py修正
 
 → 各完了後 main にマージ
 ```
@@ -104,9 +105,9 @@ P0（即対応） → P1（次に着手） → P2（急がない） → P3（ア
 [1行で概要]
 
 ### ブランチ
-cd /Users/uminomae/kesson-claudeCode  # or kesson-codex
+cd /Users/uminomae/Documents/GitHub/kesson-claudeCode
 git fetch origin
-git checkout feature/claude-code  # or feature/codex-tasks
+git checkout feature/claude-code
 git pull origin main
 
 ### 対象ファイル
@@ -130,6 +131,12 @@ feat/fix/docs: T-XXX [簡潔な説明]
 
 ### 概要
 [1行]
+
+### ブランチ
+cd /Users/uminomae/Documents/GitHub/kesson-codex
+git fetch origin
+git checkout feature/codex-tasks
+git pull origin main
 
 ### 入力
 [入力ファイル/データ]
