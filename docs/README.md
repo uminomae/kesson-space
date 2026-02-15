@@ -1,6 +1,6 @@
 # kesson-space ドキュメントハブ
 
-**バージョン**: 2.1
+**バージョン**: 2.2
 **更新日**: 2026-02-15
 
 本ファイルはドキュメントの目次。詳細は各ファイルを参照。
@@ -17,13 +17,19 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 ---
 
+## セッション開始
+
+→ **[ルートREADME.md](../README.md) を参照**
+
+---
+
 ## ドキュメント構成
 
 ### Tier 1: 毎セッション参照
 
 | ファイル | 内容 |
 |---------|------|
-| **README.md** | 本ファイル（目次・監督構造） |
+| [../README.md](../README.md) | セッション起動（エントリーポイント） |
 | [CURRENT.md](./CURRENT.md) | 今セッションの状態・引き継ぎ |
 | [TODO.md](./TODO.md) | タスクバックログ |
 
@@ -31,12 +37,20 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 | ファイル | 内容 |
 |---------|------|
-| [WORKFLOW.md](./WORKFLOW.md) | セッション開始/終了、正本原則、Cross-repo |
-| [AGENT-RULES.md](./AGENT-RULES.md) | エージェント分業、PKガード、セッションヘルス |
+| [WORKFLOW.md](./WORKFLOW.md) | セッション終了、正本原則、Cross-repo |
+| [AGENT-RULES.md](./AGENT-RULES.md) | エージェント分業、監督構造、PKガード、セッションヘルス |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | ファイル構成、技術スタック、設計原則 |
 | [ENVIRONMENT.md](./ENVIRONMENT.md) | 開発環境（MCP / Codex / Worktree） |
 | [TESTING.md](./TESTING.md) | テスト体制（CI / E2E） |
 | [CONCEPT.md](./CONCEPT.md) | 理論↔視覚の対応 |
+
+### スキル（skills/）
+
+| ファイル | 内容 |
+|----------|------|
+| [project-management-agent.md](../skills/project-management-agent.md) | タスク委譲判断、ワークツリー構成（正本） |
+| [devlog-generation.md](../skills/devlog-generation.md) | devlog生成ワークフロー |
+| [orchestrator.md](../skills/orchestrator.md) | エージェント協調 |
 
 ### その他
 
@@ -47,67 +61,14 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 ---
 
-## 監督構造
+## 監督構造・ワークツリー
 
-### 階層体制
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  DT (Claude Desktop)                                    │
-│  ─────────────────                                      │
-│  • 戦略決定・最終判断権                                 │
-│  • 指示書・スキル作成                                   │
-│  • 日本語文章作成（レポート調）                         │
-│  • Claude Codeへの全権委譲は保留                        │
-├─────────────────────────────────────────────────────────┤
-│  Claude Code                                            │
-│  ───────────                                            │
-│  • 監督・タスク管理                                     │
-│  • スキル呼び出し・品質管理                             │
-│  • ブランチマージ                                       │
-│  • Codexへの指示出し                                    │
-├─────────────────────────────────────────────────────────┤
-│  Codex (OpenAI) x2                                      │
-│  ─────────────────                                      │
-│  • コーディング実行（並列可）                           │
-│  • 日本語文章作成NG（コードのみ）                       │
-└─────────────────────────────────────────────────────────┘
-```
-
-### ワークツリー構成
-
-| ブランチ | ローカルパス | 用途 |
-|----------|-------------|------|
-| `main` | /kesson-space | 本番デプロイ |
-| `feature/claude-code` | /kesson-claudeCode | Claude Code作業用 |
-| `feature/codex-tasks` | /kesson-codex | Codex並列実行用 |
-| `feature/devlog-content` | /kesson-space-claudeDT | DT直接作業用 |
-
-### 品質ルール
-
-| 領域 | ルール |
-|------|--------|
-| CSS | Bootstrapを使用。カスタムCSSは最小限 |
-| devlog | レポート調で執筆。小説調NG |
-| 日本語文章 | Claude（DT/Code）が担当。Codexはコーディングのみ |
-| シェーダー | Gemini MCP経由で実装 |
-
-### スキル
-
-| ファイル | 内容 |
-|----------|------|
-| [skills/devlog-writing.md](../skills/devlog-writing.md) | devlog作成ルール |
-| [skills/orchestrator.md](../skills/orchestrator.md) | エージェント協調 |
-
-→ 詳細は [AGENT-RULES.md](./AGENT-RULES.md) を参照
+→ [AGENT-RULES.md](./AGENT-RULES.md) §0〜§1 を参照
+→ [skills/project-management-agent.md](../skills/project-management-agent.md) §Step 3 を参照（ワークツリー正本）
 
 ---
 
 ## クイックスタート
-
-### セッション開始
-
-→ [WORKFLOW.md §1](./WORKFLOW.md) を参照
 
 ### 開発環境
 
@@ -137,3 +98,4 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 | 2026-02-14 | 1.1-1.7 | テスト体制、TODO管理、セッションヘルス等追加 |
 | 2026-02-14 | 2.0 | ドキュメント階層再構成。詳細を専用ファイルに分離 |
 | 2026-02-15 | 2.1 | 監督構造セクション新設。DT→Claude Code→Codex体系を明文化 |
+| 2026-02-15 | 2.2 | ルートREADMEをセッション起点に再設計。監督構造を参照リンク化 |
