@@ -121,10 +121,10 @@ function buildGallery() {
 
     sessions.forEach(session => {
         const col = document.createElement('div');
-        col.className = 'col-12 col-md-6 col-lg-4';
+        col.className = 'col-12 col-md-6 col-lg-4 p-2';
 
         const card = document.createElement('div');
-        card.className = 'card bg-dark border-0 overflow-hidden';
+        card.className = 'card bg-dark border-0 overflow-hidden h-100';
         card.style.cursor = 'pointer';
         card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
 
@@ -142,12 +142,12 @@ function buildGallery() {
             img.src = '';
         };
 
-        // Overlay bar at bottom — 70% transparent white
+        // Overlay bar at bottom — 70% transparent black
         const overlay = document.createElement('div');
         overlay.className = 'card-img-overlay d-flex flex-column justify-content-end p-0';
 
         const bar = document.createElement('div');
-        bar.style.background = 'rgba(255, 255, 255, 0.08)';
+        bar.style.background = 'rgba(0, 0, 0, 0.7)';
         bar.style.backdropFilter = 'blur(8px)';
         bar.style.padding = '12px 16px';
 
