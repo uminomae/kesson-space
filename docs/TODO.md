@@ -51,6 +51,7 @@
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 | T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中。generate-sessions.py修正済み。マージ後に再有効化可能 |
+| T-041 | devlog session/image日付整合性確認 | S | QA | session-001〜005の記事内容がコミット日付と整合しているか確認。カバー画像も同様 |
 
 ### ⚪ P3（アイデア）
 
