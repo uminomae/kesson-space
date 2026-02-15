@@ -18,7 +18,6 @@ import { CAMERA_FOV, CAMERA_NEAR, CAMERA_FAR } from '../constants.js';
  */
 export function createBackground({ container, preset = 'full', options = {} }) {
   const config = mergePreset(preset, options);
-  console.log('[background] createBackground called', { container, preset, options, config });
   
   // シーン
   const scene = new THREE.Scene();
@@ -34,8 +33,6 @@ export function createBackground({ container, preset = 'full', options = {} }) {
   
   // レンダラー
   const renderer = createRenderer({ container, alpha: true });
-  console.log('[background] renderer created:', renderer);
-  console.log('[background] scene created:', scene);
   
   // 背景メッシュ
   let bgMaterial = null;
@@ -56,17 +53,6 @@ export function createBackground({ container, preset = 'full', options = {} }) {
     vortexMaterial = createVortexMaterial();
     vortexMesh = createVortexMesh(vortexMaterial);
     scene.add(vortexMesh);
-    if (vortexMesh) {
-      vortexMesh.position.set(0, 0, 0);
-      vortexMesh.scale.set(50, 50, 1);
-      console.log('[background] vortexMesh positioned at:', vortexMesh.position);
-    }
-    console.log('[background] vortexMesh:', {
-      visible: vortexMesh?.visible,
-      position: vortexMesh?.position,
-      scale: vortexMesh?.scale,
-      material: vortexMaterial,
-    });
   }
   
   // リサイズハンドラ
@@ -107,8 +93,6 @@ export function createBackground({ container, preset = 'full', options = {} }) {
       bgMaterial.uniforms.uMix.value = m;
     }
 
-    console.log('[background] rendering frame');
-    
     // 渦更新
     if (vortexMaterial && vortexMesh) {
       const opacity = config.backgroundOpacity || 1;
