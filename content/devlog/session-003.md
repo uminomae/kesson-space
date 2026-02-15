@@ -2,7 +2,7 @@
 id: session-003
 title_ja: "Part 3: コンテンツ統合"
 title_en: "Part 3: Content Integration"
-date_range: "02-14 〜 02-15"
+date_range: "2026-02-14 〜 02-15"
 ---
 
 ## 概要

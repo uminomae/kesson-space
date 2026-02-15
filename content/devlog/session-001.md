@@ -2,7 +2,7 @@
 id: session-001
 title_ja: "Part 1: 基盤構築"
 title_en: "Part 1: Foundation"
-date_range: "02-10 〜 02-11"
+date_range: "2026-02-10 〜 02-11"
 ---
 
 ## 概要

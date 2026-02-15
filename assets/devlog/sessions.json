@@ -3,21 +3,21 @@
     "id": "session-001",
     "title_ja": "Part 1: 基盤構築",
     "title_en": "Part 1: Foundation",
-    "date_range": "02-10 〜 02-11",
+    "date_range": "2026-02-10 〜 02-11",
     "cover": "./assets/devlog/covers/session-001.jpg"
   },
   {
     "id": "session-002",
     "title_ja": "Part 2: UX実装",
     "title_en": "Part 2: UX Implementation",
-    "date_range": "02-12 〜 02-13",
+    "date_range": "2026-02-12 〜 02-13",
     "cover": "./assets/devlog/covers/session-002.png"
   },
   {
     "id": "session-003",
     "title_ja": "Part 3: コンテンツ統合",
     "title_en": "Part 3: Content Integration",
-    "date_range": "02-14 〜 02-15",
+    "date_range": "2026-02-14 〜 02-15",
     "cover": "./assets/devlog/covers/session-003.png"
   }
 ]

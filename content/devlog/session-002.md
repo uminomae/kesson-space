@@ -2,7 +2,7 @@
 id: session-002
 title_ja: "Part 2: UX実装"
 title_en: "Part 2: UX Implementation"
-date_range: "02-12 〜 02-13"
+date_range: "2026-02-12 〜 02-13"
 ---
 
 ## 概要
