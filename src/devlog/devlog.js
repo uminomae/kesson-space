@@ -124,7 +124,7 @@ function buildGallery() {
     // Bootstrap container for horizontal padding
     const galleryContainer = document.createElement('div');
     galleryContainer.className = 'container px-4';
-    galleryContainer.style.marginTop = '6.5rem';
+    galleryContainer.style.marginTop = '5.5rem';
 
     // Bootstrap row with responsive columns
     const row = document.createElement('div');
