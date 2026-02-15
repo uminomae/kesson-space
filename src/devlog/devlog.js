@@ -121,7 +121,7 @@ function buildGallery() {
 
     // Bootstrap container for horizontal padding
     const galleryContainer = document.createElement('div');
-    galleryContainer.className = 'container px-4 mt-5 pt-5';
+    galleryContainer.className = 'container px-4 mt-5';
 
     // Bootstrap row with responsive columns
     const row = document.createElement('div');
@@ -243,6 +243,9 @@ function showDetail(session) {
         const coverImg = document.getElementById('session-cover-img');
         if (session.cover && coverImg) {
             coverImg.src = session.cover;
+            coverImg.onerror = () => {
+                coverImg.src = './assets/devlog/covers/default.svg';
+            };
             coverEl.classList.remove('d-none');
         } else {
             coverEl.classList.add('d-none');
