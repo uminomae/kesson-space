@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Devlog Cover - Part 2: UX実装</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #0a0e1a; font-family: sans-serif; }
         #coverCanvas { display: block; }
@@ -15,14 +16,15 @@
     </style>
 </head>
 <body>
-    <canvas id="coverCanvas" width="1280" height="720"></canvas>
-    <button id="downloadButton">ダウンロード (PNG)</button>
+    <canvas id="coverCanvas" width="1920" height="1080"></canvas>
+    <button id="downloadButton">Download PNG</button>
 
     <script>
         const canvas = document.getElementById('coverCanvas');
         const ctx = canvas.getContext('2d');
         const W = canvas.width;
         const H = canvas.height;
+        const S = 1.5; // scale factor (1920/1280)
 
         const blue = '#4a90d9';
         const cyan = '#00d4ff';
@@ -37,28 +39,27 @@
         // Subtle grid
         ctx.strokeStyle = 'rgba(74,144,217,0.06)';
         ctx.lineWidth = 1;
-        for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-        for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+        for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
         // Title
-        ctx.font = 'bold 52px "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif';
+        ctx.font = `bold ${78}px "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif`;
         ctx.fillStyle = cyan;
         ctx.textAlign = 'center';
-        ctx.fillText('Part 2: UX実装', W / 2, 90);
+        ctx.fillText('Part 2: UX実装', W / 2, 135);
 
         // Subtitle
-        ctx.font = '22px "Noto Sans JP", sans-serif';
+        ctx.font = `${33}px "Noto Sans JP", sans-serif`;
         ctx.fillStyle = blue;
-        ctx.fillText('02-12 〜 02-13', W / 2, 130);
+        ctx.fillText('02-12 〜 02-13', W / 2, 195);
 
         // Timeline
-        const tlY = 240;
-        const tlLeft = 120;
-        const tlRight = W - 120;
+        const tlY = 360;
+        const tlLeft = 180;
+        const tlRight = W - 180;
 
-        // Timeline line
         ctx.strokeStyle = blue;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(tlLeft, tlY);
         ctx.lineTo(tlRight, tlY);
@@ -83,59 +84,58 @@
 
             // Dot
             ctx.beginPath();
-            ctx.arc(x, tlY, 7, 0, Math.PI * 2);
+            ctx.arc(x, tlY, 11, 0, Math.PI * 2);
             ctx.fillStyle = amber;
             ctx.fill();
             ctx.strokeStyle = '#0a0e1a';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 3;
             ctx.stroke();
 
             // Connector line
-            const lineLen = above ? -50 : 50;
+            const lineLen = above ? -75 : 75;
             ctx.strokeStyle = 'rgba(74,144,217,0.3)';
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(x, tlY + (above ? -10 : 10));
+            ctx.moveTo(x, tlY + (above ? -15 : 15));
             ctx.lineTo(x, tlY + lineLen);
             ctx.stroke();
 
             // Text
-            const textY = above ? tlY - 65 : tlY + 70;
+            const textY = above ? tlY - 98 : tlY + 105;
             const lines = item.text.split('\n');
 
-            ctx.font = 'bold 16px "Noto Sans JP", sans-serif';
+            ctx.font = `bold ${24}px "Noto Sans JP", sans-serif`;
             ctx.fillStyle = dimWhite;
             ctx.textAlign = 'center';
             lines.forEach((line, li) => {
-                ctx.fillText(line, x, textY + li * 20);
+                ctx.fillText(line, x, textY + li * 30);
             });
 
             // Sub text
-            ctx.font = '12px "Noto Sans JP", sans-serif';
+            ctx.font = `${18}px "Noto Sans JP", sans-serif`;
             ctx.fillStyle = dimGray;
-            ctx.fillText(item.sub, x, textY + lines.length * 20 + 4);
+            ctx.fillText(item.sub, x, textY + lines.length * 30 + 6);
         });
 
         // Technical decisions box
-        const boxY = 460;
-        const boxW = 700;
-        const boxH = 180;
+        const boxW = 1050;
+        const boxH = 270;
         const boxX = (W - boxW) / 2;
+        const boxY = 690;
 
-        // Box background
         ctx.fillStyle = 'rgba(74,144,217,0.08)';
         ctx.strokeStyle = 'rgba(74,144,217,0.2)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+        ctx.roundRect(boxX, boxY, boxW, boxH, 12);
         ctx.fill();
         ctx.stroke();
 
         // Box title
-        ctx.font = 'bold 18px "Noto Sans JP", sans-serif';
+        ctx.font = `bold ${27}px "Noto Sans JP", sans-serif`;
         ctx.fillStyle = cyan;
         ctx.textAlign = 'left';
-        ctx.fillText('技術的決定', boxX + 24, boxY + 35);
+        ctx.fillText('技術的決定', boxX + 36, boxY + 52);
 
         // Box items
         const decisions = [
@@ -144,27 +144,28 @@
             'Gemナビオブジェクトは正三角形配置を採用',
         ];
 
-        ctx.font = '15px "Noto Sans JP", sans-serif';
-        ctx.fillStyle = dimWhite;
+        ctx.font = `${23}px "Noto Sans JP", sans-serif`;
         decisions.forEach((d, i) => {
             ctx.fillStyle = amber;
-            ctx.fillText('▸', boxX + 24, boxY + 70 + i * 35);
+            ctx.fillText('▸', boxX + 36, boxY + 105 + i * 52);
             ctx.fillStyle = dimWhite;
-            ctx.fillText(d, boxX + 48, boxY + 70 + i * 35);
+            ctx.fillText(d, boxX + 72, boxY + 105 + i * 52);
         });
 
         // Footer
-        ctx.font = '14px "Noto Sans JP", sans-serif';
+        ctx.font = `${21}px "Noto Sans JP", sans-serif`;
         ctx.fillStyle = dimGray;
         ctx.textAlign = 'center';
-        ctx.fillText('kesson-space devlog — 4エージェントレビュー実施', W / 2, H - 30);
+        ctx.fillText('kesson-space devlog — 4エージェントレビュー実施', W / 2, H - 45);
 
-        // Download
+        // Download via html2canvas
         document.getElementById('downloadButton').addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'session-002.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            html2canvas(canvas, { width: 1920, height: 1080, scale: 1 }).then(c => {
+                const link = document.createElement('a');
+                link.download = 'session-002.png';
+                link.href = c.toDataURL('image/png');
+                link.click();
+            });
         });
     </script>
 </body>

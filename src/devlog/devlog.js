@@ -154,9 +154,9 @@ function buildGallery() {
             img.src = './assets/devlog/covers/default.svg';
         };
 
-        // Overlay bar at bottom — 70% transparent black
-        const overlay = document.createElement('div');
-        overlay.className = 'card-img-overlay d-flex flex-column justify-content-end p-0';
+        // Card body below image
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body p-0';
 
         const bar = document.createElement('div');
         bar.style.background = 'rgba(0, 0, 0, 0.7)';
@@ -177,10 +177,10 @@ function buildGallery() {
 
         bar.appendChild(title);
         bar.appendChild(date);
-        overlay.appendChild(bar);
+        cardBody.appendChild(bar);
 
         card.appendChild(img);
-        card.appendChild(overlay);
+        card.appendChild(cardBody);
         col.appendChild(card);
         row.appendChild(col);
 
