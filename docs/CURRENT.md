@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #28 プロジェクト管理ルール整備
+**セッション**: #29 ワークフロー標準化・並列委譲
 
 ---
 
@@ -44,39 +44,39 @@
 - [x] **devlog Bootstrap化 #25**: hero-spacer 125vh、インフォグラフィックジェネレータ作成
 - [x] **T-032 README.md監督構造 #26**: 3層階層体制・ワークツリー構成・品質ルール明文化
 - [x] **devlog機能拡張 #27**: T-004/T-005/T-035/T-036完了、E2Eテスト拡充
-- [x] **devlog改善・CI修正 #28前半**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
+- [x] **devlog改善・CI修正 #28**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
 
-### セッション#28 プロジェクト管理ルール整備
+### セッション#29 ワークフロー標準化・並列委譲
 
 **実施内容**:
 
-1. **codex-tasksマージ**: T-031, T-032, T-033完了
-2. **devlog.yml CI無効化**: 本番データ破壊問題のため一時停止
-3. **sessions.json復元**: 手動フォーマット、end_date追加（ソート用）
-4. **devlogヘッダー表示制御**: スクロール連動でフェードイン/アウト
-5. **TC-E2E-12追加**: sessions.json ↔ .md整合性チェック
-6. **session-004/005プレースホルダー**: コンテンツ執筆待ち
-7. **TODO.md運用ルール追記**: 対話終了時のClaude更新義務を明文化
+1. **skills/session-workflow.md作成・更新**: 委譲優先・並列処理原則を確立
+2. **skills/devlog-generation.md作成**: devlog記事・画像生成ワークフロー文書化
+3. **skills/project-management-agent.md作成**: 📋常駐エージェント、委譲判断マトリクス、指示書テンプレート
+4. **docs/AGENT-RULES.md更新 v1.4**: §0常駐エージェント一覧、Claude Code/Codex委譲先追加
+5. **T-039並列委譲実行**:
+   - T-039a (Codex): generate-sessions.py マージモード ✅ 完了・push済
+   - T-039b (Claude Code 2): カバー画像生成スクリプト 🔄 実行中
+   - T-039c (Claude Code 1): session-004/005記事 ✅ 完了
 
 ### 決定事項
 
-- 🩺セッションヘルスはClaude内部の常駐ガード。明示的な呼び出し不要
-- シェーダーファイルの全文読み込みは1セッション2ファイルまで。超過時はセクション指定
-- 4エージェント分析と実装は別セッションに分割する方針
-- Gemini MCP応答はdiffのみ抽出。全文はGitHub直接コミット
-- ガードの実効性はMemory→Step 1.5→§12の3層で担保する
-- PROMPT-STRUCTURE.md → 廃止（skills/体制に移行済み、ローカルでgit rm必要）
+- 📋プロジェクト管理エージェントを常駐エージェントに追加
+- 指示書作成時は必ず出力先ワークツリーを明示
+- 委譲先: シェーダー→Gemini、複数ファイル→Claude Code、定型作業→Codex
+- DTが見ているワークツリーをデフォルト出力先とする
 
 ## 未完了タスク
 
-- [ ] T-037: session-004/005コンテンツ執筆（プレースホルダー作成済み）
-- [ ] T-038: devlog.yml CI再有効化（generate-sessions.js修正後）
+- [ ] T-039b: カバー画像自動生成スクリプト（Claude Code 2で実行中）
+- [ ] feature/codex-tasks → main マージ（T-039a）
+- [ ] feature/claude-code → main マージ（T-039c）
 
 ### バックログ
 
 → **[TODO.md](./TODO.md)** を参照
 
-P1タスクなし。P2に10件（リファクタ6、コンテンツ2、品質1、QA1）、P3に4件。
+P0なし。P1に2件（T-039b実行中、T-040）。P2に9件、P3に4件。
 
 ### 現在のデフォルトパラメータ
 
