@@ -1,10 +1,9 @@
 /**
- * devlog.js — Devlog Gallery (Offcanvas + 無限スクロール版)
+ * devlog.js — Devlog Gallery (Accordion collapse)
  *
  * - メイン画面: 3件カード表示
- * - Read More → Offcanvas右スライドイン（全セッション一覧）
- * - カードクリック → Offcanvas内で詳細ビューに切替
- * - 無限スクロールで10件ずつ追加読み込み
+ * - 「もっと見る」→ 残り全件をDOMに追加
+ * - カードクリック → その場で詳細が展開/折りたたみ（Bootstrap collapse）
  *
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
@@ -17,16 +16,6 @@ const SESSIONS_URL = './assets/devlog/sessions.json';
 let sessions = [];
 let isInitialized = false;
 let containerEl = null;
-
-let galleryState = {
-  sessions: [],           // 全セッションデータ
-  displayedCount: 0,      // Offcanvas内の表示済み件数
-  batchSize: 10,          // 1回の読み込み件数
-  isLoading: false,       // 読み込み中フラグ
-  offcanvas: null          // Bootstrap Offcanvasインスタンス
-};
-
-let currentView = 'list'; // 'list' | 'detail'
 
 // markedの設定
 marked.setOptions({
@@ -54,9 +43,6 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
   }
 
   loadSessions(counterId);
-  setupInfiniteScroll();
-  setupBackButton();
-  setupOffcanvasReset();
   isInitialized = true;
   console.log('[devlog] Gallery initialized');
 }
@@ -107,7 +93,6 @@ async function loadSessions(counterId) {
     }
   }
 
-  galleryState.sessions = sessions;
   buildGallery();
 }
 
@@ -133,42 +118,57 @@ function buildGallery() {
 
   const row = document.createElement('div');
   row.className = 'row g-4 justify-content-center';
-
-  const lang = document.documentElement.lang || 'ja';
-  const visibleSessions = sessions.slice(0, 3);
-
-  visibleSessions.forEach((session) => {
-    const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4 p-2 devlog-card visible';
-
-    const card = createCardElement(session, lang);
-    col.appendChild(card);
-    row.appendChild(col);
-  });
+  row.id = 'devlog-gallery-row';
 
   galleryContainer.appendChild(row);
+
+  const lang = document.documentElement.lang || 'ja';
+  renderSessions(row, lang, 0, 3);
 
   if (sessions.length > 3) {
     const readMoreContainer = document.createElement('div');
     readMoreContainer.className = 'text-center mt-4';
     readMoreContainer.id = 'read-more-container';
-    const readMoreBtn = createReadMoreButton(openOffcanvas);
+    const readMoreBtn = createReadMoreButton(() => {
+      renderSessions(row, lang, 3, sessions.length);
+      readMoreContainer.remove();
+    });
     readMoreContainer.appendChild(readMoreBtn);
     galleryContainer.appendChild(readMoreContainer);
   }
 
   containerEl.appendChild(galleryContainer);
-  console.log('[devlog] Gallery built with', visibleSessions.length, 'visible cards');
+  console.log('[devlog] Gallery built with', Math.min(3, sessions.length), 'visible cards');
+}
+
+function renderSessions(rowEl, lang, startIndex, endIndex) {
+  const slice = sessions.slice(startIndex, endIndex);
+  slice.forEach((session) => {
+    const col = document.createElement('div');
+    col.className = 'col-12 col-md-6 col-lg-4 p-2 devlog-card visible';
+
+    const detailId = `detail-${session.id}`;
+    const card = createCardElement(session, lang, detailId);
+    const detail = createDetailCollapse(session, lang, detailId);
+
+    col.appendChild(card);
+    col.appendChild(detail);
+    rowEl.appendChild(col);
+  });
 }
 
 /**
- * カードDOM要素を生成（メイン画面・Offcanvas共用）
+ * カードDOM要素を生成
  */
-function createCardElement(session, lang) {
+function createCardElement(session, lang, detailId) {
   const card = document.createElement('div');
   card.className = 'card bg-dark border-0 overflow-hidden h-100';
   card.style.cursor = 'pointer';
   card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+  card.setAttribute('data-bs-toggle', 'collapse');
+  card.setAttribute('data-bs-target', `#${detailId}`);
+  card.setAttribute('aria-expanded', 'false');
+  card.setAttribute('aria-controls', detailId);
 
   const img = document.createElement('img');
   img.className = 'card-img-top';
@@ -216,194 +216,50 @@ function createCardElement(session, lang) {
     card.style.boxShadow = '';
   });
 
-  card.addEventListener('click', () => showDetail(session));
-
   return card;
 }
 
-// ============================================================
-// Offcanvas + 無限スクロール
-// ============================================================
+function createDetailCollapse(session, lang, detailId) {
+  const collapse = document.createElement('div');
+  collapse.className = 'collapse';
+  collapse.id = detailId;
+  collapse.style.marginTop = '0.75rem';
 
-function openOffcanvas() {
-  const offcanvasEl = document.getElementById('devlogOffcanvas');
-  if (!galleryState.offcanvas) {
-    galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
-  }
+  const wrapper = document.createElement('div');
+  wrapper.className = 'card bg-dark border-0 p-3 devlog-detail-card';
 
-  galleryState.displayedCount = 0;
-  document.getElementById('offcanvas-gallery').innerHTML = '';
-  showListView();
-  loadMoreSessions();
-
-  galleryState.offcanvas.show();
-}
-
-function setupInfiniteScroll() {
-  const container = document.getElementById('offcanvas-list-view');
-  if (!container) return;
-
-  container.addEventListener('scroll', () => {
-    if (galleryState.isLoading) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    if (scrollTop + clientHeight >= scrollHeight - 100) {
-      loadMoreSessions();
-    }
-  });
-}
-
-function loadMoreSessions() {
-  if (galleryState.isLoading) return;
-  if (galleryState.displayedCount >= galleryState.sessions.length) return;
-
-  galleryState.isLoading = true;
-  showLoading();
-
-  const start = galleryState.displayedCount;
-  const end = Math.min(start + galleryState.batchSize, galleryState.sessions.length);
-  const batch = galleryState.sessions.slice(start, end);
-
-  renderSessionCards(batch);
-  galleryState.displayedCount = end;
-
-  hideLoading();
-  galleryState.isLoading = false;
-
-  updateSessionCount();
-}
-
-function renderSessionCards(sessionsToRender) {
-  const container = document.getElementById('offcanvas-gallery');
-  let row = container.querySelector('.row');
-  if (!row) {
-    row = document.createElement('div');
-    row.className = 'row g-3 p-3';
-    container.appendChild(row);
-  }
-
-  const lang = document.documentElement.lang || 'ja';
-
-  sessionsToRender.forEach(session => {
-    const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4 p-3';
-    const card = createCardElement(session, lang);
-    col.appendChild(card);
-    row.appendChild(col);
-  });
-}
-
-function showLoading() {
-  const container = document.getElementById('offcanvas-gallery');
-  let loader = document.getElementById('offcanvas-loading');
-  if (!loader) {
-    loader = document.createElement('div');
-    loader.id = 'offcanvas-loading';
-    loader.textContent = 'Loading...';
-    container.appendChild(loader);
-  }
-  loader.style.display = 'block';
-}
-
-function hideLoading() {
-  const loader = document.getElementById('offcanvas-loading');
-  if (loader) loader.style.display = 'none';
-}
-
-function updateSessionCount() {
-  const countEl = document.getElementById('offcanvas-session-count');
-  if (countEl) {
-    countEl.textContent = `${galleryState.displayedCount} / ${galleryState.sessions.length} sessions`;
-  }
-}
-
-// ============================================================
-// 詳細ビュー（Offcanvas内）
-// ============================================================
-
-function showDetail(session) {
-  // Offcanvasが開いていない場合（メイン画面カードクリック）→ 先にOffcanvasを開く
-  const offcanvasEl = document.getElementById('devlogOffcanvas');
-  if (!galleryState.offcanvas) {
-    galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
-  }
-
-  const isOffcanvasOpen = offcanvasEl.classList.contains('show');
-  if (!isOffcanvasOpen) {
-    galleryState.displayedCount = 0;
-    document.getElementById('offcanvas-gallery').innerHTML = '';
-    loadMoreSessions();
-    galleryState.offcanvas.show();
-  }
-
-  const listView = document.getElementById('offcanvas-list-view');
-  const detailView = document.getElementById('offcanvas-detail-view');
-  const backBtn = document.getElementById('offcanvas-back-btn');
-
-  listView.classList.add('d-none');
-  detailView.classList.remove('d-none');
-  backBtn.classList.remove('d-none');
-
-  const lang = document.documentElement.lang || 'ja';
-  document.getElementById('detail-title').textContent =
-    (lang === 'en' ? session.title_en : session.title_ja) || '';
-  document.getElementById('detail-date').textContent = session.date_range || '';
-
-  // カバー画像
-  const coverEl = document.getElementById('detail-cover');
-  const coverImg = document.getElementById('detail-cover-img');
-  if (session.cover && coverImg) {
-    coverImg.src = session.cover;
-    coverImg.onerror = () => {
-      coverImg.src = './assets/devlog/covers/default.svg';
+  if (session.cover) {
+    const cover = document.createElement('img');
+    cover.className = 'img-fluid rounded mb-3';
+    cover.alt = 'Session cover';
+    cover.src = session.cover;
+    cover.style.cursor = 'pointer';
+    cover.onerror = () => {
+      cover.onerror = null;
+      cover.src = './assets/devlog/covers/default.svg';
     };
-    coverImg.onclick = () => openLightbox(session.cover);
-    coverEl.classList.remove('d-none');
-  } else {
-    coverEl.classList.add('d-none');
+    cover.addEventListener('click', () => openLightbox(session.cover));
+    wrapper.appendChild(cover);
   }
 
-  // Markdownコンテンツ
-  const contentEl = document.getElementById('detail-content');
-  if (session.log_content) {
-    contentEl.innerHTML = marked.parse(session.log_content);
-  } else {
-    contentEl.innerHTML = '';
-  }
+  const title = document.createElement('h5');
+  title.className = 'text-light mb-1';
+  title.textContent = (lang === 'en' ? session.title_en : session.title_ja) || '';
 
-  // 詳細ビューのスクロール位置をトップにリセット
-  const offcanvasBody = offcanvasEl.querySelector('.offcanvas-body');
-  if (offcanvasBody) offcanvasBody.scrollTop = 0;
+  const date = document.createElement('small');
+  date.className = 'text-muted d-block mb-3';
+  date.textContent = session.date_range || '';
 
-  currentView = 'detail';
-}
+  const content = document.createElement('div');
+  content.className = 'session-content';
+  content.innerHTML = session.log_content ? marked.parse(session.log_content) : '';
 
-function showListView() {
-  const listView = document.getElementById('offcanvas-list-view');
-  const detailView = document.getElementById('offcanvas-detail-view');
-  const backBtn = document.getElementById('offcanvas-back-btn');
+  wrapper.appendChild(title);
+  wrapper.appendChild(date);
+  wrapper.appendChild(content);
+  collapse.appendChild(wrapper);
 
-  if (detailView) detailView.classList.add('d-none');
-  if (listView) listView.classList.remove('d-none');
-  if (backBtn) backBtn.classList.add('d-none');
-
-  currentView = 'list';
-}
-
-function setupBackButton() {
-  const backBtn = document.getElementById('offcanvas-back-btn');
-  if (backBtn) {
-    backBtn.addEventListener('click', showListView);
-  }
-}
-
-function setupOffcanvasReset() {
-  const offcanvasEl = document.getElementById('devlogOffcanvas');
-  if (offcanvasEl) {
-    offcanvasEl.addEventListener('hidden.bs.offcanvas', () => {
-      showListView();
-    });
-  }
+  return collapse;
 }
 
 function openLightbox(src) {
