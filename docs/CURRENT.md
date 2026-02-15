@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-15
-**セッション**: #31 T-041完了・devlog日付整合性修正
+**セッション**: #32 T-040完了・devlog Offcanvas内ビュー切替
 
 ---
 
@@ -47,22 +47,29 @@
 - [x] **devlog改善・CI修正 #28**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
 - [x] **ワークフロー標準化・並列委譲 #29**: skills作成、AGENT-RULES v1.4、T-039並列委譲
 - [x] **T-039b完了・カバー画像自動生成 #30**: Puppeteerスクリプト作成
+- [x] **T-041完了・devlog日付整合性修正 #31**: session-002〜005書き直し、カバー画像再生成
 
-### セッション#31 T-041完了・devlog日付整合性修正
+### セッション#32 T-040完了・devlog Offcanvas内ビュー切替
 
 **実施内容**:
 
-1. **T-041: devlog session/image日付整合性確認・修正**
-   - session-002.md: 日付を`02-12`に修正
-   - session-003.md: 「コンテンツ統合」→「モバイル対応」に全面書き直し
-   - session-004.md, session-005.md: 内容整理
-   - インフォグラフィックHTML修正（session-002/003）
-   - カバー画像PNG再生成（session-002/003）
+1. **T-040: devlog詳細画面遷移のBootstrap対応**
+   - devlogSessionModal廃止（Bootstrap非推奨パターン: Modal inside Offcanvas）
+   - Offcanvas内に一覧/詳細の2ビュー構造を実装
+   - 戻るボタン追加（showListView）
+   - Offcanvas閉じた時にリストビューにリセット
+   - imageLightboxModalは維持（カバー画像拡大用）
 
 ### 決定事項
 
-- sessions.jsonの日付を正とし、.mdファイル側を修正
-- Part 3は「モバイル対応」（02-13）、Part 4は「コンテンツ統合」（02-14）
+- Modal inside OffcanvasはBootstrap非推奨のため廃止
+- 詳細表示はOffcanvas内でビュー切替方式に変更
+
+### 次セッションのタスク
+
+**T-043: devlog遷移UX改善**（P1）
+- 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明、アニメーションなし
+- 改善案: スライド/フェードアニメーション、状態表示、戻るボタン強化
 
 ## 未完了タスク
 
@@ -72,7 +79,7 @@
 
 → **[TODO.md](./TODO.md)** を参照
 
-P0なし。P1に1件（T-040）。P2に10件、P3に4件。
+P0なし。P1に1件（T-043）。P2に10件、P3に4件。
 
 ### 現在のデフォルトパラメータ
 
