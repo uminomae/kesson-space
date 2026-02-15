@@ -1,7 +1,43 @@
 # AGENT-RULES.md — マルチエージェント運用ルール
 
-**バージョン**: 1.3
+**バージョン**: 1.4
 **更新日**: 2026-02-15
+
+---
+
+## 0. 常駐エージェント一覧
+
+Claude内部で**常時自動稼働**するエージェント。明示的な呼び出し不要。
+
+| エージェント | 監視対象 | 発動タイミング | 詳細 |
+|--------------|----------|----------------|------|
+| 🩺 **セッションヘルス** | コンテキスト使用量 | 常時 | §8参照 |
+| 🔎 **PKガード** | Project Knowledge参照 | ファイル読み込み時 | §7参照 |
+| 📋 **プロジェクト管理** | タスク発生 | タスク認識時・指示書作成時 | `skills/project-management-agent.md` |
+
+### 📋 プロジェクト管理エージェント概要
+
+**発動トリガー**:
+- ユーザーがタスクを指示した時
+- P0/P1タスクを検出した時
+- 「指示書を作成」と言われた時
+
+**自動実行内容**:
+1. タスク分類（実装/修正/コンテンツ/レビュー/シェーダー）
+2. 委譲先判断（Claude Code / OpenAI Codex / Gemini MCP / Claude直接）
+3. 指示書テンプレート選択・生成
+4. ワークツリー割り当て
+
+**委譲先判断マトリクス**:
+
+| タスク種別 | 委譲先 |
+|------------|--------|
+| シェーダー/GLSL | Gemini MCP |
+| 複数ファイル+設計判断 | Claude Code |
+| 単純実装・定型作業 | OpenAI Codex |
+| 1ファイル・即時必要 | Claude直接（例外） |
+
+詳細: `skills/project-management-agent.md`
 
 ---
 
@@ -11,8 +47,12 @@
 |---|---|---|---|
 | **Claude** | 司令塔。要件整理、プロンプト設計、config/HTML/CSS、ファイル統合、テスト、ドキュメント | コンテキスト把握、複数ファイル管理、対話 | 常時（セッションホスト） |
 | **🩺 セッションヘルス** | コンテキスト監視。SH-1〜SH-6の閾値チェック | コンテキスト逼迫の事前検知 | **常駐（Claude内部で自動）** |
+| **🔎 PKガード** | Project Knowledge管理。PG-1〜PG-5の監視 | ドキュメント参照の最適化 | **常駐（Claude内部で自動）** |
+| **📋 プロジェクト管理** | タスク委譲判断、指示書生成 | 並列処理の最適化 | **常駐（Claude内部で自動）** |
+| **Claude Code** | 複数ファイル実装、設計判断が必要な作業 | ファイルシステムアクセス、並列実行 | 指示書経由で委譲 |
+| **OpenAI Codex** | 単純実装、定型作業 | 高速、並列向き | 指示書経由で委譲 |
 | **Gemini** | Three.js/GLSLプログラマー | シェーダー実装、視覚品質、GLSL数学 | シェーダー/Three.jsコードの新規作成・修正時 |
-| **Codex/GPT** | レビュアー/アーキテクト | 俯瞰的構造改善、運用設計、セカンドオピニオン | 品質検証、設計議論、リファクタリング時 |
+| **GPT** | レビュアー/アーキテクト | 俯瞰的構造改善、運用設計、セカンドオピニオン | 品質検証、設計議論、リファクタリング時 |
 
 ### 責務境界（明確化）
 
@@ -23,7 +63,8 @@
 | コードレビュー・構造改善 | **GPT** or Gemini review | — |
 | config/devパネル/HTML/CSS | **Claude直接** | — |
 | **関数シグネチャ・インターフェース設計** | **Claude** | 擬似コード・引数定義まで |
-| **関数の中身（実装）** | **Gemini** | Claudeは実装を書かない |
+| **関数の中身（実装）** | **Gemini** or **Claude Code** or **Codex** | Claudeは実装を書かない |
+| **指示書作成** | **Claude**（📋エージェント経由） | 自動生成 |
 
 > **原則**: ユーザーが明示した時のみ外部エージェントを使用。自動呼び出しはしない。
 
@@ -68,6 +109,9 @@ tree -I 'node_modules|.git|dist|__pycache__|uv.lock' --dirsfirst -L 3
 | `skills/shader-impl.md` | Gemini | Visual Direction、GLSL作法、出力ルール |
 | `skills/review-gates.md` | GPT | レビュー観点、品質ゲート、評価基準 |
 | `skills/orchestrator.md` | Claude | 分解・委譲・統合の手順 |
+| `skills/session-workflow.md` | Claude | セッション管理ワークフロー |
+| `skills/project-management-agent.md` | Claude | 委譲判断・指示書生成 |
+| `skills/devlog-generation.md` | Claude/Codex | devlog生成ワークフロー |
 
 ### L2: タスク（context-pack/）
 
@@ -105,6 +149,15 @@ context-pack/
   L1: skills/shader-impl.md（+ shared-quality.md 必要時）
   L2: TASK.md（Visual Specs必須）+ FILES.md + CONSTRAINTS.md + ACCEPTANCE.md
   L3: LEARNINGS.md（関連する教訓があれば）
+```
+
+### Claude → Claude Code / Codex（実装依頼）
+
+```
+渡すもの:
+  指示書（skills/project-management-agent.md のテンプレート）
+  ワークツリーパス指定必須
+  ブランチ名指定必須
 ```
 
 ### Claude → GPT（レビュー依頼）
@@ -153,18 +206,21 @@ context-pack/
 ```
 kesson-space/
 ├── skills/
-│   ├── shared-quality.md      ← 全エージェント共通の品質基準
-│   ├── shader-impl.md         ← Gemini用: Visual Direction、GLSL作法
-│   ├── review-gates.md        ← GPT用: レビュー観点
-│   ├── orchestrator.md        ← Claude用: 分解・委譲手順
-│   └── LEARNINGS.md           ← 運用の教訓（手動更新）
+│   ├── shared-quality.md          ← 全エージェント共通の品質基準
+│   ├── shader-impl.md             ← Gemini用: Visual Direction、GLSL作法
+│   ├── review-gates.md            ← GPT用: レビュー観点
+│   ├── orchestrator.md            ← Claude用: 分解・委譲手順
+│   ├── session-workflow.md        ← Claude用: セッション管理
+│   ├── project-management-agent.md ← Claude用: 委譲判断・指示書生成
+│   ├── devlog-generation.md       ← devlog生成ワークフロー
+│   └── LEARNINGS.md               ← 運用の教訓（手動更新）
 │
 ├── context-pack/
-│   ├── SINGLE.md.template     ← マイクロタスク用テンプレート
+│   ├── SINGLE.md.template         ← マイクロタスク用テンプレート
 │   └── （タスクごとに TASK.md 等を作成。完了後は削除 or archive/）
 │
 ├── docs/
-│   ├── AGENT-RULES.md         ← 本ファイル（上位方針）
+│   ├── AGENT-RULES.md             ← 本ファイル（上位方針）
 │   └── ...
 ```
 
@@ -194,7 +250,7 @@ PROMPT-STRUCTURE.md = **Gemini向けの具体的テンプレート**（引き続
 PKガードはClaudeが**常時内部的に実行する**常駐ガード。
 
 | # | 監視項目 | 判定基準 | アクション |
-|---|---------|---------|-----------|
+|---|---------|---------|-----------
 | PG-1 | セッション冒頭でTier 2/3を読んでいないか | Tier 1のみ許可 | タスク確定後に参照 |
 | PG-2 | 完了済みドキュメントを読んでいないか | ISS-001(✅完了)等 | 完了済みは無視 |
 | PG-3 | Tier 3を不要に参照していないか | Gemini作業時のみ | 依頼時以外は無視 |
@@ -226,7 +282,7 @@ kesson-spaceではシェーダーファイル（GLSL 200行超）やGemini MCP�
 ### 監視項目
 
 | # | 監視項目 | 閾値 | アクション |
-|---|---------|------|-----------|
+|---|---------|------|-----------
 | SH-1 | シェーダーファイル全文読み込み | 2ファイル以上/セッション | セクション指定に切替を提案 |
 | SH-2 | 1ターンの出力長 | 長大なコード出力 | 分割出力を提案 |
 | SH-3 | 累積ファイル参照数 | 8ファイル超 | 参照整理を提案 |
@@ -281,3 +337,4 @@ kesson-spaceではシェーダーファイル（GLSL 200行超）やGemini MCP�
 | v1.1 | レビュー指摘反映: 配置整合、HTML例外、CHANGED日付化 |
 | v1.2 | 🩺セッションヘルスガードを常駐エージェントに追加 |
 | v1.3 | ドキュメント階層再構成に伴い、PKガード・セッションヘルス詳細を本ファイルに統合 |
+| v1.4 | 📋プロジェクト管理エージェント追加、委譲先にClaude Code/Codex追加 |
