@@ -141,9 +141,8 @@ function buildGallery() {
         img.style.objectFit = 'cover';
         // Fallback for missing images
         img.onerror = () => {
-            img.style.background = 'linear-gradient(135deg, #0a0e1a 0%, #1a237e40 50%, #0a0e1a 100%)';
-            img.style.minHeight = '180px';
-            img.src = '';
+            img.onerror = null;
+            img.src = './assets/devlog/covers/default.svg';
         };
 
         // Overlay bar at bottom — 70% transparent black
