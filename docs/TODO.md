@@ -47,7 +47,8 @@
 | T-018 | CSS所在整理 | M | リファクタ | index.htmlの巨大`<style>`(約200行)とviewer.js/nav-objects.js/dev-panel.jsのstyle注入を`assets/*.css`に分離 |
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
-| T-033 | Bootstrap未使用箇所の洗い出し | M | リファクタ | エージェントで吟味し、修正可能なものを特定。指示書をTODOに追加 |
+| T-037 | session-004/005コンテンツ執筆 | S | コンテンツ | プレースホルダー追加済み。DT執筆待ち |
+| T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中。generate-sessions.js修正後に再有効化 |
 
 ### ⚪ P3（アイデア）
 
@@ -64,6 +65,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-033 | Bootstrap未使用箇所の洗い出し | #28 |
 | T-036 | devlog日時表示を年月日に変更 | #27 |
 | T-004 | lang=en E2Eテスト追加 | #27 |
 | T-005 | devパネル E2Eテスト追加 | #27 |
@@ -107,3 +109,7 @@
 3. **セッション終了時**: 完了したタスクを「完了済み」セクションに移動。CURRENT.mdも更新
 4. **優先度変更**: 状況に応じて随時。変更理由をコミットメッセージに記載
 5. **大規模タスク**: docs/issues/ にISS-NNNとして詳細設計書を起票（ISS-001の前例に倣う）
+6. **対話終了時（Claude）**: 対話終了前に必ず以下を実行し、コミット・プッシュする
+   - CURRENT.md: セッション番号・日付・実施内容を更新
+   - TODO.md: 完了タスクを「完了済み」に移動、新規発見タスクを追加
+   - コミットメッセージ: `docs: session #XX end — update CURRENT/TODO`
