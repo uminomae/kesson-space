@@ -38,11 +38,11 @@
 └─────────────────────────────────┘
     ↓
 ┌─────────────────────────────────┐
-│ Step 3: 指示書生成              │
+│ Step 3: 出力先ワークツリー確認  │  ← 🔴 必須
 └─────────────────────────────────┘
     ↓
 ┌─────────────────────────────────┐
-│ Step 4: ワークツリー割り当て    │
+│ Step 4: 指示書生成              │
 └─────────────────────────────────┘
     ↓
 ユーザーに提示
@@ -93,7 +93,49 @@
 
 ---
 
-## Step 3: 指示書テンプレート選択
+## Step 3: 出力先ワークツリー確認 🔴
+
+### 確認フロー
+
+```
+指示書作成前に必ず確認:
+
+Q: DTは今どのワークツリーを見ていますか？
+   → ユーザーに確認 or 直前の発言から推測
+
+デフォルト: DTが見ているワークツリーへ出力
+例外: 並列処理で別ワークツリーが必要な場合は明示的に指定
+```
+
+### ワークツリー構成
+
+| ワークツリー | パス | ブランチ | 用途 |
+|--------------|------|----------|------|
+| main | /Users/uminomae/Documents/GitHub/kesson-space | main | 本番（直接コミット非推奨） |
+| Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
+| Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
+| Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
+
+### ワークツリー割り当てルール
+
+1. **基本**: DTが見ているワークツリーへ出力
+2. **並列実行**: 異なるワークツリーに割り当て（明示的に指定）
+3. **依存関係あり**: 同一ワークツリーで順次実行
+4. **コンフリクトリスク高**: 別ワークツリー必須
+5. **mainへの直接コミット**: 緊急時のみ（ドキュメント更新等）
+
+### 指示書へのワークツリー記載（必須）
+
+```markdown
+### 出力先
+📁 ワークツリー: kesson-claudeCode2
+📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode2
+🌿 ブランチ: feature/claude-code-2
+```
+
+---
+
+## Step 4: 指示書テンプレート
 
 ### Claude Code 向け
 
@@ -103,10 +145,15 @@
 ### タスク概要
 [1行]
 
-### ブランチ
-cd /Users/uminomae/Documents/GitHub/kesson-claudeCode[N]
+### 出力先
+📁 ワークツリー: [kesson-claudeCode / kesson-claudeCode2]
+📂 パス: /Users/uminomae/Documents/GitHub/[ワークツリー名]
+🌿 ブランチ: feature/claude-code[-N]
+
+### ブランチ準備
+cd /Users/uminomae/Documents/GitHub/[ワークツリー名]
 git fetch origin
-git checkout feature/claude-code[-N]
+git checkout [ブランチ名]
 git pull origin main --rebase
 
 ### 対象ファイル
@@ -130,7 +177,12 @@ type: T-XXX description
 ### 概要
 [1行]
 
-### ブランチ
+### 出力先
+📁 ワークツリー: kesson-codex
+📂 パス: /Users/uminomae/Documents/GitHub/kesson-codex
+🌿 ブランチ: feature/codex-tasks
+
+### ブランチ準備
 cd /Users/uminomae/Documents/GitHub/kesson-codex
 git fetch origin
 git checkout feature/codex-tasks
@@ -196,25 +248,6 @@ type: T-XXX description
 
 ---
 
-## Step 4: ワークツリー割り当て
-
-### 利用可能ワークツリー
-
-| ワークツリー | パス | ブランチ | 用途 |
-|--------------|------|----------|------|
-| main | /Documents/GitHub/kesson-space | main | 本番 |
-| Claude Code 1 | /Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
-| Claude Code 2 | /Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
-| Codex | /Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
-
-### 割り当てルール
-
-1. **並列実行**: 異なるワークツリーに割り当て
-2. **依存関係あり**: 同一ワークツリーで順次実行
-3. **コンフリクトリスク高**: 別ワークツリー必須
-
----
-
 ## 自動出力フォーマット
 
 タスク認識時、以下を自動生成して提示:
@@ -222,13 +255,16 @@ type: T-XXX description
 ```
 📋 プロジェクト管理エージェント起動
 
+## ワークツリー確認
+DTが見ているワークツリー: [確認 or 推測結果]
+
 ## タスク分析
-| ID | 内容 | 分類 | 委譲先 | ワークツリー |
-|-------|------|------|--------|--------------|
-| T-XXX | ... | 実装 | Codex  | kesson-codex |
+| ID | 内容 | 分類 | 委譲先 | 出力先ワークツリー |
+|-------|------|------|--------|-------------------|
+| T-XXX | ... | 実装 | Claude Code | kesson-claudeCode2 |
 
 ## 指示書
-[テンプレートに従った指示書]
+[テンプレートに従った指示書（出力先セクション必須）]
 
 ## 並列実行可否
 [可能 / 依存関係あり]
@@ -238,10 +274,11 @@ type: T-XXX description
 
 ## 禁止事項
 
+- **ワークツリー指定なしで指示書を作成すること** ← 最重要
 - 委譲判断をスキップして直接実装に飛ぶこと
-- ワークツリー指定なしで指示書を作成すること
 - Gemini MCPをユーザー許可なく呼び出すこと
 - 複数タスクを同一ワークツリーに割り当てて並列指示すること
+- DTが見ていないワークツリーに無断で出力すること
 
 ---
 
