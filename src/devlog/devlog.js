@@ -5,11 +5,20 @@
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
+import { marked } from 'marked';
+
 const SESSIONS_URL = './assets/devlog/sessions.json';
 
 let sessions = [];
 let isInitialized = false;
 let containerEl = null;
+
+// markedの設定（セキュリティ・スタイル）
+marked.setOptions({
+    breaks: true,      // 改行を<br>に変換
+    gfm: true,         // GitHub Flavored Markdown
+    headerIds: false,  // ヘッダーにID付与しない（シンプルに）
+});
 
 /**
  * ギャラリーを初期化
@@ -203,28 +212,6 @@ function buildGallery() {
     console.log('[devlog] Gallery built with', sessions.length, 'cards');
 }
 
-/**
- * 安全なHTML描画（<a> と <hr> のみ許可）
- */
-function safeHTML(text) {
-    let escaped = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-
-    // <a href="...">...</a> だけ復元（https:// のみ許可）
-    escaped = escaped.replace(
-        /&lt;a\s+href=&quot;(https:\/\/[^&]+)&quot;&gt;([^&]*?)&lt;\/a&gt;/g,
-        '<a href="$1" target="_blank" rel="noopener">$2</a>'
-    );
-
-    // <hr> を復元
-    escaped = escaped.replace(/&lt;hr&gt;/g, '<hr>');
-
-    return escaped;
-}
-
 function showDetail(session) {
     const modalEl = document.getElementById('devlogSessionModal');
     if (!modalEl) return;
@@ -267,16 +254,11 @@ function showDetail(session) {
         }
     }
 
-    // セッションコンテンツ（log_content を描画）
+    // セッションコンテンツ（Markdownをパースして描画）
     if (contentEl) {
         if (session.log_content) {
-            const paragraphs = session.log_content.split(/\n\n+/).filter(p => p.trim());
-            const html = paragraphs.map(p => {
-                const trimmed = p.trim();
-                if (trimmed === '<hr>') return '<hr class="log-separator">';
-                return `<p>${safeHTML(trimmed)}</p>`;
-            }).join('');
-            contentEl.innerHTML = html;
+            // markedでMarkdownをHTMLに変換
+            contentEl.innerHTML = marked.parse(session.log_content);
             contentEl.classList.remove('d-none');
         } else {
             contentEl.innerHTML = '';
