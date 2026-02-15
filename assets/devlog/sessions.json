@@ -4,6 +4,7 @@
     "title_ja": "Part 1: 基盤構築",
     "title_en": "Part 1: Foundation",
     "date_range": "2026-02-10 〜 02-11",
+    "end": "2026-02-11T23:59:00+09:00",
     "cover": "./assets/devlog/covers/session-001.jpg"
   },
   {
@@ -11,6 +12,7 @@
     "title_ja": "Part 2: UX実装",
     "title_en": "Part 2: UX Implementation",
     "date_range": "2026-02-12",
+    "end": "2026-02-12T23:59:00+09:00",
     "cover": "./assets/devlog/covers/session-002.png"
   },
   {
@@ -18,6 +20,7 @@
     "title_ja": "Part 3: モバイル対応",
     "title_en": "Part 3: Mobile Support",
     "date_range": "2026-02-13",
+    "end": "2026-02-13T23:59:00+09:00",
     "cover": "./assets/devlog/covers/session-003.png"
   },
   {
@@ -25,6 +28,7 @@
     "title_ja": "Part 4: コンテンツ統合",
     "title_en": "Part 4: Content Integration",
     "date_range": "2026-02-14",
+    "end": "2026-02-14T23:59:00+09:00",
     "cover": "./assets/devlog/covers/session-004.png"
   },
   {
@@ -32,6 +36,7 @@
     "title_ja": "Part 5: Read More UI",
     "title_en": "Part 5: Read More UI",
     "date_range": "2026-02-15",
+    "end": "2026-02-15T23:59:00+09:00",
     "cover": "./assets/devlog/covers/session-005.png"
   }
 ]
