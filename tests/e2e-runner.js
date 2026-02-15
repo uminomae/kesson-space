@@ -358,8 +358,16 @@
         assert('03-5', 'クレジットが英語', !!creditLine && creditLine.textContent.includes('Exploring'),
             creditLine ? `"${creditLine.textContent}"` : 'not found');
 
+        const sub = qs('#title-sub');
+        assert('03-6', 'サブタイトルが英語 "Kesson Space"', !!sub && /Kesson Space/i.test(sub.textContent),
+            sub ? `"${sub.textContent}"` : 'not found');
+
+        const guideAction = qs('#control-guide .guide-action');
+        assert('03-7', '操作ガイドが英語', !!guideAction && /rotate|zoom|dive/i.test(guideAction.textContent),
+            guideAction ? `"${guideAction.textContent}"` : 'not found');
+
         const toggle = qs('#lang-toggle');
-        assert('03-6', '言語トグルが "日本語" と表示', !!toggle && toggle.textContent.trim() === '日本語',
+        assert('03-8', '言語トグルが "日本語" と表示', !!toggle && toggle.textContent.trim() === '日本語',
             toggle ? `"${toggle.textContent.trim()}"` : 'not found');
     }
 
