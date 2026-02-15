@@ -834,6 +834,56 @@
     }
 
     // ============================
+    // TC-E2E-12: sessions.json ↔ .md ファイル整合性
+    // ============================
+
+    async function tc12_sessionFiles() {
+        // sessions.json を取得
+        let sessionList = [];
+        try {
+            const res = await fetch('./assets/devlog/sessions.json');
+            if (!res.ok) {
+                warn('12-0', 'sessions.json が取得不可', `HTTP ${res.status}`);
+                return;
+            }
+            sessionList = await res.json();
+        } catch (e) {
+            warn('12-0', 'sessions.json の読み込みに失敗', e.message);
+            return;
+        }
+
+        assert('12-1', 'sessions.json にエントリが存在',
+            sessionList.length > 0, `${sessionList.length} entries`);
+
+        // 各エントリに対応する .md ファイルの存在チェック
+        let missingFiles = [];
+        for (const session of sessionList) {
+            const mdUrl = `./content/devlog/${session.id}.md`;
+            try {
+                const res = await fetch(mdUrl, { method: 'HEAD' });
+                if (!res.ok) {
+                    missingFiles.push(session.id);
+                }
+            } catch (e) {
+                missingFiles.push(session.id);
+            }
+        }
+
+        if (missingFiles.length === 0) {
+            assert('12-2', '全セッションに対応する .md ファイルが存在', true,
+                `${sessionList.length}/${sessionList.length} files found`);
+        } else {
+            assert('12-2', '全セッションに対応する .md ファイルが存在', false,
+                `Missing: ${missingFiles.join(', ')}`);
+            // 個別に警告
+            for (const id of missingFiles) {
+                warn('12-2x', `content/devlog/${id}.md が見つからない`,
+                    'sessions.json にエントリがあるが .md ファイルが不足');
+            }
+        }
+    }
+
+    // ============================
     // 実行制御
     // ============================
 
@@ -849,6 +899,7 @@
         'TC-E2E-09': tc09_links,      // ISS-001
         'TC-E2E-10': tc10_keyboard,   // ISS-001
         'TC-E2E-11': tc11_webvitals,  // Google Core Web Vitals
+        'TC-E2E-12': tc12_sessionFiles,  // sessions.json ↔ .md 整合性
     };
 
     async function run(tcId) {
