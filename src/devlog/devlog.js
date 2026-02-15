@@ -32,6 +32,12 @@ marked.setOptions({
   headerIds: false,
 });
 
+function getSessionEndValue(session) {
+  const end = session.end || session.start;
+  const value = end ? Date.parse(end) : 0;
+  return Number.isNaN(value) ? 0 : value;
+}
+
 /**
  * ギャラリーを初期化
  */
@@ -78,6 +84,8 @@ async function loadSessions(counterId) {
     const res = await fetch(SESSIONS_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     sessions = await res.json();
+
+    sessions.sort((a, b) => getSessionEndValue(b) - getSessionEndValue(a));
 
     await Promise.all(sessions.map(async (session) => {
       session.log_content = await loadSessionContent(session.id);
