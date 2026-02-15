@@ -476,6 +476,14 @@
         const sliders = qsa('input[type="range"]');
         assert('07-3', 'devパネルにスライダーが存在', sliders.length > 0,
             `${sliders.length} sliders found`);
+
+        const sections = qsa('.accordion-item, #dev-panel details');
+        assert('07-4', 'devパネルにセクションが存在', sections.length > 0,
+            `${sections.length} sections found`);
+
+        const toggles = qsa('.form-check-input, #dev-panel input[type="checkbox"]');
+        assert('07-5', 'devパネルにトグルスイッチが存在', toggles.length > 0,
+            `${toggles.length} toggles found`);
     }
 
     // ============================
