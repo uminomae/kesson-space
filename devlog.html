@@ -35,20 +35,11 @@
       z-index: 0;
       pointer-events: none;
     }
-    #bg-container canvas {
-      border: 3px solid red;
-    }
-
     /* コンテンツオーバーレイ（可読性確保） */
     #content-overlay {
       position: relative;
       z-index: 1;
-      background: linear-gradient(
-        to bottom,
-        rgba(5, 5, 8, 0.3) 0%,
-        rgba(5, 5, 8, 0.5) 30%,
-        rgba(5, 5, 8, 0.7) 100%
-      );
+      background: transparent;
       min-height: 100vh;
     }
 
@@ -176,7 +167,7 @@
   </script>
 </head>
 <body>
-  <div class="version-badge">v0.1.8-t045</div>
+  <div class="version-badge">v0.1.9-t045</div>
   <!-- Three.js背景 -->
   <div id="bg-container"></div>
 
