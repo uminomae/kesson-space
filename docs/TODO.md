@@ -1,6 +1,6 @@
 # TODO — タスクバックログ
 
-**最終更新**: 2026-02-16 (#34)
+**最終更新**: 2026-02-16 (#35)
 **管理ルール**: 本ファイルがタスクの正本。CURRENT.mdは「今セッションの作業」に集中する。
 
 ---
@@ -35,7 +35,7 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
-| T-040-11 | Articles Read More Offcanvas実装 | M | 機能 | DT Code委譲。指示書: `docs/prompts/NEXT-TASK.md`。ブランチ: `feature/kesson-articles` |
+| T-040-11 | Articles Read More Offcanvas実装 | M | 機能 | DT App Codeに修正指示済み（Read Moreボタン非表示fix + devlog見出し追加）。ブランチ: `claude/articles-read-more-offcanvas-Ddbu0`。**受領待ち→チェック** |
 | T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | T-040フォロー。課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
 | T-046 | WORKFLOW.md にWeb版（DT Code）運用フローを追記 | S | プロセス | ANALYSIS-dt-code-first.md の結論を反映。NEXT-TASK.md 方式の運用手順 |
 | T-047 | 指示書テンプレート v2 を docs/prompts/ に配置 | S | プロセス | 前提手順・制約セクション含む。DT Code / CLI 両対応テンプレート |
