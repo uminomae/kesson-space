@@ -38,7 +38,6 @@
 | T-040-13 | スタイルシート分離（style→外部CSS）+ HTMLタグコメント追加 | M | リファクタ | index.htmlの巨大`<style>`を外部CSSに。HTMLにセクション特定コメント追加（Claude対話効率化） |
 | T-040-14 | pjdhiro API自動生成 → kesson-space articlesフィルタ | M | 機能 | pjdhiro側Liquid template適用済み（codex/t040-14-api-autogen）。マージ確認→kesson-space側フィルタ実装 |
 | T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
-| T-052 | docs/ 不要ファイル削除・整理 | S | プロセス | 完了済みINSTRUCTIONS 3本、TASK-readmore.md、stale prompts。下記棚卸しレポート参照 |
 
 ### 🟢 P2（急がない）
 
@@ -74,6 +73,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-052 | docs/ 不要ファイル削除・整理 + kesson-articles WT削除 | #39 |
 | T-040-12 | Bootstrap標準カード化 + TRACES fixed復帰 + セクション並び替え | #39 |
 | T-040-11 | Articles Read More Offcanvas実装 + Read Moreボタン修正 | #35-38 |
 | T-045b | devlog背景設定集約（devlog-config.js新設） | #34棚卸し |
