@@ -159,7 +159,7 @@ export const xLogoParams = {
     glowStrength:  0.4,
     rimPower:      0.5,
     innerGlow:     0.1,
-    posX: -21,
+    posX: -20,
     posY: 5,
     posZ: 11,
     labelYOffset: 0.5,
