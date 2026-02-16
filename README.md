@@ -81,24 +81,29 @@ DTの役割は以下に限定する:
 ### マージ → 目視確認 → main の流れ
 
 ```bash
-# 1. マージ（ローカル）
-cd /Users/uminomae/Documents/GitHub/kesson-space
+# 1. 目視チェック（DT確認用ワークツリー）
+cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
 git fetch origin
 git checkout feature/dev
 git pull origin feature/dev
-git merge origin/<実装ブランチ名>
-git push origin feature/dev
-
-# 2. 目視チェック
 python3 -m http.server 3001
 # → http://localhost:3001/
 
-# 3. OK後に main マージ
+# 2. OK後に main マージ（mainワークツリー）
+cd /Users/uminomae/Documents/GitHub/kesson-space
+git fetch origin
 git checkout main
 git pull origin main
-git merge feature/dev
+git merge origin/feature/dev
 git push origin main
 ```
+
+### ワークツリー使い分け
+
+| 操作 | ワークツリー | パス |
+|---|---|---|
+| 目視確認 | **claudeDT** | `/Users/uminomae/Documents/GitHub/kesson-space-claudeDT` |
+| mainマージ | **main** | `/Users/uminomae/Documents/GitHub/kesson-space` |
 
 ---
 
