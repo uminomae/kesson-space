@@ -115,6 +115,23 @@ function loadXWidgets() {
     return _xWidgetsPromise;
 }
 
+function getXScreenName(url) {
+    if (!url) return 'pjdhiro';
+    const match = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)/i);
+    return match ? match[1] : 'pjdhiro';
+}
+
+function buildTwitframe(url) {
+    const safe = encodeURIComponent(url);
+    return `
+        <iframe
+            src="https://twitframe.com/show?url=${safe}"
+            title="X timeline"
+            referrerpolicy="no-referrer"
+        ></iframe>
+    `;
+}
+
 export async function openXTimeline(url, label = 'X') {
     openViewer(`
         <div class="md-loading">
@@ -128,24 +145,27 @@ export async function openXTimeline(url, label = 'X') {
         container.classList.add('viewer-content--x');
 
         const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
-        const width = Math.min(720, Math.floor(window.innerWidth * 0.9));
+        const screenName = getXScreenName(url);
 
-        container.innerHTML = `
-            <div class="x-embed-wrap">
-                <a class="twitter-timeline"
-                    data-theme="dark"
-                    data-dnt="true"
-                    data-height="${height}"
-                    data-width="${width}"
-                    data-chrome="noheader nofooter transparent"
-                    href="${url}">
-                    ${label}
-                </a>
-            </div>
-        `;
+        container.innerHTML = `<div class="x-embed-wrap" id="x-embed-target"></div>`;
+        const target = container.querySelector('#x-embed-target');
 
-        if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load(container);
+        if (window.twttr && window.twttr.widgets && window.twttr.widgets.createTimeline) {
+            const timeline = await window.twttr.widgets.createTimeline(
+                { sourceType: 'profile', screenName },
+                target,
+                {
+                    theme: 'dark',
+                    height,
+                    chrome: 'noheader nofooter transparent',
+                    dnt: true,
+                }
+            );
+            if (!timeline) {
+                throw new Error('X timeline embed failed');
+            }
+        } else {
+            throw new Error('X widgets unavailable');
         }
     } catch (err) {
         console.warn('[viewer] X timeline load failed:', err);
@@ -153,6 +173,7 @@ export async function openXTimeline(url, label = 'X') {
             <div class="md-article">
                 <p>Xのタイムラインを読み込めませんでした。</p>
                 <p><a href="${url}" target="_blank" rel="noopener">Xで開く</a></p>
+                <div class="md-body">${buildTwitframe(url)}</div>
             </div>
         `);
     }
@@ -346,6 +367,12 @@ export function injectViewerStyles() {
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        .viewer-content--x iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 3px;
         }
 
         /* scrollbar */
