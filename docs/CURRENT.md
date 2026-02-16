@@ -1,7 +1,7 @@
 # CURRENT - 進捗・引き継ぎ
 
-**最終更新**: 2026-02-15
-**セッション**: #33 プロジェクト管理体系再設計・devlog詳細ページ分離
+**最終更新**: 2026-02-16
+**セッション**: #34 ドキュメント棚卸し・Articles Offcanvas指示書作成
 
 ---
 
@@ -49,36 +49,46 @@
 - [x] **T-039b完了・カバー画像自動生成 #30**: Puppeteerスクリプト作成
 - [x] **T-041完了・devlog日付整合性修正 #31**: session-002〜005書き直し、カバー画像再生成
 - [x] **T-040完了・devlog Offcanvas内ビュー切替 #32**: Modal廃止、Offcanvas内2ビュー構造
+- [x] **プロジェクト管理体系再設計・devlog詳細ページ分離 #33**: T-044完了
 
-### セッション#33 プロジェクト管理体系再設計・devlog詳細ページ分離
+### セッション#34 ドキュメント棚卸し・Articles Offcanvas指示書作成
 
 **実施内容**:
 
-1. **プロジェクト管理体系再設計**
-   - ルートREADME.mdをセッション起動スクリプト化
-   - 常駐エージェント起動を明示（📋プロジェクト管理、🩺セッションヘルス、🔎PKガード）
-   - docs/WORKFLOW.md §1をルートREADMEへの参照に簡素化
-   - docs/README.mdの監督構造を参照リンク化（AGENT-RULES.mdに一本化）
-   - skills/project-management-agent.mdにワークツリー同期必須ルールを追加
+1. **#33以降の作業反映（mainコミット棚卸し）**
+   - T-045完了: devlog.htmlにThree.js背景追加（PRマージ済み）
+   - T-045b完了: devlog背景設定の集約（devlog-config.js新設、旧T-046コミット）
+   - T-050完了: CLAUDE.mdレビュー + DT影響修正
+   - AGENT-RULES v1.5: §10 探索モード追加
+   - DT確認ワークツリー定義（kesson-space-claudeDT）
+   - 指示書フォーマット標準化（project-management-agent.md改善）
+   - Articles技術検証: RESEARCH 2本（pjdhiro JSON API、ChatGPT突き合わせ）
+   - DT Code-first分析: ANALYSIS + RESEARCH追加
+   - NEXT-TASK.md方式設計・初回試運転
+   - CLAUDE.md拡充: 105行化、ワークツリー・ガードルール・委譲マトリクス統合
 
-2. **T-044: devlog詳細ページ分離**
-   - アコーディオン型の問題（長いコンテンツでレイアウト崩れ）を解決
-   - devlog.html?id=XXX 方式に変更（通常のページ遷移）
-   - ブラウザ戻るボタンが自然に動作
-   - collapse/accordion関連を削除
-   - ライトボックスをdevlog.htmlに移植
+2. **T-046番号衝突修正**
+   - コミット上の `refactor(T-046)` (devlog config集約) → T-045bに再採番
+   - TODO.mdのT-046（WORKFLOW.md追記）はそのまま維持
+
+3. **NEXT-TASK.md更新: T-040-11 Read More → Offcanvas方式**
+   - 旧インライン展開方式からOffcanvas方式に変更
+   - devlogのOffcanvasパターン踏襲
 
 ### 決定事項
 
-- プロジェクト管理はルートREADME.mdを単一起点とする
-- devlog詳細はアコーディオンではなく別ページ遷移方式
-- 指示書には必ずワークツリー同期手順を含める
+- T-046番号衝突: devlog config側をT-045bに再採番
+- Articles Read MoreはOffcanvas方式で実装
+- セッション番号は#34として通し番号継続
 
 ### 次セッションのタスク
 
+**T-040-11: Articles Read More Offcanvas実装**（P1・DT Code委譲）
+- 指示書: `docs/prompts/NEXT-TASK.md` 更新済み
+- ブランチ: `feature/kesson-articles`
+
 **T-043: devlog遷移UX改善**（P1）
 - 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明、アニメーションなし
-- 改善案: スライド/フェードアニメーション、状態表示、戻るボタン強化
 
 ## 未完了タスク
 
@@ -88,7 +98,7 @@
 
 → **[TODO.md](./TODO.md)** を参照
 
-P0なし。P1に1件（T-043）。P2に10件、P3に5件。
+P0なし。P1に4件（T-040-11、T-043、T-046、T-047）。P2に10件、P3に5件。
 
 ### 現在のデフォルトパラメータ
 
