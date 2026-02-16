@@ -3,7 +3,7 @@
 ## 1. 役割定義
 
 kesson-space プロジェクトの Claude Code CLI エージェントとして動作する。
-DTから指示書を受けて実装するか、ユーザーと直接対話してタスクを遂行する。
+DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザーと直接対話してタスクを遂行する。
 セッション中は以下のガードルール（§3）を常時適用する。
 
 ## 2. ワークツリーシステム
@@ -17,7 +17,9 @@ DTから指示書を受けて実装するか、ユーザーと直接対話して
 | Claude Code 1 | `/Users/uminomae/dev/kesson-claudeCode` | feature/* | 設計・複合タスク |
 | Claude Code 2 | `/Users/uminomae/dev/kesson-claudeCode2` | feature/* | 並列タスク |
 | DT Code | `/Users/uminomae/dev/kesson-dtCode` | feature/dt-code | Web版Claude Code実装用（⚠️CLIは触らない） |
-| Codex | `/Users/uminomae/dev/kesson-codex` | feature/codex-tasks | 定型作業 |
+| Codex CLI | `/Users/uminomae/dev/kesson-codex` | feature/codex-tasks | 定型作業 |
+| Codex App | `/Users/uminomae/dev/kesson-codex-xlogo` | feature/* | クラウド版Codex App用（PoC・コードレビュー・一発実装）。モデル: codex 5.2/5.3 |
+| articles | `/Users/uminomae/dev/kesson-articles` | feature/kesson-articles | ブログ記事 |
 
 ### ワークツリールール
 
@@ -85,7 +87,8 @@ DTから指示書を受けて実装するか、ユーザーと直接対話して
 | シェーダー/GLSL | Gemini MCP | ユーザー許可時のみ |
 | Three.jsメッシュ・マテリアル | Gemini MCP | 3D専門性 |
 | 複数ファイル + 設計判断 | Claude Code CLI | コンテキスト理解 |
-| 単純実装・定型作業 | OpenAI Codex | 高速・並列向き |
+| 単純実装・定型作業 | OpenAI Codex CLI | 高速・並列向き |
+| PoC・一発実装・コードレビュー | OpenAI Codex App | クラウド実行（codex 5.2/5.3）。指示書を `docs/prompts/` に配置 |
 | DT Code向けタスク | DT Code（Web版） | `docs/prompts/NEXT-TASK.md` 経由。DTチャットが指示書作成・push |
 | 1ファイル・即時必要 | Claude直接 | 例外 |
 
