@@ -97,7 +97,7 @@ DT:
   1. 「cli」（xなし）を検出 → Claude Code CLI 向け
   2. 同様に指示書 push
   3. 報告: 「Claude Code CLI で以下を実行:
-     cd /Users/uminomae/dev/kesson-claudeCode
+     cd /Users/uminomae/dev/kesson-claude-code-cli
      git fetch && git checkout feature/xxx && git pull
      → 指示書 docs/prompts/INSTRUCTION-TXXX.md に従って実装」
 
