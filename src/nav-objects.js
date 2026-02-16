@@ -8,7 +8,6 @@ import { getScrollProgress } from './controls.js';
 import { gemOrbVertexShader, gemOrbFragmentShader } from './shaders/gem-orb.glsl.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
 import { getRawMouse } from './mouse-state.js';
-import { injectStyles } from './dom-utils.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
@@ -19,6 +18,8 @@ const NAV_POSITIONS = [
 ];
 
 const ORB_3D_RADIUS = 2.0;
+const FOCUSED_ORB_STRENGTH_BOOST = 0.35;
+const FOCUSED_ORB_STRENGTH_MAX = 1.35;
 
 let _labelElements = [];
 let _gemLabelElement = null;
@@ -269,62 +270,18 @@ export function updateGemPosition() {
 // ========================================
 // HTMLラベル — ISS-001: div → button 化
 // ========================================
-function injectNavLabelStyles() {
-    // CHANGED: pointer-events: none → auto, button reset styles, focus/hover styles
-    // FIX: フォントをNoto Serif JPに統一（index.htmlと一致）
-    injectStyles('nav-label-styles', `
-        .nav-label {
-            position: fixed;
-            z-index: 15;
-            pointer-events: auto;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            color: rgba(255, 255, 255, 0.9);
-            font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
-            font-size: clamp(0.45rem, 2.8vmin, 1.1rem);
-            letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
-            text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
-            transform: translate(-50%, -100%);
-            white-space: nowrap;
-            transition: filter 0.15s ease, opacity 0.3s ease, color 0.3s ease;
-            will-change: filter;
-        }
-        .nav-label:focus {
-            outline: 2px solid rgba(100, 150, 255, 0.8);
-            outline-offset: 4px;
-            filter: blur(0px) !important;
-        }
-        .nav-label:hover {
-            filter: blur(0px) !important;
-            color: rgba(255, 255, 255, 1.0);
-        }
-        .nav-label--gem {
-            color: rgba(180, 195, 240, 0.85);
-            text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
-        }
-        .nav-label--gem:hover {
-            color: rgba(200, 215, 255, 1.0);
-        }
-        .nav-label--x {
-            color: rgba(220, 225, 240, 0.85);
-            text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
-            font-weight: bold;
-        }
-        .nav-label--x:hover {
-            color: rgba(240, 245, 255, 1.0);
-        }
-    `);
-}
-
 // CHANGED: div → button, click/keyboard handlers, aria-label
-function createHtmlLabel(text, extraClass, url, isExternal) {
+function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex) {
     const btn = document.createElement('button');
     btn.className = 'nav-label' + (extraClass ? ' ' + extraClass : '');
     btn.textContent = text;
     btn.tabIndex = 0;
     btn.setAttribute('role', 'button');
+    btn.dataset.navType = navType;
+    if (typeof navIndex === 'number') {
+        btn.dataset.navIndex = String(navIndex);
+    }
+    btn.setAttribute('aria-hidden', 'false');
 
     // aria-label: 言語に応じた説明
     const lang = document.documentElement.lang || 'ja';
@@ -356,6 +313,29 @@ function createHtmlLabel(text, extraClass, url, isExternal) {
         }
     });
 
+    btn.addEventListener('focus', () => {
+        btn.classList.add('is-nav-focused');
+        if (navType === 'gem') {
+            setGemHover(true);
+            setXLogoHover(false);
+        } else if (navType === 'xlogo') {
+            setXLogoHover(true);
+            setGemHover(false);
+        } else {
+            setGemHover(false);
+            setXLogoHover(false);
+        }
+    });
+
+    btn.addEventListener('blur', () => {
+        btn.classList.remove('is-nav-focused');
+        if (navType === 'gem') {
+            setGemHover(false);
+        } else if (navType === 'xlogo') {
+            setXLogoHover(false);
+        }
+    });
+
     document.body.appendChild(btn);
     return btn;
 }
@@ -368,8 +348,6 @@ export function createNavObjects(scene) {
     const navMeshes = [];
     const lang = detectLang();
     const strings = t(lang);
-
-    injectNavLabelStyles();
 
     // --- PDFオーブ（既存） ---
     NAV_POSITIONS.forEach((pos, index) => {
@@ -407,7 +385,7 @@ export function createNavObjects(scene) {
         navMeshes.push(group);
 
         // CHANGED: URLとexternal flagを渡す
-        _labelElements.push(createHtmlLabel(navItem.label, '', navItem.url, false));
+        _labelElements.push(createHtmlLabel(navItem.label, '', navItem.url, false, 'orb', index));
     });
 
     // --- Gemini Gem（GLTF Group） ---
@@ -435,7 +413,7 @@ export function createNavObjects(scene) {
     _navMeshes = navMeshes;
 
     // CHANGED: URLとexternal flagを渡す
-    _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true);
+    _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true, 'gem');
 
     return navMeshes;
 }
@@ -463,7 +441,7 @@ export function createXLogoObjects(scene) {
     scene.add(xGroup);
     _xLogoGroup = xGroup;
 
-    _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true);
+    _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true, 'xlogo');
 
     return xGroup;
 }
@@ -559,6 +537,7 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     if (worldPos.z > 1.0) {
         el.style.opacity = '0';
         el.style.pointerEvents = 'none'; // CHANGED: カメラ背面では無効化
+        syncLabelFocusState(el, false);
         return;
     }
 
@@ -582,6 +561,30 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
     el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none'; // CHANGED: フェード時は無効化
+    syncLabelFocusState(el, scrollFade > 0.1);
+}
+
+function syncLabelFocusState(el, isFocusable) {
+    if (isFocusable) {
+        if (el.tabIndex !== 0) el.tabIndex = 0;
+        el.setAttribute('aria-hidden', 'false');
+        return;
+    }
+
+    if (document.activeElement === el) {
+        el.blur();
+    }
+    if (el.tabIndex !== -1) el.tabIndex = -1;
+    el.setAttribute('aria-hidden', 'true');
+}
+
+function getFocusedOrbIndex() {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) return -1;
+    if (!active.classList.contains('nav-label')) return -1;
+    if (active.dataset.navType !== 'orb') return -1;
+    const idx = Number(active.dataset.navIndex);
+    return Number.isInteger(idx) ? idx : -1;
 }
 
 export function updateNavLabels(navMeshes, camera) {
@@ -597,6 +600,7 @@ export function updateNavLabels(navMeshes, camera) {
         if (!visible || scrollFade <= 0) {
             el.style.opacity = '0';
             el.style.pointerEvents = 'none'; // CHANGED
+            syncLabelFocusState(el, false);
             return;
         }
 
@@ -608,6 +612,7 @@ export function updateNavLabels(navMeshes, camera) {
         if (!visible || scrollFade <= 0) {
             _gemLabelElement.style.opacity = '0';
             _gemLabelElement.style.pointerEvents = 'none'; // CHANGED
+            syncLabelFocusState(_gemLabelElement, false);
             return;
         }
 
@@ -624,6 +629,7 @@ export function updateXLogoLabel(camera) {
         if (!visible || scrollFade <= 0) {
             _xLogoLabelElement.style.opacity = '0';
             _xLogoLabelElement.style.pointerEvents = 'none';
+            syncLabelFocusState(_xLogoLabelElement, false);
             return;
         }
 
@@ -641,6 +647,7 @@ const _edgeNDC = new THREE.Vector3();
 
 export function getOrbScreenData(navMeshes, camera) {
     const data = [];
+    const focusedOrbIndex = getFocusedOrbIndex();
     navMeshes.forEach(group => {
         if (group.userData.isGem || group.userData.isXLogo) return;
 
@@ -665,9 +672,17 @@ export function getOrbScreenData(navMeshes, camera) {
         const screenRadius = Math.sqrt(dx * dx + dy * dy);
         let strength = 1.0;
         if (_centerNDC.z > 1.0) strength = 0.0;
+        if (strength > 0 && group.userData.index === focusedOrbIndex) {
+            strength = Math.min(FOCUSED_ORB_STRENGTH_MAX, strength + FOCUSED_ORB_STRENGTH_BOOST);
+        }
         data.push({ x: cx, y: cy, strength, radius: screenRadius });
     });
     return data;
+}
+
+export function isNavLabelFocused() {
+    const active = document.activeElement;
+    return active instanceof HTMLElement && active.classList.contains('nav-label');
 }
 
 // --- devPanelからのパラメータ更新 ---

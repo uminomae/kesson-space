@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { toggles } from './config.js';
 import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
-import { createNavObjects, updateNavObjects, setGemHover, setXLogoHover } from './nav-objects.js';
+import { createNavObjects, updateNavObjects, setGemHover, setXLogoHover, isNavLabelFocused } from './nav-objects.js';
 import { getScrollProgress } from './controls.js';
 
 let _camera;
@@ -83,10 +83,14 @@ function onPointerUp(event) {
 }
 
 function onPointerMove(event) {
+    const hasFocusedNavLabel = isNavLabelFocused();
+
     if (isViewerOpen() || !toggles.navOrbs || getScrollProgress() > 0.1) {
         _renderer.domElement.style.cursor = 'default';
-        setGemHover(false);
-        setXLogoHover(false);
+        if (!hasFocusedNavLabel) {
+            setGemHover(false);
+            setXLogoHover(false);
+        }
         return;
     }
 
@@ -116,6 +120,7 @@ function onPointerMove(event) {
     }
 
     _renderer.domElement.style.cursor = isHovering ? 'pointer' : 'default';
+    if (hasFocusedNavLabel) return;
     setGemHover(isGemHit);
     setXLogoHover(isXLogoHit);
 }
