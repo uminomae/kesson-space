@@ -365,22 +365,22 @@ DTが見ているワークツリー: **kesson-space-claudeDT** (feature/dev)
 
 | ID | 内容 | 分類 | 委譲先 | 出力先ワークツリー |
 |----|------|------|--------|-------------------|
-| T-045-fix | マージコンフリクト解決 + devlogアセット統合 | 実装 | **Claude Code** | kesson-claudeCode |
+| T-045-fix | マージコンフリクト解決 + devlogアセット統合 | 実装 | **Codex** | kesson-codex |
 
 ---
 
-## Claude Code 指示書: T-045-fix
+## Codex 指示書: T-045-fix
 
 ### タスク概要
 feature/t045-background-modular に devlog-content のアセットを統合する
 
 ### 出力先
-📁 ワークツリー: kesson-claudeCode
-📂 パス: /Users/uminomae/dev/kesson-claudeCode
+📁 ワークツリー: kesson-codex
+📂 パス: /Users/uminomae/dev/kesson-codex
 🌿 ブランチ: feature/t045-background-modular
 
 ### 🔴 ブランチ同期（必須 — 作業開始前に実行）
-cd /Users/uminomae/dev/kesson-claudeCode
+cd /Users/uminomae/dev/kesson-codex
 git fetch origin
 git checkout feature/t045-background-modular
 git pull origin feature/t045-background-modular
@@ -417,7 +417,7 @@ git merge origin/feature/dev
 
 ---
 
-**リモート `feature/t045-background-modular` の `docs/prompts/NEXT-TASK.md` をClaude Codeに渡してください。**
+**リモート `feature/t045-background-modular` の `docs/prompts/NEXT-TASK.md` をCodexに渡してください。**
 ```
 
 ---
@@ -436,8 +436,8 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 | ID | T-XXX形式 |
 | 内容 | 1行で概要 |
 | 分類 | 実装/修正/コンテンツ/レビュー/シェーダー |
-| 委譲先 | DT App Code / Claude Code CLI / OpenAI Codex / Gemini MCP / Claude直接 |
-| 出力先ワークツリー | kesson-dtCode / kesson-claudeCode / kesson-codex / etc |
+| 委譲先 | DT App Code / OpenAI Codex / Gemini MCP / Claude直接 |
+| 出力先ワークツリー | kesson-dtCode / kesson-codex / etc |
 
 ### 4. 指示書本体
 
@@ -460,6 +460,35 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 
 ---
 
+## 🔴 期間限定: 2月中の実装委譲制限
+
+**有効期間: 2025年2月末まで**
+**理由: Claude使用量制限のため、Claudeをなるべく使わない**
+
+### ルール
+
+1. **実装タスクは原則 OpenAI Codex に委譲する**
+2. **Claude Code CLI は実装に使わない**（マージ・git操作のみ許可）
+3. **DT（Claude.ai）はPM業務のみ**（指示書作成・レビュー・状態管理）
+4. **ユーザーはDTを経由せず、直接Codexに指示してもよい**
+5. Gemini MCP はシェーダー専用で引き続き使用可
+
+### 委譲先の優先順位（2月中）
+
+```
+実装 → Codex（第一選択）
+シェーダー → Gemini MCP
+マージ/git操作 → Claude Code CLI（実装はしない）
+PM/指示書 → DT（Claude.ai）
+コンテンツ → Claude直接（日本語記事のみ）
+```
+
+### この制限が解除されたら
+
+この期間限定セクションを削除し、下記の通常マトリクスに戻す。
+
+---
+
 ## 委譲先判断マトリクス
 
 ### 実装タスク
@@ -468,26 +497,26 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 |------|--------|------|
 | シェーダー/GLSL | **Gemini MCP** | 視覚品質特化 |
 | Three.jsメッシュ/マテリアル | **Gemini MCP** | 3D専門性 |
-| 複数ファイル + 設計判断 | **Claude Code CLI** | コンテキスト理解、ローカルファイル操作 |
-| 1ファイル、設計判断済み | **DT App Code** | GitHub API経由で即時実装。DTチャットから直接操作 |
+| 複数ファイル + 設計判断 | **OpenAI Codex** | ⚠️ 2月中はClaude CLI使用制限のためCodex優先 |
+| 1ファイル、設計判断済み | **OpenAI Codex** | ⚠️ 2月中はCodex優先（通常時: DT App Code） |
 | 単純実装、定型作業 | **OpenAI Codex** | 高速、並列向き |
-| 1ファイル、即時必要 | **Claude直接**（チャット出力） | 例外 |
+| 1ファイル、即時必要 | **Claude直接**（チャット出力） | 例外・最小限に |
 
 ### レビュータスク
 
 | 条件 | 委譲先 | 理由 |
 |------|--------|------|
 | シェーダーレビュー | **Gemini MCP** (review mode) | GLSL専門性 |
-| 構造/アーキテクチャ | **GPT/Claude Code CLI** | 俯瞰視点 |
+| 構造/アーキテクチャ | **GPT/Codex** | 俯瞰視点 |
 | パフォーマンス | **Gemini MCP** or **GPT** | 計測知見 |
 
 ### コンテンツタスク
 
 | 条件 | 委譲先 | 理由 |
 |------|--------|------|
-| 日本語記事 | **Claude直接** | 品質ルール |
-| 英語翻訳 | **Claude直接** or **Claude Code CLI** | 一貫性 |
-| 技術文書 | **Claude Code CLI** | ファイル参照 |
+| 日本語記事 | **Claude直接** | 品質ルール（最小限に） |
+| 英語翻訳 | **Codex** | 2月中はCodex優先 |
+| 技術文書 | **Codex** | 2月中はCodex優先 |
 
 ---
 
@@ -542,6 +571,7 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 ## 禁止事項
 
 - **🔴 委譲完了後に目視確認を待たず次の作業に進むこと** ← 最重要
+- **🔴 2月中にClaude Code CLIで実装タスクを行うこと** ← 期間限定制限
 - **指示書フォーマットを省略すること**
 - **ワークツリー指定なしで指示書を作成すること**
 - **コード実行環境を混同すること**（DT App Code ≠ Claude Code CLI ≠ OpenAI Codex）
