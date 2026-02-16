@@ -530,16 +530,18 @@ const LABEL_Y_OFFSET = 3.5;
 // T-010: _gazeX/_gazeY と initGazeTracking() を除去。
 // mouse-state.js の getRawMouse() で取得する。
 
+// CHANGED(2026-02-16): T-018 — hidden state uses .nav-label--hidden class
 function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     worldPos.y += yOffset;
     worldPos.project(camera);
 
     if (worldPos.z > 1.0) {
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none'; // CHANGED: カメラ背面では無効化
+        el.classList.add('nav-label--hidden');
         syncLabelFocusState(el, false);
         return;
     }
+
+    el.classList.remove('nav-label--hidden');
 
     const x = ( worldPos.x * 0.5 + 0.5) * window.innerWidth;
     const y = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
@@ -560,7 +562,7 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     const clampedBlur = Math.min(blurPx, 4.0);
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
-    el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none'; // CHANGED: フェード時は無効化
+    el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none';
     syncLabelFocusState(el, scrollFade > 0.1);
 }
 
@@ -598,8 +600,7 @@ export function updateNavLabels(navMeshes, camera) {
         if (!el) return;
 
         if (!visible || scrollFade <= 0) {
-            el.style.opacity = '0';
-            el.style.pointerEvents = 'none'; // CHANGED
+            el.classList.add('nav-label--hidden');
             syncLabelFocusState(el, false);
             return;
         }
@@ -610,8 +611,7 @@ export function updateNavLabels(navMeshes, camera) {
 
     if (_gemLabelElement && _gemGroup) {
         if (!visible || scrollFade <= 0) {
-            _gemLabelElement.style.opacity = '0';
-            _gemLabelElement.style.pointerEvents = 'none'; // CHANGED
+            _gemLabelElement.classList.add('nav-label--hidden');
             syncLabelFocusState(_gemLabelElement, false);
             return;
         }
@@ -627,8 +627,7 @@ export function updateXLogoLabel(camera) {
 
     if (_xLogoLabelElement && _xLogoGroup) {
         if (!visible || scrollFade <= 0) {
-            _xLogoLabelElement.style.opacity = '0';
-            _xLogoLabelElement.style.pointerEvents = 'none';
+            _xLogoLabelElement.classList.add('nav-label--hidden');
             syncLabelFocusState(_xLogoLabelElement, false);
             return;
         }
