@@ -119,14 +119,14 @@ function buildGallery() {
   galleryContainer.style.marginTop = '5.5rem';
 
   const row = document.createElement('div');
-  row.className = 'row g-4 justify-content-center';
+  row.className = 'row g-3';
 
   const lang = document.documentElement.lang || 'ja';
   const visibleSessions = sessions.slice(0, 3);
 
   visibleSessions.forEach((session) => {
     const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4 p-2 devlog-card visible';
+    col.className = 'col-12 col-md-6 col-lg-4';
 
     const card = createCardElement(session, lang);
     col.appendChild(card);
@@ -154,57 +154,36 @@ function buildGallery() {
  */
 function createCardElement(session, lang) {
   const card = document.createElement('div');
-  card.className = 'card bg-dark border-0 overflow-hidden h-100';
-  card.style.cursor = 'pointer';
-  card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+  card.className = 'card kesson-card h-100';
 
   const img = document.createElement('img');
   img.className = 'card-img-top';
   img.src = session.cover;
   img.alt = session.title_ja;
-  img.style.aspectRatio = '16/9';
-  img.style.objectFit = 'cover';
   img.onerror = () => {
     img.onerror = null;
     img.src = './assets/devlog/covers/default.svg';
   };
 
   const cardBody = document.createElement('div');
-  cardBody.className = 'card-body p-0';
+  cardBody.className = 'card-body';
 
-  const bar = document.createElement('div');
-  bar.style.background = 'rgba(0, 0, 0, 0.7)';
-  bar.style.backdropFilter = 'blur(8px)';
-  bar.style.padding = '12px 16px';
-
-  const title = document.createElement('div');
-  title.style.color = 'rgba(255, 255, 255, 0.9)';
+  const title = document.createElement('h6');
+  title.className = 'card-title text-light mb-1';
   title.style.fontSize = '0.85rem';
-  title.style.fontWeight = '500';
   title.textContent = lang === 'en' ? session.title_en : session.title_ja;
 
-  const date = document.createElement('div');
-  date.style.color = 'rgba(180, 200, 230, 0.5)';
-  date.style.fontSize = '0.7rem';
-  date.style.marginTop = '4px';
+  const date = document.createElement('small');
+  date.className = 'text-muted';
   date.textContent = session.date_range;
 
-  bar.appendChild(title);
-  bar.appendChild(date);
-  cardBody.appendChild(bar);
+  cardBody.appendChild(title);
+  cardBody.appendChild(date);
   card.appendChild(img);
   card.appendChild(cardBody);
 
-  card.addEventListener('mouseenter', () => {
-    card.style.transform = 'translateY(-4px)';
-    card.style.boxShadow = '0 8px 24px rgba(100, 150, 255, 0.15)';
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-    card.style.boxShadow = '';
-  });
+  // hover は CSS .kesson-card:hover で処理 — JSイベントリスナー不要
 
-  // カードクリックで devlog.html に遷移
   card.addEventListener('click', () => {
     window.location.href = `./devlog.html?id=${session.id}`;
   });
@@ -277,7 +256,7 @@ function renderSessionCards(sessionsToRender) {
 
   sessionsToRender.forEach(session => {
     const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4 p-3';
+    col.className = 'col-12 col-md-6 col-lg-4';
     const card = createCardElement(session, lang);
     col.appendChild(card);
     row.appendChild(col);
