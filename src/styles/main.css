@@ -604,6 +604,7 @@
 
     /* Offcanvas panel — kesson dark theme */
     .offcanvas-kesson {
+      --bs-offcanvas-width: 85%;
       width: 85%;
       background: rgba(10, 14, 26, 0.98);
     }
