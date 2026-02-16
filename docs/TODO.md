@@ -33,9 +33,7 @@
 
 ### 🟡 P1（次に着手）
 
-| ID | タスク | サイズ | カテゴリ | メモ |
-|----|--------|--------|----------|------|
-| T-040-14 | pjdhiro API自動生成 → kesson-space articlesフィルタ | M | 機能 | pjdhiro側Liquid template適用済み（codex/t040-14-api-autogen）。マージ確認→kesson-space側フィルタ実装 |
+なし
 
 ### 🟢 P2（急がない）
 
@@ -73,6 +71,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-040-14 | pjdhiro API自動生成 + articlesフォールバックJSON + フィルタUI | DTチャット |
 | T-054 | Xロゴ3Dオブジェクトの裏表反転修正 | DTチャット |
 | T-053a | index.html `<style>` タグを外部CSS (src/styles/main.css) に分離 + dev-panel Bootstrap再注入修正 | DTチャット |
 | T-040-13 | スタイルシート分離（style→外部CSS） | DTチャット（T-053aに統合） |
