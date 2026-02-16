@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import { toggles } from './config.js';
-import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
+import { injectViewerStyles, isViewerOpen, openPdfViewer, openXTimeline } from './viewer.js';
 import { createNavObjects, updateNavObjects, setGemHover, setXLogoHover } from './nav-objects.js';
 import { getScrollProgress } from './controls.js';
 
@@ -70,6 +70,10 @@ function onPointerUp(event) {
     }
 
     if (hitData && hitData.url) {
+        if (hitData.isXLogo) {
+            openXTimeline(hitData.url, hitData.label);
+            return;
+        }
         if (hitData.external) {
             window.open(hitData.url, '_blank', 'noopener,noreferrer');
         } else {

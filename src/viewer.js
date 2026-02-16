@@ -21,6 +21,7 @@ async function getMarked() {
 
 let _viewer = null;
 let _isOpen = false;
+let _xWidgetsPromise = null;
 
 // --- Frontmatter パーサー（自前: YAMLライブラリ不要） ---
 
@@ -83,7 +84,9 @@ function createViewer() {
 
 export function openViewer(content) {
     if (!_viewer) _viewer = createViewer();
-    _viewer.querySelector('.viewer-content').innerHTML = content;
+    const contentEl = _viewer.querySelector('.viewer-content');
+    contentEl.className = 'viewer-content';
+    contentEl.innerHTML = content;
 
     requestAnimationFrame(() => {
         _viewer.classList.add('visible');
@@ -94,12 +97,75 @@ export function openViewer(content) {
     _isOpen = true;
 }
 
+function loadXWidgets() {
+    if (window.twttr && window.twttr.widgets) {
+        return Promise.resolve(window.twttr);
+    }
+    if (_xWidgetsPromise) return _xWidgetsPromise;
+
+    _xWidgetsPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.onload = () => resolve(window.twttr);
+        script.onerror = () => reject(new Error('X widgets load failed'));
+        document.head.appendChild(script);
+    });
+
+    return _xWidgetsPromise;
+}
+
+export async function openXTimeline(url, label = 'X') {
+    openViewer(`
+        <div class="md-loading">
+            <div class="md-loading-dot"></div>
+        </div>
+    `);
+
+    try {
+        await loadXWidgets();
+        const container = _viewer.querySelector('.viewer-content');
+        container.classList.add('viewer-content--x');
+
+        const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
+        const width = Math.min(720, Math.floor(window.innerWidth * 0.9));
+
+        container.innerHTML = `
+            <div class="x-embed-wrap">
+                <a class="twitter-timeline"
+                    data-theme="dark"
+                    data-dnt="true"
+                    data-height="${height}"
+                    data-width="${width}"
+                    data-chrome="noheader nofooter transparent"
+                    href="${url}">
+                    ${label}
+                </a>
+            </div>
+        `;
+
+        if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load(container);
+        }
+    } catch (err) {
+        console.warn('[viewer] X timeline load failed:', err);
+        openViewer(`
+            <div class="md-article">
+                <p>Xのタイムラインを読み込めませんでした。</p>
+                <p><a href="${url}" target="_blank" rel="noopener">Xで開く</a></p>
+            </div>
+        `);
+    }
+}
+
 export function closeViewer() {
     if (_viewer) {
         _viewer.classList.remove('open');
         setTimeout(() => {
             _viewer.classList.remove('visible');
-            _viewer.querySelector('.viewer-content').innerHTML = '';
+            const contentEl = _viewer.querySelector('.viewer-content');
+            contentEl.className = 'viewer-content';
+            contentEl.innerHTML = '';
             _isOpen = false;
         }, 500);
     }
@@ -270,6 +336,16 @@ export function injectViewerStyles() {
             height: 100%;
             border: none;
             border-radius: 3px;
+        }
+        .viewer-content--x {
+            overflow: hidden;
+        }
+        .x-embed-wrap {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* scrollbar */
