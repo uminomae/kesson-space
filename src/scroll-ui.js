@@ -160,11 +160,11 @@ function updateDevlogHeaderVisibility() {
     const windowH = window.innerHeight || document.documentElement.clientHeight;
     const enterLine = windowH * 0.15;
     const exitLine = windowH * 0.05;
-    const titleEl = _devlogSection.querySelector('.container h2');
-    const titlePassed = titleEl
-        ? titleEl.getBoundingClientRect().bottom <= enterLine
+    const heroSubtitle = document.getElementById('title-sub');
+    const heroPassed = heroSubtitle
+        ? heroSubtitle.getBoundingClientRect().bottom <= enterLine
         : rect.top <= enterLine;
-    const isVisible = titlePassed && rect.bottom >= exitLine;
+    const isVisible = heroPassed && rect.bottom >= exitLine;
     _devlogHeader.classList.toggle('is-visible', isVisible);
 }
 
