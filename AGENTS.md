@@ -1,40 +1,61 @@
-# AGENTS Instructions for /Users/uminomae/dev/kesson-main
+# AGENTS Instructions for /Users/uminomae/dev/kesson-codex-app
 
-## Session Start Rule (Codex App)
+## 1. Session Start (Mandatory)
 
-At the start of every new conversation in this repository, do the following first:
+At the start of every new conversation in this repository:
 
 1. Read `./README.md`
 2. Read `./docs/README.md`
-3. Use these two files as the primary reference for project context and workflow
+3. Use these two files as the primary context before taking action
 
-## Priority
+## 2. Fixed Worktree Rule (Mandatory)
 
-If guidance conflicts, use this order:
+Always use the same Codex App worktree for this project:
 
-1. User's direct request
-2. `./README.md`
-3. `./docs/README.md`
-4. Other repository docs
+- Worktree path: `/Users/uminomae/dev/kesson-codex-app`
 
-## Development Rules
+Do not switch execution target to other local worktrees unless the user explicitly requests it.
 
-1. Branch strategy: implementation branch -> `feature/dev` -> `main`
-2. Direct commit or merge to `main` is prohibited
-3. Prefer Bootstrap for CSS; keep custom CSS to a minimum
-4. Mobile-first development; prioritize scroll UX
-5. Commit messages must follow Conventional Commits (`fix`, `feat`, `refactor`, `docs`)
-6. After work is completed, close the related GitHub Issue with a confirmation comment
-7. During code review, flag only `P0` and `P1` findings
+## 3. Git and Branch Rules (Mandatory)
 
-## Codex App Workspace Docs
+### 3.1 Branch flow
 
-Use this location as the document hub for Codex App workspace operations:
+1. Implementation branch -> `feature/dev` -> `main`
+2. Direct commit/merge to `main` is prohibited
+
+### 3.2 Naming
+
+1. Naming convention: `kesson-{llm}-{app}-{suffix}`
+2. Worktree name: `kesson-codex-app`
+3. Working branch baseline: `feature/kesson-codex-app`
+4. Local path format example: `<dev-root>/kesson-codex-app`
+
+### 3.3 Commit format
+
+Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`
+
+## 4. Implementation Rules (Mandatory)
+
+1. CSS policy: prefer Bootstrap, keep custom CSS minimal
+2. UX policy: mobile-first, prioritize scroll UX
+
+## 5. Review and Issue Rules (Mandatory)
+
+1. Code review: flag only `P0` and `P1` findings
+2. After completing a task, close the related GitHub Issue with a confirmation comment
+
+## 6. Codex Docs Hub
+
+Codex App operation notes:
 
 - `./docs/codex/README.md`
 
-Naming convention reference:
+## 7. Priority Order
 
-1. Worktree name: `kesson-{llm}-{app}-{suffix}`
-2. Branch name example: `feature/kesson-codex-app`
-3. Local path example: `<dev-root>/kesson-codex-app`
+If guidance conflicts, follow this order:
+
+1. User's direct request
+2. This `AGENTS.md`
+3. `./README.md`
+4. `./docs/README.md`
+5. Other repository docs
