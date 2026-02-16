@@ -1,7 +1,7 @@
 # WORKFLOW.md — セッション運用
 
-**バージョン**: 2.1
-**更新日**: 2026-02-15
+**バージョン**: 2.2
+**更新日**: 2026-02-17
 
 ---
 
@@ -77,9 +77,62 @@ PKを直接編集・削除しない。すべての変更はGitHubに対して行
 Claude → GitHub APIで直接コミット → 完了
 ```
 
-### ウェブ版の場合
+### ウェブ版の場合（DT App Code）
 
-未定。当面はPKで簡易運用。
+```
+Chat で指示書作成 → docs/prompts/ に push
+                        ↓
+DT App Code: 「docs/prompts/NEXT-TASK.md を読んで実行して」
+                        ↓
+DT App Code: 実装 → GitHub API でコミット → push
+                        ↓
+Chat: diff 確認 → 承認 → main マージ → TODO 更新
+```
+
+詳細は [§3a. DT App Code 運用フロー](#3a-dt-app-code-運用フロー) を参照。
+
+---
+
+## 3a. DT App Code 運用フロー
+
+PC拘束からの解放を目的に、DT App Code（Web版 Claude Code）をメイン実装環境として運用する。
+CLI はフォールバック先として維持する。
+
+参照: [ANALYSIS-dt-code-first.md](./ANALYSIS-dt-code-first.md)
+
+### 指示書ベースのワークフロー
+
+| ステップ | 実行者 | 操作 |
+|----------|--------|------|
+| 1. 指示書作成 | Chat（DT チャット） | `docs/prompts/NEXT-TASK.md` に push |
+| 2. 実装指示 | ユーザー → DT App Code | 「docs/prompts/NEXT-TASK.md を読んで実行して」 |
+| 3. 実装 & push | DT App Code | GitHub API でコミット（自動push） |
+| 4. diff確認 | Chat | `git log` / `git diff` で変更確認 |
+| 5. 承認 & マージ | ユーザー → Chat | main にマージ、TODO 更新 |
+| 6. 指示書アーカイブ | Chat | `docs/prompts/done/` に移動 |
+
+### 指示書ファイル規約
+
+```
+docs/prompts/NEXT-TASK.md              ← 常に「次のタスク」を配置
+docs/prompts/done/T-XXX-description.md ← 完了した指示書を移動
+docs/prompts/TEMPLATE-instruction-v2.md ← 指示書テンプレート
+```
+
+### DT Code / CLI の使い分け
+
+| 条件 | 実行環境 |
+|------|----------|
+| git 操作 + ファイル編集 + テスト実行 | DT App Code |
+| Gemini MCP 連携（シェーダー生成） | CLI（要検証） |
+| DevTools 必須のプロファイリング | CLI / PC 作業 |
+| 実機テスト | 物理デバイス操作 |
+| DT Code のコンテキスト上限を超える大タスク | CLI |
+
+### 環境判別
+
+指示書を受け取ったエージェントは `skills/env-adaptive.md` §2 に従い環境を自己判定する。
+CLI / DT App Code で操作コマンドが異なるため、テンプレートに環境判別セクションを含める。
 
 ---
 
@@ -138,3 +191,5 @@ Worktree運用については [ENVIRONMENT.md §4](./ENVIRONMENT.md) を参照�
 - [docs/README.md](./README.md) — ドキュメントハブ
 - [ENVIRONMENT.md](./ENVIRONMENT.md) — 開発環境・ツールチェーン
 - [AGENT-RULES.md](./AGENT-RULES.md) — エージェント分業
+- [ANALYSIS-dt-code-first.md](./ANALYSIS-dt-code-first.md) — DT Code-first 分析
+- [TEMPLATE-instruction-v2.md](./prompts/TEMPLATE-instruction-v2.md) — 指示書テンプレート v2

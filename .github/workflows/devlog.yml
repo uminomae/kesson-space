@@ -1,21 +1,114 @@
-# DISABLED: sessions.json の自動上書きが本番データを破壊するため無効化
-# 手動実行のみ許可（workflow_dispatch）
-# 将来的に安全な形で再設計する場合はこのファイルを編集
+# devlog.yml — sessions.json バリデーション CI
+#
+# 背景: generate-sessions.py が既存データをマージせず上書きするため、
+# 手動管理フィールド（cover, title_ja 等）が消失していた。
+# Phase A（マージモード実装）完了後に自動更新を再有効化する。
+# 現時点ではバリデーション専用として再有効化する。
 
-name: Devlog Gallery — Update sessions.json (DISABLED)
+name: Devlog Gallery — Validate sessions.json
 
 on:
-  workflow_dispatch:  # 手動実行のみ
+  push:
+    paths:
+      - 'assets/devlog/sessions.json'
+      - 'content/devlog/**'
+      - 'scripts/generate-sessions.py'
+      - 'scripts/devlog-config.json'
+  pull_request:
+    paths:
+      - 'assets/devlog/sessions.json'
+      - 'content/devlog/**'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  update-sessions:
+  validate-sessions:
     runs-on: ubuntu-latest
     steps:
-      - name: Notice
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate sessions.json is valid JSON
         run: |
-          echo "⚠️ このワークフローは現在無効化されています"
-          echo "sessions.json は手動で管理してください"
-          exit 1
+          if [ ! -f assets/devlog/sessions.json ]; then
+            echo "⚠️ sessions.json not found — skipping validation"
+            exit 0
+          fi
+          python3 -c "
+          import json, sys
+          with open('assets/devlog/sessions.json') as f:
+              data = json.load(f)
+          if not isinstance(data, list):
+              print('✗ sessions.json is not an array')
+              sys.exit(1)
+          print(f'✓ sessions.json: {len(data)} entries, valid JSON')
+          "
+
+      - name: Check required fields in each session entry
+        run: |
+          if [ ! -f assets/devlog/sessions.json ]; then
+            exit 0
+          fi
+          python3 -c "
+          import json, sys
+          required = ['id', 'start', 'end', 'commit_count', 'dominant_category']
+          with open('assets/devlog/sessions.json') as f:
+              sessions = json.load(f)
+          errors = []
+          for i, s in enumerate(sessions):
+              missing = [k for k in required if k not in s]
+              if missing:
+                  errors.append(f'  Entry {i} (id={s.get(\"id\",\"?\")}): missing {missing}')
+          if errors:
+              print('✗ Required fields missing:')
+              print('\n'.join(errors))
+              sys.exit(1)
+          print(f'✓ All {len(sessions)} entries have required fields')
+          "
+
+      - name: Check sessions.json ↔ content/devlog/*.md consistency
+        run: |
+          python3 -c "
+          import json, sys, os, glob
+          # sessions.json のエントリを取得
+          if not os.path.exists('assets/devlog/sessions.json'):
+              print('⚠️ sessions.json not found — skipping')
+              sys.exit(0)
+          with open('assets/devlog/sessions.json') as f:
+              sessions = json.load(f)
+          # content/devlog/session-*.md を列挙
+          md_files = set(os.path.basename(p).replace('.md','')
+                         for p in glob.glob('content/devlog/session-*.md'))
+          # sessions.json から content_file を持つエントリを確認
+          warnings = []
+          for s in sessions:
+              cf = s.get('content_file', '')
+              if cf and not os.path.exists(cf):
+                  warnings.append(f'  {s[\"id\"]}: content_file \"{cf}\" not found')
+          if warnings:
+              print('⚠️ Content file warnings:')
+              print('\n'.join(warnings))
+          else:
+              print(f'✓ Content file consistency OK (md files: {len(md_files)})')
+          "
+
+      - name: Validate sort order (newest first)
+        run: |
+          if [ ! -f assets/devlog/sessions.json ]; then
+            exit 0
+          fi
+          python3 -c "
+          import json, sys
+          with open('assets/devlog/sessions.json') as f:
+              sessions = json.load(f)
+          if len(sessions) < 2:
+              print('✓ Sort order: single or empty — OK')
+              sys.exit(0)
+          ends = [s.get('end', s.get('start', '')) for s in sessions]
+          for i in range(len(ends) - 1):
+              if ends[i] < ends[i+1]:
+                  print(f'⚠️ Sort order warning: entry {i} ({ends[i]}) < entry {i+1} ({ends[i+1]})')
+          print('✓ Sort order check complete')
+          "
