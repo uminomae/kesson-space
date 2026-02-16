@@ -11,6 +11,16 @@
       background: #050508;
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
     }
+
+    :root {
+      --kesson-focus-ring: rgba(100, 150, 255, 0.86);
+      --kesson-focus-ring-soft: rgba(100, 150, 255, 0.8);
+      --kesson-section-content-padding: 1rem 1.5rem 0;
+      --kesson-section-grid-margin-top: 1.5rem;
+      --kesson-card-bg: rgba(20, 25, 40, 0.9);
+      --kesson-offcanvas-width: 85%;
+      --kesson-offcanvas-bg: rgba(10, 14, 26, 0.98);
+    }
     
     #canvas-container {
       position: fixed;
@@ -48,7 +58,7 @@
     }
     .nav-label:focus-visible,
     .nav-label.is-nav-focused {
-      outline: 2px solid rgba(100, 150, 255, 0.86);
+      outline: 2px solid var(--kesson-focus-ring);
       outline-offset: 4px;
       filter: blur(0px) !important;
       text-shadow: 0 0 18px rgba(110, 160, 255, 0.72), 0 0 6px rgba(0, 0, 0, 0.85);
@@ -367,10 +377,10 @@
     }
     /* devlog gallery container — ナビバーとの間隔 */
     #devlog-gallery-container > .container {
-      margin-top: 1.5rem;
+      margin-top: var(--kesson-section-grid-margin-top);
     }
     #articles-grid {
-      margin-top: 1.5rem;
+      margin-top: var(--kesson-section-grid-margin-top);
     }
     #devlog-gallery-header {
       position: fixed;
@@ -440,7 +450,7 @@
       color: rgba(220, 230, 245, 0.7);
     }
     .articles-filter-btn:focus {
-      outline: 2px solid rgba(100, 150, 255, 0.8);
+      outline: 2px solid var(--kesson-focus-ring-soft);
       outline-offset: 3px;
     }
     .articles-filter-btn.is-active {
@@ -451,7 +461,7 @@
 
     /* === 共通カード === */
     .card.kesson-card {
-      --bs-card-bg: rgba(20, 25, 40, 0.9);
+      --bs-card-bg: var(--kesson-card-bg);
       background-color: var(--bs-card-bg);
       background-image: none;
       border: 1px solid rgba(100, 150, 255, 0.1);
@@ -513,7 +523,7 @@
       color: rgba(220, 230, 245, 0.7);
     }
     #surface-btn:focus {
-      outline: 2px solid rgba(100, 150, 255, 0.8);
+      outline: 2px solid var(--kesson-focus-ring-soft);
       outline-offset: 4px;
     }
 
@@ -582,7 +592,7 @@
     .section-content-wrap {
       position: relative;
       z-index: 20;
-      padding: 1rem 1.5rem 0;
+      padding: var(--kesson-section-content-padding);
     }
 
     /* Section heading — monospace, all-caps (ARTICLES / DEVLOG) */
@@ -604,9 +614,9 @@
 
     /* Offcanvas panel — kesson dark theme */
     .offcanvas-kesson {
-      --bs-offcanvas-width: 85%;
-      width: 85%;
-      background: rgba(10, 14, 26, 0.98);
+      --bs-offcanvas-width: var(--kesson-offcanvas-width);
+      width: var(--kesson-offcanvas-width);
+      background: var(--kesson-offcanvas-bg);
     }
 
     /* Offcanvas title letter spacing */
