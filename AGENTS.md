@@ -26,3 +26,15 @@ If guidance conflicts, use this order:
 5. Commit messages must follow Conventional Commits (`fix`, `feat`, `refactor`, `docs`)
 6. After work is completed, close the related GitHub Issue with a confirmation comment
 7. During code review, flag only `P0` and `P1` findings
+
+## Codex App Workspace Docs
+
+Use this location as the document hub for Codex App workspace operations:
+
+- `/Users/uminomae/dev/kesson-main/docs/worktrees/kesson-codex-app/README.md`
+
+Naming convention reference:
+
+1. Worktree name: `kesson-{llm}-{app}-{suffix}`
+2. Branch name example: `feature/kesson-codex-app`
+3. Local path example: `/Users/uminomae/dev/kesson-codex-app`

@@ -58,6 +58,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 |---------|------|
 | [issues/](./issues/) | 大規模タスクの設計書（ISS-NNN） |
 | [prompts/](./prompts/) | Gemini向けプロンプト履歴 |
+| [worktrees/kesson-codex-app/README.md](./worktrees/kesson-codex-app/README.md) | Codex App ワークツリー専用の運用メモ置き場 |
 
 ---
 
