@@ -314,6 +314,7 @@ function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex) {
     });
 
     btn.addEventListener('focus', () => {
+        btn.classList.remove('nav-label--hidden');
         btn.classList.add('is-nav-focused');
         if (navType === 'gem') {
             setGemHover(true);
@@ -532,12 +533,23 @@ const LABEL_Y_OFFSET = 3.5;
 
 // CHANGED(2026-02-16): T-018 — hidden state uses .nav-label--hidden class
 function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
+    const canKeyboardFocus = scrollFade > 0.1;
     worldPos.y += yOffset;
     worldPos.project(camera);
 
     if (worldPos.z > 1.0) {
-        el.classList.add('nav-label--hidden');
-        syncLabelFocusState(el, false);
+        const isFocused = document.activeElement === el;
+        if (isFocused) {
+            el.classList.remove('nav-label--hidden');
+            if (!el.style.left) el.style.left = '50%';
+            if (!el.style.top) el.style.top = '84%';
+            el.style.filter = 'blur(0px)';
+            el.style.opacity = '1';
+        } else {
+            el.classList.add('nav-label--hidden');
+        }
+        // Keep keyboard access while surface labels are enabled.
+        syncLabelFocusState(el, canKeyboardFocus);
         return;
     }
 
@@ -563,7 +575,7 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
     el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none';
-    syncLabelFocusState(el, scrollFade > 0.1);
+    syncLabelFocusState(el, canKeyboardFocus);
 }
 
 function syncLabelFocusState(el, isFocusable) {
