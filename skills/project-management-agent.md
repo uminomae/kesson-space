@@ -17,7 +17,7 @@
 1. 実装ブランチを feature/dev にマージ（GitHub API or ユーザーに手順提示）
     ↓
 2. ユーザーに以下を提示:
-   cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+   cd /Users/uminomae/dev/kesson-space-claudeDT
    git fetch origin && git checkout feature/dev && git pull origin feature/dev
    python3 -m http.server 3001
     ↓
@@ -126,12 +126,12 @@ DTセッションのコンテキスト消費を抑えるための一時ファイ
 
 | ワークツリー | パス | 固定ブランチ | 用途 |
 |---|---|---|---|
-| **本番** | /Users/uminomae/Documents/GitHub/kesson-space | **main** | 本番・公開（直接コミット非推奨） |
-| **🖥️ ステージング** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | **feature/dev** | 目視確認・統合テスト |
-| DT Code | /Users/uminomae/Documents/GitHub/kesson-dtCode | (指示書で指定) | DT App Code / Claude Code CLI 実装先 |
-| Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
-| Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
-| Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
+| **本番** | /Users/uminomae/dev/kesson-space | **main** | 本番・公開（直接コミット非推奨） |
+| **🖥️ ステージング** | /Users/uminomae/dev/kesson-space-claudeDT | **feature/dev** | 目視確認・統合テスト |
+| DT Code | /Users/uminomae/dev/kesson-dtCode | (指示書で指定) | DT App Code / Claude Code CLI 実装先 |
+| Claude Code 1 | /Users/uminomae/dev/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
+| Claude Code 2 | /Users/uminomae/dev/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
+| Codex | /Users/uminomae/dev/kesson-codex | feature/codex-tasks | 定型作業 |
 
 ### マージフロー（必ず feature/dev 経由）
 
@@ -155,7 +155,7 @@ kesson-dtCode等  →  feature/dev (claudeDT)  →  main (kesson-space)
 1. 実装エージェントがブランチをpush（リモート）
 2. PMがレビュー（GitHub API経由でコード確認）
 3. DTがclaudeDTで実装ブランチを feature/dev にマージ:
-   cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+   cd /Users/uminomae/dev/kesson-space-claudeDT
    git fetch origin
    git merge origin/{実装ブランチ名}
 4. サーバー起動 → ブラウザで目視確認
@@ -212,6 +212,35 @@ DT App Code はローカルファイルシステムにアクセスできない�
 - ローカルパスで指示書を案内すること（エージェントはローカルにアクセスできない）
 - ブランチ名を省略すること（どのブランチにあるか分からなくなる）
 - 「pullしてください」だけで指示書の場所を伝えること
+
+---
+
+## 🔴 DT ↔ CLI エージェント間通信
+
+### 原則: ローカル `~/dev/` 経由が最速
+
+DT App（Claude.ai Desktop）と Claude Code CLI は、ともに `~/dev/` 配下にファイルアクセス権限を持つ。
+エージェント間の指示書・成果物の受け渡しは **ローカルファイルシステム経由** を第一手段とする。
+
+| 経路 | 方法 | 速度 | 用途 |
+|------|------|------|------|
+| **ローカル直接** | DT が `~/dev/` に書く → CLI がそのまま読む | ⚡ 即時 | 指示書配置、状態確認 |
+| GitHub API経由 | DT が push → CLI が pull | 🐢 往復あり | 履歴管理、リモート共有 |
+
+### ルール
+
+1. **指示書は `docs/instructions/` に置いてgit管理に入れる**（履歴として残す）
+2. **書き込みはDTがローカルの適切なWT or メインリポに行う**
+3. **push は CLI 側が実行する**（DTはgit操作不可、CLIはgit push）
+4. **CLIへの委譲時**: ローカルパスで指示書の場所を伝えてよい（CLI はローカルアクセス可能）
+5. **Codex等リモート実行エージェントへの委譲時**: 従来通りリモートブランチ名+ファイルパスで指定
+
+### DT App のアクセス権限
+
+```
+filesystem MCP 許可: ~/dev/（全ワークツリー含む）、~/Library/Caches/kesson-agent/
+※ git操作（commit, push, branch作成等）は不可。CLIに委譲すること。
+```
 
 ---
 
@@ -321,11 +350,11 @@ feature/t045-background-modular に devlog-content のアセットを統合す�
 
 ### 出力先
 📁 ワークツリー: kesson-claudeCode
-📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode
+📂 パス: /Users/uminomae/dev/kesson-claudeCode
 🌿 ブランチ: feature/t045-background-modular
 
 ### 🔴 ブランチ同期（必須 — 作業開始前に実行）
-cd /Users/uminomae/Documents/GitHub/kesson-claudeCode
+cd /Users/uminomae/dev/kesson-claudeCode
 git fetch origin
 git checkout feature/t045-background-modular
 git pull origin feature/t045-background-modular
@@ -345,13 +374,13 @@ chore(T-045): Import devlog assets
 - [ ] pushが完了
 
 ### DT確認手順（feature/dev にマージして確認）
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+cd /Users/uminomae/dev/kesson-space-claudeDT
 git fetch origin
 git merge origin/feature/t045-background-modular
 python3 -m http.server 8000
 
 ### 本番公開手順（目視OK後）
-cd /Users/uminomae/Documents/GitHub/kesson-space
+cd /Users/uminomae/dev/kesson-space
 git fetch origin
 git merge origin/feature/dev
 
