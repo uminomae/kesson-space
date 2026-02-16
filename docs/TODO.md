@@ -35,6 +35,8 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
+| T-050 | Claude CLIルール実装レビュー | S | プロセス | DTが実装中。完了後にdiff確認・DT運用への影響分析・AGENTS.md等との整合性チェック |
+| T-051 | DT Code T-040-11完了受け取り | S | プロセス | DT Codeに依頼中のRead More実装。完了後: diff確認→マージ判断→NEXT-TASK.mdをdone/に移動→TODO更新。NEXT-TASK.md方式の初回試運転結果も記録 |
 | T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | T-040フォロー。課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
 | T-046 | WORKFLOW.md にWeb版（DT Code）運用フローを追記 | S | プロセス | ANALYSIS-dt-code-first.md の結論を反映。NEXT-TASK.md 方式の運用手順 |
 | T-047 | 指示書テンプレート v2 を docs/prompts/ に配置 | S | プロセス | 前提手順・制約セクション含む。DT Code / CLI 両対応テンプレート |
