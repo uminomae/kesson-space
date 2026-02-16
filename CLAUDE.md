@@ -1,10 +1,14 @@
-# kesson-space — Claude Code向け
+# kesson-space — Claude Code CLI
 
-## セッション開始
+## 指示書受領ルーチン
 
-1. `docs/CURRENT.md` を読む
-2. 前回の決定事項・次タスクを確認
-3. 高負荷タスクは着手前に分割提案
+指示書を受け取ったら、作業前に必ず以下を実行:
+
+1. ワークツリー・ブランチの存在確認と同期
+2. `git status` でクリーンな作業ツリーを確認
+3. 負荷判定（🟢低/🟡中/🔴高） — 🔴の場合は分割提案
+
+詳細: [docs/CLAUDE-CODE-QC.md](docs/CLAUDE-CODE-QC.md)
 
 ## コーディング方針
 
@@ -21,5 +25,6 @@
 
 ## 参照
 
-- [docs/CURRENT.md](docs/CURRENT.md) — 進捗・TODO
-- [docs/AGENT-RULES.md](docs/AGENT-RULES.md) — 運用ルール詳細
+- [docs/CLAUDE-CODE-QC.md](docs/CLAUDE-CODE-QC.md) — CLI品質管理ルーチン
+- [docs/AGENT-RULES.md](docs/AGENT-RULES.md) — マルチエージェント運用ルール
+- [skills/shared-quality.md](skills/shared-quality.md) — コーディング品質基準
