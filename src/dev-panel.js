@@ -2,7 +2,7 @@
 // ★ default値は config.js を参照し、ハードコードしない
 // CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
-import { toggles, breathConfig, sceneParams, fluidParams, liquidParams, distortionParams, gemParams, vortexParams } from './config.js';
+import { toggles, breathConfig, sceneParams, fluidParams, liquidParams, distortionParams, gemParams, xLogoParams, vortexParams } from './config.js';
 import { injectStyles } from './dom-utils.js';
 
 // --- CHANGED: Bootstrap動的ローダー ---
@@ -120,6 +120,20 @@ const SECTIONS = [
             gemPosX:                { label: '位置 X',       min: -30, max: 30, step: 1, default: gemParams.posX },
             gemPosY:                { label: '位置 Y',       min: -15, max: 15, step: 1, default: gemParams.posY },
             gemPosZ:                { label: '位置 Z',       min: -10, max: 40, step: 1, default: gemParams.posZ },
+        }
+    },
+    {
+        id: 'xlogo',
+        title: 'X ロゴ',
+        params: {
+            xLogoMeshScale:    { label: 'スケール',     min: 0.1, max: 4.0, step: 0.1, default: xLogoParams.meshScale },
+            xLogoGlowStrength: { label: 'グロー強度',   min: 0.0, max: 5.0, step: 0.1, default: xLogoParams.glowStrength },
+            xLogoRimPower:     { label: 'リム鋭さ',     min: 0.5, max: 10.0, step: 0.1, default: xLogoParams.rimPower },
+            xLogoInnerGlow:    { label: '中心グロー',   min: 0.0, max: 5.0, step: 0.1, default: xLogoParams.innerGlow },
+            xLogoLabelYOffset: { label: 'ラベル距離',   min: 0.0, max: 8.0, step: 0.25, default: xLogoParams.labelYOffset },
+            xLogoPosX:          { label: '位置 X',       min: -30, max: 30, step: 1, default: xLogoParams.posX },
+            xLogoPosY:          { label: '位置 Y',       min: -15, max: 15, step: 1, default: xLogoParams.posY },
+            xLogoPosZ:          { label: '位置 Z',       min: -10, max: 40, step: 1, default: xLogoParams.posZ },
         }
     },
     {

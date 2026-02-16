@@ -8,14 +8,14 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createScene, updateScene, sceneParams, getCamera } from './scene.js';
 import { initControls, updateControls, setAutoRotateSpeed, setCameraPosition, getScrollProgress } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
-import { getOrbScreenData, updateNavLabels } from './nav-objects.js';
-import { rebuildGem, updateGemPosition } from './nav-objects.js';
+import { getOrbScreenData, updateNavLabels, updateXLogoLabel, updateXLogo, createXLogoObjects } from './nav-objects.js';
+import { rebuildGem, updateGemPosition, rebuildXLogo, updateXLogoPosition } from './nav-objects.js';
 import { initLangToggle } from './lang-toggle.js';
 import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
 import { createLiquidSystem } from './shaders/liquid.js';
-import { toggles, breathConfig, distortionParams, fluidParams, liquidParams, gemParams, vortexParams } from './config.js';
+import { toggles, breathConfig, distortionParams, fluidParams, liquidParams, gemParams, xLogoParams, vortexParams } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { breathValue } from './animation-utils.js';
@@ -69,6 +69,12 @@ initLangToggle();
 
 const container = document.getElementById('canvas-container');
 const { scene, camera, renderer } = createScene(container);
+renderer.autoClear = false;
+
+// --- Xロゴ専用シーン + 固定カメラ ---
+const xLogoScene = new THREE.Scene();
+const xLogoCamera = camera.clone();
+const xLogoGroup = createXLogoObjects(xLogoScene);
 
 // ============================
 // 流体システム
@@ -97,7 +103,7 @@ distortionPass.uniforms.uLiquidOffsetScale.value = liquidParams.refractOffsetSca
 distortionPass.uniforms.uLiquidThreshold.value = liquidParams.refractThreshold;
 
 initControls(camera, container, renderer);
-initNavigation({ scene, camera, renderer });
+initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamera });
 initScrollUI();
 
 function findNavMeshes() {
@@ -191,6 +197,21 @@ const GEM_POSITION_MAP = {
     gemPosZ: 'posZ',
 };
 
+// --- xLogoParams: config代入 + rebuildXLogo() ---
+const XLOGO_REBUILD_MAP = {
+    xLogoMeshScale:    'meshScale',
+    xLogoGlowStrength: 'glowStrength',
+    xLogoRimPower:     'rimPower',
+    xLogoInnerGlow:    'innerGlow',
+};
+
+// --- xLogoParams: config代入 + updateXLogoPosition() ---
+const XLOGO_POSITION_MAP = {
+    xLogoPosX: 'posX',
+    xLogoPosY: 'posY',
+    xLogoPosZ: 'posZ',
+};
+
 // --- vortexParams: config直接代入 ---
 const VORTEX_MAP = {
     vortexSpeed:     'speed',
@@ -274,6 +295,23 @@ function applyDevValue(key, value) {
         return;
     }
 
+    // --- xLogo: パラメータ更新 + rebuild ---
+    if (key in XLOGO_REBUILD_MAP) {
+        xLogoParams[XLOGO_REBUILD_MAP[key]] = value;
+        rebuildXLogo();
+        return;
+    }
+
+    // --- xLogo: labelYOffset（rebuildなし） ---
+    if (key === 'xLogoLabelYOffset') { xLogoParams.labelYOffset = value; return; }
+
+    // --- xLogo: 位置更新 ---
+    if (key in XLOGO_POSITION_MAP) {
+        xLogoParams[XLOGO_POSITION_MAP[key]] = value;
+        updateXLogoPosition();
+        return;
+    }
+
     // --- vortex ---
     if (key in VORTEX_MAP) {
         vortexParams[VORTEX_MAP[key]] = value;
@@ -331,6 +369,8 @@ const clock = new THREE.Clock();
 function onResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    xLogoCamera.aspect = camera.aspect;
+    xLogoCamera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     composer.setSize(window.innerWidth, window.innerHeight);
 }
@@ -355,6 +395,7 @@ function animate() {
     updateControls(time, breathVal);
     updateScene(time);
     updateNavigation(time);
+    updateXLogo(time);
 
     // --- ナビメッシュ取得（フレームで1回のみ） ---
     const navs = findNavMeshes();
@@ -412,12 +453,16 @@ function animate() {
     if (!toggles.dof) distortionPass.uniforms.uDofStrength.value = 0;
 
     updateNavLabels(navs, camera);
+    updateXLogoLabel(xLogoCamera);
 
+    renderer.clear();
     if (toggles.postProcess) {
         composer.render();
     } else {
         renderer.render(scene, camera);
     }
+    renderer.clearDepth();
+    renderer.render(xLogoScene, xLogoCamera);
 }
 
 animate();

@@ -3,14 +3,16 @@
 import * as THREE from 'three';
 import { toggles } from './config.js';
 import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
-import { createNavObjects, updateNavObjects, setGemHover } from './nav-objects.js';
+import { createNavObjects, updateNavObjects, setGemHover, setXLogoHover } from './nav-objects.js';
 import { getScrollProgress } from './controls.js';
 
 let _camera;
 let _renderer;
+let _xLogoCamera;
 const _raycaster = new THREE.Raycaster();
 const _mouse = new THREE.Vector2();
 let _navMeshes = [];
+let _xLogoGroup = null;
 
 let _pointerDownPos = null;
 const DRAG_THRESHOLD = 5;
@@ -43,7 +45,18 @@ function onPointerUp(event) {
     _raycaster.setFromCamera(_mouse, _camera);
     const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
-    if (intersects.length > 0) {
+    let hitData = null;
+
+    if (_xLogoGroup && _xLogoCamera) {
+        _raycaster.setFromCamera(_mouse, _xLogoCamera);
+        const xHits = _raycaster.intersectObjects([_xLogoGroup], true);
+        if (xHits.length > 0) {
+            const hitObj = xHits[0].object;
+            hitData = hitObj.userData && hitObj.userData.url ? hitObj.userData : (hitObj.parent ? hitObj.parent.userData.hitSprite?.userData : null);
+        }
+    }
+
+    if (!hitData && intersects.length > 0) {
         let hitObj = intersects[0].object;
         let data = hitObj.userData;
 
@@ -53,13 +66,14 @@ function onPointerUp(event) {
                 data = parent.userData.core.userData;
             }
         }
+        hitData = data && data.url ? data : null;
+    }
 
-        if (data.url) {
-            if (data.external) {
-                window.open(data.url, '_blank', 'noopener,noreferrer');
-            } else {
-                openPdfViewer(data.url, data.label);
-            }
+    if (hitData && hitData.url) {
+        if (hitData.external) {
+            window.open(hitData.url, '_blank', 'noopener,noreferrer');
+        } else {
+            openPdfViewer(hitData.url, hitData.label);
         }
     }
 }
@@ -68,30 +82,45 @@ function onPointerMove(event) {
     if (isViewerOpen() || !toggles.navOrbs || getScrollProgress() > 0.1) {
         _renderer.domElement.style.cursor = 'default';
         setGemHover(false);
+        setXLogoHover(false);
         return;
     }
 
     _mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     _mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+    let isHovering = false;
+    let isGemHit = false;
+    let isXLogoHit = false;
+
+    if (_xLogoGroup && _xLogoCamera) {
+        _raycaster.setFromCamera(_mouse, _xLogoCamera);
+        const xHits = _raycaster.intersectObjects([_xLogoGroup], true);
+        if (xHits.length > 0) {
+            isHovering = true;
+            isXLogoHit = true;
+        }
+    }
+
     _raycaster.setFromCamera(_mouse, _camera);
     const intersects = _raycaster.intersectObjects(_navMeshes, true);
 
-    const isHovering = intersects.length > 0;
-    _renderer.domElement.style.cursor = isHovering ? 'pointer' : 'default';
-
-    if (isHovering) {
+    if (intersects.length > 0) {
+        isHovering = true;
         const hitObj = intersects[0].object;
-        const isGemHit = hitObj.userData.isGem || (hitObj.parent && hitObj.parent.userData.isGem);
-        setGemHover(isGemHit);
-    } else {
-        setGemHover(false);
+        isGemHit = hitObj.userData.isGem || (hitObj.parent && hitObj.parent.userData.isGem);
     }
+
+    _renderer.domElement.style.cursor = isHovering ? 'pointer' : 'default';
+    setGemHover(isGemHit);
+    setXLogoHover(isXLogoHit);
 }
 
-export function initNavigation({ scene, camera, renderer }) {
+export function initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamera }) {
     _camera = camera;
     _renderer = renderer;
+    _xLogoGroup = xLogoGroup || null;
+    _xLogoCamera = xLogoCamera || null;
 
     injectViewerStyles();
     _navMeshes = createNavObjects(scene);

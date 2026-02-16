@@ -367,10 +367,15 @@ export function createNavObjects(scene) {
     // CHANGED: URLとexternal flagを渡す
     _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true);
 
-    // --- X Logo ---
+    return navMeshes;
+}
+
+export function createXLogoObjects(scene) {
+    const lang = detectLang();
+    const strings = t(lang);
     const xData = strings.xLogo;
+
     const xGroup = createXLogoGroup();
-    const xIndex = navMeshes.length;
 
     xGroup.userData.hitSprite.userData = {
         type: 'nav',
@@ -382,35 +387,20 @@ export function createNavObjects(scene) {
 
     Object.assign(xGroup.userData, {
         baseY: xLogoParams.posY,
-        index: xIndex,
         isXLogo: true,
     });
 
     scene.add(xGroup);
-    navMeshes.push(xGroup);
     _xLogoGroup = xGroup;
 
     _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true);
 
-    return navMeshes;
+    return xGroup;
 }
 
 export function updateNavObjects(navMeshes, time, camera) {
     navMeshes.forEach((obj) => {
         const data = obj.userData;
-
-        if (data.isXLogo) {
-            // Y浮遊（Gemと位相をずらす）
-            obj.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
-
-            const mesh = data.xLogoMesh;
-            if (mesh) {
-                mesh.rotation.y = Math.sin(time * 0.2) * 0.15;
-                const u = mesh.material.uniforms;
-                if (u.uTime) u.uTime.value = time;
-            }
-            return;
-        }
 
         if (data.isGem) {
             // Y浮遊
@@ -432,10 +422,35 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
+export function updateXLogo(time) {
+    if (!_xLogoGroup) return;
+
+    const submerged = getScrollProgress() > 0.3;
+    _xLogoGroup.visible = toggles.navOrbs && !submerged;
+    if (!_xLogoGroup.visible) return;
+
+    const data = _xLogoGroup.userData;
+    _xLogoGroup.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
+
+    const mesh = data.xLogoMesh;
+    if (mesh) {
+        mesh.rotation.y = Math.sin(time * 0.2) * 0.15;
+        const u = mesh.material.uniforms;
+        if (u.uTime) u.uTime.value = time;
+    }
+}
+
 // --- Gemホバー制御 ---
 export function setGemHover(isHovered) {
     if (_gemMesh && _gemMesh.material.uniforms.uHover) {
         _gemMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
+    }
+}
+
+// --- Xロゴホバー制御 ---
+export function setXLogoHover(isHovered) {
+    if (_xLogoMesh && _xLogoMesh.material.uniforms.uHover) {
+        _xLogoMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
     }
 }
 
@@ -508,6 +523,11 @@ export function updateNavLabels(navMeshes, camera) {
         _gemGroup.getWorldPosition(_labelWorldPos);
         updateSingleLabel(_gemLabelElement, _labelWorldPos, gemParams.labelYOffset, camera, scrollFade);
     }
+}
+
+export function updateXLogoLabel(camera) {
+    const visible = toggles.navOrbs;
+    const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
 
     if (_xLogoLabelElement && _xLogoGroup) {
         if (!visible || scrollFade <= 0) {
@@ -557,4 +577,32 @@ export function getOrbScreenData(navMeshes, camera) {
         data.push({ x: cx, y: cy, strength, radius: screenRadius });
     });
     return data;
+}
+
+// --- devPanelからのパラメータ更新 ---
+export function rebuildXLogo() {
+    if (!_xLogoMesh) return;
+    _xLogoMesh.scale.setScalar(xLogoParams.meshScale);
+    const u = _xLogoMesh.material.uniforms;
+    if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength;
+    if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
+    if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+    if (_xLogoGroup) {
+        const hit = _xLogoGroup.userData.hitSprite;
+        if (hit) {
+            const s = xLogoParams.meshScale * 3.0;
+            hit.scale.set(s, s, 1);
+        }
+    }
+}
+
+// --- devPanelからの位置更新 ---
+export function updateXLogoPosition() {
+    if (!_xLogoGroup) return;
+    _xLogoGroup.userData.baseY = xLogoParams.posY;
+    _xLogoGroup.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
+}
+
+export function getXLogoGroup() {
+    return _xLogoGroup;
 }
