@@ -15,7 +15,7 @@ import { detectLang, t } from './i18n.js';
 import { DistortionShader } from './shaders/distortion-pass.js';
 import { createFluidSystem } from './shaders/fluid-field.js';
 import { createLiquidSystem } from './shaders/liquid.js';
-import { toggles, breathConfig, distortionParams, fluidParams, liquidParams, gemParams, xLogoParams, vortexParams } from './config.js';
+import { toggles, breathConfig, distortionParams, fluidParams, liquidParams, gemParams, xLogoParams, vortexParams, DEV_PARAM_REGISTRY } from './config.js';
 import { initScrollUI, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { breathValue } from './animation-utils.js';
@@ -144,214 +144,97 @@ function updateOverlay(key, val) {
     }
 }
 
-// ========================================
-// T-008: devパネル用 applyDevValue ルックアップテーブル
-// if-elseチェーンをカテゴリ別Mapに置換
-// ========================================
-
-// --- distortionPass uniform直接代入 ---
-const DISTORTION_UNIFORM_MAP = {
-    distStrength:   'uStrength',
-    distAberration: 'uAberration',
-    turbulence:     'uTurbulence',
-    baseBlur:       'uBaseBlur',
-    orbBlur:        'uBlurAmount',
-    innerGlow:      'uInnerGlow',
-    haloIntensity:  'uHaloIntensity',
-    haloWidth:      'uHaloWidth',
-    heatHaze:       'uHeatHaze',
-    heatHazeRadius: 'uHeatHazeRadius',
-    heatHazeSpeed:  'uHeatHazeSpeed',
-    dofStrength:    'uDofStrength',
-    dofFocusRadius: 'uDofFocusRadius',
-    fluidInfluence: 'uFluidInfluence',
-};
-
-// --- distortionPass haloColor成分 (.value.x/y/z) ---
-const HALO_COLOR_MAP = {
-    haloColorR: 'x',
-    haloColorG: 'y',
-    haloColorB: 'z',
-};
-
-// --- fluidSystem uniform直接代入 ---
-const FLUID_UNIFORM_MAP = {
-    fluidForce:  'uForce',
-    fluidCurl:   'uCurl',
-    fluidDecay:  'uDecay',
-    fluidRadius: 'uRadius',
-};
-
-// --- gemParams: config代入 + rebuildGem() ---
-const GEM_REBUILD_MAP = {
-    gemMeshScale:           'meshScale',
-    gemGlowStrength:        'glowStrength',
-    gemRimPower:            'rimPower',
-    gemInnerGlow:           'innerGlow',
-    gemTurbulence:          'turbulence',
-    gemHaloWidth:           'haloWidth',
-    gemHaloIntensity:       'haloIntensity',
-    gemChromaticAberration: 'chromaticAberration',
-};
-
-// --- gemParams: config代入 + updateGemPosition() ---
-const GEM_POSITION_MAP = {
-    gemPosX: 'posX',
-    gemPosY: 'posY',
-    gemPosZ: 'posZ',
-};
-
-// --- xLogoParams: config代入 + rebuildXLogo() ---
-const XLOGO_REBUILD_MAP = {
-    xLogoMeshScale:    'meshScale',
-    xLogoGlowStrength: 'glowStrength',
-    xLogoRimPower:     'rimPower',
-    xLogoInnerGlow:    'innerGlow',
-};
-
-// --- xLogoParams: config代入 + updateXLogoPosition() ---
-const XLOGO_POSITION_MAP = {
-    xLogoPosX: 'posX',
-    xLogoPosY: 'posY',
-    xLogoPosZ: 'posZ',
-};
-
-// --- vortexParams: config直接代入 ---
-const VORTEX_MAP = {
-    vortexSpeed:     'speed',
-    vortexIntensity: 'intensity',
-    vortexScale:     'scale',
-    vortexOpacity:   'opacity',
-    vortexArmCount:  'armCount',
-    vortexColorR:    'colorR',
-    vortexColorG:    'colorG',
-    vortexColorB:    'colorB',
-    vortexPosX:      'posX',
-    vortexPosY:      'posY',
-    vortexPosZ:      'posZ',
-    vortexSize:      'size',
-};
-
-// --- liquidParams: config直接代入 ---
-const LIQUID_CONFIG_MAP = {
-    liquidTimestep:     'timestep',
-    liquidDissipation:  'dissipation',
-    liquidForceRadius:  'forceRadius',
-    liquidForceStrength:'forceStrength',
-    liquidDensityMul:   'densityMul',
-    liquidNoiseScale:   'noiseScale',
-    liquidNoiseSpeed:   'noiseSpeed',
-    liquidSpecPow:      'specularPow',
-    liquidSpecInt:      'specularInt',
-    liquidBaseR:        'baseColorR',
-    liquidBaseG:        'baseColorG',
-    liquidBaseB:        'baseColorB',
-    liquidHighR:        'highlightR',
-    liquidHighG:        'highlightG',
-    liquidHighB:        'highlightB',
-};
+function applyLiquidUniform(configKey, value) {
+    if (!liquidSystem || !liquidSystem.uniforms) return;
+    if (configKey == 'timestep') liquidSystem.uniforms.simulation.uTimestep.value = value;
+    if (configKey == 'dissipation') liquidSystem.uniforms.simulation.uDissipation.value = value;
+    if (configKey == 'forceRadius') {
+        liquidSystem.uniforms.force.uRadius.value = value;
+        liquidSystem.uniforms.splat.uRadius.value = value;
+    }
+    if (configKey == 'forceStrength') liquidSystem.uniforms.force.uStrength.value = value;
+    if (configKey == 'densityMul') liquidSystem.uniforms.render.uDensityMul.value = value;
+    if (configKey == 'noiseScale') liquidSystem.uniforms.render.uNoiseScale.value = value;
+    if (configKey == 'noiseSpeed') liquidSystem.uniforms.render.uNoiseSpeed.value = value;
+    if (configKey == 'specularPow') liquidSystem.uniforms.render.uSpecPow.value = value;
+    if (configKey == 'specularInt') liquidSystem.uniforms.render.uSpecInt.value = value;
+    if (configKey == 'baseColorR') liquidSystem.uniforms.render.uBaseColor.value.x = value;
+    if (configKey == 'baseColorG') liquidSystem.uniforms.render.uBaseColor.value.y = value;
+    if (configKey == 'baseColorB') liquidSystem.uniforms.render.uBaseColor.value.z = value;
+    if (configKey == 'highlightR') liquidSystem.uniforms.render.uHighlight.value.x = value;
+    if (configKey == 'highlightG') liquidSystem.uniforms.render.uHighlight.value.y = value;
+    if (configKey == 'highlightB') liquidSystem.uniforms.render.uHighlight.value.z = value;
+}
 
 function applyDevValue(key, value) {
-    // --- config直接参照（toggles / breathConfig / sceneParams） ---
-    if (key in toggles) { toggles[key] = value; return; }
-    if (key in breathConfig) { breathConfig[key] = value; return; }
-    if (key in sceneParams) sceneParams[key] = value;
-
-    // --- カメラ位置 ---
-    if (key === 'camX' || key === 'camY' || key === 'camZ') {
-        setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
-        return;
-    }
-    if (key === 'autoRotateSpd') { setAutoRotateSpeed(value); return; }
-
-    // --- distortion uniform ---
-    if (key in DISTORTION_UNIFORM_MAP) {
-        distortionPass.uniforms[DISTORTION_UNIFORM_MAP[key]].value = value;
+    const entry = DEV_PARAM_REGISTRY[key];
+    if (!entry || !entry.apply) {
+        updateOverlay(key, value);
         return;
     }
 
-    // --- haloColor成分 ---
-    if (key in HALO_COLOR_MAP) {
-        distortionPass.uniforms.uHaloColor.value[HALO_COLOR_MAP[key]] = value;
-        return;
-    }
+    const configTargets = {
+        toggles,
+        breathConfig,
+        sceneParams,
+        gemParams,
+        xLogoParams,
+        vortexParams,
+        liquidParams,
+    };
 
-    // --- fluid uniform ---
-    if (key in FLUID_UNIFORM_MAP) {
-        fluidSystem.uniforms[FLUID_UNIFORM_MAP[key]].value = value;
-        return;
-    }
-
-    // --- gem: パラメータ更新 + rebuild ---
-    if (key in GEM_REBUILD_MAP) {
-        gemParams[GEM_REBUILD_MAP[key]] = value;
-        rebuildGem();
-        return;
-    }
-
-    // --- gem: labelYOffset（rebuildなし） ---
-    if (key === 'gemLabelYOffset') { gemParams.labelYOffset = value; return; }
-
-    // --- gem: 位置更新 ---
-    if (key in GEM_POSITION_MAP) {
-        gemParams[GEM_POSITION_MAP[key]] = value;
-        updateGemPosition();
-        return;
-    }
-
-    // --- xLogo: パラメータ更新 + rebuild ---
-    if (key in XLOGO_REBUILD_MAP) {
-        xLogoParams[XLOGO_REBUILD_MAP[key]] = value;
-        rebuildXLogo();
-        return;
-    }
-
-    // --- xLogo: labelYOffset（rebuildなし） ---
-    if (key === 'xLogoLabelYOffset') { xLogoParams.labelYOffset = value; return; }
-
-    // --- xLogo: 位置更新 ---
-    if (key in XLOGO_POSITION_MAP) {
-        xLogoParams[XLOGO_POSITION_MAP[key]] = value;
-        updateXLogoPosition();
-        return;
-    }
-
-    // --- vortex ---
-    if (key in VORTEX_MAP) {
-        vortexParams[VORTEX_MAP[key]] = value;
-        return;
-    }
-
-    // --- liquid ---
-    if (key in LIQUID_CONFIG_MAP) {
-        liquidParams[LIQUID_CONFIG_MAP[key]] = value;
-        // uniformも同時更新
-        if (liquidSystem && liquidSystem.uniforms) {
-            const configKey = LIQUID_CONFIG_MAP[key];
-            if (configKey === 'timestep') liquidSystem.uniforms.simulation.uTimestep.value = value;
-            if (configKey === 'dissipation') liquidSystem.uniforms.simulation.uDissipation.value = value;
-            if (configKey === 'forceRadius') {
-                liquidSystem.uniforms.force.uRadius.value = value;
-                liquidSystem.uniforms.splat.uRadius.value = value;
+    entry.apply.forEach((action) => {
+        switch (action.kind) {
+            case 'toggle':
+                if (action.key in toggles) toggles[action.key] = value;
+                break;
+            case 'config':
+                if (configTargets[action.object]) {
+                    configTargets[action.object][action.key] = value;
+                }
+                break;
+            case 'uniform': {
+                const target = action.target === 'distortionPass' ? distortionPass : fluidSystem;
+                if (target && target.uniforms && target.uniforms[action.uniform]) {
+                    target.uniforms[action.uniform].value = value;
+                }
+                break;
             }
-            if (configKey === 'forceStrength') liquidSystem.uniforms.force.uStrength.value = value;
-            if (configKey === 'densityMul') liquidSystem.uniforms.render.uDensityMul.value = value;
-            if (configKey === 'noiseScale') liquidSystem.uniforms.render.uNoiseScale.value = value;
-            if (configKey === 'noiseSpeed') liquidSystem.uniforms.render.uNoiseSpeed.value = value;
-            if (configKey === 'specularPow') liquidSystem.uniforms.render.uSpecPow.value = value;
-            if (configKey === 'specularInt') liquidSystem.uniforms.render.uSpecInt.value = value;
-            if (configKey === 'baseColorR') liquidSystem.uniforms.render.uBaseColor.value.x = value;
-            if (configKey === 'baseColorG') liquidSystem.uniforms.render.uBaseColor.value.y = value;
-            if (configKey === 'baseColorB') liquidSystem.uniforms.render.uBaseColor.value.z = value;
-            if (configKey === 'highlightR') liquidSystem.uniforms.render.uHighlight.value.x = value;
-            if (configKey === 'highlightG') liquidSystem.uniforms.render.uHighlight.value.y = value;
-            if (configKey === 'highlightB') liquidSystem.uniforms.render.uHighlight.value.z = value;
+            case 'uniformColor': {
+                const target = action.target === 'distortionPass' ? distortionPass : null;
+                if (target && target.uniforms && target.uniforms[action.uniform]) {
+                    target.uniforms[action.uniform].value[action.channel] = value;
+                }
+                break;
+            }
+            case 'rebuildGem':
+                rebuildGem();
+                break;
+            case 'updateGemPosition':
+                updateGemPosition();
+                break;
+            case 'rebuildXLogo':
+                rebuildXLogo();
+                break;
+            case 'updateXLogoPosition':
+                updateXLogoPosition();
+                break;
+            case 'camera':
+                setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+                break;
+            case 'autoRotate':
+                setAutoRotateSpeed(value);
+                break;
+            case 'overlay':
+                updateOverlay(key, value);
+                break;
+            case 'liquidUniform':
+                applyLiquidUniform(action.key, value);
+                break;
+            default:
+                break;
         }
-        return;
-    }
-
-    // --- HTMLオーバーレイ（title/subtitle位置・サイズ） ---
-    updateOverlay(key, value);
+    });
 }
 
 // --- dev-panel（?dev でのみ有効） ---
