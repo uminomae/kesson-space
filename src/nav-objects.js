@@ -3,9 +3,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
-import { toggles, gemParams } from './config.js';
+import { toggles, gemParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { gemOrbVertexShader, gemOrbFragmentShader } from './shaders/gem-orb.glsl.js';
+import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
 import { getRawMouse } from './mouse-state.js';
 import { injectStyles } from './dom-utils.js';
 
@@ -23,6 +24,9 @@ let _labelElements = [];
 let _gemLabelElement = null;
 let _gemGroup = null;
 let _gemMesh = null;
+let _xLogoLabelElement = null;
+let _xLogoGroup = null;
+let _xLogoMesh = null;
 let _scene = null;
 let _navMeshes = null;
 
@@ -117,6 +121,53 @@ function createGemGroup() {
     return group;
 }
 
+// ========================================
+// Xロゴ Group 生成（hitSprite + Planeメッシュ）
+// ========================================
+function createXLogoGroup() {
+    const group = new THREE.Group();
+    group.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
+
+    // --- 不可視ヒットスプライト（レイキャスト用） ---
+    const hitMat = new THREE.SpriteMaterial({
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false,
+    });
+    const hitSprite = new THREE.Sprite(hitMat);
+    const hitSize = xLogoParams.meshScale * 3.0;
+    hitSprite.scale.set(hitSize, hitSize, 1);
+    group.add(hitSprite);
+
+    // --- Xロゴメッシュ（Plane + Shader） ---
+    const geom = new THREE.PlaneGeometry(2, 2);
+    const mat = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime:         { value: 0.0 },
+            uGlowStrength: { value: xLogoParams.glowStrength },
+            uRimPower:     { value: xLogoParams.rimPower },
+            uInnerGlow:    { value: xLogoParams.innerGlow },
+            uHover:        { value: 0.0 },
+        },
+        vertexShader: xLogoVertexShader,
+        fragmentShader: xLogoFragmentShader,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+    });
+
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.scale.setScalar(xLogoParams.meshScale);
+    mesh.renderOrder = 10;
+    group.add(mesh);
+
+    group.userData = { hitSprite, xLogoMesh: mesh };
+    _xLogoMesh = mesh;
+
+    return group;
+}
+
 // --- devPanelからのパラメータ更新 ---
 export function rebuildGem() {
     if (!_gemMesh) return;
@@ -185,6 +236,14 @@ function injectNavLabelStyles() {
         }
         .nav-label--gem:hover {
             color: rgba(200, 215, 255, 1.0);
+        }
+        .nav-label--x {
+            color: rgba(220, 225, 240, 0.85);
+            text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+        .nav-label--x:hover {
+            color: rgba(240, 245, 255, 1.0);
         }
     `);
 }
@@ -308,12 +367,50 @@ export function createNavObjects(scene) {
     // CHANGED: URLとexternal flagを渡す
     _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true);
 
+    // --- X Logo ---
+    const xData = strings.xLogo;
+    const xGroup = createXLogoGroup();
+    const xIndex = navMeshes.length;
+
+    xGroup.userData.hitSprite.userData = {
+        type: 'nav',
+        url: xData.url,
+        label: xData.label,
+        isXLogo: true,
+        external: true,
+    };
+
+    Object.assign(xGroup.userData, {
+        baseY: xLogoParams.posY,
+        index: xIndex,
+        isXLogo: true,
+    });
+
+    scene.add(xGroup);
+    navMeshes.push(xGroup);
+    _xLogoGroup = xGroup;
+
+    _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true);
+
     return navMeshes;
 }
 
 export function updateNavObjects(navMeshes, time, camera) {
     navMeshes.forEach((obj) => {
         const data = obj.userData;
+
+        if (data.isXLogo) {
+            // Y浮遊（Gemと位相をずらす）
+            obj.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
+
+            const mesh = data.xLogoMesh;
+            if (mesh) {
+                mesh.rotation.y = Math.sin(time * 0.2) * 0.15;
+                const u = mesh.material.uniforms;
+                if (u.uTime) u.uTime.value = time;
+            }
+            return;
+        }
 
         if (data.isGem) {
             // Y浮遊
@@ -386,7 +483,7 @@ export function updateNavLabels(navMeshes, camera) {
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
 
     navMeshes.forEach((group, i) => {
-        if (group.userData.isGem) return;
+        if (group.userData.isGem || group.userData.isXLogo) return;
 
         const el = _labelElements[i];
         if (!el) return;
@@ -411,6 +508,17 @@ export function updateNavLabels(navMeshes, camera) {
         _gemGroup.getWorldPosition(_labelWorldPos);
         updateSingleLabel(_gemLabelElement, _labelWorldPos, gemParams.labelYOffset, camera, scrollFade);
     }
+
+    if (_xLogoLabelElement && _xLogoGroup) {
+        if (!visible || scrollFade <= 0) {
+            _xLogoLabelElement.style.opacity = '0';
+            _xLogoLabelElement.style.pointerEvents = 'none';
+            return;
+        }
+
+        _xLogoGroup.getWorldPosition(_labelWorldPos);
+        updateSingleLabel(_xLogoLabelElement, _labelWorldPos, xLogoParams.labelYOffset, camera, scrollFade);
+    }
 }
 
 // --- スクリーン座標 + 射影半径の計算 ---
@@ -423,7 +531,7 @@ const _edgeNDC = new THREE.Vector3();
 export function getOrbScreenData(navMeshes, camera) {
     const data = [];
     navMeshes.forEach(group => {
-        if (group.userData.isGem) return;
+        if (group.userData.isGem || group.userData.isXLogo) return;
 
         if (group.userData.core) {
             group.userData.core.getWorldPosition(_orbCenter);

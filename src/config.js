@@ -153,6 +153,18 @@ export const gemParams = {
     labelYOffset: 1.25,
 };
 
+// --- Xロゴパラメータ ---
+export const xLogoParams = {
+    meshScale:     0.6,
+    glowStrength:  0.8,
+    rimPower:      6.0,
+    innerGlow:     2.0,
+    posX: 22,
+    posY: 5,
+    posZ: 12,
+    labelYOffset: 1.5,
+};
+
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
 // CHANGED: FBM spiral vortex, water-matched colors
 export const vortexParams = {
