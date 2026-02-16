@@ -144,6 +144,18 @@ function buildGallery() {
  * カードクリックで devlog.html?id=xxx に遷移
  */
 function createCardElement(session, lang) {
+  const href = `./devlog.html?id=${session.id}`;
+
+  const link = document.createElement('a');
+  link.className = 'kesson-card-link text-decoration-none';
+  link.href = href;
+  link.setAttribute(
+    'aria-label',
+    lang === 'en'
+      ? `Open devlog session: ${session.title_en || session.title_ja}`
+      : `Devlogを開く: ${session.title_ja || session.title_en}`
+  );
+
   const card = document.createElement('div');
   card.className = 'card kesson-card h-100';
 
@@ -170,14 +182,8 @@ function createCardElement(session, lang) {
   cardBody.appendChild(date);
   card.appendChild(img);
   card.appendChild(cardBody);
-
-  // hover は CSS .kesson-card:hover で処理 — JSイベントリスナー不要
-
-  card.addEventListener('click', () => {
-    window.location.href = `./devlog.html?id=${session.id}`;
-  });
-
-  return card;
+  link.appendChild(card);
+  return link;
 }
 
 // ============================================================
