@@ -18,6 +18,47 @@ DTの役割は以下に限定する:
 
 ---
 
+## 🔴 目視確認ゲート（最重要）
+
+**feature/dev に実装ブランチをマージしたら、ユーザーの目視確認OKが出るまで次の作業に進んではならない。**
+
+### ゲートルール
+
+1. 実装ブランチ → feature/dev マージ **直後に停止**
+2. ユーザーにpull + サーバー起動コマンドを提示
+3. **ユーザーが「OK」または「問題あり」を回答するまで待機**
+4. OK → main マージへ進む / 問題あり → fix指示書を作成
+
+### 禁止事項
+
+- 目視確認待ちの間に feature/dev へ追加コミットすること
+- 目視確認をスキップして次タスクに着手すること
+- 「ドキュメント更新だけだから」と例外扱いすること
+
+### マージ → 目視確認 → main の流れ
+
+```bash
+# 1. マージ（ローカル）
+cd /Users/uminomae/Documents/GitHub/kesson-space
+git fetch origin
+git checkout feature/dev
+git pull origin feature/dev
+git merge origin/<実装ブランチ名>
+git push origin feature/dev
+
+# 2. 目視チェック
+python3 -m http.server 3001
+# → http://localhost:3001/
+
+# 3. OK後に main マージ
+git checkout main
+git pull origin main
+git merge feature/dev
+git push origin main
+```
+
+---
+
 ## セッション開始
 
 **このセクションを読んだ時点で以下を実行する。**
@@ -60,51 +101,9 @@ DTセッション中のコンテキスト消費を抑制するための一時フ
 | 項目 | 内容 |
 |---|---|
 | **場所** | `~/Library/Caches/kesson-agent/` |
-| **運用ルール** | [`CACHE-RULES.md`](file:///Users/uminomae/Library/Caches/kesson-agent/CACHE-RULES.md)（キャッシュ内） |
+| **運用ルール** | `CACHE-RULES.md`（キャッシュ内） |
 | **セッション状態** | `session/state.md`（必須・常時更新） |
 | **分析退避** | `session/*.md`（重いデータはここに退避） |
-
-### 使い方
-
-- **state.md**: セッション完了/PENDING/ブランチ状態/PR状態を常時記録
-- **退避**: CSS分析・diff結果・Gemini出力など重いデータは別ファイルに書き出し
-- **復元**: 次セッション開始時にstate.mdを読んで引き継ぎ
-- **クリア**: 不要になったファイルは適宜削除
-
----
-
-## 目視確認ワークフロー（feature/dev）
-
-実装ブランチの成果物を `feature/dev` にマージし、ローカルで目視チェックする手順。
-
-### マージ（ローカル）
-
-```bash
-cd /Users/uminomae/Documents/GitHub/kesson-space
-git fetch origin
-git checkout feature/dev
-git pull origin feature/dev
-git merge origin/<実装ブランチ名>
-# コンフリクトがあれば手動解決
-git push origin feature/dev
-```
-
-### 目視チェック用サーバー起動
-
-```bash
-cd /Users/uminomae/Documents/GitHub/kesson-space
-python3 -m http.server 3001
-# → http://localhost:3001/
-```
-
-### チェック後の main マージ
-
-```bash
-git checkout main
-git pull origin main
-git merge feature/dev
-git push origin main
-```
 
 ---
 
@@ -122,8 +121,6 @@ git push origin main
 
 **コード実装が必要な場合、第一選択肢は DT App Code である。**
 
-理由: DTチャット（Claude.ai）がプロジェクト管理者として常駐しており、DT App Code を使えば指示書作成→受け渡し→実行の往復が不要。DTが直接 filesystem MCP 経由でローカルファイルを編集し、即座に結果を確認できる。
-
 委譲が必要になるのは以下の場合のみ:
 - **Claude Code CLI**: 複数ファイルにまたがる設計判断が必要、またはDTのコンテキストが逼迫
 - **OpenAI Codex**: 定型作業の並列実行
@@ -134,11 +131,12 @@ git push origin main
 ## ブランチ戦略
 
 ```
-実装ブランチ → feature/dev（目視確認） → main（本番デプロイ）
+実装ブランチ → feature/dev（🔴目視確認ゲート） → main（本番デプロイ）
 ```
 
 - `main` への直接コミット禁止
 - `feature/dev` は目視確認用のステージング
+- **feature/dev マージ後、目視確認OKまで追加コミット禁止**
 - 実装ブランチは `claude/*` または `feature/*` 命名
 
 ---
