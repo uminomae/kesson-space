@@ -61,6 +61,47 @@ DTの役割は以下に限定する:
 
 ---
 
+## 🔴 目視確認ゲート（最重要）
+
+**feature/dev に実装ブランチをマージしたら、ユーザーの目視確認OKが出るまで次の作業に進んではならない。**
+
+### ゲートルール
+
+1. 実装ブランチ → feature/dev マージ **直後に停止**
+2. ユーザーにpull + サーバー起動コマンドを提示
+3. **ユーザーが「OK」または「問題あり」を回答するまで待機**
+4. OK → main マージへ進む / 問題あり → fix指示書を作成
+
+### 禁止事項
+
+- 目視確認待ちの間に feature/dev へ追加コミットすること
+- 目視確認をスキップして次タスクに着手すること
+- 「ドキュメント更新だけだから」と例外扱いすること
+
+### マージ → 目視確認 → main の流れ
+
+```bash
+# 1. マージ（ローカル）
+cd /Users/uminomae/Documents/GitHub/kesson-space
+git fetch origin
+git checkout feature/dev
+git pull origin feature/dev
+git merge origin/<実装ブランチ名>
+git push origin feature/dev
+
+# 2. 目視チェック
+python3 -m http.server 3001
+# → http://localhost:3001/
+
+# 3. OK後に main マージ
+git checkout main
+git pull origin main
+git merge feature/dev
+git push origin main
+```
+
+---
+
 ## セッション開始
 
 **このセクションを読んだ時点で以下を実行する。**
