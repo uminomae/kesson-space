@@ -19,7 +19,7 @@ DT（Claude.ai チャット）が指示書を `docs/prompts/` に push → Claud
 
 ```bash
 # ワークツリーに移動して最新化
-cd /Users/uminomae/dev/kesson-codex
+cd /Users/uminomae/dev/kesson-codex-cli
 git fetch origin && git checkout <branch> && git pull
 
 # 指示書を読ませて自律実装
@@ -76,10 +76,9 @@ codex exec resume <SESSION_ID> "修正指示"
 
 | 用途 | ワークツリーパス | 典型的なブランチ |
 |---|---|---|
-| Codex CLI 定型 | `/Users/uminomae/dev/kesson-codex` | feature/codex-tasks |
-| Codex App 確認 | `/Users/uminomae/dev/kesson-codex-xlogo` | feature/* |
-| Claude Code 1 | `/Users/uminomae/dev/kesson-claudeCode` | feature/* |
-| Claude Code 2 | `/Users/uminomae/dev/kesson-claudeCode2` | feature/* |
+| Codex CLI 定型 | `/Users/uminomae/dev/kesson-codex-cli` | feature/codex-tasks |
+| Codex App 確認 | `/Users/uminomae/dev/kesson-codex-app` | feature/* |
+| Claude Code CLI | `/Users/uminomae/dev/kesson-claude-code-cli` | feature/* |
 
 ## 実行フロー
 
