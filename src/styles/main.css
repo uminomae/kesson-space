@@ -365,15 +365,20 @@
     }
 
     /* === 共通カード === */
-    .kesson-card {
-      background: rgba(20, 25, 40, 0.9);
+    .card.kesson-card {
+      --bs-card-bg: rgba(20, 25, 40, 0.9);
+      background-color: var(--bs-card-bg);
+      background-image: none;
       border: 1px solid rgba(100, 150, 255, 0.1);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       cursor: pointer;
     }
-    .kesson-card:hover {
+    .card.kesson-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(100, 150, 255, 0.15);
+    }
+    .card.kesson-card .card-body {
+      background-color: transparent;
     }
     .kesson-card .card-img-top {
       aspect-ratio: 16/9;
