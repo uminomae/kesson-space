@@ -579,6 +579,13 @@
 
   <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
   <section id="devlog-gallery-section">
+    <!-- CHANGED(2026-02-16): devlog見出し追加 -->
+    <div style="position:relative; z-index:20; padding:3rem 1.5rem 0;">
+      <div class="container">
+        <h2 style="font-size:0.75rem; font-weight:400; color:rgba(180,200,230,0.5); letter-spacing:0.15em; text-transform:uppercase; font-family:'SF Mono','Fira Code','Consolas',monospace; margin:0;">DEVLOG</h2>
+        <div id="devlog-inline-count" style="font-size:0.65rem; color:rgba(180,200,230,0.35); margin-top:4px; margin-bottom:1rem;"></div>
+      </div>
+    </div>
     <div id="devlog-gallery-container"></div>
     <div id="devlog-gallery-header">
       <h2>devlog</h2>
@@ -716,6 +723,7 @@
     }
 
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
+    console.log('[articles] total:', articles.length, 'initial:', INITIAL_DISPLAY, 'remaining:', articles.length - INITIAL_DISPLAY);
 
     function createCard(item, layout) {
       const col = document.createElement('div');
@@ -767,8 +775,9 @@
     initialItems.forEach(item => grid.appendChild(createCard(item, 'grid')));
     countEl.textContent = initialItems.length + ' / ' + articles.length + ' articles';
 
+    // CHANGED(2026-02-16): 1件以上あれば常にRead Moreを表示
     const remaining = articles.length - INITIAL_DISPLAY;
-    if (remaining > 0) {
+    if (articles.length > 0) {
       const btnContainer = document.createElement('div');
       btnContainer.className = 'text-center mt-3';
 
@@ -777,7 +786,9 @@
       btn.setAttribute('data-bs-toggle', 'offcanvas');
       btn.setAttribute('data-bs-target', '#articlesOffcanvas');
       btn.setAttribute('aria-controls', 'articlesOffcanvas');
-      btn.textContent = '▸ Read More (' + remaining + ')';
+      btn.textContent = remaining > 0
+        ? '▸ Read More (' + remaining + ')'
+        : '▸ View All (' + articles.length + ')';
 
       btnContainer.appendChild(btn);
       grid.parentNode.insertBefore(btnContainer, grid.nextSibling);
