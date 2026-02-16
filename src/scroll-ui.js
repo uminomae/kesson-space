@@ -151,20 +151,20 @@ export function updateScrollUI(scrollProg, breathVal) {
     }
 
     // --- Devlogタイトル: セクション内でのみ表示 ---
-    updateDevlogHeaderVisibility();
+    updateDevlogHeaderVisibility(scrollProg);
 }
 
-function updateDevlogHeaderVisibility() {
-    if (!_devlogHeader || !_devlogSection) return;
-    const rect = _devlogSection.getBoundingClientRect();
+function updateDevlogHeaderVisibility(scrollProg) {
+    if (!_devlogHeader) return;
+    const rect = _devlogSection ? _devlogSection.getBoundingClientRect() : null;
     const windowH = window.innerHeight || document.documentElement.clientHeight;
-    const enterLine = windowH * 0.15;
     const exitLine = windowH * 0.05;
     const overlayOpacity = _overlay
         ? parseFloat(_overlay.style.opacity || getComputedStyle(_overlay).opacity || '1')
         : 1;
-    const heroPassed = overlayOpacity <= 0.1;
-    const isVisible = heroPassed && rect.top <= enterLine && rect.bottom >= exitLine;
+    const heroPassed = overlayOpacity <= 0.2 || scrollProg > 0.3;
+    const stillInRange = rect ? rect.bottom >= exitLine : true;
+    const isVisible = heroPassed && stillInRange;
     _devlogHeader.classList.toggle('is-visible', isVisible);
 }
 
