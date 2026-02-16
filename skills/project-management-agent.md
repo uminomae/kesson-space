@@ -6,6 +6,18 @@
 
 ---
 
+## 🔴 コード実行環境の区別（混同禁止）
+
+| 名称 | 正体 | 実行環境 | ワークツリー |
+|------|------|----------|-------------|
+| **DT App Code** | Claude app のコード実行機能（bash_tool / create_file / str_replace） | Anthropicクラウド | kesson-dtCode |
+| **Claude Code CLI** | ローカルCLIツール（`claude` コマンド） | ローカルマシン | kesson-claudeCode / kesson-claudeCode2 |
+| **OpenAI Codex** | OpenAI の Codex CLI（`codex` コマンド） | ローカルマシン | kesson-codex |
+
+**これら3つは完全に別物。** 指示書作成時・委譲判断時に必ず区別すること。
+
+---
+
 ## 🔴 常駐エージェント一覧
 
 | エージェント | 監視対象 | 発動タイミング |
@@ -133,8 +145,8 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 | ID | T-XXX形式 |
 | 内容 | 1行で概要 |
 | 分類 | 実装/修正/コンテンツ/レビュー/シェーダー |
-| 委譲先 | Claude Code / Codex / Gemini MCP / Claude直接 |
-| 出力先ワークツリー | kesson-claudeCode / kesson-codex / etc |
+| 委譲先 | DT App Code / Claude Code CLI / OpenAI Codex / Gemini MCP / Claude直接 |
+| 出力先ワークツリー | kesson-dtCode / kesson-claudeCode / kesson-codex / etc |
 
 ### 4. 指示書本体
 
@@ -162,6 +174,7 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 |--------------|------|----------|------|
 | main | /Users/uminomae/Documents/GitHub/kesson-space | main | 本番（直接コミット非推奨） |
 | 🖥️ **DT確認用** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | (任意) | **サーバー起動・ブラウザ確認** |
+| DT Code | /Users/uminomae/Documents/GitHub/kesson-dtCode | feature/dt-code | DT App Code実装用（⚠️CLI・Codexは触らない） |
 | Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
 | Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
 | Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
@@ -172,7 +185,7 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 
 **運用フロー**:
 ```
-1. エージェント（Claude Code / Codex）が各ワークツリーで実装
+1. エージェント（DT App Code / Claude Code CLI / Codex）が各ワークツリーで実装
 2. 実装完了 → featureブランチをpush
 3. DTがkesson-space-claudeDTで該当ブランチをcheckout
 4. python3 -m http.server 8000 でサーバー起動
@@ -190,16 +203,17 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 |------|--------|------|
 | シェーダー/GLSL | **Gemini MCP** | 視覚品質特化 |
 | Three.jsメッシュ/マテリアル | **Gemini MCP** | 3D専門性 |
-| 複数ファイル + 設計判断 | **Claude Code** | コンテキスト理解 |
+| 複数ファイル + 設計判断 | **Claude Code CLI** | コンテキスト理解、ローカルファイル操作 |
+| 1ファイル、設計判断済み | **DT App Code** | GitHub MCP経由で即時実装。DTチャットから直接操作 |
 | 単純実装、定型作業 | **OpenAI Codex** | 高速、並列向き |
-| 1ファイル、即時必要 | **Claude直接** | 例外 |
+| 1ファイル、即時必要 | **Claude直接**（チャット出力） | 例外 |
 
 ### レビュータスク
 
 | 条件 | 委譲先 | 理由 |
 |------|--------|------|
 | シェーダーレビュー | **Gemini MCP** (review mode) | GLSL専門性 |
-| 構造/アーキテクチャ | **GPT/Claude Code** | 俯瞰視点 |
+| 構造/アーキテクチャ | **GPT/Claude Code CLI** | 俯瞰視点 |
 | パフォーマンス | **Gemini MCP** or **GPT** | 計測知見 |
 
 ### コンテンツタスク
@@ -207,8 +221,8 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 | 条件 | 委譲先 | 理由 |
 |------|--------|------|
 | 日本語記事 | **Claude直接** | 品質ルール |
-| 英語翻訳 | **Claude直接** or **Claude Code** | 一貫性 |
-| 技術文書 | **Claude Code** | ファイル参照 |
+| 英語翻訳 | **Claude直接** or **Claude Code CLI** | 一貫性 |
+| 技術文書 | **Claude Code CLI** | ファイル参照 |
 
 ---
 
@@ -264,6 +278,7 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 
 - **指示書フォーマットを省略すること** ← 最重要
 - **ワークツリー指定なしで指示書を作成すること**
+- **コード実行環境を混同すること**（DT App Code ≠ Claude Code CLI ≠ OpenAI Codex）
 - **同期せずに作業を開始すること** ← コンフリクトの原因
 - **DT確認手順を省略すること** ← 動作確認できない
 - 委譲判断をスキップして直接実装に飛ぶこと
