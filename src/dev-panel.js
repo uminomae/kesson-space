@@ -3,7 +3,6 @@
 // CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
 import { toggles, breathConfig, DEV_TOGGLES, DEV_SECTIONS } from './config.js';
-import { injectStyles } from './dom-utils.js';
 
 const BOOTSTRAP_CSS_URL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
 const BOOTSTRAP_JS_URL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';

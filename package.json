@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "description": "kesson-space dev scripts",
   "devDependencies": {
     "puppeteer": "^24.37.3"

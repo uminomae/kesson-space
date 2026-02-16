@@ -14,6 +14,10 @@ Codex App ワークツリー向けの書類置き場。
 - 実装指示書・実施ログ
 - レビュー観点や未解決事項
 
+## Active Plans
+
+- [REFRACTORING-PLAN.md](./REFRACTORING-PLAN.md) - 段階的リファクタリング計画と現状レビュー
+
 ## Related Rules
 
 - Branch strategy: implementation branch -> `feature/dev` -> `main`
