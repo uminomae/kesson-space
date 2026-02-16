@@ -155,9 +155,9 @@ export const gemParams = {
 
 // --- Xロゴパラメータ ---
 export const xLogoParams = {
-    meshScale:     0.5,
+    meshScale:     0.4,
     glowStrength:  0.4,
-    rimPower:      5.2,
+    rimPower:      0.5,
     innerGlow:     0.1,
     posX: -21,
     posY: 5,
