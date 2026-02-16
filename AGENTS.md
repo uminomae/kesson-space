@@ -8,6 +8,24 @@ At the start of every new conversation in this repository:
 2. Read `./docs/README.md`
 3. Use these two files as the primary context before taking action
 
+### 1.1 Claude Docs Reference Rule (Memory-Aware)
+
+Refer to Claude-oriented docs under `./docs/` as much as memory allows.
+
+Priority order:
+
+1. `./CLAUDE.md`
+2. `./docs/AGENT-RULES.md`
+3. `./docs/CLAUDE-CODE-QC.md`
+4. `./docs/WORKFLOW.md`
+5. `./docs/ENVIRONMENT.md`
+
+Loading policy:
+
+1. Start from headings/required sections only
+2. Expand to full sections only when needed for the active task
+3. Avoid bulk-loading unrelated long docs in one pass
+
 ## 2. Fixed Worktree Rule (Mandatory)
 
 Always use the same Codex App worktree for this project:
