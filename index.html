@@ -727,9 +727,8 @@
 
     function createCard(item, layout) {
       const col = document.createElement('div');
-      col.className = layout === 'offcanvas'
-        ? 'col-12 mb-3'
-        : 'col-12 col-md-6 col-lg-4 mb-3';
+      // CHANGED(2026-02-16): offcanvasも3列グリッド（DEVLOG Offcanvasと統一）
+      col.className = 'col-12 col-md-6 col-lg-4 mb-3';
 
       const dateStr = item.date
         ? new Date(item.date).toLocaleDateString('ja-JP', {
