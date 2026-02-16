@@ -1,104 +1,51 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-16
-**セッション**: #34 ドキュメント棚卸し・Articles Offcanvas指示書作成
+**セッション**: #39 T-040-12 UI修正・Articles/TRACES調整
 
 ---
 
 ## 現在の状態
 
-### 完了
+### セッション#35〜#39 実施内容
 
-- [x] リポジトリ作成・GitHub Pages有効化
-- [x] コンセプト文書・プロジェクト管理体制
-- [x] Three.js 統合シェーダーシステム
-- [x] 自動シーン遷移（背景2s / スタイル14s サイクル）
-- [x] 水面シェーダー（FBM波、フレネル反射）
-- [x] 光（欠損）シェーダー（2スタイル補間、呼吸アニメーション、RGBティント）
-- [x] 3Dナビゲーション（鬼火オーブ → PDFビューアー）
-- [x] Bootstrap 5 devパネル（アコーディオンUI、JSONエクスポート）
-- [x] 統一呼吸システム（HTML + FOV + シェーダー同期）
-- [x] ポストプロセス（屈折・ハロー・熱波・DOF）
-- [x] 流体フィールド（ピンポンバッファ、マウス追従）
-- [x] h1タイトルにブログ記事リンク
-- [x] 左上クレジットセクション
-- [x] Gemini MCP連携構築
-- [x] **リファクタリング #5**: scene.js分割、config抽出、DEV_MODE→URLパラメータ
-- [x] **ブランチマージ #6**: feature/gravitational-lens → main
-- [x] **品質レビュー #7**: 4エージェント分析、テストスイート作成
-- [x] **参照体系整備 #8**: SCOPE.md新設、参照リンク更新
-- [x] **管理ハブ構築 #9**: README.md新設、SCOPE/WORKFLOW統合
-- [x] **E2Eテスト・CI整備 #10**: 設計書・ランナー・GitHub Actions・README改訂
-- [x] **アクセシビリティ分析 #11**: 4エージェント分析、ISS-001起票
-- [x] **ISS-001実装 #12**: ナビゲーションアクセシビリティ改善（Phase 1-3）
-- [x] **CI修正・Phase 4検証 #13**: 静的テスト修正、src/versions/ 削除、ライブサイト検証完了
-- [x] **軽量化 #14**: Bootstrap条件付きロード、流体フィールド128化
-- [x] **E2Eブラウザ独立実行 #15**: ?test自動実行 + 結果オーバーレイ
-- [x] **TODO管理体系整備 #16**: TODO.md新設、README.md/CURRENT.md役割分担整理
-- [x] **渦シェーダー・フォント修正 #17**: 渦シェーダー実装(OFF)、Noto Serif JP導入、h1白色修正
-- [x] **マルチエージェント運用ルール #18**: AGENT-RULES.md策定、skills/・context-pack/新設
-- [x] **セッションヘルスガード #19**: README.md §12新設、AGENT-RULES.md常駐エージェント追加
-- [x] **セッションヘルスガード実効性強化 #20**: Memory連携、Step 1.5事前判定、3層担保
-- [x] **リファクタリング提案統合 #21**: createGemOrbMaterial抽出、destroyControls追加
-- [x] **TODO棚卸し + リファクタリング #22**: T-003完了確認、T-010/T-014実装、TODO整理
-- [x] **devlog Bootstrap化 #25**: hero-spacer 125vh、インフォグラフィックジェネレータ作成
-- [x] **T-032 README.md監督構造 #26**: 3層階層体制・ワークツリー構成・品質ルール明文化
-- [x] **devlog機能拡張 #27**: T-004/T-005/T-035/T-036完了、E2Eテスト拡充
-- [x] **devlog改善・CI修正 #28**: T-031/T-032/T-033マージ、devlog.yml無効化、sessions.json復元
-- [x] **ワークフロー標準化・並列委譲 #29**: skills作成、AGENT-RULES v1.4、T-039並列委譲
-- [x] **T-039b完了・カバー画像自動生成 #30**: Puppeteerスクリプト作成
-- [x] **T-041完了・devlog日付整合性修正 #31**: session-002〜005書き直し、カバー画像再生成
-- [x] **T-040完了・devlog Offcanvas内ビュー切替 #32**: Modal廃止、Offcanvas内2ビュー構造
-- [x] **プロジェクト管理体系再設計・devlog詳細ページ分離 #33**: T-044完了
+1. **T-040-11: Articles Read More Offcanvas実装** ✅
+   - Devlog Offcanvasパターン踏襲でArticles Offcanvas実装
+   - ブランチ: `claude/articles-read-more-offcanvas-Ddbu0` → main マージ済み
 
-### セッション#34 ドキュメント棚卸し・Articles Offcanvas指示書作成
+2. **T-040-12: Bootstrap標準カード化 + UI修正** ✅ (main: e0a03bb)
+   - Phase 1-4: articles/devlogカードをBootstrap標準カード化
+   - セクション見出しDEVLOG/TRACES入れ替え（Codex実装）
+   - articlesセクションをdevlogの上に移動
+   - devlog Read More件数表示追加、articles件数表示削除
+   - TRACES: sticky→fixed復帰、フェードイン表示タイミング調整（enterLine 0.35→0.15）
+   - TRACES表示ラインをconfigurable化
 
-**実施内容**:
+3. **T-040-14: pjdhiro API自動生成（Liquid template化）** 🔄 進行中
+   - pjdhiro repo `codex/t040-14-api-autogen` ブランチ作成済み
+   - tags/categories付きJSON自動生成Liquidテンプレート適用
+   - → pjdhiro側マージ → kesson-space articlesフィルタ実装待ち
 
-1. **#33以降の作業反映（mainコミット棚卸し）**
-   - T-045完了: devlog.htmlにThree.js背景追加（PRマージ済み）
-   - T-045b完了: devlog背景設定の集約（devlog-config.js新設、旧T-046コミット）
-   - T-050完了: CLAUDE.mdレビュー + DT影響修正
-   - AGENT-RULES v1.5: §10 探索モード追加
-   - DT確認ワークツリー定義（kesson-space-claudeDT）
-   - 指示書フォーマット標準化（project-management-agent.md改善）
-   - Articles技術検証: RESEARCH 2本（pjdhiro JSON API、ChatGPT突き合わせ）
-   - DT Code-first分析: ANALYSIS + RESEARCH追加
-   - NEXT-TASK.md方式設計・初回試運転
-   - CLAUDE.md拡充: 105行化、ワークツリー・ガードルール・委譲マトリクス統合
-
-2. **T-046番号衝突修正**
-   - コミット上の `refactor(T-046)` (devlog config集約) → T-045bに再採番
-   - TODO.mdのT-046（WORKFLOW.md追記）はそのまま維持
-
-3. **NEXT-TASK.md更新: T-040-11 Read More → Offcanvas方式**
-   - 旧インライン展開方式からOffcanvas方式に変更
-   - devlogのOffcanvasパターン踏襲
+4. **環境・運用整備**
+   - リポ移行: ~/Documents/GitHub → ~/dev/
+   - PMエージェント: DT↔CLI通信セクション追加、SHガード追加
+   - 2月Codex優先ルール追加（Claude CLI実装凍結）
+   - CLAUDE.md パス更新
 
 ### 決定事項
 
-- T-046番号衝突: devlog config側をT-045bに再採番
-- Articles Read MoreはOffcanvas方式で実装
-- セッション番号は#34として通し番号継続
+- 2月中はCodex優先（Claude CLI実装凍結）
+- TRACES = fixedナビゲーションインジケータ（stickyではない）
+- Articles表示は「欠損駆動思考」タグでフィルタ
 
 ### 次セッションのタスク
 
-**T-040-11: Articles Read More Offcanvas実装**（P1・DT Code委譲）
-- 指示書: `docs/prompts/NEXT-TASK.md` 更新済み
-- ブランチ: `feature/kesson-articles`
-
-**T-043: devlog遷移UX改善**（P1）
-- 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明、アニメーションなし
+**T-040-14 残り**: pjdhiro Liquid templateマージ確認 → kesson-space articlesフィルタ実装
+**T-040-13**: スタイルシート分離（style→外部CSS）+ HTMLタグコメント追加（Claude対話時セクション特定用）
 
 ## 未完了タスク
 
-なし
-
-### バックログ
-
 → **[TODO.md](./TODO.md)** を参照
-
-P0なし。P1に4件（T-040-11、T-043、T-046、T-047）。P2に10件、P3に5件。
 
 ### 現在のデフォルトパラメータ
 
@@ -149,18 +96,11 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 
 結果は右側オーバーレイに表示。Re-run / Copy JSON / Failures only フィルタ付き。
 
-詳細: [tests/e2e-test-design.md](../tests/e2e-test-design.md)
-
 ---
 
 ## ⭐ Three.js作業時の重要ルール
 
 **→ [AGENT-RULES.md](./AGENT-RULES.md) および [skills/orchestrator.md](../skills/orchestrator.md) を参照**
-
-要約:
-- シェーダー/Three.jsコードはGemini MCP経由で実装する
-- Claudeは擬似コード・インターフェース設計まで。関数の中身は書かない
-- ユーザーが明示した時のみGeminiを使用。自動呼び出しはしない
 
 ---
 
@@ -189,9 +129,6 @@ http://localhost:3001/?test&dev      ← devパネルテスト含む
 - [AGENT-RULES.md](./AGENT-RULES.md) - マルチエージェント運用ルール
 - [CONCEPT.md](./CONCEPT.md) - 理論↔視覚の対応
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - ファイル構成・技術決定
-- [REVIEW-REPORT.md](./REVIEW-REPORT.md) - 品質レビュー報告書
-- [mcp_servers/README.md](../mcp_servers/README.md) - MCPセットアップ手順
-- [~~ISS-001~~](./issues/ISS-001-nav-accessibility.md) - ~~ナビゲーションアクセシビリティ改善~~ ✅ 全Phase完了
 - [ライブサイト](https://uminomae.github.io/kesson-space/)
 - [ブログ記事](https://uminomae.github.io/pjdhiro/thinking-kesson/)
 - [GitHub Actions](https://github.com/uminomae/kesson-space/actions)
