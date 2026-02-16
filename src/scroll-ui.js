@@ -159,12 +159,13 @@ function updateDevlogHeaderVisibility(scrollProg) {
     const rect = _devlogSection ? _devlogSection.getBoundingClientRect() : null;
     const windowH = window.innerHeight || document.documentElement.clientHeight;
     const exitLine = windowH * 0.05;
-    const overlayOpacity = _overlay
-        ? parseFloat(_overlay.style.opacity || getComputedStyle(_overlay).opacity || '1')
-        : 1;
-    const heroPassed = overlayOpacity <= 0.2 || scrollProg > 0.3;
+    const TRACES_ENTER_Y = 0; // px: TRACES出現の基準ライン（調整用）
+    const spacer = document.getElementById('articles-spacer');
+    const spacerPassed = spacer
+        ? spacer.getBoundingClientRect().top <= TRACES_ENTER_Y
+        : scrollProg > 0.3;
     const stillInRange = rect ? rect.bottom >= exitLine : true;
-    const isVisible = heroPassed && stillInRange;
+    const isVisible = spacerPassed && stillInRange;
     _devlogHeader.classList.toggle('is-visible', isVisible);
 }
 
