@@ -4,6 +4,20 @@
 
 ---
 
+## 🔴 DT 実装禁止ルール
+
+**DT（Claude.ai Desktop / Web チャット）はコード実装を行ってはならない。**
+
+DTの役割は以下に限定する:
+- プロジェクト管理・タスク分析・指示書作成
+- ドキュメント（README, CURRENT.md, TODO.md等）の更新
+- GitHub API経由のマージ・PR操作
+- バグ分析・CSS比較等のレビュー作業
+
+コード実装が必要な場合は、必ず委譲先エージェントに指示書を渡すこと。
+
+---
+
 ## セッション開始
 
 **このセクションを読んだ時点で以下を実行する。**
@@ -34,6 +48,41 @@ DTが見ているディレクトリは？
 
 ---
 
+## 目視確認ワークフロー（feature/dev）
+
+実装ブランチの成果物を `feature/dev` にマージし、ローカルで目視チェックする手順。
+
+### マージ（ローカル）
+
+```bash
+cd /Users/uminomae/Documents/GitHub/kesson-space
+git fetch origin
+git checkout feature/dev
+git pull origin feature/dev
+git merge origin/claude/articles-read-more-offcanvas-Ddbu0
+# コンフリクトがあれば手動解決
+git push origin feature/dev
+```
+
+### 目視チェック用サーバー起動
+
+```bash
+cd /Users/uminomae/Documents/GitHub/kesson-space
+python3 -m http.server 3001
+# → http://localhost:3001/
+```
+
+### チェック後の main マージ
+
+```bash
+git checkout main
+git pull origin main
+git merge feature/dev
+git push origin main
+```
+
+---
+
 ## 実装エージェント区別（重要）
 
 本プロジェクトでは以下の **3つの実装エージェントを厳密に区別** する。混同しないこと。
@@ -54,6 +103,18 @@ DTが見ているディレクトリは？
 - **Claude Code CLI**: 複数ファイルにまたがる設計判断が必要、またはDTのコンテキストが逼迫
 - **OpenAI Codex**: 定型作業の並列実行
 - **Gemini MCP**: シェーダー/GLSL実装
+
+---
+
+## ブランチ戦略
+
+```
+実装ブランチ → feature/dev（目視確認） → main（本番デプロイ）
+```
+
+- `main` への直接コミット禁止
+- `feature/dev` は目視確認用のステージング
+- 実装ブランチは `claude/*` または `feature/*` 命名
 
 ---
 
