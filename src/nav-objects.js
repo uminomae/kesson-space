@@ -8,8 +8,6 @@ import { getScrollProgress } from './controls.js';
 import { gemOrbVertexShader, gemOrbFragmentShader } from './shaders/gem-orb.glsl.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
 import { getRawMouse } from './mouse-state.js';
-import { injectStyles } from './dom-utils.js';
-
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
 const NAV_POSITIONS = [
@@ -269,53 +267,9 @@ export function updateGemPosition() {
 // ========================================
 // HTMLラベル — ISS-001: div → button 化
 // ========================================
+// CHANGED(2026-02-16): T-018 — CSS moved to src/styles/main.css
 function injectNavLabelStyles() {
-    // CHANGED: pointer-events: none → auto, button reset styles, focus/hover styles
-    // FIX: フォントをNoto Serif JPに統一（index.htmlと一致）
-    injectStyles('nav-label-styles', `
-        .nav-label {
-            position: fixed;
-            z-index: 15;
-            pointer-events: auto;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            color: rgba(255, 255, 255, 0.9);
-            font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
-            font-size: clamp(0.45rem, 2.8vmin, 1.1rem);
-            letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
-            text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
-            transform: translate(-50%, -100%);
-            white-space: nowrap;
-            transition: filter 0.15s ease, opacity 0.3s ease, color 0.3s ease;
-            will-change: filter;
-        }
-        .nav-label:focus {
-            outline: 2px solid rgba(100, 150, 255, 0.8);
-            outline-offset: 4px;
-            filter: blur(0px) !important;
-        }
-        .nav-label:hover {
-            filter: blur(0px) !important;
-            color: rgba(255, 255, 255, 1.0);
-        }
-        .nav-label--gem {
-            color: rgba(180, 195, 240, 0.85);
-            text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
-        }
-        .nav-label--gem:hover {
-            color: rgba(200, 215, 255, 1.0);
-        }
-        .nav-label--x {
-            color: rgba(220, 225, 240, 0.85);
-            text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
-            font-weight: bold;
-        }
-        .nav-label--x:hover {
-            color: rgba(240, 245, 255, 1.0);
-        }
-    `);
+    // no-op: styles now in main.css
 }
 
 // CHANGED: div → button, click/keyboard handlers, aria-label
@@ -552,15 +506,17 @@ const LABEL_Y_OFFSET = 3.5;
 // T-010: _gazeX/_gazeY と initGazeTracking() を除去。
 // mouse-state.js の getRawMouse() で取得する。
 
+// CHANGED(2026-02-16): T-018 — hidden state uses .nav-label--hidden class
 function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     worldPos.y += yOffset;
     worldPos.project(camera);
 
     if (worldPos.z > 1.0) {
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none'; // CHANGED: カメラ背面では無効化
+        el.classList.add('nav-label--hidden');
         return;
     }
+
+    el.classList.remove('nav-label--hidden');
 
     const x = ( worldPos.x * 0.5 + 0.5) * window.innerWidth;
     const y = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
@@ -581,7 +537,7 @@ function updateSingleLabel(el, worldPos, yOffset, camera, scrollFade) {
     const clampedBlur = Math.min(blurPx, 4.0);
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
-    el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none'; // CHANGED: フェード時は無効化
+    el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none';
 }
 
 export function updateNavLabels(navMeshes, camera) {
@@ -595,8 +551,7 @@ export function updateNavLabels(navMeshes, camera) {
         if (!el) return;
 
         if (!visible || scrollFade <= 0) {
-            el.style.opacity = '0';
-            el.style.pointerEvents = 'none'; // CHANGED
+            el.classList.add('nav-label--hidden'); // CHANGED(2026-02-16): T-018
             return;
         }
 
@@ -606,8 +561,7 @@ export function updateNavLabels(navMeshes, camera) {
 
     if (_gemLabelElement && _gemGroup) {
         if (!visible || scrollFade <= 0) {
-            _gemLabelElement.style.opacity = '0';
-            _gemLabelElement.style.pointerEvents = 'none'; // CHANGED
+            _gemLabelElement.classList.add('nav-label--hidden'); // CHANGED(2026-02-16): T-018
             return;
         }
 
@@ -622,8 +576,7 @@ export function updateXLogoLabel(camera) {
 
     if (_xLogoLabelElement && _xLogoGroup) {
         if (!visible || scrollFade <= 0) {
-            _xLogoLabelElement.style.opacity = '0';
-            _xLogoLabelElement.style.pointerEvents = 'none';
+            _xLogoLabelElement.classList.add('nav-label--hidden'); // CHANGED(2026-02-16): T-018
             return;
         }
 

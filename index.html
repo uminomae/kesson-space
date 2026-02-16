@@ -115,11 +115,12 @@
   <div id="articles-spacer"></div>
 
   <!-- Articles Section -->
-  <section id="articles-section" style="position:relative; z-index:5;">
-    <div style="position:relative; z-index:20; padding:3rem 1.5rem 0;">
+  <!-- CHANGED(2026-02-16): inline style → CSS class (T-018) -->
+  <section id="articles-section">
+    <div class="section-content-wrap">
       <div class="container">
-        <h2 style="font-size:0.75rem; font-weight:400; color:rgba(180,200,230,0.5); letter-spacing:0.15em; text-transform:uppercase; font-family:'SF Mono','Fira Code','Consolas',monospace; margin:0;">ARTICLES</h2>
-        <div id="articles-error" class="d-none" style="color:#f87171; font-size:0.8rem;"></div>
+        <h2 class="section-heading">ARTICLES</h2>
+        <div id="articles-error" class="d-none"></div>
         <div id="articles-grid" class="row g-3"></div>
       </div>
     </div>
@@ -127,10 +128,10 @@
 
   <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
   <section id="devlog-gallery-section">
-    <!-- CHANGED(2026-02-16): TRACES見出し -->
-    <div style="position:relative; z-index:20; padding:3rem 1.5rem 0;">
+    <!-- CHANGED(2026-02-16): inline style → CSS class (T-018) -->
+    <div class="section-content-wrap">
       <div class="container">
-        <h2 style="font-size:0.75rem; font-weight:400; color:rgba(180,200,230,0.5); letter-spacing:0.15em; text-transform:uppercase; font-family:'SF Mono','Fira Code','Consolas',monospace; margin:0;">DEVLOG</h2>
+        <h2 class="section-heading">DEVLOG</h2>
       </div>
     </div>
     <div id="devlog-gallery-container"></div>
@@ -144,14 +145,14 @@
        tabindex="-1"
        id="devlogOffcanvas"
        data-bs-backdrop="true"
-       style="width: 85%; background: rgba(10, 14, 26, 0.98);">
+       class="offcanvas-kesson">
     <div class="offcanvas-header border-bottom border-secondary">
       <button type="button" class="btn btn-link text-light p-0 me-2 d-none"
               id="offcanvas-back-btn" aria-label="一覧に戻る">
         ←
       </button>
       <div>
-        <h5 class="text-light mb-0" style="letter-spacing: 0.15em;">DEVLOG</h5>
+        <h5 class="text-light mb-0 offcanvas-title-spaced">DEVLOG</h5>
         <small class="text-muted" id="offcanvas-session-count"></small>
       </div>
       <button type="button" class="btn-close btn-close-white"
@@ -166,7 +167,7 @@
       <div id="offcanvas-detail-view" class="d-none">
         <div class="p-3">
           <div id="detail-cover" class="mb-3">
-            <img id="detail-cover-img" class="img-fluid rounded" style="cursor: pointer;" alt="Session cover">
+            <img id="detail-cover-img" class="img-fluid rounded cursor-pointer" alt="Session cover">
           </div>
           <h5 id="detail-title" class="text-light mb-1"></h5>
           <small id="detail-date" class="text-muted d-block mb-3"></small>
@@ -181,10 +182,10 @@
        tabindex="-1"
        id="articlesOffcanvas"
        data-bs-backdrop="true"
-       style="width: 85%; background: rgba(10, 14, 26, 0.98);">
+       class="offcanvas-kesson">
     <div class="offcanvas-header border-bottom border-secondary">
       <div>
-        <h5 class="text-light mb-0" style="letter-spacing: 0.15em;">ARTICLES</h5>
+        <h5 class="text-light mb-0 offcanvas-title-spaced">ARTICLES</h5>
         <small class="text-muted" id="offcanvas-articles-count"></small>
       </div>
       <button type="button" class="btn-close btn-close-white"
@@ -205,7 +206,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content bg-transparent border-0">
         <div class="modal-body p-0 text-center">
-          <img id="lightbox-image" class="img-fluid" style="max-height: 80vh; cursor: pointer;" alt="Enlarged cover">
+          <img id="lightbox-image" class="img-fluid" alt="Enlarged cover">
         </div>
       </div>
     </div>
@@ -302,7 +303,7 @@
           <div class="card kesson-card h-100">
             ${teaserHtml}
             <div class="card-body">
-              <span class="badge bg-secondary mb-2" style="font-size:0.65rem;">
+              <span class="badge bg-secondary mb-2 badge-article-type">
                 ${normalizedType}
               </span>
               <h6 class="card-title mb-1">
