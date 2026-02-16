@@ -17,10 +17,10 @@ pjdhiro (Jekyll + Minimal Mistakes + GitHub Pages) から、特定タグ/カテ�
 | 項目 | 結論 |
 |------|------|
 | Jekyll Liquid で JSON 出力 | ✅ 可能。front matter 付き `.json` ファイル |
-| `_pages` を `site.pages` で取得 | ✅ 可能。`include: [_pages]` が設定済み |
-| OR 条件フィルタ | ⚠️ `where_exp` の OR は Jekyll 4 専用。**loop+push 方式**を使用 |
-| CORS | ✅ 問題なし。同一オリジン (`uminomae.github.io`) |
-| GitHub Pages 制約 | ✅ カスタムプラグイン不要。標準 Liquid で完結 |
+| `_pages` を `site.pages` で取得 | ✅ 可能。`include: [_pages]` が設定済み ([参照][1], [参照][2]) |
+| OR 条件フィルタ | ⚠️ `where_exp` の OR は Jekyll 4 専用 ([参照][4])。**loop+push 方式**を使用 |
+| CORS | ✅ 問題なし。同一オリジン `uminomae.github.io` ([参照][5]) |
+| GitHub Pages 制約 | ✅ カスタムプラグイン不要。標準 Liquid で完結 ([参照][6]) |
 
 ---
 
@@ -31,15 +31,15 @@ pjdhiro (Jekyll + Minimal Mistakes + GitHub Pages) から、特定タグ/カテ�
 **`api/kesson-articles.json`（pjdhiro リポジトリのルート直下に `api/` ディレクトリ）**
 
 - `_pages` 配下ではなくルート直下が推奨
-- 理由: `_` 始まりディレクトリの `include` 挙動に依存しないため安全
+- 理由: `_` 始まりディレクトリの `include` 挙動に依存しないため安全 ([参照][1])
 - permalink: `/api/kesson-articles.json`
 
 ### 2-2. フィルタ方式
 
 **loop + push 方式**（`where_exp` の OR 演算子を使わない）
 
-- GitHub Pages は **Jekyll 3.10.0 / Liquid 4.0.4**
-- `where_exp` の `or` は **Jekyll 4.0 以降**の機能
+- GitHub Pages は **Jekyll 3.10.0 / Liquid 4.0.4** ([参照][3])
+- `where_exp` の `or` は **Jekyll 4.0 以降**の機能 ([参照][4])
 - loop + push は Jekyll 3 系でも確実に動作する
 
 ### 2-3. 公開 URL
@@ -52,34 +52,42 @@ https://uminomae.github.io/pjdhiro/api/kesson-articles.json
 
 ## 3. 吟味：ChatGPT 回答の検証ポイント
 
+> ⚠️ **重要な前提注意**  
+> ChatGPT が参照した Jekyll ドキュメント ([jekyllrb.com/docs/liquid/filters/][4]) は
+> **Jekyll 最新版（4.x 系）の説明**。GitHub Pages は **Jekyll 3.10.0** で動作する ([参照][3])。  
+> ChatGPT が「公式フィルタ」として紹介した機能の一部は Jekyll 3.10 では未実装の可能性がある。  
+> 以下の「要検証」項目は、この版差に起因するリスクである。
+
 ### ✅ 確認済み・問題なし
 
 | ポイント | 判断 |
 |----------|------|
-| `jsonify` フィルタ | Jekyll 3.10 で利用可。JSON エスケープ処理として正しい |
+| `jsonify` フィルタ | Jekyll 3.10 で利用可。JSON エスケープ処理として正しい ([参照][4]) |
 | `forloop.last` で末尾カンマ制御 | 標準 Liquid 機能。問題なし |
-| `strip_html` フィルタ | Jekyll 3.10 で利用可 |
+| `strip_html` フィルタ | Jekyll 3.10 で利用可 ([参照][4]) |
 | `date_to_xmlschema` | Jekyll 3.10 で利用可。ISO 8601 出力 |
-| CORS 同一オリジン判定 | MDN 定義通り。scheme + host + port が一致 |
+| CORS 同一オリジン判定 | scheme + host + port が一致 ([参照][5]) |
+| カスタムプラグイン不要 | `--safe` 制約に抵触しない ([参照][6]) |
 
 ### ⚠️ 要検証（ローカル or GitHub Pages ビルドで確認必要）
 
-| ポイント | リスク | 対処 |
-|----------|--------|------|
-| `doc.header.teaser`（ネストプロパティ） | Liquid のドットアクセスで nested hash に到達できるか | テンプレート内で `doc.header.teaser` → 動かなければ `doc.header["teaser"]` に変更 |
-| `sort: "date", "last"` 第2引数 | Jekyll 3.10 で `last` パラメータが使えるか | 使えない場合、`nil` date の page がソート先頭に来る。`date` 未設定 page に date を追加する運用で回避 |
-| `normalize_whitespace` フィルタ | Jekyll 3.10 での利用可否 | 使えない場合、`strip_newlines` に置換 |
-| `doc.collection == "posts"` | pages は `doc.collection` が `nil` の可能性 | type 判定ロジックを `site.posts contains doc` に変更するか、フォールバック追加 |
-| `absolute_url` フィルタ | `_config.yml` の `url` + `baseurl` が正しく設定されているか | 現状 `url: "https://uminomae.github.io"`, `baseurl: "/pjdhiro"` で OK |
+| # | ポイント | リスク | 対処 |
+|---|----------|--------|------|
+| V1 | `normalize_whitespace` | ChatGPT は「公式フィルタ」と主張 ([参照][4]) だが、参照先は Jekyll 4.x ドキュメント。**3.10 での利用可否が未確認** | 使えない場合 → `strip_newlines` に置換 |
+| V2 | `sort: "date", "last"` 第2引数 | 同上。Jekyll 公式 sort 説明にあるが **3.10 で動くか未確認** | 使えない場合 → `nil` date の page がソート先頭に来る。pages に `date:` を必ず入れる運用で回避 |
+| V3 | `doc.header.teaser` ネストプロパティ | Liquid のドットアクセスで nested hash に到達できるか | 動かなければ `doc.header["teaser"]` に変更 |
+| V4 | `doc.collection == "posts"` | pages は `doc.collection` が `nil` の可能性 | type 判定を `site.posts contains doc` に変更、またはフォールバック追加 |
+| V5 | `doc.excerpt` が pages で空 | ChatGPT も明記：**pages だと `doc.excerpt` が空になることがある** | テンプレートでは `doc.content` にフォールバック済み。ただし content 全文が入る場合の `truncate: 200` が確実に動くか確認 |
+| V6 | `absolute_url` フィルタ | `_config.yml` の `url` + `baseurl` が正しく設定されているか | 現状 `url: "https://uminomae.github.io"`, `baseurl: "/pjdhiro"` で OK のはず |
 
 ### 💡 ChatGPT が触れなかった追加リスク
 
 1. **GitHub Pages ビルドキャッシュ**: JSON ファイル更新後、CDN キャッシュで古い版が返る可能性
-   - 対処: kesson-space 側で `fetch(url + '?t=' + Date.now())` キャッシュバスター、または `Cache-Control` ヘッダに依存
-   
+   - 対処: kesson-space 側で `fetch(url + '?t=' + Date.now())` キャッシュバスター
+
 2. **pjdhiro の記事追加時に JSON が自動更新されるか**: Jekyll ビルドが走れば自動更新される。GitHub Pages は対象ブランチへの push でビルドが走るので問題なし
 
-3. **JSON 出力の改行・空白**: Liquid テンプレートの `{%- -%}` （ハイフン付きタグ）で空白制御しているが、意図しない空白が入る可能性
+3. **JSON 出力の改行・空白**: `{%- -%}` で空白制御しているが意図しない空白混入の可能性
    - 対処: kesson-space 側の `JSON.parse()` は空白に寛容なので実害は低い
 
 ---
@@ -156,33 +164,47 @@ sitemap: false
 
 ---
 
-## 5. DT アクション
+## 5. 代替案（テンプレートが動かない場合）
 
-### 即時（T-040 ブロッカー解除）
+ChatGPT 回答より。優先度順：
 
-1. 上記テンプレートを pjdhiro リポジトリに配置:
-   ```
-   pjdhiro/api/kesson-articles.json
-   ```
-2. `public-pjdhiro` ブランチに push
-3. GitHub Pages ビルド完了後、以下にアクセスして JSON 出力を確認:
-   ```
-   https://uminomae.github.io/pjdhiro/api/kesson-articles.json
-   ```
-4. JSON が壊れている場合、§3 の「要検証」項目を一つずつ潰す
+| # | 方式 | メリット | デメリット |
+|---|------|----------|------------|
+| A1 | **GitHub Actions で JSON 事前生成** | Jekyll バージョン制約から完全に解放。カスタムワークフロー利用可 ([参照][7]) | CI/CD 設定が必要。ビルド時間増加 |
+| A2 | **Minimal Mistakes 検索インデックス流用** | テーマが `search.json` / Lunr 用データを生成している場合は追加実装なし | タグ絞り込み専用 API には不向き。フォーマット固定 |
+| A3 | **`feed.xml` を fetch してクライアント側フィルタ** | `jekyll-feed` が有効なら追加ファイル不要 | pages を含めるのが困難。XML パースが必要。重い |
 
-### 確認ポイント
-
-- [ ] JSON が valid か（ブラウザで開いてパースエラーがないか）
-- [ ] `teaser` が正しい URL になっているか（相対パス → absolute_url 変換）
-- [ ] pages の `date` が null でソート順がおかしくないか
-- [ ] excerpt に HTML タグが残っていないか
+**判断**: まずは §4 の Liquid テンプレート方式で進める。V1-V6 の検証で問題が多発した場合のみ A1 (GitHub Actions) に切り替えを検討。
 
 ---
 
-## 参照
+## 6. デプロイ前プレフライトチェック
 
-- [Jekyll Directory Structure](https://jekyllrb.com/docs/structure/) — `_` 始まりディレクトリの扱い
-- [GitHub Pages Dependency versions](https://pages.github.com/versions/) — Jekyll 3.10.0
-- [Jekyll Liquid Filters](https://jekyllrb.com/docs/liquid/filters/) — jsonify, strip_html 等
-- [MDN 同一オリジンポリシー](https://developer.mozilla.org/ja/docs/Web/Security/Defenses/Same-origin_policy) — CORS 判定
+pjdhiro に配置する前に確認すべき項目（ChatGPT 回答 + Claude 吟味より）:
+
+### 必須
+
+- [ ] `_config.yml` に `url: "https://uminomae.github.io"` と `baseurl: "/pjdhiro"` があるか（`absolute_url` の前提）
+- [ ] `api/kesson-articles.json` に **front matter（`---` ブロック）が付いているか**（付いてないと Liquid が評価されない）
+- [ ] 対象 pages（thinking-kesson, thinking-bi 等）の front matter に `date:` が入っているか（ソート安定のため）
+
+### デプロイ後
+
+- [ ] `https://uminomae.github.io/pjdhiro/api/kesson-articles.json` にアクセスして JSON が返るか
+- [ ] JSON が valid か（ブラウザコンソールで `JSON.parse()` してエラーが出ないか）
+- [ ] `teaser` が正しい絶対 URL になっているか
+- [ ] pages の `date` が null でソート順がおかしくないか
+- [ ] excerpt に HTML タグが残っていないか
+- [ ] 本テンプレート自身が JSON API ファイルとして出力に含まれていないか（`sitemap: false` は設定済み）
+
+---
+
+## 参照リンク
+
+[1]: https://jekyllrb.com/docs/structure/ "Jekyll Directory Structure — `_` 始まりディレクトリの扱い"
+[2]: https://mmistakes.github.io/minimal-mistakes/docs/pages/ "Minimal Mistakes — Working with Pages"
+[3]: https://pages.github.com/versions/ "GitHub Pages Dependency versions — Jekyll 3.10.0"
+[4]: https://jekyllrb.com/docs/liquid/filters/ "Jekyll Liquid Filters（⚠️ 最新版。3.10 と差異あり得る）"
+[5]: https://developer.mozilla.org/ja/docs/Web/Security/Defenses/Same-origin_policy "MDN 同一オリジンポリシー"
+[6]: https://jekyllrb.com/docs/plugins/installation/ "Jekyll Plugins — GitHub Pages の --safe 制約"
+[7]: https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages "GitHub Pages カスタムワークフロー"
