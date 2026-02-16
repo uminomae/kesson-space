@@ -139,7 +139,8 @@ function buildGallery() {
     const readMoreContainer = document.createElement('div');
     readMoreContainer.className = 'text-center mt-4';
     readMoreContainer.id = 'read-more-container';
-    const readMoreBtn = createReadMoreButton(openOffcanvas);
+    const remainingCount = sessions.length - visibleSessions.length;
+    const readMoreBtn = createReadMoreButton(openOffcanvas, remainingCount);
     readMoreContainer.appendChild(readMoreBtn);
     galleryContainer.appendChild(readMoreContainer);
   }

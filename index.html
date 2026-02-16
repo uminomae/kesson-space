@@ -332,16 +332,11 @@
       width: 100%;
     }
     #devlog-gallery-header {
-      position: fixed;
+      position: sticky;
       top: 20px;
       left: 24px;
       z-index: 20;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    #devlog-gallery-header.is-visible {
-      opacity: 1;
     }
     #devlog-gallery-header h2 {
       font-size: 0.75rem;
@@ -658,7 +653,6 @@
   <section id="articles-section" style="position:relative; z-index:5;">
     <div class="container">
       <h2 style="font-size:0.75rem; font-weight:400; color:rgba(180,200,230,0.5); letter-spacing:0.15em; text-transform:uppercase; font-family:'SF Mono','Fira Code','Consolas',monospace; margin:0;">ARTICLES</h2>
-      <div id="articles-count" style="font-size:0.65rem; color:rgba(180,200,230,0.35); margin-top:4px; margin-bottom:1rem;"></div>
       <div id="articles-error" class="d-none" style="color:#f87171; font-size:0.8rem;"></div>
       <div id="articles-grid" class="row g-3"></div>
     </div>
@@ -691,7 +685,6 @@
     const INITIAL_DISPLAY = 3;
 
     const grid = document.getElementById('articles-grid');
-    const countEl = document.getElementById('articles-count');
     const errorEl = document.getElementById('articles-error');
     if (!grid) return;
 
@@ -762,8 +755,6 @@
 
     const initialItems = articles.slice(0, INITIAL_DISPLAY);
     initialItems.forEach(item => grid.appendChild(createCard(item, 'grid')));
-    countEl.textContent = initialItems.length + ' / ' + articles.length + ' articles';
-
     // CHANGED(2026-02-16): 1件以上あれば常にRead Moreを表示
     const remaining = articles.length - INITIAL_DISPLAY;
     if (articles.length > 0) {
