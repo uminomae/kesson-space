@@ -8,25 +8,33 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 
 ## 2. ワークツリーシステム
 
+### 命名規則
+
+`kesson-{llm}-{app}-{補足}` — 全て小文字・ハイフン区切り
+
+| 位置 | 値 | 例 |
+|---|---|---|
+| llm | `claude` / `codex` | 省略可（LLM無関係なら） |
+| app | `code` / `dt` / `app` / `cli` | code=Code, dt=DT, app=App, cli=CLI |
+| 補足 | `check` 等 | 省略可 |
+
 ### ワークツリー一覧
 
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
-| **main** | `/Users/uminomae/dev/kesson-space` | main | 本番（直接コミット非推奨） |
-| DT確認用 | `/Users/uminomae/dev/kesson-space-claudeDT` | (任意) | ブラウザ確認 |
-| Claude Code 1 | `/Users/uminomae/dev/kesson-claudeCode` | feature/* | 設計・複合タスク |
-| Claude Code 2 | `/Users/uminomae/dev/kesson-claudeCode2` | feature/* | 並列タスク |
-| DT Code | `/Users/uminomae/dev/kesson-dtCode` | feature/dt-code | Web版Claude Code実装用（⚠️CLIは触らない） |
-| Codex CLI | `/Users/uminomae/dev/kesson-codex` | feature/codex-tasks | 定型作業 |
-| Codex App | `/Users/uminomae/dev/kesson-codex-xlogo` | feature/* | クラウド版Codex App用（PoC・コードレビュー・一発実装）。モデル: codex 5.2/5.3 |
-| articles | `/Users/uminomae/dev/kesson-articles` | feature/kesson-articles | ブログ記事 |
+| **main** | `/Users/uminomae/dev/kesson-main` | main | 本番（直接コミット非推奨） |
+| Claude Code CLI | `/Users/uminomae/dev/kesson-claude-code-cli` | feature/* | 設計・複合タスク |
+| Claude DT Code | `/Users/uminomae/dev/kesson-claude-dt-code` | feature/dt-code | Web版Claude Code実装用（⚠️CLIは触らない） |
+| DT 確認用 | `/Users/uminomae/dev/kesson-claude-dt-check` | feature/dev | ブラウザ確認 |
+| Codex App | `/Users/uminomae/dev/kesson-codex-app` | feature/* | クラウド版Codex App用（PoC・コードレビュー・一発実装）。モデル: codex 5.2/5.3 |
+| Codex CLI | `/Users/uminomae/dev/kesson-codex-cli` | feature/codex-tasks | 定型作業 |
 
 ### ワークツリールール
 
 - 作業前に `pwd` で現在のワークツリーを確認する（誤ワークツリーでの変更を防止）
 - 作業開始時は `git fetch origin && git pull` で最新化する
 - 指示書にはワークツリーパスとブランチを必ず明記する
-- **`kesson-dtCode` はDT Code専用。CLIからの編集禁止**
+- **`kesson-claude-dt-code` はDT Code専用。CLIからの編集禁止**
 
 ## 3. ガードルール
 
