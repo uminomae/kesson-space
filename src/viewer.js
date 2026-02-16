@@ -125,6 +125,7 @@ function getXScreenName(url) {
 export async function openXTimeline(url, label = 'X') {
     const handle = getXScreenName(url);
     const xUrl = `https://x.com/${handle}`;
+    const twitterUrl = `https://twitter.com/${handle}`;
 
     openViewer(`
         <div class="md-loading">
@@ -136,32 +137,38 @@ export async function openXTimeline(url, label = 'X') {
         await loadXWidgets();
         const container = _viewer.querySelector('.viewer-content');
         container.classList.add('viewer-content--x');
-        container.innerHTML = `
-            <div class="x-embed-wrap" id="x-embed-target"></div>
-            <div class="x-embed-footer">
-                <div class="x-embed-handle">@${handle}</div>
-                <a href="${xUrl}" target="_blank" rel="noopener">${label} をXで開く</a>
-            </div>
+        container.innerHTML = '';
+
+        const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
+        const wrap = document.createElement('div');
+        wrap.className = 'x-embed-wrap';
+
+        const timeline = document.createElement('a');
+        timeline.className = 'twitter-timeline';
+        timeline.href = twitterUrl;
+        timeline.textContent = `Posts by ${handle}`;
+        timeline.setAttribute('data-theme', 'dark');
+        timeline.setAttribute('data-dnt', 'true');
+        timeline.setAttribute('data-chrome', 'noheader nofooter transparent');
+        timeline.setAttribute('data-height', String(height));
+
+        wrap.appendChild(timeline);
+
+        const footer = document.createElement('div');
+        footer.className = 'x-embed-footer';
+        footer.innerHTML = `
+            <div class="x-embed-handle">@${handle}</div>
+            <a href="${xUrl}" target="_blank" rel="noopener">${label} をXで開く</a>
         `;
 
-        // DOM描画後に埋め込みを生成
-        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        const target = container.querySelector('#x-embed-target');
-        const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
+        container.appendChild(wrap);
+        container.appendChild(footer);
 
-        const timeline = await window.twttr.widgets.createTimeline(
-            { sourceType: 'profile', screenName: handle },
-            target,
-            {
-                theme: 'dark',
-                height,
-                chrome: 'noheader nofooter transparent',
-                dnt: true,
-            }
-        );
-
-        if (!timeline) {
-            throw new Error('X timeline embed failed');
+        // widgets.js による埋め込み生成
+        if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
+            window.twttr.widgets.load(container);
+        } else {
+            throw new Error('X widgets unavailable');
         }
     } catch (err) {
         console.warn('[viewer] X timeline load failed:', err);
@@ -361,6 +368,10 @@ export function injectViewerStyles() {
         .x-embed-wrap {
             flex: 1;
             display: flex;
+            align-items: stretch;
+        }
+        .x-embed-wrap .twitter-timeline {
+            width: 100%;
         }
         .x-embed-footer {
             padding: 0.5rem 1rem 0.9rem;
