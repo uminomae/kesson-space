@@ -372,10 +372,10 @@
     }
     /* devlog gallery container — ナビバーとの間隔 */
     #devlog-gallery-container > .container {
-      margin-top: 5.5rem;
+      margin-top: 1.5rem;
     }
     #articles-grid {
-      margin-top: 5.5rem;
+      margin-top: 1.5rem;
     }
     #devlog-gallery-header {
       position: fixed;
@@ -595,7 +595,7 @@
     .section-content-wrap {
       position: relative;
       z-index: 20;
-      padding: 3rem 1.5rem 0;
+      padding: 1rem 1.5rem 0;
     }
 
     /* Section heading — monospace, all-caps (ARTICLES / DEVLOG) */
