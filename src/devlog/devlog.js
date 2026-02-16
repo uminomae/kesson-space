@@ -169,12 +169,10 @@ function createCardElement(session, lang) {
   cardBody.className = 'card-body';
 
   const title = document.createElement('h6');
-  title.className = 'card-title text-light mb-1';
-  title.style.fontSize = '0.85rem';
+  title.className = 'card-title mb-1';
   title.textContent = lang === 'en' ? session.title_en : session.title_ja;
 
   const date = document.createElement('small');
-  date.className = 'text-muted';
   date.textContent = session.date_range;
 
   cardBody.appendChild(title);

@@ -393,6 +393,18 @@
       aspect-ratio: 16/9;
       object-fit: cover;
     }
+    .kesson-card .card-title {
+      color: #fff;
+      font-size: 0.8rem;
+    }
+    .kesson-card .card-body small {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.7rem;
+    }
+    .kesson-card .card-text {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.7rem;
+    }
 
     /* 無限スクロールローディング */
     #offcanvas-loading {
@@ -726,7 +738,7 @@
         : '';
 
       const excerptHtml = item.excerpt
-        ? `<p class="card-text small text-muted">${item.excerpt}</p>`
+        ? `<p class="card-text">${item.excerpt}</p>`
         : '';
 
       col.innerHTML = `
@@ -739,11 +751,11 @@
               <span class="badge bg-secondary mb-2" style="font-size:0.65rem;">
                 ${item.type === 'page' ? 'page' : 'post'}
               </span>
-              <h6 class="card-title text-light mb-1" style="font-size:0.85rem;">
+              <h6 class="card-title mb-1">
                 ${item.title}
               </h6>
               ${excerptHtml}
-              <small class="text-muted">${dateStr}</small>
+              <small>${dateStr}</small>
             </div>
           </div>
         </a>`;
