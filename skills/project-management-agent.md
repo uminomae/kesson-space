@@ -29,6 +29,8 @@ filesystem MCP が接続されていても、権限エラー（EPERM）でロー
 
 **ローカルを読もうとしてはいけない。常にリモート（GitHub API）を第一手段とすること。**
 
+**例外: セッションキャッシュ**（下記参照）は filesystem MCP 経由でローカルアクセス可能。
+
 ---
 
 ## 🔴 常駐エージェント一覧
@@ -38,6 +40,37 @@ filesystem MCP が接続されていても、権限エラー（EPERM）でロー
 | 🩺 セッションヘルス | コンテキスト使用量 | 常時 |
 | 🔎 PKガード | Project Knowledge参照 | ファイル読み込み時 |
 | 📋 **プロジェクト管理** | タスク発生 | タスク認識時・指示書作成時 |
+| 💾 **キャッシュ管理** | セッション状態 | セッション開始時・作業区切り時 |
+
+---
+
+## 💾 セッションキャッシュ
+
+DTセッションのコンテキスト消費を抑えるための一時ファイル置き場。
+**filesystem MCP でローカルアクセス可能**（GitHub API 不要）。
+
+| 項目 | 値 |
+|---|---|
+| **場所** | `~/Library/Caches/kesson-agent/` |
+| **状態ファイル** | `session/state.md`（必須・常時更新） |
+| **退避ファイル** | `session/*.md`（重いデータ退避用） |
+| **運用ルール** | `CACHE-RULES.md`（キャッシュ内） |
+
+### 運用
+
+1. **セッション開始時**: `session/state.md` を読み込み（前回の引き継ぎ）
+2. **作業中**: 重い分析結果（CSS比較、diff等）は `session/` に退避してコンテキストを軽く保つ
+3. **作業区切り時**: `state.md` を更新（完了/PENDING/ブランチ状態/PR状態）
+4. **セッション終了時**: `state.md` に最終状態を記録
+
+### state.md に記録すべき項目
+
+- セッション番号・日付・特別ルール
+- 完了ステップ一覧
+- PENDING（ユーザー操作待ち）
+- 次タスク候補
+- ブランチ状態（HEAD SHA + ステータス）
+- PR状態
 
 ---
 
@@ -191,6 +224,7 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 | Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
 | Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
 | Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
+| 💾 **キャッシュ** | ~/Library/Caches/kesson-agent/ | — | DTセッション一時データ |
 
 ### 🖥️ DT確認用ワークツリー（kesson-space-claudeDT）
 
@@ -292,7 +326,7 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 - **指示書フォーマットを省略すること** ← 最重要
 - **ワークツリー指定なしで指示書を作成すること**
 - **コード実行環境を混同すること**（DT App Code ≠ Claude Code CLI ≠ OpenAI Codex）
-- **DT App Codeでローカルファイルシステムを読み書きしようとすること** ← 常にGitHub API経由
+- **DT App Codeでローカルファイルシステムを読み書きしようとすること** ← 常にGitHub API経由（キャッシュは例外）
 - **同期せずに作業を開始すること** ← コンフリクトの原因
 - **DT確認手順を省略すること** ← 動作確認できない
 - 委譲判断をスキップして直接実装に飛ぶこと
