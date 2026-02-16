@@ -16,6 +16,7 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 | DT確認用 | `/Users/uminomae/Documents/GitHub/kesson-space-claudeDT` | (任意) | ブラウザ確認 |
 | Claude Code 1 | `/Users/uminomae/Documents/GitHub/kesson-claudeCode` | feature/* | 設計・複合タスク |
 | Claude Code 2 | `/Users/uminomae/Documents/GitHub/kesson-claudeCode2` | feature/* | 並列タスク |
+| DT Code | `/Users/uminomae/Documents/GitHub/kesson-dtCode` | feature/dt-code | Web版Claude Code実装用（⚠️CLIは触らない） |
 | Codex | `/Users/uminomae/Documents/GitHub/kesson-codex` | feature/codex-tasks | 定型作業 |
 | articles | `/Users/uminomae/Documents/GitHub/kesson-articles` | feature/kesson-articles | ブログ記事 |
 
@@ -24,6 +25,7 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 - 作業前に `pwd` で現在のワークツリーを確認する（誤ワークツリーでの変更を防止）
 - 作業開始時は `git fetch origin && git pull` で最新化する
 - 指示書にはワークツリーパスとブランチを必ず明記する
+- **`kesson-dtCode` はDT Code専用。CLIからの編集禁止**
 
 ## 3. ガードルール
 
@@ -75,14 +77,17 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 - [ ] `git push origin <branch>`
 - [ ] ユーザーに完了報告
 
+**注意: CURRENT.md / TODO.md の main への反映は DTチャット（Claude.ai プロジェクト）が正本管理者として行う。CLIは自分の作業ブランチ内で更新し push するのみ。main への直接 push は行わない。**
+
 ## 6. 委譲マトリクス
 
 | タスク種別 | 委譲先 | 備考 |
 |---|---|---|
 | シェーダー/GLSL | Gemini MCP | ユーザー許可時のみ |
 | Three.jsメッシュ・マテリアル | Gemini MCP | 3D専門性 |
-| 複数ファイル + 設計判断 | Claude Code | コンテキスト理解 |
+| 複数ファイル + 設計判断 | Claude Code CLI | コンテキスト理解 |
 | 単純実装・定型作業 | OpenAI Codex | 高速・並列向き |
+| DT Code向けタスク | DT Code（Web版） | `docs/prompts/NEXT-TASK.md` 経由。DTチャットが指示書作成・push |
 | 1ファイル・即時必要 | Claude直接 | 例外 |
 
 指示書フォーマット詳細: `skills/project-management-agent.md`
