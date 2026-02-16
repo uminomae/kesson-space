@@ -9,13 +9,13 @@ devlog/articlesの両セクションで、セクション名の混乱を解消�
 ## 出力先
 
 📁 ワークツリー: kesson-claudeCode
-📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode
+📂 パス: /Users/uminomae/dev/kesson-claudeCode
 🌿 ブランチ: `claude/t040-12-bootstrap-cards`（新規作成、**feature/devから分岐**）
 
 ## 🔴 ブランチ同期（必須 — 作業開始前に実行）
 
 ```bash
-cd /Users/uminomae/Documents/GitHub/kesson-claudeCode
+cd /Users/uminomae/dev/kesson-claudeCode
 git fetch origin
 git checkout -b claude/t040-12-bootstrap-cards origin/feature/dev
 ```
@@ -262,7 +262,7 @@ refactor(T-040-12): Bootstrap標準カード化 + セクション名TRACES統一
 ## DT確認手順
 
 ```bash
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+cd /Users/uminomae/dev/kesson-space-claudeDT
 git fetch origin
 git checkout origin/claude/t040-12-bootstrap-cards
 python3 -m http.server 3002
