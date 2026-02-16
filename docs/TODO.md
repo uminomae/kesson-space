@@ -35,7 +35,6 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
-| T-040-13 | スタイルシート分離（style→外部CSS）+ HTMLタグコメント追加 | M | リファクタ | index.htmlの巨大`<style>`を外部CSSに。HTMLにセクション特定コメント追加（Claude対話効率化） |
 | T-040-14 | pjdhiro API自動生成 → kesson-space articlesフィルタ | M | 機能 | pjdhiro側Liquid template適用済み（codex/t040-14-api-autogen）。マージ確認→kesson-space側フィルタ実装 |
 | T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
 
@@ -43,12 +42,13 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
+| T-053b | index.html inline `style=""` のCSSクラス化 | M | リファクタ | T-053a完了後の残作業。articles-section, offcanvas, devlog等のinline styleをクラスに置換 |
 | T-006 | English PDF作成 | M | コンテンツ | ナビの英語版リンク先が未作成 |
 | T-007 | パフォーマンスプロファイリング | M | 品質 | フレームレート・メモリ使用量の計測 |
 | T-015 | モバイル実機テスト検証 | S | QA | 主要デバイスでの動作確認・エッジケース |
 | T-016 | Uniform管理の一元化 | M | リファクタ | main.jsの6つの`*_MAP`をconfig.js側メタデータに統合 |
 | T-017 | devパラメータレジストリ化 | M | リファクタ | dev-panel.jsのSECTIONSとmain.jsのMAP/applyDevValueを統一レジストリに。T-016とセット |
-| T-018 | CSS所在整理 | M | リファクタ | ※T-040-13と部分重複。T-040-13はindex.html style分離、T-018はviewer.js/nav-objects.js/dev-panel.jsのstyle注入分離 |
+| T-018 | CSS所在整理 | M | リファクタ | viewer.js/nav-objects.js/dev-panel.jsのstyle注入分離。T-053a/bとは別スコープ |
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 | T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中 |
@@ -73,6 +73,8 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-053a | index.html `<style>` タグを外部CSS (src/styles/main.css) に分離 + dev-panel Bootstrap再注入修正 | DTチャット |
+| T-040-13 | スタイルシート分離（style→外部CSS） | DTチャット（T-053aに統合） |
 | T-052 | docs/ 不要ファイル削除・整理 + kesson-articles WT削除 | #39 |
 | T-040-12 | Bootstrap標準カード化 + TRACES fixed復帰 + セクション並び替え | #39 |
 | T-040-11 | Articles Read More Offcanvas実装 + Read Moreボタン修正 | #35-38 |
