@@ -14,6 +14,7 @@ let _scrollHintTop;
 let _surfaceBtn;
 let _devlogHeader;
 let _devlogSection;
+let _articlesSection;
 
 // --- T-014: クリーンアップ ---
 let _cleanup = null;
@@ -33,6 +34,7 @@ export function initScrollUI() {
     _surfaceBtn = document.getElementById('surface-btn');
     _devlogHeader = document.getElementById('devlog-gallery-header');
     _devlogSection = document.getElementById('devlog-gallery-section');
+    _articlesSection = document.getElementById('articles-section');
 
     if (_devlogHeader) {
         _devlogHeader.classList.remove('is-visible');
@@ -152,6 +154,41 @@ export function updateScrollUI(scrollProg, breathVal) {
 
     // --- Devlogタイトル: セクション内でのみ表示 ---
     updateDevlogHeaderVisibility(scrollProg);
+    updateArticlesFocusability(scrollProg);
+}
+
+function updateArticlesFocusability(scrollProg) {
+    if (!_articlesSection) return;
+
+    const rect = _articlesSection.getBoundingClientRect();
+    const windowH = window.innerHeight || document.documentElement.clientHeight;
+    const isNearViewport = rect.top <= windowH * 0.9;
+    const shouldEnable = scrollProg > 0.22 || isNearViewport;
+
+    const focusables = _articlesSection.querySelectorAll('a[href], button:not([disabled]), [tabindex]');
+
+    focusables.forEach((el) => {
+        if (!(el instanceof HTMLElement)) return;
+
+        if (shouldEnable) {
+            const prev = el.dataset.kessonPrevTabindex;
+            if (prev === undefined) return;
+            if (prev === '__none__') {
+                el.removeAttribute('tabindex');
+            } else {
+                el.setAttribute('tabindex', prev);
+            }
+            delete el.dataset.kessonPrevTabindex;
+            return;
+        }
+
+        if (el.dataset.kessonPrevTabindex === undefined) {
+            el.dataset.kessonPrevTabindex = el.hasAttribute('tabindex')
+                ? (el.getAttribute('tabindex') || '__none__')
+                : '__none__';
+        }
+        el.setAttribute('tabindex', '-1');
+    });
 }
 
 function updateDevlogHeaderVisibility(scrollProg) {
