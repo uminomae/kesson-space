@@ -1,47 +1,53 @@
 # CURRENT - 進捗・引き継ぎ
 
 **最終更新**: 2026-02-16
-**セッション**: #39 T-040-12 UI修正・Articles/TRACES調整
+**セッション**: DTチャット（T-053a / T-054 / T-040-14 + P2並列4件投入）
 
 ---
 
 ## 現在の状態
 
-### セッション#35〜#39 実施内容
+### 本セッション完了
 
-1. **T-040-11: Articles Read More Offcanvas実装** ✅
-   - Devlog Offcanvasパターン踏襲でArticles Offcanvas実装
-   - ブランチ: `claude/articles-read-more-offcanvas-Ddbu0` → main マージ済み
+1. **T-053a: CSS外部化** ✅
+   - index.html `<style>` → src/styles/main.css 分離
+   - dev-panel Bootstrap再注入修正
 
-2. **T-040-12: Bootstrap標準カード化 + UI修正** ✅ (main: e0a03bb)
-   - Phase 1-4: articles/devlogカードをBootstrap標準カード化
-   - セクション見出しDEVLOG/TRACES入れ替え（Codex実装）
-   - articlesセクションをdevlogの上に移動
-   - devlog Read More件数表示追加、articles件数表示削除
-   - TRACES: sticky→fixed復帰、フェードイン表示タイミング調整（enterLine 0.35→0.15）
-   - TRACES表示ラインをconfigurable化
+2. **T-054: Xロゴ裏表反転修正** ✅
+   - nav-objects.js `root.rotation.y += Math.PI` 削除
 
-3. **T-040-14: pjdhiro API自動生成（Liquid template化）** 🔄 進行中
-   - pjdhiro repo `codex/t040-14-api-autogen` ブランチ作成済み
-   - tags/categories付きJSON自動生成Liquidテンプレート適用
-   - → pjdhiro側マージ → kesson-space articlesフィルタ実装待ち
+3. **T-040-14: Articles フォールバック + フィルタUI** ✅
+   - assets/articles/articles.json スナップショット配置
+   - Offcanvas内 All/Page/Post フィルタUI追加
 
-4. **環境・運用整備**
-   - リポ移行: ~/Documents/GitHub → ~/dev/
-   - PMエージェント: DT↔CLI通信セクション追加、SHガード追加
-   - 2月Codex優先ルール追加（Claude CLI実装凍結）
-   - CLAUDE.md パス更新
+### P2並列実装（4ブランチ、マージ待ち）
+
+| ブランチ | タスク | 状態 |
+|----------|--------|------|
+| feature/t055-keyboard-nav | T-055 Tabキーnav | ✅ 完了 (97c2e3a) |
+| feature/t016-t017-uniform-registry | T-016+T-017 uniform registry | ✅ 完了 (3513bc7) |
+| claude/refactor-inline-styles-zE5Eb | T-018 CSS所在整理 | ✅ 完了 |
+| feature/t038-t046-t047-docs-ci | T-038+T-046+T-047 docs/CI | 🚀 実装中 |
+
+**マージ順序**: D(docs/CI) → A(keyboard nav) → B(uniform) → C(CSS cleanup)
+
+### TODO整理
+
+- T-043: 削除（現状ページ遷移で十分）
+- T-006, T-015: 削除（不要）
+- T-053b: T-018に統合
+- T-049: P3へ降格
 
 ### 決定事項
 
+- P1バックログ空（全P2以下）
 - 2月中はCodex優先（Claude CLI実装凍結）
-- TRACES = fixedナビゲーションインジケータ（stickyではない）
-- Articles表示は「欠損駆動思考」タグでフィルタ
+- TRACES = fixedナビゲーションインジケータ
 
 ### 次セッションのタスク
 
-**T-040-14 残り**: pjdhiro Liquid templateマージ確認 → kesson-space articlesフィルタ実装
-**T-040-13**: スタイルシート分離（style→外部CSS）+ HTMLタグコメント追加（Claude対話時セクション特定用）
+- 4ブランチのマージ完了 → 目視確認 → TODO更新
+- 残P2タスクから次の優先度選定
 
 ## 未完了タスク
 
