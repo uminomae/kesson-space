@@ -1,9 +1,10 @@
-# Claude Code 指示書：Articles Read More 機能
+# Claude Code 指示書：Articles Read More → Offcanvas 方式
 
 **タスクID**: T-040-11  
 **親タスク**: T-040  
 **作成日**: 2026-02-16  
 **ブランチ**: `feature/kesson-articles`  
+**作成者**: DT（Claude.ai）
 
 ---
 
@@ -39,8 +40,8 @@ git ls-remote origin | grep feature/kesson
 
 ## 🎯 ミッション
 
-Articles セクション（index.html 内）に Read More ボタンを追加。  
-クリックで残りの記事カードを展開表示する。
+Articles セクション（index.html 内）の Read More を **Offcanvas 方式** で実装する。  
+devlog の Offcanvas パターンを踏襲し、ボタンクリックで右からスライドインする記事一覧を表示する。
 
 ### 現状
 
@@ -48,8 +49,7 @@ Articles セクション（index.html 内）に Read More ボタンを追加。
 [Articles]
  3 / 5 articles
  [card] [card] [card]     ← 最新3件のみ表示
-                           ← 残り2件は見えない
-[devlog ギャラリー]
+                           ← 残りは見えない
 ```
 
 ### 完成形
@@ -57,17 +57,21 @@ Articles セクション（index.html 内）に Read More ボタンを追加。
 ```
 [Articles]
  3 / 5 articles
- [card] [card] [card]     ← 最新3件
- [ ▾ Read More ]          ← ボタン（残り件数を表示）
+ [card] [card] [card]     ← 最新3件（変更なし）
+ [ ▸ Read More (2) ]      ← ボタン
 
-↓ クリック後
+↓ クリック
 
-[Articles]
- 5 / 5 articles
- [card] [card] [card]     ← 最新3件
- [card] [card]            ← 残り2件が展開
- [ ▴ Show Less ]          ← 折りたたみボタンに変化
-[devlog ギャラリー]
+┌─────────────────────┐
+│  ARTICLES        ✕  │  ← Offcanvas（右からスライドイン）
+│  5 articles         │
+│─────────────────────│
+│  [card]             │  ← 全記事を縦一列で表示
+│  [card]             │
+│  [card]             │
+│  [card]             │
+│  [card]             │
+└─────────────────────┘
 ```
 
 ---
@@ -76,12 +80,54 @@ Articles セクション（index.html 内）に Read More ボタンを追加。
 
 ### 変更対象
 
-`index.html` の Articles Section loader（末尾の `<script type="module">` ブロック）のみ。  
-CSS は **`.btn-read-more` が既に定義済み**なのでそのまま使用する。
+`index.html` のみ。
 
-### JavaScript の変更内容
+### 1. HTML: Articles 用 Offcanvas を追加
 
-現在の `loadArticles()` 関数を以下のように修正:
+既存の devlog Offcanvas (`#devlogOffcanvas`) の **直後** に配置する。
+
+```html
+<!-- Articles Offcanvas（右からスライドイン） -->
+<div class="offcanvas offcanvas-end"
+     tabindex="-1"
+     id="articlesOffcanvas"
+     data-bs-backdrop="true"
+     style="width: 85%; background: rgba(10, 14, 26, 0.98);">
+  <div class="offcanvas-header border-bottom border-secondary">
+    <div>
+      <h5 class="text-light mb-0" style="letter-spacing: 0.15em;">ARTICLES</h5>
+      <small class="text-muted" id="offcanvas-articles-count"></small>
+    </div>
+    <button type="button" class="btn-close btn-close-white"
+            data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body p-3">
+    <div id="offcanvas-articles-grid" class="row g-3"></div>
+  </div>
+</div>
+```
+
+### 2. CSS: Offcanvas 内カードスタイル
+
+既存の `#offcanvas-gallery .card` と同じパターン。以下を `<style>` に追加：
+
+```css
+/* Articles Offcanvas内カードスタイル */
+#offcanvas-articles-grid .card {
+  background: rgba(20, 25, 40, 0.9);
+  border: 1px solid rgba(100, 150, 255, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#offcanvas-articles-grid .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 150, 255, 0.15);
+}
+```
+
+### 3. JavaScript: loadArticles() を修正
+
+現在の `loadArticles()` 関数（末尾の `<script type="module">` ブロック）を以下に置き換え：
 
 ```javascript
 // === Articles Section ===
@@ -121,9 +167,12 @@ CSS は **`.btn-read-more` が既に定義済み**なのでそのまま使用す
   articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // --- カード生成関数 ---
-  function createCard(item) {
+  function createCard(item, layout) {
     const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4 mb-3';
+    // Offcanvas内: 1列表示、メイングリッド: 3列
+    col.className = layout === 'offcanvas'
+      ? 'col-12 mb-3'
+      : 'col-12 col-md-6 col-lg-4 mb-3';
 
     const dateStr = item.date
       ? new Date(item.date).toLocaleDateString('ja-JP', {
@@ -165,63 +214,46 @@ CSS は **`.btn-read-more` が既に定義済み**なのでそのまま使用す
     return col;
   }
 
-  // --- 初期表示（最新 N 件） ---
+  // --- メイングリッド: 最新 N 件 ---
   const initialItems = articles.slice(0, INITIAL_DISPLAY);
-  const remainingItems = articles.slice(INITIAL_DISPLAY);
-
-  initialItems.forEach(item => grid.appendChild(createCard(item)));
+  initialItems.forEach(item => grid.appendChild(createCard(item, 'grid')));
   countEl.textContent = initialItems.length + ' / ' + articles.length + ' articles';
 
   // --- Read More ボタン（残りがある場合のみ） ---
-  if (remainingItems.length > 0) {
+  const remaining = articles.length - INITIAL_DISPLAY;
+  if (remaining > 0) {
     const btnContainer = document.createElement('div');
     btnContainer.className = 'text-center mt-3';
 
     const btn = document.createElement('button');
     btn.className = 'btn-read-more';
-    btn.setAttribute('aria-expanded', 'false');
-    btn.textContent = '▾ Read More (' + remainingItems.length + ')';
+    btn.setAttribute('data-bs-toggle', 'offcanvas');
+    btn.setAttribute('data-bs-target', '#articlesOffcanvas');
+    btn.setAttribute('aria-controls', 'articlesOffcanvas');
+    btn.textContent = '▸ Read More (' + remaining + ')';
 
-    // 残りカード用コンテナ（初期非表示）
-    const moreGrid = document.createElement('div');
-    moreGrid.className = 'row g-3 mt-1';
-    moreGrid.style.display = 'none';
-
-    remainingItems.forEach(item => moreGrid.appendChild(createCard(item)));
-
-    let expanded = false;
-
-    btn.addEventListener('click', () => {
-      expanded = !expanded;
-
-      if (expanded) {
-        moreGrid.style.display = '';
-        btn.textContent = '▴ Show Less';
-        btn.setAttribute('aria-expanded', 'true');
-        countEl.textContent = articles.length + ' / ' + articles.length + ' articles';
-      } else {
-        moreGrid.style.display = 'none';
-        btn.textContent = '▾ Read More (' + remainingItems.length + ')';
-        btn.setAttribute('aria-expanded', 'false');
-        countEl.textContent = initialItems.length + ' / ' + articles.length + ' articles';
-      }
-    });
-
-    // DOM に追加: grid → moreGrid → ボタン
-    grid.parentNode.insertBefore(moreGrid, grid.nextSibling);
-    grid.parentNode.insertBefore(btnContainer, moreGrid.nextSibling);
     btnContainer.appendChild(btn);
+    grid.parentNode.insertBefore(btnContainer, grid.nextSibling);
+  }
+
+  // --- Offcanvas: 全記事を表示 ---
+  const offcanvasGrid = document.getElementById('offcanvas-articles-grid');
+  const offcanvasCount = document.getElementById('offcanvas-articles-count');
+  if (offcanvasGrid) {
+    articles.forEach(item => offcanvasGrid.appendChild(createCard(item, 'offcanvas')));
+  }
+  if (offcanvasCount) {
+    offcanvasCount.textContent = articles.length + ' articles';
   }
 })();
 ```
 
-### HTML の変更
+### 変更のポイント
 
-なし。既存の `#articles-grid` と `#articles-count` をそのまま使用。
-
-### CSS の変更
-
-なし。`.btn-read-more` は既に定義済み（`:hover`, `:focus` 含む）。
+1. `createCard()` に `layout` 引数を追加（`'grid'` or `'offcanvas'`）
+2. Read More ボタンは `data-bs-toggle="offcanvas"` で Bootstrap 標準連携
+3. Offcanvas 内には **全記事** を縦1列で表示（`col-12`）
+4. 既存の `.btn-read-more` CSS をそのまま活用
 
 ---
 
@@ -230,23 +262,27 @@ CSS は **`.btn-read-more` が既に定義済み**なのでそのまま使用す
 ### 必須
 
 - [ ] 初期表示は最新3件のまま（既存動作を壊さない）
-- [ ] 「▾ Read More (2)」ボタンがカードの下に表示
-- [ ] ボタンクリックで残り2件が展開表示
-- [ ] 展開後ボタンが「▴ Show Less」に変化
-- [ ] 再クリックで折りたたみ
-- [ ] カウント表示が切り替わる（3/5 ↔ 5/5）
-- [ ] 展開されたカードも正しくリンク遷移する（新タブ）
+- [ ] 「▸ Read More (N)」ボタンがカードの下に表示される
+- [ ] ボタンクリックで Offcanvas が右からスライドインする
+- [ ] Offcanvas 内に全記事が縦一列で表示される
+- [ ] Offcanvas ヘッダーに記事総数が表示される
+- [ ] ✕ボタンまたは背景クリックで Offcanvas が閉じる
+- [ ] カードクリックで記事ページが新タブで開く
+- [ ] 記事が3件以下の場合: Read More ボタンが表示されない
+- [ ] 記事が0件の場合: エラー表示（既存動作維持）
 - [ ] コンソールエラーなし
 
 ### アクセシビリティ
 
-- [ ] `aria-expanded` が true/false で切り替わる
+- [ ] `aria-controls` が正しく設定されている
 - [ ] キーボード（Tab → Enter）でボタン操作可能
+- [ ] Offcanvas 内のフォーカストラップが動作する（Bootstrap 標準）
+- [ ] Esc キーで Offcanvas が閉じる
 
-### エッジケース
+### 視覚
 
-- [ ] 記事が3件以下の場合: Read More ボタンが表示されない
-- [ ] 記事が0件の場合: エラー表示（既存動作）
+- [ ] Offcanvas の背景色が既存の devlog Offcanvas と統一されている
+- [ ] カードのホバーエフェクトが Offcanvas 内でも動作する
 
 ---
 
@@ -254,7 +290,7 @@ CSS は **`.btn-read-more` が既に定義済み**なのでそのまま使用す
 
 ```bash
 git add -A
-git commit -m "feat(T-040-11): Add Read More toggle for articles section"
+git commit -m "feat(T-040-11): Add Read More with Offcanvas for articles section"
 git push origin feature/kesson-articles
 ```
 
