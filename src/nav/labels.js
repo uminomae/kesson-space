@@ -79,9 +79,19 @@ export function updateLabelPosition({ el, worldPos, yOffset, camera, scrollFade 
     worldPos.y += yOffset;
     worldPos.project(camera);
 
+    const canKeyboardFocus = scrollFade > 0.1;
     if (worldPos.z > 1.0) {
-        el.classList.add('nav-label--hidden');
-        syncLabelFocusState(el, false);
+        const isFocused = document.activeElement === el;
+        if (isFocused) {
+            el.classList.remove('nav-label--hidden');
+            if (!el.style.left) el.style.left = '50%';
+            if (!el.style.top) el.style.top = '84%';
+            el.style.filter = 'blur(0px)';
+            el.style.opacity = '1';
+        } else {
+            el.classList.add('nav-label--hidden');
+        }
+        syncLabelFocusState(el, canKeyboardFocus);
         return;
     }
 
@@ -105,7 +115,7 @@ export function updateLabelPosition({ el, worldPos, yOffset, camera, scrollFade 
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
     el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none';
-    syncLabelFocusState(el, scrollFade > 0.1);
+    syncLabelFocusState(el, canKeyboardFocus);
 }
 
 export function syncLabelFocusState(el, isFocusable) {
