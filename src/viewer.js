@@ -96,6 +96,12 @@ export function openViewer(content) {
     _isOpen = true;
 }
 
+function getXScreenName(url) {
+    if (!url) return 'pjdhiro';
+    const match = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)/i);
+    return match ? match[1] : 'pjdhiro';
+}
+
 function buildTwitframe(url) {
     const safe = encodeURIComponent(url);
     return `
@@ -108,13 +114,18 @@ function buildTwitframe(url) {
 }
 
 export function openXTimeline(url, label = 'X') {
+    const handle = getXScreenName(url);
+    const twitterUrl = `https://twitter.com/${handle}`;
+    const xUrl = `https://x.com/${handle}`;
+
     openViewer(`
         <div class="viewer-content--x">
             <div class="x-embed-wrap">
-                ${buildTwitframe(url)}
+                ${buildTwitframe(twitterUrl)}
             </div>
             <div class="x-embed-footer">
-                <a href="${url}" target="_blank" rel="noopener">${label} をXで開く</a>
+                <div class="x-embed-handle">@${handle}</div>
+                <a href="${xUrl}" target="_blank" rel="noopener">${label} をXで開く</a>
             </div>
         </div>
     `);
@@ -318,6 +329,12 @@ export function injectViewerStyles() {
             padding: 0.5rem 1rem 0.9rem;
             text-align: center;
             font-size: 0.78rem;
+        }
+        .x-embed-handle {
+            color: rgba(200, 215, 245, 0.7);
+            font-size: 0.72rem;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.04em;
         }
         .x-embed-footer a {
             color: rgba(130, 170, 255, 0.85);
