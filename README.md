@@ -33,18 +33,43 @@ DTの役割は以下に限定する:
 | 🩺 セッションヘルス | コンテキスト監視 | [docs/AGENT-RULES.md §8](docs/AGENT-RULES.md) |
 | 🔎 PKガード | ドキュメント参照最適化 | [docs/AGENT-RULES.md §7](docs/AGENT-RULES.md) |
 
-### Step 1: 状態確認
+### Step 1: キャッシュ読み込み（状態復元）
+
+→ `~/Library/Caches/kesson-agent/session/state.md` を読む（存在すれば）
+→ 前セッションからの引き継ぎ事項を確認
+
+### Step 2: 状態確認
 
 → [docs/CURRENT.md](docs/CURRENT.md) を読む
 
-### Step 2: ワークツリー確認
+### Step 3: ワークツリー確認
 
 DTが見ているディレクトリは？
 → 📋エージェントが出力先を決定
 
-### Step 3: タスク着手
+### Step 4: タスク着手
 
 ユーザーがタスクを指示 → 📋エージェントが委譲判断
+
+---
+
+## セッションキャッシュ
+
+DTセッション中のコンテキスト消費を抑制するための一時ファイル置き場。
+
+| 項目 | 内容 |
+|---|---|
+| **場所** | `~/Library/Caches/kesson-agent/` |
+| **運用ルール** | [`CACHE-RULES.md`](file:///Users/uminomae/Library/Caches/kesson-agent/CACHE-RULES.md)（キャッシュ内） |
+| **セッション状態** | `session/state.md`（必須・常時更新） |
+| **分析退避** | `session/*.md`（重いデータはここに退避） |
+
+### 使い方
+
+- **state.md**: セッション完了/PENDING/ブランチ状態/PR状態を常時記録
+- **退避**: CSS分析・diff結果・Gemini出力など重いデータは別ファイルに書き出し
+- **復元**: 次セッション開始時にstate.mdを読んで引き継ぎ
+- **クリア**: 不要になったファイルは適宜削除
 
 ---
 
@@ -59,7 +84,7 @@ cd /Users/uminomae/Documents/GitHub/kesson-space
 git fetch origin
 git checkout feature/dev
 git pull origin feature/dev
-git merge origin/claude/articles-read-more-offcanvas-Ddbu0
+git merge origin/<実装ブランチ名>
 # コンフリクトがあれば手動解決
 git push origin feature/dev
 ```
