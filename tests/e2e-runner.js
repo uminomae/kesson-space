@@ -616,19 +616,31 @@
             focusable.length >= 5, // h1リンク + 3ナビ + トグル + 浮上
             `${focusable.length} 要素`);
 
-        // 10-2: ナビボタンにフォーカス可能
-        const navButton = qs('button.nav-label:not(.nav-label--gem)');
-        if (navButton) {
-            navButton.focus();
-            assert('10-2', 'ナビボタンにフォーカス可能',
-                document.activeElement === navButton,
-                document.activeElement === navButton ? 'フォーカス成功' : 'フォーカス失敗');
+        const navButtons = Array.from(qsa('button.nav-label'));
+        assert('10-2', 'ナビボタン（orb/gem/xlogo）が存在',
+            navButtons.length >= 5,
+            `${navButtons.length} 個`);
 
-            // 10-3: Enterキーでビューアー起動
+        // 10-3: 全nav-labelがフォーカス可能
+        if (navButtons.length > 0) {
+            let focusedCount = 0;
+            navButtons.forEach((btn) => {
+                btn.focus();
+                if (document.activeElement === btn) {
+                    focusedCount += 1;
+                }
+            });
+            assert('10-3', '全ナビボタンにフォーカス可能',
+                focusedCount === navButtons.length,
+                `${focusedCount}/${navButtons.length}`);
+
+            // 10-4: Enterキーでビューアー起動（PDF orb）
+            const navButton = qs('button.nav-label[data-nav-type="orb"]') || navButtons[0];
             let viewer = qs('#kesson-viewer');
             const wasVisible = viewer?.classList.contains('visible');
 
-            if (!wasVisible) {
+            if (!wasVisible && navButton) {
+                navButton.focus();
                 const enterEvent = new KeyboardEvent('keydown', {
                     key: 'Enter',
                     bubbles: true,
@@ -639,7 +651,7 @@
 
                 viewer = qs('#kesson-viewer');
                 const nowVisible = viewer?.classList.contains('visible');
-                assert('10-3', 'Enterキーでビューアー起動',
+                assert('10-4', 'Enterキーでビューアー起動',
                     nowVisible,
                     nowVisible ? 'ビューアー表示' : '未表示');
 
@@ -650,19 +662,31 @@
                     await wait(600);
                 }
             } else {
-                warn('10-3', 'ビューアーが既に表示中のためスキップ', '');
+                warn('10-4', 'ビューアーが既に表示中または対象ボタン未検出のためスキップ', '');
             }
         } else {
             warn('10-2', 'ナビボタンが見つからない', '');
         }
 
-        // 10-4: Gemボタンにaria-label
+        // 10-5: Gemボタンにaria-label
         const gemBtn = qs('button.nav-label--gem');
         if (gemBtn) {
             const ariaLabel = gemBtn.getAttribute('aria-label');
-            assert('10-4', 'GemボタンにもAria設定あり',
+            assert('10-5', 'GemボタンにもAria設定あり',
                 !!ariaLabel,
                 ariaLabel || 'なし');
+        }
+
+        // 10-6: スクロール非表示時にtabIndex=-1
+        if (navButtons.length > 0) {
+            window.scrollTo(0, document.body.scrollHeight);
+            await wait(700);
+            const hiddenCount = navButtons.filter((btn) => btn.tabIndex === -1).length;
+            assert('10-6', '非表示時にナビボタンがTab順から除外される',
+                hiddenCount === navButtons.length,
+                `${hiddenCount}/${navButtons.length} が tabIndex=-1`);
+            window.scrollTo(0, 0);
+            await wait(200);
         }
     }
 

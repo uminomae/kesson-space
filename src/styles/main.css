@@ -22,6 +22,58 @@
     }
 
     /* ============================
+       nav-label (3Dナビラベル)
+       ============================ */
+    .nav-label {
+      position: fixed;
+      z-index: 15;
+      pointer-events: auto;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      font-size: clamp(0.45rem, 2.8vmin, 1.1rem);
+      letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
+      text-shadow: 0 0 12px rgba(100, 150, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+      transform: translate(-50%, -100%);
+      white-space: nowrap;
+      transition: filter 0.15s ease, opacity 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+      will-change: filter;
+    }
+    .nav-label:hover {
+      filter: blur(0px) !important;
+      color: rgba(255, 255, 255, 1.0);
+    }
+    .nav-label:focus-visible,
+    .nav-label.is-nav-focused {
+      outline: 2px solid rgba(100, 150, 255, 0.86);
+      outline-offset: 4px;
+      filter: blur(0px) !important;
+      text-shadow: 0 0 18px rgba(110, 160, 255, 0.72), 0 0 6px rgba(0, 0, 0, 0.85);
+    }
+    .nav-label--gem {
+      color: rgba(180, 195, 240, 0.85);
+      text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+    }
+    .nav-label--gem:hover,
+    .nav-label--gem:focus-visible,
+    .nav-label--gem.is-nav-focused {
+      color: rgba(200, 215, 255, 1.0);
+    }
+    .nav-label--x {
+      color: rgba(220, 225, 240, 0.85);
+      text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+      font-weight: bold;
+    }
+    .nav-label--x:hover,
+    .nav-label--x:focus-visible,
+    .nav-label--x.is-nav-focused {
+      color: rgba(240, 245, 255, 1.0);
+    }
+
+    /* ============================
        左上: クレジット
        ============================ */
     #credit {
