@@ -3,9 +3,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
-import { toggles, gemParams } from './config.js';
+import { toggles, gemParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { gemOrbVertexShader, gemOrbFragmentShader } from './shaders/gem-orb.glsl.js';
+import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
 import { getRawMouse } from './mouse-state.js';
 import { injectStyles } from './dom-utils.js';
 
@@ -23,6 +24,12 @@ let _labelElements = [];
 let _gemLabelElement = null;
 let _gemGroup = null;
 let _gemMesh = null;
+let _xLogoLabelElement = null;
+let _xLogoGroup = null;
+let _xLogoMesh = null;
+let _xLogoRoot = null;
+let _xLogoMaterials = [];
+let _xLogoHover = false;
 let _scene = null;
 let _navMeshes = null;
 
@@ -117,6 +124,123 @@ function createGemGroup() {
     return group;
 }
 
+// ========================================
+// Xロゴ Group 生成（hitSprite + Planeメッシュ）
+// ========================================
+function getXLogoMaterialConfig() {
+    const emissiveIntensity = Math.max(0.0, xLogoParams.glowStrength) * 0.7 + 0.25;
+    const metalness = Math.min(0.9, Math.max(0.1, xLogoParams.rimPower / 10.0));
+    const roughness = Math.min(0.8, Math.max(0.08, 1.0 - xLogoParams.innerGlow * 0.18));
+    return { emissiveIntensity, metalness, roughness };
+}
+
+function applyXLogoMaterial(mesh) {
+    const { emissiveIntensity, metalness, roughness } = getXLogoMaterialConfig();
+    const baseColor = new THREE.Color(0.85, 0.9, 1.0);
+    const emissiveColor = new THREE.Color(0.6, 0.7, 1.0);
+
+    let mat = mesh.material;
+    if (!mat || !mat.isMeshStandardMaterial) {
+        mat = new THREE.MeshStandardMaterial({
+            color: baseColor,
+            emissive: emissiveColor,
+            emissiveIntensity,
+            metalness,
+            roughness,
+        });
+    } else {
+        mat.color.copy(baseColor);
+        mat.emissive.copy(emissiveColor);
+        mat.emissiveIntensity = emissiveIntensity;
+        mat.metalness = metalness;
+        mat.roughness = roughness;
+    }
+
+    mesh.material = mat;
+    _xLogoMaterials.push(mat);
+}
+
+function createXLogoGroup() {
+    const group = new THREE.Group();
+    group.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
+
+    // --- 不可視ヒットスプライト（レイキャスト用） ---
+    const hitMat = new THREE.SpriteMaterial({
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false,
+    });
+    const hitSprite = new THREE.Sprite(hitMat);
+    const hitSize = xLogoParams.meshScale * 3.0;
+    hitSprite.scale.set(hitSize, hitSize, 1);
+    group.add(hitSprite);
+
+    _xLogoMaterials = [];
+    _xLogoRoot = null;
+
+    const loader = new GLTFLoader();
+    loader.load(
+        'assets/blender/x-logo.glb',
+        (gltf) => {
+            const root = gltf.scene;
+            root.traverse((child) => {
+                if (!child.isMesh) return;
+                if (child.geometry) {
+                    child.geometry.computeVertexNormals();
+                }
+                applyXLogoMaterial(child);
+                child.renderOrder = 10;
+            });
+
+            // モデル正面が裏向きだったため反転
+            root.rotation.y += Math.PI;
+
+            root.scale.setScalar(xLogoParams.meshScale);
+            group.add(root);
+
+            _xLogoRoot = root;
+            _xLogoMesh = root.children.find((c) => c.isMesh) || null;
+            group.userData.xLogoRoot = root;
+            group.userData.xLogoMesh = _xLogoMesh;
+            group.userData.xLogoBaseRotY = root.rotation.y || 0;
+        },
+        undefined,
+        (err) => {
+            console.warn('[XLogo] GLTF load failed, using fallback plane:', err.message);
+            const geom = new THREE.PlaneGeometry(2, 2);
+            const mat = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime:         { value: 0.0 },
+                    uGlowStrength: { value: xLogoParams.glowStrength },
+                    uRimPower:     { value: xLogoParams.rimPower },
+                    uInnerGlow:    { value: xLogoParams.innerGlow },
+                    uHover:        { value: 0.0 },
+                },
+                vertexShader: xLogoVertexShader,
+                fragmentShader: xLogoFragmentShader,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
+
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.scale.setScalar(xLogoParams.meshScale);
+            mesh.renderOrder = 10;
+            group.add(mesh);
+
+            _xLogoMesh = mesh;
+            group.userData.xLogoRoot = null;
+            group.userData.xLogoMesh = mesh;
+            group.userData.xLogoBaseRotY = 0;
+        }
+    );
+
+    group.userData = { hitSprite, xLogoMesh: null, xLogoRoot: null, xLogoBaseRotY: 0 };
+
+    return group;
+}
+
 // --- devPanelからのパラメータ更新 ---
 export function rebuildGem() {
     if (!_gemMesh) return;
@@ -185,6 +309,14 @@ function injectNavLabelStyles() {
         }
         .nav-label--gem:hover {
             color: rgba(200, 215, 255, 1.0);
+        }
+        .nav-label--x {
+            color: rgba(220, 225, 240, 0.85);
+            text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+        .nav-label--x:hover {
+            color: rgba(240, 245, 255, 1.0);
         }
     `);
 }
@@ -311,6 +443,34 @@ export function createNavObjects(scene) {
     return navMeshes;
 }
 
+export function createXLogoObjects(scene) {
+    const lang = detectLang();
+    const strings = t(lang);
+    const xData = strings.xLogo;
+
+    const xGroup = createXLogoGroup();
+
+    xGroup.userData.hitSprite.userData = {
+        type: 'nav',
+        url: xData.url,
+        label: xData.label,
+        isXLogo: true,
+        external: true,
+    };
+
+    Object.assign(xGroup.userData, {
+        baseY: xLogoParams.posY,
+        isXLogo: true,
+    });
+
+    scene.add(xGroup);
+    _xLogoGroup = xGroup;
+
+    _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true);
+
+    return xGroup;
+}
+
 export function updateNavObjects(navMeshes, time, camera) {
     navMeshes.forEach((obj) => {
         const data = obj.userData;
@@ -335,10 +495,56 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
+export function updateXLogo(time) {
+    if (!_xLogoGroup) return;
+
+    const submerged = getScrollProgress() > 0.3;
+    _xLogoGroup.visible = toggles.navOrbs && !submerged;
+    if (!_xLogoGroup.visible) return;
+
+    const data = _xLogoGroup.userData;
+    _xLogoGroup.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
+
+    const rotTarget = data.xLogoRoot || data.xLogoMesh;
+    if (rotTarget) {
+        const baseRotY = data.xLogoBaseRotY || 0;
+        rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
+    }
+
+    const pulse = 1.0 + Math.sin(time * 0.6) * 0.06;
+    const hoverBoost = _xLogoHover ? 1.25 : 1.0;
+    const config = getXLogoMaterialConfig();
+
+    if (_xLogoMaterials.length > 0) {
+        _xLogoMaterials.forEach((mat) => {
+            if (!mat) return;
+            mat.emissiveIntensity = config.emissiveIntensity * pulse * hoverBoost;
+            mat.metalness = config.metalness;
+            mat.roughness = config.roughness;
+        });
+    }
+
+    if (data.xLogoMesh && data.xLogoMesh.material && data.xLogoMesh.material.uniforms) {
+        const u = data.xLogoMesh.material.uniforms;
+        if (u.uTime) u.uTime.value = time;
+        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * pulse * hoverBoost;
+        if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
+        if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+    }
+}
+
 // --- Gemホバー制御 ---
 export function setGemHover(isHovered) {
     if (_gemMesh && _gemMesh.material.uniforms.uHover) {
         _gemMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
+    }
+}
+
+// --- Xロゴホバー制御 ---
+export function setXLogoHover(isHovered) {
+    _xLogoHover = isHovered;
+    if (_xLogoMesh && _xLogoMesh.material && _xLogoMesh.material.uniforms && _xLogoMesh.material.uniforms.uHover) {
+        _xLogoMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
     }
 }
 
@@ -386,7 +592,7 @@ export function updateNavLabels(navMeshes, camera) {
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
 
     navMeshes.forEach((group, i) => {
-        if (group.userData.isGem) return;
+        if (group.userData.isGem || group.userData.isXLogo) return;
 
         const el = _labelElements[i];
         if (!el) return;
@@ -413,6 +619,22 @@ export function updateNavLabels(navMeshes, camera) {
     }
 }
 
+export function updateXLogoLabel(camera) {
+    const visible = toggles.navOrbs;
+    const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
+
+    if (_xLogoLabelElement && _xLogoGroup) {
+        if (!visible || scrollFade <= 0) {
+            _xLogoLabelElement.style.opacity = '0';
+            _xLogoLabelElement.style.pointerEvents = 'none';
+            return;
+        }
+
+        _xLogoGroup.getWorldPosition(_labelWorldPos);
+        updateSingleLabel(_xLogoLabelElement, _labelWorldPos, xLogoParams.labelYOffset, camera, scrollFade);
+    }
+}
+
 // --- スクリーン座標 + 射影半径の計算 ---
 const _orbCenter = new THREE.Vector3();
 const _orbEdge = new THREE.Vector3();
@@ -423,7 +645,7 @@ const _edgeNDC = new THREE.Vector3();
 export function getOrbScreenData(navMeshes, camera) {
     const data = [];
     navMeshes.forEach(group => {
-        if (group.userData.isGem) return;
+        if (group.userData.isGem || group.userData.isXLogo) return;
 
         if (group.userData.core) {
             group.userData.core.getWorldPosition(_orbCenter);
@@ -449,4 +671,45 @@ export function getOrbScreenData(navMeshes, camera) {
         data.push({ x: cx, y: cy, strength, radius: screenRadius });
     });
     return data;
+}
+
+// --- devPanelからのパラメータ更新 ---
+export function rebuildXLogo() {
+    if (_xLogoRoot) {
+        _xLogoRoot.scale.setScalar(xLogoParams.meshScale);
+    }
+    if (_xLogoMesh) {
+        _xLogoMesh.scale.setScalar(xLogoParams.meshScale);
+        const u = _xLogoMesh.material?.uniforms;
+        if (u && u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength;
+        if (u && u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
+        if (u && u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+    }
+    if (_xLogoMaterials.length > 0) {
+        const config = getXLogoMaterialConfig();
+        _xLogoMaterials.forEach((mat) => {
+            if (!mat) return;
+            mat.emissiveIntensity = config.emissiveIntensity;
+            mat.metalness = config.metalness;
+            mat.roughness = config.roughness;
+        });
+    }
+    if (_xLogoGroup) {
+        const hit = _xLogoGroup.userData.hitSprite;
+        if (hit) {
+            const s = xLogoParams.meshScale * 3.0;
+            hit.scale.set(s, s, 1);
+        }
+    }
+}
+
+// --- devPanelからの位置更新 ---
+export function updateXLogoPosition() {
+    if (!_xLogoGroup) return;
+    _xLogoGroup.userData.baseY = xLogoParams.posY;
+    _xLogoGroup.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
+}
+
+export function getXLogoGroup() {
+    return _xLogoGroup;
 }

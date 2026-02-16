@@ -83,7 +83,9 @@ function createViewer() {
 
 export function openViewer(content) {
     if (!_viewer) _viewer = createViewer();
-    _viewer.querySelector('.viewer-content').innerHTML = content;
+    const contentEl = _viewer.querySelector('.viewer-content');
+    contentEl.className = 'viewer-content';
+    contentEl.innerHTML = content;
 
     requestAnimationFrame(() => {
         _viewer.classList.add('visible');
@@ -94,12 +96,99 @@ export function openViewer(content) {
     _isOpen = true;
 }
 
+let _xWidgetsPromise = null;
+
+function loadXWidgets() {
+    if (window.twttr && window.twttr.widgets) {
+        return Promise.resolve(window.twttr);
+    }
+    if (_xWidgetsPromise) return _xWidgetsPromise;
+
+    _xWidgetsPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.onload = () => resolve(window.twttr);
+        script.onerror = () => reject(new Error('X widgets load failed'));
+        document.head.appendChild(script);
+    });
+
+    return _xWidgetsPromise;
+}
+
+function getXScreenName(url) {
+    if (!url) return 'pjdhiro';
+    const match = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)/i);
+    return match ? match[1] : 'pjdhiro';
+}
+
+export async function openXTimeline(url, label = 'X') {
+    const handle = getXScreenName(url);
+    const xUrl = `https://x.com/${handle}`;
+    const twitterUrl = `https://twitter.com/${handle}`;
+
+    openViewer(`
+        <div class="md-loading">
+            <div class="md-loading-dot"></div>
+        </div>
+    `);
+
+    try {
+        await loadXWidgets();
+        const container = _viewer.querySelector('.viewer-content');
+        container.classList.add('viewer-content--x');
+        container.innerHTML = '';
+
+        const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
+        const wrap = document.createElement('div');
+        wrap.className = 'x-embed-wrap';
+
+        const timeline = document.createElement('a');
+        timeline.className = 'twitter-timeline';
+        timeline.href = twitterUrl;
+        timeline.textContent = `Posts by ${handle}`;
+        timeline.setAttribute('data-theme', 'dark');
+        timeline.setAttribute('data-dnt', 'true');
+        timeline.setAttribute('data-chrome', 'noheader nofooter transparent');
+        timeline.setAttribute('data-height', String(height));
+
+        wrap.appendChild(timeline);
+
+        const footer = document.createElement('div');
+        footer.className = 'x-embed-footer';
+        footer.innerHTML = `
+            <div class="x-embed-handle">@${handle}</div>
+            <a href="${xUrl}" target="_blank" rel="noopener">${label} をXで開く</a>
+        `;
+
+        container.appendChild(wrap);
+        container.appendChild(footer);
+
+        // widgets.js による埋め込み生成
+        if (window.twttr && window.twttr.widgets && window.twttr.widgets.load) {
+            window.twttr.widgets.load(container);
+        } else {
+            throw new Error('X widgets unavailable');
+        }
+    } catch (err) {
+        console.warn('[viewer] X timeline load failed:', err);
+        openViewer(`
+            <div class="md-article">
+                <p>Xのタイムライン埋め込みは制限により表示できません。</p>
+                <p><a href="${xUrl}" target="_blank" rel="noopener">@${handle} をXで開く</a></p>
+            </div>
+        `);
+    }
+}
+
 export function closeViewer() {
     if (_viewer) {
         _viewer.classList.remove('open');
         setTimeout(() => {
             _viewer.classList.remove('visible');
-            _viewer.querySelector('.viewer-content').innerHTML = '';
+            const contentEl = _viewer.querySelector('.viewer-content');
+            contentEl.className = 'viewer-content';
+            contentEl.innerHTML = '';
             _isOpen = false;
         }, 500);
     }
@@ -270,6 +359,35 @@ export function injectViewerStyles() {
             height: 100%;
             border: none;
             border-radius: 3px;
+        }
+        .viewer-content--x {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .x-embed-wrap {
+            flex: 1;
+            display: flex;
+            align-items: stretch;
+        }
+        .x-embed-wrap .twitter-timeline {
+            width: 100%;
+        }
+        .x-embed-footer {
+            padding: 0.5rem 1rem 0.9rem;
+            text-align: center;
+            font-size: 0.78rem;
+        }
+        .x-embed-handle {
+            color: rgba(200, 215, 245, 0.7);
+            font-size: 0.72rem;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.04em;
+        }
+        .x-embed-footer a {
+            color: rgba(130, 170, 255, 0.85);
+            text-decoration: underline;
+            text-underline-offset: 2px;
         }
 
         /* scrollbar */

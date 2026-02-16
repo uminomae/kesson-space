@@ -22,6 +22,10 @@ const STRINGS = {
             label: 'Gem',
             url: 'https://gemini.google.com/gem/1KtKkuMSS95qeHBArr3-LgH4Y0XCOs-z-?usp=sharing',
         },
+        xLogo: {
+            label: 'X',
+            url: 'https://x.com/pjdhiro',
+        },
     },
     en: {
         title: 'Kesson-Driven Thinking',
@@ -41,6 +45,10 @@ const STRINGS = {
         gem: {
             label: 'Gem',
             url: 'https://gemini.google.com/gem/1KtKkuMSS95qeHBArr3-LgH4Y0XCOs-z-?usp=sharing',
+        },
+        xLogo: {
+            label: 'X',
+            url: 'https://x.com/pjdhiro',
         },
     },
 };

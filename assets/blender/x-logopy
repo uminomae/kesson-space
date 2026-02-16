@@ -1,0 +1,228 @@
+import bpy
+import bmesh
+import math
+import os
+
+# ==========================================
+# ★ Xロゴ・ジェネレーター（完全版）設定エリア ★
+# ==========================================
+LOGO_SCALE    = 1.0       # 全体のサイズ
+THICKNESS     = 0.2       # 厚み（Solidifyで付与）
+BEVEL_AMT     = 0.01      # ベベル（面取り）量
+ROTATION_X    = 90.0      # X軸回転（立たせる角度）
+
+# ▼ デザイン調整 ▼
+HOLLOW_SCALE  = 1.6       # 中抜きの太さ倍率 (1.0=標準, 0.8=細く, 1.2=太く)
+CLOSE_ENDS    = True      # True: 端を閉じる / False: 端を開ける（公式準拠）
+
+# ▼ 出力設定 ▼
+EXPORT_GLB    = True      # True: デスクトップ等に.glbを出力
+# ==========================================
+
+# --- X社公式SVG定義 (viewBox="0 0 1200 1227") ---
+SVG_WIDTH  = 1200.0
+SVG_HEIGHT = 1226.37
+
+# 1. 外輪郭（シルエット）
+SVG_OUTER_VERTICES = [
+    (714.163,  519.284),   # 右側 くびれ
+    (1160.89,    0.0),     # 右上 右
+    (1055.03,    0.0),     # 右上 左
+    (667.137,  450.887),   # 上側 くびれ
+    (357.328,    0.0),     # 左上 右
+    (0.0,        0.0),     # 左上 左
+    (468.492,  681.821),   # 左側 くびれ
+    (0.0,     1226.37),    # 左下 左
+    (105.866, 1226.37),    # 左下 右
+    (515.491,  750.218),   # 下側 くびれ
+    (842.672, 1226.37),    # 右下 左
+    (1200.0,  1226.37),    # 右下 右
+]
+
+def get_cutter_vertices(scale):
+    """中抜き用の頂点座標を倍率に合わせて計算して返す"""
+    # 基準となる値（オリジナルのSVG座標から算出）
+    # 上端 (Y=0)
+    top_center_x = (171.605 + 285.366) / 2
+    top_width    = 285.366 - 171.605
+    
+    # 下端 (Y=1226.37)
+    bottom_center_x = (914.634 + 1028.39) / 2
+    bottom_width    = 1028.39 - 914.634
+    
+    # 倍率を適用した新しい幅の半分
+    w_top_half    = (top_width * scale) / 2
+    w_bottom_half = (bottom_width * scale) / 2
+    
+    return [
+        (top_center_x - w_top_half,       0.0),      # 上端 左
+        (top_center_x + w_top_half,       0.0),      # 上端 右
+        (bottom_center_x + w_bottom_half, 1226.37),  # 下端 右
+        (bottom_center_x - w_bottom_half, 1226.37),  # 下端 左
+    ]
+
+def svg_to_blender(sx, sy):
+    """SVG座標 → Blender XY平面座標（中心化・Y反転・正規化）"""
+    scale = 2.0 / SVG_HEIGHT * LOGO_SCALE
+    cx, cy = SVG_WIDTH / 2.0, SVG_HEIGHT / 2.0
+    x = (sx - cx) * scale
+    y = (cy - sy) * scale   # SVGはY下向き → BlenderはY上向き
+    return (x, y, 0.0)
+
+def cleanup():
+    """シーン内の全オブジェクト・孤立データを削除"""
+    if bpy.context.active_object and bpy.context.active_object.mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete(use_global=False)
+    
+    # 未使用データの完全削除
+    for block in [bpy.data.meshes, bpy.data.materials, bpy.data.textures, bpy.data.images]:
+        for item in block:
+            if item.users == 0:
+                block.remove(item)
+
+def create_mesh_from_verts(name, vertices, thickness):
+    """頂点リストからメッシュを作成し厚みをつける共通関数"""
+    mesh = bpy.data.meshes.new(name + "_Mesh")
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    
+    bm = bmesh.new()
+    verts = []
+    for sx, sy in vertices:
+        co = svg_to_blender(sx, sy)
+        verts.append(bm.verts.new(co))
+    
+    bm.verts.ensure_lookup_table()
+    # 面を張る（頂点順序が正しい前提）
+    bm.faces.new(verts)
+    bm.to_mesh(mesh)
+    bm.free()
+
+    # 原点をジオメトリ中心へ
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
+
+    # 厚み付け (Solidify)
+    solidify = obj.modifiers.new(name="Solidify", type='SOLIDIFY')
+    solidify.thickness = thickness
+    solidify.offset = 0
+    bpy.ops.object.modifier_apply(modifier=solidify.name)
+    
+    return obj
+
+def apply_boolean_cut(main_obj, cutter_obj):
+    """カッターでメインオブジェクトをくり抜く"""
+    bpy.context.view_layer.objects.active = main_obj
+    bool_mod = main_obj.modifiers.new(name="Hollow_Cut", type='BOOLEAN')
+    bool_mod.object = cutter_obj
+    bool_mod.operation = 'DIFFERENCE'
+    bool_mod.solver = 'EXACT'
+    
+    # 適用
+    bpy.ops.object.modifier_apply(modifier=bool_mod.name)
+    
+    # カッターは削除
+    bpy.data.objects.remove(cutter_obj, do_unlink=True)
+
+def setup_material(obj):
+    """黒メタリックマテリアル"""
+    mat_name = "X_Black_Metallic"
+    mat = bpy.data.materials.get(mat_name)
+    if not mat:
+        mat = bpy.data.materials.new(mat_name)
+        mat.use_nodes = True
+        bsdf = mat.node_tree.nodes.get("Principled BSDF")
+        if bsdf:
+            bsdf.inputs["Base Color"].default_value = (0.01, 0.01, 0.01, 1.0) # 漆黒
+            bsdf.inputs["Metallic"].default_value = 0.9
+            bsdf.inputs["Roughness"].default_value = 0.25
+            
+            # Blenderバージョン互換性対応
+            if "Specular IOR Level" in bsdf.inputs: # Blender 4.0+
+                bsdf.inputs["Specular IOR Level"].default_value = 0.5
+            elif "Specular" in bsdf.inputs:
+                bsdf.inputs["Specular"].default_value = 0.5
+    
+    if obj.data.materials:
+        obj.data.materials[0] = mat
+    else:
+        obj.data.materials.append(mat)
+
+def add_modifiers(obj):
+    """ベベルとスムースシェード"""
+    bevel = obj.modifiers.new(name="Bevel", type='BEVEL')
+    bevel.width = BEVEL_AMT
+    bevel.segments = 3
+    bevel.limit_method = 'ANGLE'
+    bevel.angle_limit = math.radians(30)
+    
+    if bpy.app.version >= (4, 1, 0):
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(30))
+    else:
+        bpy.ops.object.shade_smooth()
+        obj.data.use_auto_smooth = True
+        obj.data.auto_smooth_angle = math.radians(30)
+
+def export_glb(obj):
+    """GLB書き出し"""
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    # テキストエディタ実行時のパス対策（デスクトップへ）
+    if script_dir == ".": 
+        script_dir = os.path.expanduser("~/Desktop") 
+
+    export_path = os.path.join(script_dir, "x-logo.glb")
+    
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    
+    bpy.ops.export_scene.gltf(
+        filepath=export_path,
+        use_selection=True,
+        export_format='GLB'
+    )
+    print(f"Exported GLB: {export_path}")
+
+# ============================
+# メイン実行フロー
+# ============================
+if __name__ == "__main__":
+    cleanup()
+
+    # 1. 本体作成（外枠）
+    logo_obj = create_mesh_from_verts("X_Logo", SVG_OUTER_VERTICES, THICKNESS)
+
+    # 2. カッター作成（中抜き）
+    # パラメータ HOLLOW_SCALE を反映した座標を取得
+    cutter_verts = get_cutter_vertices(HOLLOW_SCALE)
+    cutter_obj = create_mesh_from_verts("Cutter", cutter_verts, THICKNESS * 1.5)
+
+    # 3. 端を閉じる/開ける処理
+    if CLOSE_ENDS:
+        # 閉じる場合：カッターを縦方向に少し縮めて、外枠の中に収める
+        # Y軸（Blender上では縦）のスケールを縮小
+        cutter_obj.scale.y = 0.94 
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    else:
+        # 開ける場合（公式）：カッターを縦方向に伸ばして、確実に貫通させる
+        cutter_obj.scale.y = 1.05
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
+    # 4. ブーリアンで穴を開ける
+    apply_boolean_cut(logo_obj, cutter_obj)
+
+    # 5. 仕上げ（マテリアル・ベベル）
+    setup_material(logo_obj)
+    add_modifiers(logo_obj)
+
+    # 6. 立たせる（回転）
+    logo_obj.rotation_euler = (math.radians(ROTATION_X), 0, 0)
+
+    # 7. 書き出し
+    if EXPORT_GLB:
+        export_glb(logo_obj)
+
+    print(f"X Logo Created. Ends Closed: {CLOSE_ENDS}, Hollow Scale: {HOLLOW_SCALE}")
