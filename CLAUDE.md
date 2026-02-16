@@ -3,7 +3,7 @@
 ## 1. 役割定義
 
 kesson-space プロジェクトの Claude Code CLI エージェントとして動作する。
-DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザーと直接対話してタスクを遂行する。
+DTから指示書を受けて実装するか、ユーザーと直接対話してタスクを遂行する。
 セッション中は以下のガードルール（§3）を常時適用する。
 
 ## 2. ワークツリーシステム
@@ -18,7 +18,6 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 | Claude Code 2 | `/Users/uminomae/dev/kesson-claudeCode2` | feature/* | 並列タスク |
 | DT Code | `/Users/uminomae/dev/kesson-dtCode` | feature/dt-code | Web版Claude Code実装用（⚠️CLIは触らない） |
 | Codex | `/Users/uminomae/dev/kesson-codex` | feature/codex-tasks | 定型作業 |
-| articles | `/Users/uminomae/dev/kesson-articles` | feature/kesson-articles | ブログ記事 |
 
 ### ワークツリールール
 
