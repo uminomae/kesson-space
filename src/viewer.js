@@ -96,39 +96,82 @@ export function openViewer(content) {
     _isOpen = true;
 }
 
+let _xWidgetsPromise = null;
+
+function loadXWidgets() {
+    if (window.twttr && window.twttr.widgets) {
+        return Promise.resolve(window.twttr);
+    }
+    if (_xWidgetsPromise) return _xWidgetsPromise;
+
+    _xWidgetsPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.onload = () => resolve(window.twttr);
+        script.onerror = () => reject(new Error('X widgets load failed'));
+        document.head.appendChild(script);
+    });
+
+    return _xWidgetsPromise;
+}
+
 function getXScreenName(url) {
     if (!url) return 'pjdhiro';
     const match = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)/i);
     return match ? match[1] : 'pjdhiro';
 }
 
-function buildTwitframe(url) {
-    const safe = encodeURIComponent(url);
-    return `
-        <iframe
-            src="https://twitframe.com/show?url=${safe}"
-            title="X timeline"
-            referrerpolicy="no-referrer"
-        ></iframe>
-    `;
-}
-
-export function openXTimeline(url, label = 'X') {
+export async function openXTimeline(url, label = 'X') {
     const handle = getXScreenName(url);
-    const twitterUrl = `https://twitter.com/${handle}`;
     const xUrl = `https://x.com/${handle}`;
 
     openViewer(`
-        <div class="viewer-content--x">
-            <div class="x-embed-wrap">
-                ${buildTwitframe(twitterUrl)}
-            </div>
+        <div class="md-loading">
+            <div class="md-loading-dot"></div>
+        </div>
+    `);
+
+    try {
+        await loadXWidgets();
+        const container = _viewer.querySelector('.viewer-content');
+        container.classList.add('viewer-content--x');
+        container.innerHTML = `
+            <div class="x-embed-wrap" id="x-embed-target"></div>
             <div class="x-embed-footer">
                 <div class="x-embed-handle">@${handle}</div>
                 <a href="${xUrl}" target="_blank" rel="noopener">${label} をXで開く</a>
             </div>
-        </div>
-    `);
+        `;
+
+        // DOM描画後に埋め込みを生成
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const target = container.querySelector('#x-embed-target');
+        const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
+
+        const timeline = await window.twttr.widgets.createTimeline(
+            { sourceType: 'profile', screenName: handle },
+            target,
+            {
+                theme: 'dark',
+                height,
+                chrome: 'noheader nofooter transparent',
+                dnt: true,
+            }
+        );
+
+        if (!timeline) {
+            throw new Error('X timeline embed failed');
+        }
+    } catch (err) {
+        console.warn('[viewer] X timeline load failed:', err);
+        openViewer(`
+            <div class="md-article">
+                <p>Xのタイムライン埋め込みは制限により表示できません。</p>
+                <p><a href="${xUrl}" target="_blank" rel="noopener">@${handle} をXで開く</a></p>
+            </div>
+        `);
+    }
 }
 
 export function closeViewer() {
@@ -318,12 +361,6 @@ export function injectViewerStyles() {
         .x-embed-wrap {
             flex: 1;
             display: flex;
-        }
-        .viewer-content--x iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 3px;
         }
         .x-embed-footer {
             padding: 0.5rem 1rem 0.9rem;
