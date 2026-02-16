@@ -5,22 +5,50 @@
 import { toggles, breathConfig, sceneParams, fluidParams, liquidParams, distortionParams, gemParams, xLogoParams, vortexParams } from './config.js';
 import { injectStyles } from './dom-utils.js';
 
-// --- CHANGED: Bootstrap動的ローダー ---
-function loadBootstrap() {
-    return new Promise((resolve, reject) => {
-        // CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
-        document.head.appendChild(link);
+const BOOTSTRAP_CSS_URL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
+const BOOTSTRAP_JS_URL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
 
-        // JS（CSS注入後にロード開始、onloadで完了を通知）
+function findBootstrapCssLink() {
+    return Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+        .find((el) => el.href.includes('/bootstrap@5.3.3/dist/css/bootstrap.min.css'));
+}
+
+function findBootstrapJsScript() {
+    return Array.from(document.querySelectorAll('script[src]'))
+        .find((el) => el.src.includes('/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'));
+}
+
+function ensureBootstrapCss() {
+    if (findBootstrapCssLink()) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = BOOTSTRAP_CSS_URL;
+    document.head.appendChild(link);
+}
+
+function ensureBootstrapJs() {
+    if (window.bootstrap) return Promise.resolve();
+    const existingScript = findBootstrapJsScript();
+    if (existingScript) {
+        return new Promise((resolve, reject) => {
+            existingScript.addEventListener('load', resolve, { once: true });
+            existingScript.addEventListener('error', () => reject(new Error('Bootstrap JS load failed')), { once: true });
+        });
+    }
+
+    return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
+        script.src = BOOTSTRAP_JS_URL;
         script.onload = resolve;
         script.onerror = () => reject(new Error('Bootstrap JS load failed'));
         document.body.appendChild(script);
     });
+}
+
+// --- CHANGED: Bootstrap動的ローダー（既存読込があれば再注入しない） ---
+function loadBootstrap() {
+    ensureBootstrapCss();
+    return ensureBootstrapJs();
 }
 
 const TOGGLES = [
