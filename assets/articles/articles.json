@@ -1,0 +1,58 @@
+
+
+
+[{
+    "type": "post",
+    "title": "Claude 2日目 50h時点：創造と意識モデル",
+    "url": "https://uminomae.github.io/pjdhiro/20260202phase6/",
+    "date": "2026-02-02T22:00:00+09:00",
+    "excerpt": "成果物 以下、claude.aiによる２日目の作業の報告です 作業レポート: Day2 夜間セッション以降 期間: 2025-02-01 22:00 〜 2025-02-02 作成日: 2025-02-02 概要 Phase 3完成から Phase 6統合文書ドラフト完成まで。 Day2 Session2（2/1 22時〜） 主要決定 # 決定事項 理由 12 3層→4層モデルへ移行 F-O...",
+    "tags": ["欠損駆動思考","claude"],
+    "categories": ["Project","AI"],
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0202/ss.png"
+  },{
+    "type": "post",
+    "title": "9月の悲痛／12月の楽観：自己参照が強まる社会",
+    "url": "https://uminomae.github.io/pjdhiro/20260202sep-dec-log/",
+    "date": "2026-02-02T00:00:00+09:00",
+    "excerpt": "9月と12月に別種類の不安を感じた。12月はおせっかい。天岩戸の終わりか。自己位置が5cm前に出た。主権が戻った。",
+    "tags": ["ログ","欠損駆動思考","主権","誤差","AI"],
+    "categories": ["Log","Psychology"],
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0202/skill.jpg"
+  },{
+    "type": "post",
+    "title": "Claude 環境構築初日26hの作業量：意識モデルについて",
+    "url": "https://uminomae.github.io/pjdhiro/20260201phase3-4-completion/",
+    "date": "2026-02-01T22:00:00+09:00",
+    "excerpt": "Bion、Klein、Meltzer、Bowlbyの精神分析・発達心理学理論を4層モデルで統合。「素朴体験論」としての方法論を確立し、~31,000トークンのPhase 4を完成。",
+    "tags": ["欠損駆動思考","Bion","Klein","Meltzer","Bowlby"],
+    "categories": ["Project","Theory"],
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0201/ssUsage.png"
+  },{
+    "type": "post",
+    "title": "美駆動思考支援の探索：OpenAI Prismを使用してみた",
+    "url": "https://uminomae.github.io/pjdhiro/20260187bi-driven/",
+    "date": "2026-01-28T14:30:31+09:00",
+    "excerpt": "アニメ『チ。―地球の運動について―』の視聴を通じて得た着想を、「思考支援フレームワーク」へと落とし込むプロセスを整理したものです。",
+    "tags": ["ビオン","ウィニコット","クライン","ドナルドメルツァー","美"],
+    "categories": ["AI","デザイン思考"],
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-1/img.jpg"
+  },{
+    "type": "page",
+    "title": "美駆動思考（探索中） - Bi-Driven Thinking",
+    "url": "https://uminomae.github.io/pjdhiro/thinking-bi/",
+    "date": "2026-01-28T00:00:00+09:00",
+    "excerpt": "(作成中) 関連ポスト 【美駆動思考支援の探索：OpenAI Prismを使用してみた】 参考 【デザイン思考 - Wikipedia】",
+    "tags": [],
+    "categories": ["デザイン思考"],
+    "teaser": "https://uminomae.github.io/pjdhiro//assets/images/blog/2026-1/img.jpg"
+  },{
+    "type": "page",
+    "title": "欠損駆動思考 - Kesson-Driven Thinking",
+    "url": "https://uminomae.github.io/pjdhiro/thinking-kesson/",
+    "date": "2026-01-26T00:00:00+09:00",
+    "excerpt": "デザイン思考：私の場合：欠けを探す旅\"",
+    "tags": [],
+    "categories": ["Love駆動開発","デザイン思考"],
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/pages/pd/thinking/spec.jpg"
+  }]

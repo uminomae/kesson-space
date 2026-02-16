@@ -191,6 +191,11 @@
               data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body p-3">
+      <div id="articles-filter-group" class="articles-filter-group mb-3" role="group" aria-label="Filter articles by type">
+        <button type="button" class="articles-filter-btn is-active" data-type="all" aria-pressed="true">All</button>
+        <button type="button" class="articles-filter-btn" data-type="page" aria-pressed="false">Page</button>
+        <button type="button" class="articles-filter-btn" data-type="post" aria-pressed="false">Post</button>
+      </div>
       <div id="offcanvas-articles-grid" class="row g-3"></div>
     </div>
   </div>
@@ -234,6 +239,12 @@
 
     const grid = document.getElementById('articles-grid');
     const errorEl = document.getElementById('articles-error');
+    const offcanvasGrid = document.getElementById('offcanvas-articles-grid');
+    const offcanvasCount = document.getElementById('offcanvas-articles-count');
+    const filterGroup = document.getElementById('articles-filter-group');
+    const filterButtons = filterGroup
+      ? Array.from(filterGroup.querySelectorAll('.articles-filter-btn'))
+      : [];
     if (!grid) return;
 
     let articles = null;
@@ -260,9 +271,14 @@
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
     console.log('[articles] total:', articles.length, 'initial:', INITIAL_DISPLAY, 'remaining:', articles.length - INITIAL_DISPLAY);
 
+    function normalizeType(item) {
+      return item.type === 'page' ? 'page' : 'post';
+    }
+
     function createCard(item, layout) {
       const col = document.createElement('div');
       col.className = 'col-12 col-md-6 col-lg-4';
+      const normalizedType = normalizeType(item);
 
       const dateStr = item.date
         ? new Date(item.date).toLocaleDateString('ja-JP', {
@@ -287,7 +303,7 @@
             ${teaserHtml}
             <div class="card-body">
               <span class="badge bg-secondary mb-2" style="font-size:0.65rem;">
-                ${item.type === 'page' ? 'page' : 'post'}
+                ${normalizedType}
               </span>
               <h6 class="card-title mb-1">
                 ${item.title}
@@ -322,13 +338,51 @@
       grid.parentNode.insertBefore(btnContainer, grid.nextSibling);
     }
 
-    const offcanvasGrid = document.getElementById('offcanvas-articles-grid');
-    const offcanvasCount = document.getElementById('offcanvas-articles-count');
-    if (offcanvasGrid) {
-      articles.forEach(item => offcanvasGrid.appendChild(createCard(item, 'offcanvas')));
+    let activeType = 'all';
+
+    function getFilteredArticles(type) {
+      if (type === 'all') return articles;
+      return articles.filter(item => normalizeType(item) === type);
     }
-    if (offcanvasCount) {
-      offcanvasCount.textContent = articles.length + ' articles';
+
+    function updateFilterButtons() {
+      filterButtons.forEach((btn) => {
+        const isActive = btn.dataset.type === activeType;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    function updateOffcanvasCount(filteredCount) {
+      if (!offcanvasCount) return;
+      if (activeType === 'all') {
+        offcanvasCount.textContent = articles.length + ' articles';
+      } else {
+        offcanvasCount.textContent = filteredCount + ' / ' + articles.length + ' articles';
+      }
+    }
+
+    function renderOffcanvasArticles(type) {
+      if (!offcanvasGrid) return;
+      const filtered = getFilteredArticles(type);
+      offcanvasGrid.innerHTML = '';
+      filtered.forEach(item => offcanvasGrid.appendChild(createCard(item, 'offcanvas')));
+      updateOffcanvasCount(filtered.length);
+    }
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const nextType = btn.dataset.type || 'all';
+        if (nextType === activeType) return;
+        activeType = nextType;
+        updateFilterButtons();
+        renderOffcanvasArticles(activeType);
+      });
+    });
+
+    if (offcanvasGrid) {
+      updateFilterButtons();
+      renderOffcanvasArticles(activeType);
     }
   })();
   </script>

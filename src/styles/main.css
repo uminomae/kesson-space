@@ -364,6 +364,39 @@
       outline-offset: 4px;
     }
 
+    /* Articles filter buttons (offcanvas) */
+    .articles-filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .articles-filter-btn {
+      background: rgba(100, 150, 255, 0.1);
+      border: 1px solid rgba(100, 150, 255, 0.2);
+      color: rgba(180, 200, 230, 0.5);
+      font-family: 'Georgia', serif;
+      font-size: clamp(0.5rem, 2.1vmin, 0.66rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 7px 14px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    .articles-filter-btn:hover {
+      background: rgba(100, 150, 255, 0.2);
+      color: rgba(220, 230, 245, 0.7);
+    }
+    .articles-filter-btn:focus {
+      outline: 2px solid rgba(100, 150, 255, 0.8);
+      outline-offset: 3px;
+    }
+    .articles-filter-btn.is-active {
+      background: rgba(100, 150, 255, 0.25);
+      border-color: rgba(120, 170, 255, 0.6);
+      color: rgba(220, 230, 245, 0.85);
+    }
+
     /* === 共通カード === */
     .card.kesson-card {
       --bs-card-bg: rgba(20, 25, 40, 0.9);
