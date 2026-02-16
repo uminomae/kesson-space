@@ -9,7 +9,6 @@
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
-import { marked } from 'marked';
 import { createReadMoreButton } from './toggle-buttons.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
@@ -26,14 +25,6 @@ let galleryState = {
   offcanvas: null          // Bootstrap Offcanvasインスタンス
 };
 
-let currentView = 'list'; // 'list' | 'detail'
-
-// markedの設定
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-  headerIds: false,
-});
 
 function getSessionEndValue(session) {
   const end = session.end || session.start;
@@ -116,7 +107,6 @@ function buildGallery() {
 
   const galleryContainer = document.createElement('div');
   galleryContainer.className = 'container px-4';
-  galleryContainer.style.marginTop = '5.5rem';
 
   const row = document.createElement('div');
   row.className = 'row g-3';
@@ -286,15 +276,6 @@ function updateSessionCount() {
   }
 }
 
-// ============================================================
-// 詳細ビュー（Offcanvas内）— 使用しないが互換性のため残す
-// ============================================================
-
-function showDetail(session) {
-  // 新仕様: devlog.html に遷移
-  window.location.href = `./devlog.html?id=${session.id}`;
-}
-
 function showListView() {
   const listView = document.getElementById('offcanvas-list-view');
   const detailView = document.getElementById('offcanvas-detail-view');
@@ -303,8 +284,6 @@ function showListView() {
   if (detailView) detailView.classList.add('d-none');
   if (listView) listView.classList.remove('d-none');
   if (backBtn) backBtn.classList.add('d-none');
-
-  currentView = 'list';
 }
 
 function setupBackButton() {
@@ -320,17 +299,6 @@ function setupOffcanvasReset() {
     offcanvasEl.addEventListener('hidden.bs.offcanvas', () => {
       showListView();
     });
-  }
-}
-
-function openLightbox(src) {
-  const lightboxImg = document.getElementById('lightbox-image');
-  if (lightboxImg) {
-    lightboxImg.src = src;
-    const lightboxModal = bootstrap.Modal.getOrCreateInstance(
-      document.getElementById('imageLightboxModal')
-    );
-    lightboxModal.show();
   }
 }
 
