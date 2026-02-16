@@ -35,7 +35,6 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
-| T-054 | Xロゴ3Dオブジェクトの裏表反転修正 | S | バグ | 現在表裏が逆になっている |
 | T-040-14 | pjdhiro API自動生成 → kesson-space articlesフィルタ | M | 機能 | pjdhiro側Liquid template適用済み（codex/t040-14-api-autogen）。マージ確認→kesson-space側フィルタ実装 |
 | T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
 
@@ -75,6 +74,7 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
+| T-054 | Xロゴ3Dオブジェクトの裏表反転修正 | DTチャット |
 | T-053a | index.html `<style>` タグを外部CSS (src/styles/main.css) に分離 + dev-panel Bootstrap再注入修正 | DTチャット |
 | T-040-13 | スタイルシート分離（style→外部CSS） | DTチャット（T-053aに統合） |
 | T-052 | docs/ 不要ファイル削除・整理 + kesson-articles WT削除 | #39 |
