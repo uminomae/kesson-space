@@ -4,8 +4,8 @@
 
 At the start of every new conversation in this repository, do the following first:
 
-1. Read `/Users/uminomae/dev/kesson-main/README.md`
-2. Read `/Users/uminomae/dev/kesson-main/docs/README.md`
+1. Read `./README.md`
+2. Read `./docs/README.md`
 3. Use these two files as the primary reference for project context and workflow
 
 ## Priority
@@ -13,8 +13,8 @@ At the start of every new conversation in this repository, do the following firs
 If guidance conflicts, use this order:
 
 1. User's direct request
-2. `/Users/uminomae/dev/kesson-main/README.md`
-3. `/Users/uminomae/dev/kesson-main/docs/README.md`
+2. `./README.md`
+3. `./docs/README.md`
 4. Other repository docs
 
 ## Development Rules
@@ -31,10 +31,10 @@ If guidance conflicts, use this order:
 
 Use this location as the document hub for Codex App workspace operations:
 
-- `/Users/uminomae/dev/kesson-main/docs/worktrees/kesson-codex-app/README.md`
+- `./docs/codex/README.md`
 
 Naming convention reference:
 
 1. Worktree name: `kesson-{llm}-{app}-{suffix}`
 2. Branch name example: `feature/kesson-codex-app`
-3. Local path example: `/Users/uminomae/dev/kesson-codex-app`
+3. Local path example: `<dev-root>/kesson-codex-app`

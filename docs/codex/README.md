@@ -1,12 +1,12 @@
 # kesson-codex-app Document Hub
 
-Codex App ワークツリー (`/Users/uminomae/dev/kesson-codex-app`) 向けの書類置き場。
+Codex App ワークツリー向けの書類置き場。
 
 ## Naming Convention
 
 - Worktree name: `kesson-{llm}-{app}-{suffix}`
 - Branch name (example): `feature/kesson-codex-app`
-- Local path (example): `/Users/uminomae/dev/kesson-codex-app`
+- Local path (example): `<dev-root>/kesson-codex-app`
 
 ## What to Store Here
 
