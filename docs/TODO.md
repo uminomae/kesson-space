@@ -40,13 +40,10 @@
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
 | T-055 | Tabキーでリンク付き3Dオブジェクトをフォーカス可能にする | M | アクセシビリティ | nav-objectsのorb等にキーボードナビゲーション対応 |
-| T-053b | index.html inline `style=""` のCSSクラス化 | M | リファクタ | T-053a完了後の残作業。articles-section, offcanvas, devlog等のinline styleをクラスに置換 |
-| T-006 | English PDF作成 | M | コンテンツ | ナビの英語版リンク先が未作成 |
 | T-007 | パフォーマンスプロファイリング | M | 品質 | フレームレート・メモリ使用量の計測 |
-| T-015 | モバイル実機テスト検証 | S | QA | 主要デバイスでの動作確認・エッジケース |
 | T-016 | Uniform管理の一元化 | M | リファクタ | main.jsの6つの`*_MAP`をconfig.js側メタデータに統合 |
 | T-017 | devパラメータレジストリ化 | M | リファクタ | dev-panel.jsのSECTIONSとmain.jsのMAP/applyDevValueを統一レジストリに。T-016とセット |
-| T-018 | CSS所在整理 | M | リファクタ | viewer.js/nav-objects.js/dev-panel.jsのstyle注入分離。T-053a/bとは別スコープ |
+| T-018 | CSS所在整理（inline styleクラス化 + JS内style注入分離） | L | リファクタ | T-053b統合。inline `style=""`のクラス化 + viewer.js/nav-objects.js/dev-panel.jsのstyle注入分離 |
 | T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
 | T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中 |
@@ -102,6 +99,9 @@
 
 | ID | タスク | 理由 |
 |----|--------|------|
+| T-006 | English PDF作成 | 不要と判断 |
+| T-015 | モバイル実機テスト検証 | 不要と判断 |
+| T-053b | inline `style=""` のCSSクラス化 | T-018に統合 |
 | T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | 現状のページ遷移方式で十分。Offcanvas内完結は不要と判断 |
 | T-001 | LCP FAIL対応 | WebGL SPAの構造的問題でありFCP 0.09sで体感問題なし |
 | T-009 | dispose()追加 | T-014に包含 |
