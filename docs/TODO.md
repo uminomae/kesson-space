@@ -1,6 +1,6 @@
 # TODO — タスクバックログ
 
-**最終更新**: 2026-02-16 (#35)
+**最終更新**: 2026-02-16 (#39)
 **管理ルール**: 本ファイルがタスクの正本。CURRENT.mdは「今セッションの作業」に集中する。
 
 ---
@@ -35,10 +35,10 @@
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
-| T-040-11 | Articles Read More Offcanvas実装 | M | 機能 | DT App Codeに修正指示済み（Read Moreボタン非表示fix + devlog見出し追加）。ブランチ: `claude/articles-read-more-offcanvas-Ddbu0`。**受領待ち→チェック** |
-| T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | T-040フォロー。課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
-| T-046 | WORKFLOW.md にWeb版（DT Code）運用フローを追記 | S | プロセス | ANALYSIS-dt-code-first.md の結論を反映。NEXT-TASK.md 方式の運用手順 |
-| T-047 | 指示書テンプレート v2 を docs/prompts/ に配置 | S | プロセス | 前提手順・制約セクション含む。DT Code / CLI 両対応テンプレート |
+| T-040-13 | スタイルシート分離（style→外部CSS）+ HTMLタグコメント追加 | M | リファクタ | index.htmlの巨大`<style>`を外部CSSに。HTMLにセクション特定コメント追加（Claude対話効率化） |
+| T-040-14 | pjdhiro API自動生成 → kesson-space articlesフィルタ | M | 機能 | pjdhiro側Liquid template適用済み（codex/t040-14-api-autogen）。マージ確認→kesson-space側フィルタ実装 |
+| T-043 | devlog遷移UX改善（アニメーション・状態表示・戻るボタン強化） | M | UX | 課題: 遷移が唐突、戻るボタン目立たない、現在位置不明 |
+| T-052 | docs/ 不要ファイル削除・整理 | S | プロセス | 完了済みINSTRUCTIONS 3本、TASK-readmore.md、stale prompts。下記棚卸しレポート参照 |
 
 ### 🟢 P2（急がない）
 
@@ -46,25 +46,27 @@
 |----|--------|--------|----------|------|
 | T-006 | English PDF作成 | M | コンテンツ | ナビの英語版リンク先が未作成 |
 | T-007 | パフォーマンスプロファイリング | M | 品質 | フレームレート・メモリ使用量の計測 |
-| T-015 | モバイル実機テスト検証 | S | QA | T-003の残り。主要デバイスでの動作確認・エッジケース |
-| T-016 | Uniform管理の一元化 | M | リファクタ | main.jsの6つの`*_MAP`をconfig.js側メタデータに統合。Issue #5 残項目 |
-| T-017 | devパラメータレジストリ化 | M | リファクタ | dev-panel.jsのSECTIONSとmain.jsのMAP/applyDevValueを統一レジストリに。T-016とセットが効率的 |
-| T-018 | CSS所在整理 | M | リファクタ | index.htmlの巨大`<style>`(約200行)とviewer.js/nav-objects.js/dev-panel.jsのstyle注入を`assets/*.css`に分離 |
-| T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を`animation-loop.js`/`input-manager.js`に分離。現在約12KB |
+| T-015 | モバイル実機テスト検証 | S | QA | 主要デバイスでの動作確認・エッジケース |
+| T-016 | Uniform管理の一元化 | M | リファクタ | main.jsの6つの`*_MAP`をconfig.js側メタデータに統合 |
+| T-017 | devパラメータレジストリ化 | M | リファクタ | dev-panel.jsのSECTIONSとmain.jsのMAP/applyDevValueを統一レジストリに。T-016とセット |
+| T-018 | CSS所在整理 | M | リファクタ | ※T-040-13と部分重複。T-040-13はindex.html style分離、T-018はviewer.js/nav-objects.js/dev-panel.jsのstyle注入分離 |
+| T-019 | main.js責務分割 | L | リファクタ | animate()ループとinput管理を分離。現在約12KB |
 | T-021 | nav-objects.js分割 | M | リファクタ | gem/label/orbの3責務を分離。現在約15KB |
-| T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中。generate-sessions.py修正済み。マージ後に再有効化可能 |
-| T-042 | ワークツリー同期チェック機能 | M | プロセス | 委譲指示時にワークツリー同期状態を確認・促進。開始ブランチ明示、同期用gitスクリプト作成。project-management-agent.md改善 |
-| T-048 | リファクタリング一括投入指示書作成（T-016/017/019/021/022） | M | プロセス | DT Code で投入可能な指示書セットを作成。NEXT-TASK.md 方式で順次投入 |
-| T-049 | SNS投稿アイディア蓄積・半自動作成ワークフロー | L | プロセス | 対話中にDTが指定したSNS投稿ネタをJSONで蓄積し、ワークフローに基づいて下書き生成→承認→投稿用テキスト出力する仕組み |
+| T-038 | devlog.yml CI再有効化 | S | CI | 現在無効化中 |
+| T-042 | ワークツリー同期チェック機能 | M | プロセス | 委譲指示時にWT同期状態を確認・促進 |
+| T-046 | WORKFLOW.md にWeb版運用フローを追記 | S | プロセス | ANALYSIS-dt-code-first.md反映 |
+| T-047 | 指示書テンプレート v2 配置 | S | プロセス | DT Code / CLI 両対応テンプレート |
+| T-048 | リファクタリング一括投入指示書作成（T-016/017/019/021/022） | M | プロセス | NEXT-TASK.md方式で順次投入 |
+| T-049 | SNS投稿アイディア蓄積・半自動作成ワークフロー | L | プロセス | 対話中のSNSネタをJSON蓄積→下書き生成 |
 
 ### ⚪ P3（アイデア）
 
 | ID | タスク | サイズ | カテゴリ | メモ |
 |----|--------|--------|----------|------|
 | T-011 | 音響の検討 | L | 体験 | 世界観に合う音響設計 |
-| T-012 | 欠損データ構造設計 | L | 設計 | 理論側との連携。kesson-thinkingで先に決定が必要 |
-| T-022 | dev-panel.js UI/Controller分離 | M | リファクタ | HTML生成とロジック混在（約22KB）。UIテンプレートとControllerに分離 |
-| T-025 | ビルドツール導入検討 | L | 設計 | Vite等。現状の「ビルド無し」方針が強みなので今すぐ不要寄り |
+| T-012 | 欠損データ構造設計 | L | 設計 | kesson-thinkingで先に決定が必要 |
+| T-022 | dev-panel.js UI/Controller分離 | M | リファクタ | HTML生成とロジック混在（約22KB） |
+| T-025 | ビルドツール導入検討 | L | 設計 | 現状の「ビルド無し」方針が強み |
 
 ---
 
@@ -72,9 +74,11 @@
 
 | ID | タスク | 完了セッション |
 |----|--------|---------------|
-| T-045b | devlog背景設定集約（devlog-config.js新設） | #34棚卸し（コミット上はT-046だが番号衝突のため再採番） |
-| T-045 | devlog.htmlにThree.js背景追加 | #34棚卸し（PRマージ済み） |
-| T-050 | Claude CLIルール実装レビュー（CLAUDE.md拡充 + session-init + DT影響修正） | DTチャット |
+| T-040-12 | Bootstrap標準カード化 + TRACES fixed復帰 + セクション並び替え | #39 |
+| T-040-11 | Articles Read More Offcanvas実装 + Read Moreボタン修正 | #35-38 |
+| T-045b | devlog背景設定集約（devlog-config.js新設） | #34棚卸し |
+| T-045 | devlog.htmlにThree.js背景追加 | #34棚卸し |
+| T-050 | Claude CLIルール実装レビュー（CLAUDE.md拡充） | DTチャット |
 | T-044 | devlog詳細ページ分離（devlog.html?id=XXX方式） | #33 |
 | T-040 | devlog詳細画面遷移のBootstrap対応（Modal→Offcanvas内ビュー切替） | #32 |
 | T-041 | devlog session/image日付整合性確認・修正 | #31 |
@@ -91,33 +95,15 @@
 | T-028 | devlogカードメタ情報を画像下に移動 | #26 |
 | T-031 | インフォグラフィック画像化 | #26 |
 | T-032 | README.md監督構造セクション新設 | #26 |
-| T-026a | devlog詳細ページHTML雛形作成 | #24 |
-| T-026b | devlog詳細ページCSS作成 | #24 |
-| T-026c | session-001コンテンツ執筆 | #24 |
-| T-026d | オーブ→詳細ページ遷移実装 | #24 |
-| T-026e | devlog多言語対応(i18n) | #24 |
-| T-026f | 残りセッションコンテンツ | #24 |
-| T-020 | CSS注入の共通化 | #24 |
-| T-023 | Magic Numbers集約 | #24 |
-| T-024 | 呼吸値・アニメーションhelpers共通化 | #24 |
-| T-027 | devlogカード16:9アスペクト比修正 | #24 |
-| — | `?test` eval排除 → dynamic import() | #23 |
-| T-010 | マウストラッキング統合（mouse-state.js新設） | #22 |
-| T-014 | 全モジュールdispose/cleanupパターン | #22 |
-| T-003 | モバイル対応（タッチ操作・レスポンシブ・スクロールUX） | #22 確認 |
-| T-013 | PROMPT-STRUCTURE.md → skills/ 吸収 | #22 |
-| — | createGemOrbMaterial抽出 + destroyControls追加 | #21 |
-| T-008 | applyDevValue ifチェーン→ルックアップテーブル | #21 (Codex) |
-| T-002 | favicon link rel追加 | #16 |
 
 ## 削除済み
 
 | ID | タスク | 理由 |
 |----|--------|------|
 | T-001 | LCP FAIL対応 | WebGL SPAの構造的問題でありFCP 0.09sで体感問題なし |
-| T-009 | dispose()追加 | T-014に包含。重複のため統合 |
-| T-039 | devlogセッション記事が日付順になっていない＋画像更新 | サブタスク化（T-039a/b/c）のため親タスク削除 |
-| T-051 | DT Code T-040-11完了受け取り | T-040-11がまだ未実装のため時期尚早。実装完了後に再起票 |
+| T-009 | dispose()追加 | T-014に包含 |
+| T-039 | devlogセッション記事が日付順になっていない＋画像更新 | サブタスク化のため親タスク削除 |
+| T-051 | DT Code T-040-11完了受け取り | T-040-11完了済みのため不要 |
 
 ---
 
@@ -127,8 +113,5 @@
 2. **セッション開始時**: 本ファイルからタスクを選び、CURRENT.mdの「進行中」に記載
 3. **セッション終了時**: 完了したタスクを「完了済み」セクションに移動。CURRENT.mdも更新
 4. **優先度変更**: 状況に応じて随時。変更理由をコミットメッセージに記載
-5. **大規模タスク**: docs/issues/ にISS-NNNとして詳細設計書を起票（ISS-001の前例に倣う）
-6. **対話終了時（Claude）**: 対話終了前に必ず以下を実行し、コミット・プッシュする
-   - CURRENT.md: セッション番号・日付・実施内容を更新
-   - TODO.md: 完了タスクを「完了済み」に移動、新規発見タスクを追加
-   - コミットメッセージ: `docs: session #XX end — update CURRENT/TODO`
+5. **大規模タスク**: docs/issues/ にISS-NNNとして詳細設計書を起票
+6. **対話終了時（Claude）**: 対話終了前に必ずCURRENT.md/TODO.md更新→コミット・プッシュ
