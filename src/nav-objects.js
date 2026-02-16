@@ -27,6 +27,9 @@ let _gemMesh = null;
 let _xLogoLabelElement = null;
 let _xLogoGroup = null;
 let _xLogoMesh = null;
+let _xLogoRoot = null;
+let _xLogoMaterials = [];
+let _xLogoHover = false;
 let _scene = null;
 let _navMeshes = null;
 
@@ -124,6 +127,39 @@ function createGemGroup() {
 // ========================================
 // Xロゴ Group 生成（hitSprite + Planeメッシュ）
 // ========================================
+function getXLogoMaterialConfig() {
+    const emissiveIntensity = Math.max(0.0, xLogoParams.glowStrength) * 0.7 + 0.25;
+    const metalness = Math.min(0.9, Math.max(0.1, xLogoParams.rimPower / 10.0));
+    const roughness = Math.min(0.8, Math.max(0.08, 1.0 - xLogoParams.innerGlow * 0.18));
+    return { emissiveIntensity, metalness, roughness };
+}
+
+function applyXLogoMaterial(mesh) {
+    const { emissiveIntensity, metalness, roughness } = getXLogoMaterialConfig();
+    const baseColor = new THREE.Color(0.85, 0.9, 1.0);
+    const emissiveColor = new THREE.Color(0.6, 0.7, 1.0);
+
+    let mat = mesh.material;
+    if (!mat || !mat.isMeshStandardMaterial) {
+        mat = new THREE.MeshStandardMaterial({
+            color: baseColor,
+            emissive: emissiveColor,
+            emissiveIntensity,
+            metalness,
+            roughness,
+        });
+    } else {
+        mat.color.copy(baseColor);
+        mat.emissive.copy(emissiveColor);
+        mat.emissiveIntensity = emissiveIntensity;
+        mat.metalness = metalness;
+        mat.roughness = roughness;
+    }
+
+    mesh.material = mat;
+    _xLogoMaterials.push(mat);
+}
+
 function createXLogoGroup() {
     const group = new THREE.Group();
     group.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
@@ -139,31 +175,65 @@ function createXLogoGroup() {
     hitSprite.scale.set(hitSize, hitSize, 1);
     group.add(hitSprite);
 
-    // --- Xロゴメッシュ（Plane + Shader） ---
-    const geom = new THREE.PlaneGeometry(2, 2);
-    const mat = new THREE.ShaderMaterial({
-        uniforms: {
-            uTime:         { value: 0.0 },
-            uGlowStrength: { value: xLogoParams.glowStrength },
-            uRimPower:     { value: xLogoParams.rimPower },
-            uInnerGlow:    { value: xLogoParams.innerGlow },
-            uHover:        { value: 0.0 },
+    _xLogoMaterials = [];
+    _xLogoRoot = null;
+
+    const loader = new GLTFLoader();
+    loader.load(
+        'assets/blender/x-logo.glb',
+        (gltf) => {
+            const root = gltf.scene;
+            root.traverse((child) => {
+                if (!child.isMesh) return;
+                if (child.geometry) {
+                    child.geometry.computeVertexNormals();
+                }
+                applyXLogoMaterial(child);
+                child.renderOrder = 10;
+            });
+
+            root.scale.setScalar(xLogoParams.meshScale);
+            group.add(root);
+
+            _xLogoRoot = root;
+            _xLogoMesh = root.children.find((c) => c.isMesh) || null;
+            group.userData.xLogoRoot = root;
+            group.userData.xLogoMesh = _xLogoMesh;
+            group.userData.xLogoBaseRotY = root.rotation.y || 0;
         },
-        vertexShader: xLogoVertexShader,
-        fragmentShader: xLogoFragmentShader,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-    });
+        undefined,
+        (err) => {
+            console.warn('[XLogo] GLTF load failed, using fallback plane:', err.message);
+            const geom = new THREE.PlaneGeometry(2, 2);
+            const mat = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime:         { value: 0.0 },
+                    uGlowStrength: { value: xLogoParams.glowStrength },
+                    uRimPower:     { value: xLogoParams.rimPower },
+                    uInnerGlow:    { value: xLogoParams.innerGlow },
+                    uHover:        { value: 0.0 },
+                },
+                vertexShader: xLogoVertexShader,
+                fragmentShader: xLogoFragmentShader,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
 
-    const mesh = new THREE.Mesh(geom, mat);
-    mesh.scale.setScalar(xLogoParams.meshScale);
-    mesh.renderOrder = 10;
-    group.add(mesh);
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.scale.setScalar(xLogoParams.meshScale);
+            mesh.renderOrder = 10;
+            group.add(mesh);
 
-    group.userData = { hitSprite, xLogoMesh: mesh };
-    _xLogoMesh = mesh;
+            _xLogoMesh = mesh;
+            group.userData.xLogoRoot = null;
+            group.userData.xLogoMesh = mesh;
+            group.userData.xLogoBaseRotY = 0;
+        }
+    );
+
+    group.userData = { hitSprite, xLogoMesh: null, xLogoRoot: null, xLogoBaseRotY: 0 };
 
     return group;
 }
@@ -432,11 +502,31 @@ export function updateXLogo(time) {
     const data = _xLogoGroup.userData;
     _xLogoGroup.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
 
-    const mesh = data.xLogoMesh;
-    if (mesh) {
-        mesh.rotation.y = Math.sin(time * 0.2) * 0.15;
-        const u = mesh.material.uniforms;
+    const rotTarget = data.xLogoRoot || data.xLogoMesh;
+    if (rotTarget) {
+        const baseRotY = data.xLogoBaseRotY || 0;
+        rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
+    }
+
+    const pulse = 1.0 + Math.sin(time * 0.6) * 0.06;
+    const hoverBoost = _xLogoHover ? 1.25 : 1.0;
+    const config = getXLogoMaterialConfig();
+
+    if (_xLogoMaterials.length > 0) {
+        _xLogoMaterials.forEach((mat) => {
+            if (!mat) return;
+            mat.emissiveIntensity = config.emissiveIntensity * pulse * hoverBoost;
+            mat.metalness = config.metalness;
+            mat.roughness = config.roughness;
+        });
+    }
+
+    if (data.xLogoMesh && data.xLogoMesh.material && data.xLogoMesh.material.uniforms) {
+        const u = data.xLogoMesh.material.uniforms;
         if (u.uTime) u.uTime.value = time;
+        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * pulse * hoverBoost;
+        if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
+        if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
     }
 }
 
@@ -449,7 +539,8 @@ export function setGemHover(isHovered) {
 
 // --- Xロゴホバー制御 ---
 export function setXLogoHover(isHovered) {
-    if (_xLogoMesh && _xLogoMesh.material.uniforms.uHover) {
+    _xLogoHover = isHovered;
+    if (_xLogoMesh && _xLogoMesh.material && _xLogoMesh.material.uniforms && _xLogoMesh.material.uniforms.uHover) {
         _xLogoMesh.material.uniforms.uHover.value = isHovered ? 1.0 : 0.0;
     }
 }
@@ -581,12 +672,25 @@ export function getOrbScreenData(navMeshes, camera) {
 
 // --- devPanelからのパラメータ更新 ---
 export function rebuildXLogo() {
-    if (!_xLogoMesh) return;
-    _xLogoMesh.scale.setScalar(xLogoParams.meshScale);
-    const u = _xLogoMesh.material.uniforms;
-    if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength;
-    if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
-    if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+    if (_xLogoRoot) {
+        _xLogoRoot.scale.setScalar(xLogoParams.meshScale);
+    }
+    if (_xLogoMesh) {
+        _xLogoMesh.scale.setScalar(xLogoParams.meshScale);
+        const u = _xLogoMesh.material?.uniforms;
+        if (u && u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength;
+        if (u && u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
+        if (u && u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+    }
+    if (_xLogoMaterials.length > 0) {
+        const config = getXLogoMaterialConfig();
+        _xLogoMaterials.forEach((mat) => {
+            if (!mat) return;
+            mat.emissiveIntensity = config.emissiveIntensity;
+            mat.metalness = config.metalness;
+            mat.roughness = config.roughness;
+        });
+    }
     if (_xLogoGroup) {
         const hit = _xLogoGroup.userData.hitSprite;
         if (hit) {

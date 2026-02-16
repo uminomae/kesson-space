@@ -75,6 +75,10 @@ renderer.autoClear = false;
 const xLogoScene = new THREE.Scene();
 const xLogoCamera = camera.clone();
 const xLogoGroup = createXLogoObjects(xLogoScene);
+const xLogoAmbient = new THREE.AmbientLight(0xffffff, 0.6);
+const xLogoKey = new THREE.DirectionalLight(0xffffff, 0.9);
+xLogoKey.position.set(10, 12, 8);
+xLogoScene.add(xLogoAmbient, xLogoKey);
 
 // ============================
 // 流体システム
