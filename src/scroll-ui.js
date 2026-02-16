@@ -158,7 +158,7 @@ function updateDevlogHeaderVisibility() {
     if (!_devlogHeader || !_devlogSection) return;
     const rect = _devlogSection.getBoundingClientRect();
     const windowH = window.innerHeight || document.documentElement.clientHeight;
-    const enterLine = windowH * 0.35;
+    const enterLine = windowH * 0.15;
     const exitLine = windowH * 0.2;
     const isVisible = rect.top <= enterLine && rect.bottom >= exitLine;
     _devlogHeader.classList.toggle('is-visible', isVisible);
