@@ -116,7 +116,6 @@ function buildGallery() {
 
   const galleryContainer = document.createElement('div');
   galleryContainer.className = 'container px-4';
-  galleryContainer.style.marginTop = '5.5rem';
 
   const row = document.createElement('div');
   row.className = 'row g-3';
