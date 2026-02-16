@@ -21,7 +21,6 @@ async function getMarked() {
 
 let _viewer = null;
 let _isOpen = false;
-let _xWidgetsPromise = null;
 
 // --- Frontmatter パーサー（自前: YAMLライブラリ不要） ---
 
@@ -97,30 +96,6 @@ export function openViewer(content) {
     _isOpen = true;
 }
 
-function loadXWidgets() {
-    if (window.twttr && window.twttr.widgets) {
-        return Promise.resolve(window.twttr);
-    }
-    if (_xWidgetsPromise) return _xWidgetsPromise;
-
-    _xWidgetsPromise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://platform.twitter.com/widgets.js';
-        script.async = true;
-        script.onload = () => resolve(window.twttr);
-        script.onerror = () => reject(new Error('X widgets load failed'));
-        document.head.appendChild(script);
-    });
-
-    return _xWidgetsPromise;
-}
-
-function getXScreenName(url) {
-    if (!url) return 'pjdhiro';
-    const match = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]+)/i);
-    return match ? match[1] : 'pjdhiro';
-}
-
 function buildTwitframe(url) {
     const safe = encodeURIComponent(url);
     return `
@@ -132,51 +107,17 @@ function buildTwitframe(url) {
     `;
 }
 
-export async function openXTimeline(url, label = 'X') {
+export function openXTimeline(url, label = 'X') {
     openViewer(`
-        <div class="md-loading">
-            <div class="md-loading-dot"></div>
+        <div class="viewer-content--x">
+            <div class="x-embed-wrap">
+                ${buildTwitframe(url)}
+            </div>
+            <div class="x-embed-footer">
+                <a href="${url}" target="_blank" rel="noopener">${label} をXで開く</a>
+            </div>
         </div>
     `);
-
-    try {
-        await loadXWidgets();
-        const container = _viewer.querySelector('.viewer-content');
-        container.classList.add('viewer-content--x');
-
-        const height = Math.max(420, Math.floor(window.innerHeight * 0.75));
-        const screenName = getXScreenName(url);
-
-        container.innerHTML = `<div class="x-embed-wrap" id="x-embed-target"></div>`;
-        const target = container.querySelector('#x-embed-target');
-
-        if (window.twttr && window.twttr.widgets && window.twttr.widgets.createTimeline) {
-            const timeline = await window.twttr.widgets.createTimeline(
-                { sourceType: 'profile', screenName },
-                target,
-                {
-                    theme: 'dark',
-                    height,
-                    chrome: 'noheader nofooter transparent',
-                    dnt: true,
-                }
-            );
-            if (!timeline) {
-                throw new Error('X timeline embed failed');
-            }
-        } else {
-            throw new Error('X widgets unavailable');
-        }
-    } catch (err) {
-        console.warn('[viewer] X timeline load failed:', err);
-        openViewer(`
-            <div class="md-article">
-                <p>Xのタイムラインを読み込めませんでした。</p>
-                <p><a href="${url}" target="_blank" rel="noopener">Xで開く</a></p>
-                <div class="md-body">${buildTwitframe(url)}</div>
-            </div>
-        `);
-    }
 }
 
 export function closeViewer() {
@@ -359,20 +300,29 @@ export function injectViewerStyles() {
             border-radius: 3px;
         }
         .viewer-content--x {
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         .x-embed-wrap {
-            width: 100%;
-            height: 100%;
+            flex: 1;
             display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .viewer-content--x iframe {
             width: 100%;
             height: 100%;
             border: none;
             border-radius: 3px;
+        }
+        .x-embed-footer {
+            padding: 0.5rem 1rem 0.9rem;
+            text-align: center;
+            font-size: 0.78rem;
+        }
+        .x-embed-footer a {
+            color: rgba(130, 170, 255, 0.85);
+            text-decoration: underline;
+            text-underline-offset: 2px;
         }
 
         /* scrollbar */
