@@ -378,28 +378,20 @@
       outline-offset: 4px;
     }
 
-    /* Offcanvas内カードスタイル */
-    #offcanvas-gallery .card {
+    /* === 共通カード === */
+    .kesson-card {
       background: rgba(20, 25, 40, 0.9);
       border: 1px solid rgba(100, 150, 255, 0.1);
-      cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
     }
-    #offcanvas-gallery .card:hover {
+    .kesson-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(100, 150, 255, 0.15);
     }
-
-    /* Articles Offcanvas cards */
-    #offcanvas-articles-grid .card {
-      background: rgba(20, 25, 40, 0.9);
-      border: 1px solid rgba(100, 150, 255, 0.1);
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    #offcanvas-articles-grid .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(100, 150, 255, 0.15);
+    .kesson-card .card-img-top {
+      aspect-ratio: 16/9;
+      object-fit: cover;
     }
 
     /* 無限スクロールローディング */
@@ -598,7 +590,7 @@
         ←
       </button>
       <div>
-        <h5 class="text-light mb-0" style="letter-spacing: 0.15em;">DEVLOG</h5>
+        <h5 class="text-light mb-0" style="letter-spacing: 0.15em;">TRACES</h5>
         <small class="text-muted" id="offcanvas-session-count"></small>
       </div>
       <button type="button" class="btn-close btn-close-white"
@@ -720,8 +712,7 @@
 
     function createCard(item, layout) {
       const col = document.createElement('div');
-      // CHANGED(2026-02-16): offcanvasも3列グリッド（DEVLOG Offcanvasと統一）
-      col.className = 'col-12 col-md-6 col-lg-4 mb-3';
+      col.className = 'col-12 col-md-6 col-lg-4';
 
       const dateStr = item.date
         ? new Date(item.date).toLocaleDateString('ja-JP', {
@@ -731,31 +722,28 @@
 
       const teaserHtml = item.teaser
         ? `<img src="${item.teaser}" class="card-img-top" alt=""
-               style="max-height:140px;object-fit:cover;"
                onerror="this.style.display='none'">`
         : '';
 
       const excerptHtml = item.excerpt
-        ? `<p class="card-text small" style="color:#94a3b8;font-size:0.8rem;line-height:1.6;">
-             ${item.excerpt}
-           </p>`
+        ? `<p class="card-text small text-muted">${item.excerpt}</p>`
         : '';
 
       col.innerHTML = `
         <a href="${item.url}" target="_blank" rel="noopener"
            class="text-decoration-none"
            aria-label="${item.title} を読む">
-          <div class="card h-100">
+          <div class="card kesson-card h-100">
             ${teaserHtml}
             <div class="card-body">
-              <span class="badge mb-2" style="background:rgba(100,150,255,0.15);color:rgba(180,200,230,0.6);font-size:0.65rem;">
+              <span class="badge bg-secondary mb-2" style="font-size:0.65rem;">
                 ${item.type === 'page' ? 'page' : 'post'}
               </span>
-              <h6 class="card-title" style="color:#e2e8f0;font-size:0.85rem;line-height:1.5;">
+              <h6 class="card-title text-light mb-1" style="font-size:0.85rem;">
                 ${item.title}
               </h6>
               ${excerptHtml}
-              <small style="color:rgba(180,200,230,0.4);">${dateStr}</small>
+              <small class="text-muted">${dateStr}</small>
             </div>
           </div>
         </a>`;
