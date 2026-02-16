@@ -10,17 +10,15 @@ devlog/articlesの両セクションで、セクション名の混乱を解消�
 
 📁 ワークツリー: kesson-claudeCode
 📂 パス: /Users/uminomae/Documents/GitHub/kesson-claudeCode
-🌿 ブランチ: `claude/t040-12-bootstrap-cards`（新規作成、feature/devから分岐）
+🌿 ブランチ: `claude/t040-12-bootstrap-cards`（新規作成、**feature/devから分岐**）
 
 ## 🔴 ブランチ同期（必須 — 作業開始前に実行）
 
 ```bash
 cd /Users/uminomae/Documents/GitHub/kesson-claudeCode
 git fetch origin
-git checkout -b claude/t040-12-bootstrap-cards origin/claude/articles-read-more-offcanvas-Ddbu0
+git checkout -b claude/t040-12-bootstrap-cards origin/feature/dev
 ```
-
-**注意**: fix3の実装（`fa37c3c`）をベースにすること。
 
 ---
 
