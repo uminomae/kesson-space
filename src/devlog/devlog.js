@@ -44,7 +44,7 @@ function getSessionEndValue(session) {
 /**
  * ギャラリーを初期化
  */
-export function initDevlogGallery(containerId = 'devlog-gallery-container', counterId = 'gallery-session-count') {
+export function initDevlogGallery(containerId = 'devlog-gallery-container') {
   if (isInitialized) return;
 
   containerEl = document.getElementById(containerId);
@@ -53,7 +53,7 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container', coun
     return;
   }
 
-  loadSessions(counterId);
+  loadSessions();
   setupInfiniteScroll();
   setupBackButton();
   setupOffcanvasReset();
@@ -77,9 +77,7 @@ async function loadSessionContent(sessionId) {
   }
 }
 
-async function loadSessions(counterId) {
-  const countEl = document.getElementById(counterId);
-
+async function loadSessions() {
   try {
     const res = await fetch(SESSIONS_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -90,24 +88,13 @@ async function loadSessions(counterId) {
     await Promise.all(sessions.map(async (session) => {
       session.log_content = await loadSessionContent(session.id);
     }));
-
-    if (countEl) {
-      countEl.classList.remove('mb-5');
-      countEl.classList.add('mb-4');
-      countEl.textContent = `${sessions.length} sessions`;
-    }
   } catch (e) {
     console.warn('sessions.json not found, using demo data:', e.message);
     sessions = generateDemoData();
-
-    if (countEl) {
-      countEl.classList.remove('mb-5');
-      countEl.classList.add('mb-4');
-      countEl.textContent = `${sessions.length} sessions (demo)`;
-    }
   }
 
   galleryState.sessions = sessions;
+  console.log('[devlog] Loaded', sessions.length, 'sessions');
   buildGallery();
 }
 

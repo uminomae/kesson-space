@@ -3,6 +3,7 @@
 ## Role
 タスク委譲の判断と指示書作成を自動化する常駐エージェント。
 セッション中、タスク発生時に自動的に起動し、最適な委譲先を選択して指示書を生成する。
+**セッション全体を通じて作業状態を追跡し、ワークツリー・ブランチ・進捗の動的管理を行う。**
 
 ---
 
@@ -114,7 +115,165 @@ DTセッションのコンテキスト消費を抑えるための一時ファイ
 1. **ユーザーがタスクを指示した時**
 2. **P0/P1タスクを検出した時**
 3. **「指示書を作成」と言われた時**
-4. **🔴 委譲先エージェントから完了報告があった時** → 即座に「委譲完了後フロー」に入る
+4. **外部エージェントの成果物が到着した時**（ブランチ名の報告、push完了通知）
+5. **目視確認の結果が報告された時**（スクリーンショット、問題報告）
+
+---
+
+## 🔴 ブランチ戦略とマージフロー（絶対ルール）
+
+### ワークツリー構成
+
+| ワークツリー | パス | 固定ブランチ | 用途 |
+|---|---|---|---|
+| **本番** | /Users/uminomae/Documents/GitHub/kesson-space | **main** | 本番・公開（直接コミット非推奨） |
+| **🖥️ ステージング** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | **feature/dev** | 目視確認・統合テスト |
+| DT Code | /Users/uminomae/Documents/GitHub/kesson-dtCode | (指示書で指定) | DT App Code / Claude Code CLI 実装先 |
+| Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
+| Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
+| Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
+
+### マージフロー（必ず feature/dev 経由）
+
+```
+実装ブランチ → feature/dev → main
+
+[実装]                [ステージング]           [本番]
+kesson-dtCode等  →  feature/dev (claudeDT)  →  main (kesson-space)
+                     ↑ ここで目視確認          ↑ publish
+```
+
+**絶対ルール**:
+- 実装ブランチを **直接 main にマージしない**（必ず feature/dev 経由）
+- feature/dev は **kesson-space-claudeDT に固定**（他のWTではcheckoutしない）
+- kesson-space は **常に main**（feature/* をcheckoutしない）
+- main へのマージは feature/dev からのみ行う
+
+### 目視確認フロー
+
+```
+1. 実装エージェントがブランチをpush（リモート）
+2. PMがレビュー（GitHub API経由でコード確認）
+3. DTがclaudeDTで実装ブランチを feature/dev にマージ:
+   cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+   git fetch origin
+   git merge origin/{実装ブランチ名}
+4. サーバー起動 → ブラウザで目視確認
+5. OK → feature/dev から main にマージ（publish）
+6. NG → 修正指示書作成 → 修正後に再度 feature/dev にマージ
+```
+
+### ワークツリーの役割分離
+
+```
+実装する場所 ≠ 確認する場所 ≠ 本番
+
+実装: kesson-dtCode / kesson-claudeCode / kesson-codex
+確認: kesson-space-claudeDT（feature/dev 固定）
+本番: kesson-space（main 固定）
+```
+
+**禁止**:
+- kesson-space で feature/* をcheckoutすること
+- kesson-space-claudeDT で feature/dev 以外をcheckoutすること
+- 実装ブランチから直接 main にマージすること
+
+---
+
+## 🔴 指示書の配置と参照（必須）
+
+### 原則
+
+DT App Code はローカルファイルシステムにアクセスできない。
+すべてのエージェントは **リモートリポジトリ（GitHub）経由** でファイルを読み書きする。
+
+### 指示書の配置ルール
+
+1. PMエージェントが指示書を作成したら、**リモートの該当ブランチにpush** する
+2. push先は作業対象のブランチ（例: `claude/articles-read-more-offcanvas-Ddbu0`）
+3. 配置パス: `docs/prompts/` 配下
+
+### 委譲時の指示フォーマット
+
+実装エージェントに指示書を渡す際は、**ブランチ名とファイルパスの両方を明示** する:
+
+```
+リモート `{ブランチ名}` ブランチの `{ファイルパス}` を読んで実行してください。
+```
+
+例:
+```
+リモート `claude/articles-read-more-offcanvas-Ddbu0` ブランチの
+`docs/prompts/NEXT-TASK-fix2.md` を読んで実行してください。
+```
+
+### 禁止
+
+- ローカルパスで指示書を案内すること（エージェントはローカルにアクセスできない）
+- ブランチ名を省略すること（どのブランチにあるか分からなくなる）
+- 「pullしてください」だけで指示書の場所を伝えること
+
+---
+
+## 🔴 セッション中の動的状態管理（必須）
+
+### 概要
+
+対話中、タスクは以下のように状態が変化する:
+
+```
+指示書作成 → 委譲 → 実装中（待ち） → 成果物到着 → レビュー
+→ feature/dev にマージ → 目視確認 → 修正指示 or main にマージ
+```
+
+PMエージェントは、この状態遷移をセッション全体を通じて追跡する。
+**DTが「今どこ？」と聞いたら即座に現在地を答えられること。**
+
+### 状態追跡テーブル（セッション中に維持）
+
+PMエージェントは以下のテーブルを内部的に維持し、求められた時に提示する:
+
+```
+📊 作業状態
+| 項目 | 値 |
+|------|----|
+| タスクID | T-040-11 |
+| 状態 | 🔄 feature/dev で目視確認中 |
+| 指示書 | リモート `{ブランチ名}` : docs/prompts/NEXT-TASK.md |
+| 実装ブランチ | claude/articles-read-more-offcanvas-Ddbu0 |
+| feature/dev マージ | 済み / 未 |
+| 次アクション | 目視OK → main にマージ / 問題あり → fix指示書作成 |
+```
+
+### 状態遷移ルール
+
+PMエージェントは状態遷移ごとに以下を実行する:
+
+| 遷移 | PMの動作 |
+|------|----------|
+| 指示書作成完了 | リモートにpush、委譲先・ブランチを記録 |
+| 成果物到着（ブランチ名報告） | ブランチ確認、レビュー開始 |
+| レビュー完了 | **feature/dev へのマージ手順** を提示 |
+| feature/dev マージ完了 | 目視確認の案内（claudeDTでサーバー起動） |
+| 目視OK | **feature/dev → main マージ手順** を提示 |
+| 目視NG | 修正指示書を作成、**同じブランチにpush**、ブランチ名+ファイルパスで委譲 |
+| main マージ完了 | CURRENT.md・TODO.md更新の要否を判断 |
+
+### ワークツリーとブランチの関係追跡
+
+セッション中、各ワークツリーの状態を追跡する:
+
+```
+📍 ワークツリー・ブランチ状態
+| ワークツリー | ブランチ | 状態 |
+|---|---|---|
+| kesson-space | main | 本番 |
+| kesson-space-claudeDT | feature/dev | ステージング |
+| kesson-dtCode | (実装ブランチ名) | 実装中 |
+| kesson-claudeCode | feature/claude-code | 待機中 |
+```
+
+**重要**: DTから報告があるたびにこのテーブルを更新する。
 
 ---
 
@@ -128,9 +287,9 @@ DTセッションのコンテキスト消費を抑えるための一時ファイ
 1. 📋 プロジェクト管理エージェント起動を宣言
 2. ワークツリー確認（DTが今どこを見ているか）
 3. タスク分析テーブル出力
-4. 指示書本体を生成
+4. 指示書本体を生成 → リモートの該当ブランチにpush
 5. 並列実行可否を明記
-6. 「この指示書を○○に渡してください」で締める
+6. 「リモート `{ブランチ名}` の `{ファイルパス}` を○○に渡してください」で締める
 ```
 
 ---
@@ -145,7 +304,7 @@ DTセッションのコンテキスト消費を抑えるための一時ファイ
 ## 📋 プロジェクト管理エージェント起動
 
 ### ワークツリー確認
-DTが見ているワークツリー: **kesson-space-claudeDT** (ブラウザ確認用)
+DTが見ているワークツリー: **kesson-space-claudeDT** (feature/dev)
 
 ### タスク分析
 
@@ -158,7 +317,7 @@ DTが見ているワークツリー: **kesson-space-claudeDT** (ブラウザ確�
 ## Claude Code 指示書: T-045-fix
 
 ### タスク概要
-feature/t045-background-modular に devlog-content のアセットを統合し、devlog.htmlのThree.js背景を動作させる
+feature/t045-background-modular に devlog-content のアセットを統合する
 
 ### 出力先
 📁 ワークツリー: kesson-claudeCode
@@ -172,32 +331,29 @@ git checkout feature/t045-background-modular
 git pull origin feature/t045-background-modular
 
 ### 対象ファイル
-- assets/devlog/ (devlog-contentからコピー)
-- content/devlog/ (devlog-contentからコピー)
+- assets/devlog/
+- content/devlog/
 
 ### 変更内容
-
-#### Phase 1: devlog-contentアセットの取り込み
-git checkout origin/feature/devlog-content -- assets/devlog/
-git checkout origin/feature/devlog-content -- content/devlog/
-git add -A
-git commit -m "chore(T-045): Import devlog assets from feature/devlog-content"
-git push origin feature/t045-background-modular
+[具体的な手順・コード]
 
 ### コミット
-chore(T-045): Import devlog assets from feature/devlog-content
+chore(T-045): Import devlog assets
 
 ### 完了条件
 - [ ] assets/devlog/ が存在
-- [ ] content/devlog/ が存在
 - [ ] pushが完了
 
-### DT確認手順
+### DT確認手順（feature/dev にマージして確認）
 cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
 git fetch origin
-git checkout feature/t045-background-modular
+git merge origin/feature/t045-background-modular
 python3 -m http.server 8000
-# → http://localhost:8000/devlog.html?id=session-001
+
+### 本番公開手順（目視OK後）
+cd /Users/uminomae/Documents/GitHub/kesson-space
+git fetch origin
+git merge origin/feature/dev
 
 ---
 
@@ -206,7 +362,7 @@ python3 -m http.server 8000
 
 ---
 
-**この指示書をClaude Codeに渡してください。**
+**リモート `feature/t045-background-modular` の `docs/prompts/NEXT-TASK.md` をClaude Codeに渡してください。**
 ```
 
 ---
@@ -238,43 +394,14 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 - **変更内容**: 具体的な手順・コード
 - **コミット**: type(T-XXX): description 形式
 - **完了条件**: チェックボックス形式
-- **DT確認手順**: kesson-space-claudeDTでの確認コマンド
+- **DT確認手順**: feature/dev にマージしてclaudeDTで確認
+- **本番公開手順**: feature/dev → main マージ
 
 ### 5. 並列実行可否
 「可能」または「不可（理由）」
 
 ### 6. 締め
-**この指示書を[委譲先]に渡してください。** で終える。
-
----
-
-## ワークツリー構成
-
-| ワークツリー | パス | ブランチ | 用途 |
-|--------------|------|----------|------|
-| main | /Users/uminomae/Documents/GitHub/kesson-space | main | 本番（直接コミット非推奨） |
-| 🖥️ **DT確認用** | /Users/uminomae/Documents/GitHub/kesson-space-claudeDT | (任意) | **サーバー起動・ブラウザ確認** |
-| DT Code | /Users/uminomae/Documents/GitHub/kesson-dtCode | feature/dt-code | DT App Code実装用（⚠️CLI・Codexは触らない） |
-| Claude Code 1 | /Users/uminomae/Documents/GitHub/kesson-claudeCode | feature/claude-code | 設計・複合タスク |
-| Claude Code 2 | /Users/uminomae/Documents/GitHub/kesson-claudeCode2 | feature/claude-code-2 | 並列タスク |
-| Codex | /Users/uminomae/Documents/GitHub/kesson-codex | feature/codex-tasks | 定型作業 |
-| 💾 **キャッシュ** | ~/Library/Caches/kesson-agent/ | — | DTセッション一時データ |
-
-### 🖥️ DT確認用ワークツリー（kesson-space-claudeDT）
-
-**役割**: DTがローカルサーバーを起動してブラウザで動作確認するためのワークツリー
-
-**運用フロー**:
-```
-1. エージェント（DT App Code / Claude Code CLI / Codex）が各ワークツリーで実装
-2. 実装完了 → featureブランチをpush
-3. DTが feature/dev にマージ
-4. ユーザーがkesson-space-claudeDTで該当ブランチをcheckout
-5. python3 -m http.server 3001 でサーバー起動
-6. ブラウザで動作確認
-7. 🔴 OK が出るまで DTは次の作業に進まない
-8. OK後 → mainへマージ
-```
+**リモート `{ブランチ名}` の `{ファイルパス}` を[委譲先]に渡してください。** で終える。
 
 ---
 
@@ -366,9 +493,15 @@ DTが今見ているワークツリーを明示。不明な場合は確認を求
 - **DT App Codeでローカルファイルシステムを読み書きしようとすること** ← 常にGitHub API経由（キャッシュは例外）
 - **同期せずに作業を開始すること** ← コンフリクトの原因
 - **DT確認手順を省略すること** ← 動作確認できない
+- **実装ブランチを直接 main にマージすること** ← 必ず feature/dev 経由
+- **kesson-space で feature/* をcheckoutすること** ← main 固定
+- **kesson-space-claudeDT で feature/dev 以外をcheckoutすること** ← feature/dev 固定
+- **指示書をローカルパスで案内すること** ← リモートブランチ名+ファイルパスで指定
+- **指示書のブランチ名を省略すること** ← エージェントが見つけられない
 - 委譲判断をスキップして直接実装に飛ぶこと
 - Gemini MCPをユーザー許可なく呼び出すこと
 - 複数タスクを同一ワークツリーに割り当てて並列指示すること
+- **PMエージェントが実装を行うこと** ← 管理のみ
 
 ---
 
