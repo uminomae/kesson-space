@@ -192,9 +192,6 @@ function createXLogoGroup() {
                 child.renderOrder = 10;
             });
 
-            // モデル正面が裏向きだったため反転
-            root.rotation.y += Math.PI;
-
             root.scale.setScalar(xLogoParams.meshScale);
             group.add(root);
 
