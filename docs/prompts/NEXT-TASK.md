@@ -1,14 +1,14 @@
 # Claude Code 指示書：Articles Read More → Offcanvas 方式
 
-**タスクID**: T-040-11  
-**親タスク**: T-040  
-**作成日**: 2026-02-16  
-**ブランチ**: `feature/kesson-articles`  
+**タスクID**: T-040-11
+**親タスク**: T-040
+**作成日**: 2026-02-16
+**ブランチ**: `feature/kesson-articles`
 **作成者**: DT（Claude.ai）
 
 ---
 
-## ❗ 制約
+## 制約
 
 - **この指示書の内容のみ実行すること**
 - `claude/*` ブランチを作成しない。下記のブランチで作業すること
@@ -19,75 +19,64 @@
 ## 前提手順
 
 ```bash
-# リモートの最新を取得
 git fetch origin
-
-# 作業ブランチに切り替え
-git checkout feature/kesson-articles || git checkout -b feature/kesson-articles origin/feature/kesson-articles
-
-# 最新を反映
+git checkout feature/kesson-articles
 git pull origin feature/kesson-articles
 ```
 
-### ブランチが見つからない場合
-
-```bash
-git ls-remote origin | grep feature/kesson
-# 存在しなければ作業を中止して報告すること
-```
+ブランチが存在しない場合は作業を中止して報告すること。
 
 ---
 
-## 🎯 ミッション
+## ミッション
 
-Articles セクション（index.html 内）の Read More を **Offcanvas 方式** で実装する。  
-devlog の Offcanvas パターンを踏襲し、ボタンクリックで右からスライドインする記事一覧を表示する。
+Articles セクション（`index.html` 内）に Read More 機能を **Offcanvas 方式** で追加する。
+devlog の Offcanvas パターン（`#devlogOffcanvas`）を踏襲する。
 
-### 現状
+### 現状（feature/kesson-articles ブランチ）
 
-```
-[Articles]
- 3 / 5 articles
- [card] [card] [card]     ← 最新3件のみ表示
-                           ← 残りは見えない
-```
+- `loadArticles()` が `MAX_DISPLAY = 3` 件だけをカード表示
+- 残りの記事を閲覧する手段がない
+- `.btn-read-more` CSS は定義済み（devlog側で使用中）
 
 ### 完成形
 
 ```
 [Articles]
  3 / 5 articles
- [card] [card] [card]     ← 最新3件（変更なし）
- [ ▸ Read More (2) ]      ← ボタン
+ [card] [card] [card]
+ [ ▸ Read More (2) ]    ← 3件を超える場合のみ表示
 
-↓ クリック
+↓ ボタンクリック
 
-┌─────────────────────┐
-│  ARTICLES        ✕  │  ← Offcanvas（右からスライドイン）
-│  5 articles         │
-│─────────────────────│
-│  [card]             │  ← 全記事を縦一列で表示
-│  [card]             │
-│  [card]             │
-│  [card]             │
-│  [card]             │
-└─────────────────────┘
+┌────────────────────────┐
+│  ARTICLES           ✕  │  右からスライドイン、幅85%
+│  5 articles            │
+│────────────────────────│
+│  [card 全幅]           │  全記事を col-12 で縦一列
+│  [card 全幅]           │
+│  [card 全幅]           │
+│  [card 全幅]           │
+│  [card 全幅]           │
+└────────────────────────┘
 ```
 
 ---
 
-## 📝 実装仕様
+## 変更対象
 
-### 変更対象
+**`index.html` のみ。** 他ファイルは変更しない。
 
-`index.html` のみ。
+---
 
-### 1. HTML: Articles 用 Offcanvas を追加
+## 実装手順
 
-既存の devlog Offcanvas (`#devlogOffcanvas`) の **直後** に配置する。
+### 手順1: HTML — Articles用Offcanvasを追加
+
+既存の `#devlogOffcanvas` の **閉じタグの直後** に以下を挿入する。
 
 ```html
-<!-- Articles Offcanvas（右からスライドイン） -->
+<!-- Articles Offcanvas -->
 <div class="offcanvas offcanvas-end"
      tabindex="-1"
      id="articlesOffcanvas"
@@ -107,12 +96,12 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
 </div>
 ```
 
-### 2. CSS: Offcanvas 内カードスタイル
+### 手順2: CSS — Offcanvas内カードスタイルを追加
 
-既存の `#offcanvas-gallery .card` と同じパターン。以下を `<style>` に追加：
+`<style>` 内の既存 `#offcanvas-gallery .card` ブロックの直後に追加する。
 
 ```css
-/* Articles Offcanvas内カードスタイル */
+/* Articles Offcanvas cards */
 #offcanvas-articles-grid .card {
   background: rgba(20, 25, 40, 0.9);
   border: 1px solid rgba(100, 150, 255, 0.1);
@@ -125,9 +114,14 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
 }
 ```
 
-### 3. JavaScript: loadArticles() を修正
+### 手順3: JavaScript — loadArticles() を置き換え
 
-現在の `loadArticles()` 関数（末尾の `<script type="module">` ブロック）を以下に置き換え：
+末尾の `<script type="module">` 内にある `loadArticles()` IIFE を **まるごと** 以下に置き換える。
+
+変更点:
+- `createCard(item, layout)` 関数を抽出（`'grid'` or `'offcanvas'` で列幅を切替）
+- Read More ボタンを動的生成（Bootstrap `data-bs-toggle="offcanvas"` 連携）
+- Offcanvas に全記事を投入
 
 ```javascript
 // === Articles Section ===
@@ -141,7 +135,7 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
   const errorEl = document.getElementById('articles-error');
   if (!grid) return;
 
-  // --- fetch（既存ロジック維持） ---
+  // --- fetch ---
   let articles = null;
   try {
     const res = await fetch(API_URL);
@@ -163,13 +157,11 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
     return;
   }
 
-  // --- ソート ---
   articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // --- カード生成関数 ---
+  // --- card factory ---
   function createCard(item, layout) {
     const col = document.createElement('div');
-    // Offcanvas内: 1列表示、メイングリッド: 3列
     col.className = layout === 'offcanvas'
       ? 'col-12 mb-3'
       : 'col-12 col-md-6 col-lg-4 mb-3';
@@ -214,12 +206,12 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
     return col;
   }
 
-  // --- メイングリッド: 最新 N 件 ---
+  // --- main grid: latest N ---
   const initialItems = articles.slice(0, INITIAL_DISPLAY);
   initialItems.forEach(item => grid.appendChild(createCard(item, 'grid')));
   countEl.textContent = initialItems.length + ' / ' + articles.length + ' articles';
 
-  // --- Read More ボタン（残りがある場合のみ） ---
+  // --- Read More button ---
   const remaining = articles.length - INITIAL_DISPLAY;
   if (remaining > 0) {
     const btnContainer = document.createElement('div');
@@ -236,7 +228,7 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
     grid.parentNode.insertBefore(btnContainer, grid.nextSibling);
   }
 
-  // --- Offcanvas: 全記事を表示 ---
+  // --- Offcanvas: all articles ---
   const offcanvasGrid = document.getElementById('offcanvas-articles-grid');
   const offcanvasCount = document.getElementById('offcanvas-articles-count');
   if (offcanvasGrid) {
@@ -248,16 +240,9 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
 })();
 ```
 
-### 変更のポイント
-
-1. `createCard()` に `layout` 引数を追加（`'grid'` or `'offcanvas'`）
-2. Read More ボタンは `data-bs-toggle="offcanvas"` で Bootstrap 標準連携
-3. Offcanvas 内には **全記事** を縦1列で表示（`col-12`）
-4. 既存の `.btn-read-more` CSS をそのまま活用
-
 ---
 
-## ✅ チェックリスト
+## チェックリスト
 
 ### 必須
 
@@ -276,12 +261,11 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
 
 - [ ] `aria-controls` が正しく設定されている
 - [ ] キーボード（Tab → Enter）でボタン操作可能
-- [ ] Offcanvas 内のフォーカストラップが動作する（Bootstrap 標準）
 - [ ] Esc キーで Offcanvas が閉じる
 
 ### 視覚
 
-- [ ] Offcanvas の背景色が既存の devlog Offcanvas と統一されている
+- [ ] Offcanvas の背景色が devlog Offcanvas と統一（rgba(10, 14, 26, 0.98)）
 - [ ] カードのホバーエフェクトが Offcanvas 内でも動作する
 
 ---
@@ -290,10 +274,8 @@ devlog の Offcanvas パターンを踏襲し、ボタンクリックで右か�
 
 ```bash
 git add -A
-git commit -m "feat(T-040-11): Add Read More with Offcanvas for articles section"
+git commit -m "feat(T-040-11): Add Articles Read More with Offcanvas"
 git push origin feature/kesson-articles
 ```
-
----
 
 **この指示書に基づき実装・コミットすること。**
