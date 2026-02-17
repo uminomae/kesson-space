@@ -20,6 +20,7 @@ import {
     updateLabelPosition as updateSingleLabel,
 } from './nav/labels.js';
 import { computeOrbScreenData } from './nav/orb-screen.js';
+import { worldFromViewportHeight } from './nav/responsive.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
@@ -490,13 +491,14 @@ export function refreshNavLanguage() {
 }
 
 export function updateNavObjects(navMeshes, time, camera) {
+    const orbFloatAmplitude = worldFromViewportHeight(0.3);
     navMeshes.forEach((obj) => {
         const data = obj.userData;
 
         if (data.isGem) {
             updateGemGroupAnimation(obj, time);
         } else {
-            const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
+            const floatOffset = Math.sin(time * 0.8 + data.index) * orbFloatAmplitude;
             obj.position.y = data.baseY + floatOffset;
         }
     });
@@ -509,7 +511,8 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
     applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 
     // 浮遊アニメーション: グループ内の子メッシュに直接適用
-    const floatY = Math.sin(time * 0.6) * 0.30;
+    const xLogoFloatAmplitude = worldFromViewportHeight(0.30);
+    const floatY = Math.sin(time * 0.6) * xLogoFloatAmplitude;
     const data = _xLogoGroup.userData;
     if (data.xLogoRoot) {
         data.xLogoRoot.position.y = floatY;
@@ -576,6 +579,8 @@ const LABEL_Y_OFFSET = 3.5;
 export function updateNavLabels(navMeshes, camera) {
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
+    const orbLabelYOffset = worldFromViewportHeight(LABEL_Y_OFFSET);
+    const gemLabelYOffset = worldFromViewportHeight(gemParams.labelYOffset);
 
     navMeshes.forEach((group, i) => {
         if (group.userData.isGem || group.userData.isXLogo) return;
@@ -593,7 +598,7 @@ export function updateNavLabels(navMeshes, camera) {
         updateSingleLabel({
             el,
             worldPos: _labelWorldPos,
-            yOffset: LABEL_Y_OFFSET,
+            yOffset: orbLabelYOffset,
             camera,
             scrollFade,
         });
@@ -610,7 +615,7 @@ export function updateNavLabels(navMeshes, camera) {
         updateSingleLabel({
             el: _gemLabelElement,
             worldPos: _labelWorldPos,
-            yOffset: gemParams.labelYOffset,
+            yOffset: gemLabelYOffset,
             camera,
             scrollFade,
         });
@@ -620,6 +625,7 @@ export function updateNavLabels(navMeshes, camera) {
 export function updateXLogoLabel(camera) {
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
+    const xLogoLabelYOffset = worldFromViewportHeight(xLogoParams.labelYOffset);
 
     if (_xLogoLabelElement && _xLogoGroup) {
         if (!visible || scrollFade <= 0) {
@@ -632,7 +638,7 @@ export function updateXLogoLabel(camera) {
         updateSingleLabel({
             el: _xLogoLabelElement,
             worldPos: _labelWorldPos,
-            yOffset: xLogoParams.labelYOffset,
+            yOffset: xLogoLabelYOffset,
             camera,
             scrollFade,
         });

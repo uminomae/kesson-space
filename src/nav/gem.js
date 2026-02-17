@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { gemOrbFragmentShader, gemOrbVertexShader } from '../shaders/gem-orb.glsl.js';
+import { worldFromViewportHeight } from './responsive.js';
 
 function createGemOrbMaterial(gemParams) {
     return new THREE.ShaderMaterial({
@@ -109,7 +110,8 @@ export function updateGemGroupPosition({ gemGroup, gemParams }) {
 
 export function updateGemGroupAnimation(group, time) {
     const data = group.userData;
-    group.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * 0.4;
+    const gemFloatAmplitude = worldFromViewportHeight(0.4);
+    group.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * gemFloatAmplitude;
 
     const mesh = data.gemMesh;
     if (!mesh) return;
