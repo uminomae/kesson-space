@@ -20,7 +20,7 @@ import {
     updateLabelPosition as updateSingleLabel,
 } from './nav/labels.js';
 import { computeOrbScreenData } from './nav/orb-screen.js';
-import { worldFromViewportHeight } from './nav/responsive.js';
+import { interactionWorldFromViewportHeight, worldFromViewportHeight } from './nav/responsive.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
@@ -28,6 +28,7 @@ const TRI_R = 9;
 const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
 const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;  // 上から 20%
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
+const ORB_HIT_BASE_SCALE = 4.0;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
     { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
@@ -55,6 +56,10 @@ function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
         _gemMesh = mesh;
     });
+}
+
+function getResponsiveOrbHitScale() {
+    return interactionWorldFromViewportHeight(ORB_HIT_BASE_SCALE);
 }
 
 // ========================================
@@ -333,7 +338,8 @@ export function createNavObjects(scene) {
             depthWrite: false,
         });
         const coreSprite = new THREE.Sprite(hitMaterial);
-        coreSprite.scale.set(4.0, 4.0, 4.0);
+        const orbHitScale = getResponsiveOrbHitScale();
+        coreSprite.scale.set(orbHitScale, orbHitScale, orbHitScale);
 
         coreSprite.userData = {
             type: 'nav',
@@ -350,7 +356,7 @@ export function createNavObjects(scene) {
             baseY: pos.position[1],
             index: index,
             core: coreSprite,
-            baseScale: 4.0,
+            baseScale: orbHitScale,
         };
 
         scene.add(group);
@@ -492,12 +498,17 @@ export function refreshNavLanguage() {
 
 export function updateNavObjects(navMeshes, time, camera) {
     const orbFloatAmplitude = worldFromViewportHeight(0.3);
+    const orbHitScale = getResponsiveOrbHitScale();
     navMeshes.forEach((obj) => {
         const data = obj.userData;
 
         if (data.isGem) {
             updateGemGroupAnimation(obj, time);
         } else {
+            if (data.core) {
+                data.core.scale.set(orbHitScale, orbHitScale, orbHitScale);
+                data.baseScale = orbHitScale;
+            }
             const floatOffset = Math.sin(time * 0.8 + data.index) * orbFloatAmplitude;
             obj.position.y = data.baseY + floatOffset;
         }

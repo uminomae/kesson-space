@@ -1,6 +1,8 @@
 const REF_VIEWPORT_HEIGHT = 844;
 const MIN_VIEWPORT_SCALE = 0.8;
 const MAX_VIEWPORT_SCALE = 1.25;
+const INTERACTION_SMALL_GAIN = 0.6;
+const INTERACTION_LARGE_GAIN = 0.5;
 
 export function getViewportHeightScale({
     refHeight = REF_VIEWPORT_HEIGHT,
@@ -16,4 +18,16 @@ export function getViewportHeightScale({
 
 export function worldFromViewportHeight(baseWorldUnit, options) {
     return baseWorldUnit * getViewportHeightScale(options);
+}
+
+export function getInteractionScaleFromViewportHeight(options) {
+    const viewportScale = getViewportHeightScale(options);
+    if (viewportScale < 1) {
+        return 1 + (1 - viewportScale) * INTERACTION_SMALL_GAIN;
+    }
+    return 1 + (viewportScale - 1) * INTERACTION_LARGE_GAIN;
+}
+
+export function interactionWorldFromViewportHeight(baseWorldUnit, options) {
+    return baseWorldUnit * getInteractionScaleFromViewportHeight(options);
 }
