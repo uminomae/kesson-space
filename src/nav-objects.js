@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
+import { breathIntensity } from './animation-utils.js';
 import { toggles, gemParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
@@ -526,7 +527,7 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
         rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
     }
 
-    const breathDim = 0.7 + 0.3 * THREE.MathUtils.clamp(breathVal, 0, 1);
+    const breathDim = breathIntensity(breathVal);
     const hoverBoost = _xLogoHover ? 1.25 : 1.0;
     const config = getXLogoMaterialConfig();
 

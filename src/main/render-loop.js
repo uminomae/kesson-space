@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { breathValue } from '../animation-utils.js';
+import { breathIntensity, breathValue } from '../animation-utils.js';
 import { distortionParams, fluidParams } from '../config.js';
 
 export function createNavMeshFinder(scene) {
@@ -77,8 +77,8 @@ export function startRenderLoop({
         const time = clock.getElapsedTime();
 
         const breathVal = breathValue(time, breathConfig.period);
-        // xLogoシーンのライトをメインの呼吸に同期
-        const breathDim = 0.7 + 0.3 * breathVal;
+        // xLogoシーンのライトをメインの呼吸に同期（暗部を強く、明部は1.3まで）
+        const breathDim = breathIntensity(breathVal);
         if (xLogoAmbient) xLogoAmbient.intensity = 0.6 * breathDim;
         if (xLogoKey) xLogoKey.intensity = 0.9 * breathDim;
         const scrollProg = getScrollProgress();
