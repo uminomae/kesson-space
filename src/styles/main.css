@@ -1240,12 +1240,12 @@
     }
 
     /* ============================
-       Tech Stack Footer（右下、控えめ）
+       Tech Stack Footer（左下、控えめ）
        ============================ */
     #tech-footer {
       position: relative;
       z-index: 5;
-      text-align: right;
+      text-align: left;
       padding: 2rem 3% 1.5rem;
       pointer-events: none;
     }
