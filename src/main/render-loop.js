@@ -58,6 +58,8 @@ export function startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
+    xLogoAmbient,
+    xLogoKey,
 }) {
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
@@ -75,6 +77,10 @@ export function startRenderLoop({
         const time = clock.getElapsedTime();
 
         const breathVal = breathValue(time, breathConfig.period);
+        // xLogoシーンのライトをメインの呼吸に同期
+        const breathDim = 0.7 + 0.3 * breathVal;
+        if (xLogoAmbient) xLogoAmbient.intensity = 0.6 * breathDim;
+        if (xLogoKey) xLogoKey.intensity = 0.9 * breathDim;
         const scrollProg = getScrollProgress();
         updateScrollUI(scrollProg, breathVal);
 

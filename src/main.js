@@ -64,6 +64,8 @@ const {
     xLogoScene,
     xLogoCamera,
     xLogoGroup,
+    xLogoAmbient,
+    xLogoKey,
 } = bootstrapMainScene(container);
 
 initControls(camera, container, renderer);
@@ -127,4 +129,6 @@ startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
+    xLogoAmbient,
+    xLogoKey,
 });

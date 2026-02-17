@@ -56,5 +56,7 @@ export function bootstrapMainScene(container) {
         xLogoScene,
         xLogoCamera,
         xLogoGroup,
+        xLogoAmbient,
+        xLogoKey,
     };
 }
