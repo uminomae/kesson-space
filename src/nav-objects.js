@@ -224,7 +224,10 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera) {
     if (isMobileViewport) {
         const preferredPercent = getMobileXLogoViewportPercent();
         const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
-        const targetPercent = THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
+        // 右側固定%を優先。可視クランプがそれを上回る場合でも、モバイルでは右に寄せ過ぎない。
+        const targetPercent = minVisiblePercent > rightBoundPercent
+            ? rightBoundPercent
+            : THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
         return {
             posX: solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, targetPercent),
             posY: xLogoParams.posY,
