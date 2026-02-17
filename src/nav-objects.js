@@ -26,6 +26,8 @@ const XLOGO_MOBILE_BREAKPOINT = 768;
 // モバイルは「デスクトップのアイコン自動整列」風に左カラムへ寄せる。
 // 将来3アイコン縦並びを前提に、カラム中心Xを固定（可視クランプは下流で適用）。
 const XLOGO_MOBILE_STACK_COLUMN_X_PERCENT = 0.12;
+const XLOGO_MOBILE_STACK_MIN_LEFT_PX = 76;
+const XLOGO_MOBILE_STACK_MAX_LEFT_PX = 104;
 const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.1;
 const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.2;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
@@ -176,13 +178,18 @@ function getMobileXLogoViewportPercent() {
     if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth) || window.innerWidth <= 0) {
         return XLOGO_MOBILE_STACK_COLUMN_X_PERCENT;
     }
-    const viewportRatio = Math.min(1, Math.max(0, window.innerWidth / 430));
-    const narrowScreenCompensation = (1 - viewportRatio) * 0.03;
-    const alignedPercent = XLOGO_MOBILE_STACK_COLUMN_X_PERCENT + narrowScreenCompensation;
+    const viewportWidth = window.innerWidth;
+    const rawLeftPx = viewportWidth * XLOGO_MOBILE_STACK_COLUMN_X_PERCENT;
+    const clampedLeftPx = THREE.MathUtils.clamp(
+        rawLeftPx,
+        XLOGO_MOBILE_STACK_MIN_LEFT_PX,
+        XLOGO_MOBILE_STACK_MAX_LEFT_PX
+    );
+    const alignedPercent = clampedLeftPx / viewportWidth;
     return THREE.MathUtils.clamp(
         alignedPercent,
         XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT,
-        XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT,
+        XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT
     );
 }
 
