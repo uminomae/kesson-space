@@ -37,7 +37,8 @@ export function createLiquidSystem(renderer) {
     const velocityB = new THREE.WebGLRenderTarget(size, size, opts);
     const densityA  = new THREE.WebGLRenderTarget(size, size, opts);
     const densityB  = new THREE.WebGLRenderTarget(size, size, opts);
-    const pressure  = new THREE.WebGLRenderTarget(size, size, opts);
+    const pressureA = new THREE.WebGLRenderTarget(size, size, opts);
+    const pressureB = new THREE.WebGLRenderTarget(size, size, opts);
     const divergence = new THREE.WebGLRenderTarget(size, size, opts);
 
     const scene = new THREE.Scene();
@@ -172,6 +173,7 @@ export function createLiquidSystem(renderer) {
 
     let velRead = velocityA, velWrite = velocityB;
     let denRead = densityA, denWrite = densityB;
+    let pressureRead = pressureA, pressureWrite = pressureB;
 
     return {
         uniforms: {
@@ -242,15 +244,16 @@ export function createLiquidSystem(renderer) {
 
             // 5. Poisson（圧力）
             for (let i = 0; i < liquidParams.iterations; i++) {
-                poissonMaterial.uniforms.tPressure.value = pressure.texture;
+                poissonMaterial.uniforms.tPressure.value = pressureRead.texture;
                 poissonMaterial.uniforms.tDivergence.value = divergence.texture;
                 quad.material = poissonMaterial;
-                renderer.setRenderTarget(pressure);
+                renderer.setRenderTarget(pressureWrite);
                 renderer.render(scene, camera);
+                [pressureRead, pressureWrite] = [pressureWrite, pressureRead];
             }
 
             // 6. 勾配減算
-            gradientMaterial.uniforms.tPressure.value = pressure.texture;
+            gradientMaterial.uniforms.tPressure.value = pressureRead.texture;
             gradientMaterial.uniforms.tVelocity.value = velRead.texture;
             quad.material = gradientMaterial;
             renderer.setRenderTarget(velWrite);
@@ -298,7 +301,8 @@ export function createLiquidSystem(renderer) {
             velocityB.dispose();
             densityA.dispose();
             densityB.dispose();
-            pressure.dispose();
+            pressureA.dispose();
+            pressureB.dispose();
             divergence.dispose();
             geometry.dispose();
             advectionMaterial.dispose();
