@@ -41,6 +41,15 @@ section('1. 事前チェック');
 assert(typeof vm.SourceTextModule === 'function', 'vm.SourceTextModule が利用可能である');
 assert(existsSync(ENTRY_PATH), 'src/config.js が存在する');
 
+if (typeof vm.SourceTextModule !== 'function') {
+    console.log('\n══════════════════════════════');
+    console.log(`結果: ${passed} passed, ${failed} failed`);
+    console.log('\n失敗理由:');
+    console.log('  node --experimental-vm-modules tests/config-exports.test.js で実行してください。');
+    console.log('══════════════════════════════\n');
+    process.exit(1);
+}
+
 const context = vm.createContext({});
 const moduleCache = new Map();
 
