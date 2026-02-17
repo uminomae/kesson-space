@@ -117,6 +117,21 @@ DTの役割は以下に限定する:
 DTが見ているディレクトリは？
 → 📋エージェントが出力先を決定
 
+#### filesystem MCP による .git ワークツリー状態の確認
+
+DTは filesystem MCP で `/Users/uminomae/dev/` 配下にアクセスできる。
+**ワークツリー操作やブランチ切り替え指示を出す前に、必ず以下を読んで現状を把握すること。**
+
+1. **メインリポジトリの HEAD**: `kesson-main/.git/HEAD` を読む
+2. **ワークツリー一覧**: `kesson-main/.git/worktrees/` をリストする
+3. **各ワークツリーのブランチ**: `kesson-main/.git/worktrees/{名前}/HEAD` を読む
+   - `ref: refs/heads/...` → そのブランチをチェックアウト中
+   - SHA ハッシュのみ → detached HEAD 状態
+4. **ワークツリーのパス**: `kesson-main/.git/worktrees/{名前}/gitdir` を読むとパスが確認できる
+
+これにより「どのワークツリーがどのブランチを使用中か」を事前に把握でき、
+ブランチ競合（`already checked out at ...`）を防げる。
+
 ### Step 4: タスク着手
 
 ユーザーがタスクを指示 → 📋エージェントが委譲判断
