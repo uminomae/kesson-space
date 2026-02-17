@@ -26,6 +26,7 @@ const XLOGO_MOBILE_BREAKPOINT = 768;
 const XLOGO_MOBILE_VIEWPORT_X_PERCENT = 0.2;
 const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.16;
 const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.3;
+const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const XLOGO_SOLVE_DELTA_X = 1.0;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
@@ -181,34 +182,53 @@ function getMobileXLogoViewportPercent() {
     );
 }
 
-function solveXLogoPosXForViewportPercent(basePosY, basePosZ, camera, viewportPercent) {
-    if (!camera || typeof camera.updateMatrixWorld !== 'function') {
-        return -Math.max(1, Math.abs(xLogoParams.posX));
-    }
-
-    camera.updateMatrixWorld(true);
-    _xLogoSolveVecA.set(xLogoParams.posX, basePosY, basePosZ).project(camera);
-    _xLogoSolveVecB.set(xLogoParams.posX + XLOGO_SOLVE_DELTA_X, basePosY, basePosZ).project(camera);
-
-    const slope = _xLogoSolveVecB.x - _xLogoSolveVecA.x;
-    if (!Number.isFinite(slope) || Math.abs(slope) < 1e-4) {
-        return -Math.max(1, Math.abs(xLogoParams.posX));
-    }
-
+function solveXLogoPosXForViewportPercent(baseNdcX, slope, viewportPercent) {
     const targetNdcX = THREE.MathUtils.clamp((viewportPercent * 2) - 1, -0.95, 0.95);
-    const solved = xLogoParams.posX + ((targetNdcX - _xLogoSolveVecA.x) / slope) * XLOGO_SOLVE_DELTA_X;
+    const solved = xLogoParams.posX + ((targetNdcX - baseNdcX) / slope) * XLOGO_SOLVE_DELTA_X;
     return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
 }
 
 function getResponsiveXLogoPosition(camera = _xLogoCamera) {
+    if (!camera || typeof camera.updateMatrixWorld !== 'function') {
+        return {
+            posX: -Math.max(1, Math.abs(xLogoParams.posX)),
+            posY: xLogoParams.posY,
+            posZ: xLogoParams.posZ,
+        };
+    }
+
+    camera.updateMatrixWorld(true);
+    _xLogoSolveVecA.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ).project(camera);
+    _xLogoSolveVecB.set(xLogoParams.posX + XLOGO_SOLVE_DELTA_X, xLogoParams.posY, xLogoParams.posZ).project(camera);
+
+    const slope = _xLogoSolveVecB.x - _xLogoSolveVecA.x;
+    if (!Number.isFinite(slope) || Math.abs(slope) < 1e-4) {
+        return {
+            posX: -Math.max(1, Math.abs(xLogoParams.posX)),
+            posY: xLogoParams.posY,
+            posZ: xLogoParams.posZ,
+        };
+    }
+
+    const basePercent = (_xLogoSolveVecA.x + 1) * 0.5;
+    const hitScaleX = _xLogoGroup?.userData?.hitSprite?.scale?.x;
+    const hitHalfWorld = Number.isFinite(hitScaleX) ? Math.max(0.01, hitScaleX * 0.5) : Math.max(0.01, xLogoParams.meshScale * 1.5);
+    const halfNdc = Math.abs((slope / XLOGO_SOLVE_DELTA_X) * hitHalfWorld);
+    const halfPercent = halfNdc * 0.5;
+
+    const requestedPercent = getMobileXLogoViewportPercent();
+    const minVisiblePercent = THREE.MathUtils.clamp(
+        Math.max(requestedPercent, halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT),
+        XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT,
+        0.45
+    );
+    const maxVisiblePercent = 1 - minVisiblePercent;
+    const clampedPercent = THREE.MathUtils.clamp(basePercent, minVisiblePercent, maxVisiblePercent);
+    const needsAdjustment = Math.abs(clampedPercent - basePercent) > 1e-4;
+
     const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= XLOGO_MOBILE_BREAKPOINT;
-    const posX = isMobileViewport
-        ? solveXLogoPosXForViewportPercent(
-            xLogoParams.posY,
-            xLogoParams.posZ,
-            camera,
-            getMobileXLogoViewportPercent()
-        )
+    const posX = (isMobileViewport || needsAdjustment)
+        ? solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, clampedPercent)
         : xLogoParams.posX;
     return { posX, posY: xLogoParams.posY, posZ: xLogoParams.posZ };
 }
