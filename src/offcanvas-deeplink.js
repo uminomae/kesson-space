@@ -109,3 +109,8 @@ export function getRequestedScrollTarget() {
 export function shouldOpenOffcanvas(panelName) {
     return getDeepLinkIntent().openPanel === panelName;
 }
+
+export function hasDeepLinkIntent() {
+    const intent = getDeepLinkIntent();
+    return Boolean(intent.openPanel || intent.scrollTarget);
+}

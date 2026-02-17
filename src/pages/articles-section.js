@@ -1,8 +1,8 @@
 // articles-section.js
 // INDEX から切り出した ARTICLES セクション初期化ロジック。
 
-import { getRequestedScrollTarget, shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
-import { requestScroll } from '../scroll-coordinator.js';
+import { getRequestedScrollTarget, shouldOpenOffcanvas, hasDeepLinkIntent } from '../offcanvas-deeplink.js';
+import { requestScroll, SCROLL_PRIORITY, commitNavigationIntent } from '../scroll-coordinator.js';
 
 const API_URL = 'https://uminomae.github.io/pjdhiro/api/kesson-articles.json';
 const MOCK_URL = './assets/articles/articles.json';
@@ -156,10 +156,10 @@ function waitForTwoAnimationFrames() {
     });
 }
 
-function requestScrollToElement(el, source) {
+function requestScrollToElement(el, source, priority = SCROLL_PRIORITY.DEFAULT) {
     if (!el) return;
     const targetY = window.scrollY + el.getBoundingClientRect().top - 24;
-    requestScroll(targetY, source, { behavior: 'auto' });
+    requestScroll(targetY, source, { behavior: 'auto', priority });
 }
 
 function findArticlesScrollTargetElement() {
@@ -195,12 +195,13 @@ function openArticlesOffcanvasFromDeepLink(attempt = 0) {
 }
 
 function applyArticlesDeepLinkIntent() {
+    if (!hasDeepLinkIntent()) return;
     if (hasAppliedArticlesDeepLink) return;
     hasAppliedArticlesDeepLink = true;
 
     const targetEl = findArticlesScrollTargetElement();
     if (targetEl) {
-        requestScrollToElement(targetEl, 'deeplink:articles');
+        requestScrollToElement(targetEl, 'deeplink:articles', SCROLL_PRIORITY.DEEP_LINK);
     }
 
     if (shouldOpenOffcanvas('articles')) {
@@ -208,6 +209,8 @@ function applyArticlesDeepLinkIntent() {
             openArticlesOffcanvasFromDeepLink();
         });
     }
+
+    commitNavigationIntent('articles:deeplink');
 }
 
 async function initArticlesSection() {
