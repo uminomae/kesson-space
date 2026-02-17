@@ -501,7 +501,7 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
-export function updateXLogo(time, camera = _xLogoCamera) {
+export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
     // グループ位置はビューポートソルバーで確定（浮遊オフセットなし）
@@ -526,14 +526,14 @@ export function updateXLogo(time, camera = _xLogoCamera) {
         rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
     }
 
-    const pulse = 1.0 + Math.sin(time * 0.6) * 0.06;
+    const breathDim = 0.7 + 0.3 * THREE.MathUtils.clamp(breathVal, 0, 1);
     const hoverBoost = _xLogoHover ? 1.25 : 1.0;
     const config = getXLogoMaterialConfig();
 
     if (_xLogoMaterials.length > 0) {
         _xLogoMaterials.forEach((mat) => {
             if (!mat) return;
-            mat.emissiveIntensity = config.emissiveIntensity * pulse * hoverBoost;
+            mat.emissiveIntensity = config.emissiveIntensity * breathDim * hoverBoost;
             mat.metalness = config.metalness;
             mat.roughness = config.roughness;
         });
@@ -542,7 +542,7 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     if (data.xLogoMesh && data.xLogoMesh.material && data.xLogoMesh.material.uniforms) {
         const u = data.xLogoMesh.material.uniforms;
         if (u.uTime) u.uTime.value = time;
-        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * pulse * hoverBoost;
+        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * breathDim * hoverBoost;
         if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
     }

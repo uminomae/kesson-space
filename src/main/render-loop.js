@@ -91,7 +91,7 @@ export function startRenderLoop({
         syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
-        updateXLogo(time, xLogoCamera);
+        updateXLogo(time, xLogoCamera, breathVal);
 
         const navs = findNavMeshes();
 
