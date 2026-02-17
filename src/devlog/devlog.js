@@ -112,17 +112,79 @@ function removeSessionKey(key) {
   }
 }
 
+function getOffcanvasScrollNodes() {
+  const offcanvasEl = document.getElementById('devlogOffcanvas');
+  if (!offcanvasEl) {
+    return { offcanvasEl: null, listView: null, offcanvasBody: null };
+  }
+  const listView = document.getElementById('offcanvas-list-view');
+  const offcanvasBody = offcanvasEl.querySelector('.offcanvas-body');
+  return { offcanvasEl, listView, offcanvasBody };
+}
+
+function readOffcanvasScrollState() {
+  const { listView, offcanvasBody } = getOffcanvasScrollNodes();
+  const listTop = listView ? listView.scrollTop : 0;
+  const bodyTop = offcanvasBody ? offcanvasBody.scrollTop : 0;
+
+  let container = 'list-view';
+  let top = listTop;
+
+  if (bodyTop > listTop) {
+    container = 'offcanvas-body';
+    top = bodyTop;
+  } else if (listTop === 0 && bodyTop === 0 && offcanvasBody && listView) {
+    const listScrollable = listView.scrollHeight > listView.clientHeight + 1;
+    const bodyScrollable = offcanvasBody.scrollHeight > offcanvasBody.clientHeight + 1;
+    if (bodyScrollable && !listScrollable) {
+      container = 'offcanvas-body';
+    }
+  }
+
+  return { top, container, listTop, bodyTop };
+}
+
+function applyOffcanvasScrollState(state) {
+  const { listView, offcanvasBody } = getOffcanvasScrollNodes();
+  if (!listView && !offcanvasBody) return;
+
+  const fallbackTop = Number.isFinite(state?.offcanvasScrollTop) ? state.offcanvasScrollTop : 0;
+  const container = state?.offcanvasScrollContainer;
+  const listTop = Number.isFinite(state?.offcanvasListScrollTop)
+    ? state.offcanvasListScrollTop
+    : (container === 'list-view' ? fallbackTop : null);
+  const bodyTop = Number.isFinite(state?.offcanvasBodyScrollTop)
+    ? state.offcanvasBodyScrollTop
+    : (container === 'offcanvas-body' ? fallbackTop : null);
+
+  if (container === 'list-view') {
+    if (listView) listView.scrollTop = Number.isFinite(listTop) ? listTop : fallbackTop;
+    return;
+  }
+  if (container === 'offcanvas-body') {
+    if (offcanvasBody) offcanvasBody.scrollTop = Number.isFinite(bodyTop) ? bodyTop : fallbackTop;
+    return;
+  }
+
+  // Backward compatibility for legacy states without container metadata.
+  if (listView) listView.scrollTop = fallbackTop;
+  if (offcanvasBody) offcanvasBody.scrollTop = fallbackTop;
+}
+
 function persistReturnState(source, sessionId) {
   if (typeof window === 'undefined') return;
 
-  const listView = document.getElementById('offcanvas-list-view');
   const fromOffcanvas = source === 'offcanvas';
+  const offcanvasState = fromOffcanvas ? readOffcanvasScrollState() : null;
   writeSessionJson(DEVLOG_RETURN_STATE_KEY, {
     source,
     sessionId,
     pageScrollY: window.scrollY,
     offcanvasOpen: fromOffcanvas,
-    offcanvasScrollTop: fromOffcanvas && listView ? listView.scrollTop : 0,
+    offcanvasScrollTop: offcanvasState ? offcanvasState.top : 0,
+    offcanvasScrollContainer: offcanvasState ? offcanvasState.container : null,
+    offcanvasListScrollTop: offcanvasState ? offcanvasState.listTop : 0,
+    offcanvasBodyScrollTop: offcanvasState ? offcanvasState.bodyTop : 0,
     displayedCount: fromOffcanvas ? galleryState.displayedCount : 0,
     savedAt: Date.now(),
   });
@@ -358,24 +420,17 @@ function openOffcanvas({ restoreState = null } = {}) {
   }
 
   if (restoreState && restoreState.offcanvasOpen) {
-    const restoreScrollTop = Number.isFinite(restoreState.offcanvasScrollTop)
-      ? restoreState.offcanvasScrollTop
-      : 0;
     const restorePageY = Number.isFinite(restoreState.pageScrollY)
       ? restoreState.pageScrollY
       : 0;
     offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
       offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
-      const listView = document.getElementById('offcanvas-list-view');
       // IMPORTANT: window scroll must be owned by scroll-coordinator.
       requestScroll(restorePageY, 'devlog-return:offcanvas-page');
-      if (listView) {
-        // Offcanvas internal scroll is a different scroll container; keep direct assignment.
-        listView.scrollTop = restoreScrollTop;
-        waitForImages(galleryEl).then(() => {
-          listView.scrollTop = restoreScrollTop;
-        });
-      }
+      applyOffcanvasScrollState(restoreState);
+      waitForImages(galleryEl).then(() => {
+        applyOffcanvasScrollState(restoreState);
+      });
     });
   }
 
@@ -383,16 +438,23 @@ function openOffcanvas({ restoreState = null } = {}) {
 }
 
 function setupInfiniteScroll() {
-  const container = document.getElementById('offcanvas-list-view');
-  if (!container) return;
+  const { listView, offcanvasBody } = getOffcanvasScrollNodes();
+  const targets = [listView, offcanvasBody].filter(Boolean);
+  if (targets.length === 0) return;
 
-  container.addEventListener('scroll', () => {
+  const onScroll = (event) => {
     if (galleryState.isLoading) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = container;
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) return;
+    const { scrollTop, scrollHeight, clientHeight } = target;
     if (scrollTop + clientHeight >= scrollHeight - 100) {
       loadMoreSessions();
     }
+  };
+
+  targets.forEach((target) => {
+    target.addEventListener('scroll', onScroll, { passive: true });
   });
 }
 
