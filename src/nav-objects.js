@@ -23,9 +23,11 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
 const XLOGO_MOBILE_BREAKPOINT = 768;
-const XLOGO_MOBILE_VIEWPORT_X_PERCENT = 0.2;
-const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.16;
-const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.3;
+// モバイルは「デスクトップのアイコン自動整列」風に左カラムへ寄せる。
+// 将来3アイコン縦並びを前提に、カラム中心Xを固定（可視クランプは下流で適用）。
+const XLOGO_MOBILE_STACK_COLUMN_X_PERCENT = 0.12;
+const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.1;
+const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.2;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const XLOGO_SOLVE_DELTA_X = 1.0;
 const NAV_POSITIONS = [
@@ -172,13 +174,15 @@ function createXLogoGroup() {
 
 function getMobileXLogoViewportPercent() {
     if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth) || window.innerWidth <= 0) {
-        return XLOGO_MOBILE_VIEWPORT_X_PERCENT;
+        return XLOGO_MOBILE_STACK_COLUMN_X_PERCENT;
     }
-    const viewportRatio = Math.min(1, Math.max(0, window.innerWidth / XLOGO_MOBILE_BREAKPOINT));
-    const adaptivePercent = XLOGO_MOBILE_VIEWPORT_X_PERCENT + (1 - viewportRatio) * 0.06;
-    return Math.min(
+    const viewportRatio = Math.min(1, Math.max(0, window.innerWidth / 430));
+    const narrowScreenCompensation = (1 - viewportRatio) * 0.03;
+    const alignedPercent = XLOGO_MOBILE_STACK_COLUMN_X_PERCENT + narrowScreenCompensation;
+    return THREE.MathUtils.clamp(
+        alignedPercent,
+        XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT,
         XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT,
-        Math.max(XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT, adaptivePercent)
     );
 }
 
