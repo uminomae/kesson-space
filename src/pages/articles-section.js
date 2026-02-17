@@ -1,7 +1,8 @@
 // articles-section.js
 // INDEX から切り出した ARTICLES セクション初期化ロジック。
 
-import { shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
+import { getRequestedScrollTarget, shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
+import { requestScroll } from '../scroll-coordinator.js';
 
 const API_URL = 'https://uminomae.github.io/pjdhiro/api/kesson-articles.json';
 const MOCK_URL = './assets/articles/articles.json';
@@ -10,6 +11,7 @@ const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 
 let hasNotifiedArticlesReady = false;
 let hasAutoOpenedArticlesOffcanvas = false;
+let hasAppliedArticlesDeepLink = false;
 
 function notifyArticlesReady(status = 'ok') {
     if (hasNotifiedArticlesReady || typeof window === 'undefined') return;
@@ -146,6 +148,34 @@ function setupFilters({ articles, filterButtons, offcanvasGrid, offcanvasCount }
     renderOffcanvasArticles(activeType);
 }
 
+function waitForTwoAnimationFrames() {
+    return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
+}
+
+function requestScrollToElement(el, source) {
+    if (!el) return;
+    const targetY = window.scrollY + el.getBoundingClientRect().top - 24;
+    requestScroll(targetY, source, { behavior: 'auto' });
+}
+
+function findArticlesScrollTargetElement() {
+    const requested = getRequestedScrollTarget();
+    const heading = document.querySelector('#articles-section .section-heading-link');
+    const readMore = document.querySelector('#articles-section .btn-read-more');
+
+    if (requested === 'articles-readmore') {
+        return readMore || heading;
+    }
+    if (requested === 'articles-heading') {
+        return heading;
+    }
+    return null;
+}
+
 function openArticlesOffcanvasFromDeepLink(attempt = 0) {
     if (hasAutoOpenedArticlesOffcanvas || !shouldOpenOffcanvas('articles')) return;
 
@@ -162,6 +192,22 @@ function openArticlesOffcanvasFromDeepLink(attempt = 0) {
     hasAutoOpenedArticlesOffcanvas = true;
     const instance = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
     instance.show();
+}
+
+function applyArticlesDeepLinkIntent() {
+    if (hasAppliedArticlesDeepLink) return;
+    hasAppliedArticlesDeepLink = true;
+
+    const targetEl = findArticlesScrollTargetElement();
+    if (targetEl) {
+        requestScrollToElement(targetEl, 'deeplink:articles');
+    }
+
+    if (shouldOpenOffcanvas('articles')) {
+        waitForTwoAnimationFrames().then(() => {
+            openArticlesOffcanvasFromDeepLink();
+        });
+    }
 }
 
 async function initArticlesSection() {
@@ -205,7 +251,7 @@ async function initArticlesSection() {
     }
 
     notifyArticlesReady('ok');
-    openArticlesOffcanvasFromDeepLink();
+    applyArticlesDeepLinkIntent();
 }
 
 async function safeInitArticlesSection() {

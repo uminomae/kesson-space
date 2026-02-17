@@ -11,7 +11,7 @@
 
 import { requestScroll } from '../scroll-coordinator.js';
 import { createReadMoreButton } from './toggle-buttons.js';
-import { shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
+import { getRequestedScrollTarget, shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
 const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
@@ -36,6 +36,7 @@ let galleryState = {
   offcanvas: null          // Bootstrap Offcanvasインスタンス
 };
 let hasAutoOpenedDevlogOffcanvas = false;
+let hasAppliedDevlogDeepLink = false;
 
 
 function getSessionEndValue(session) {
@@ -439,6 +440,34 @@ function openOffcanvas({ restoreState = null } = {}) {
   galleryState.offcanvas.show();
 }
 
+function waitForTwoAnimationFrames() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(resolve);
+    });
+  });
+}
+
+function requestScrollToElement(el, source) {
+  if (!el) return;
+  const targetY = window.scrollY + el.getBoundingClientRect().top - 24;
+  requestScroll(targetY, source, { behavior: 'auto' });
+}
+
+function findDevlogScrollTargetElement() {
+  const requested = getRequestedScrollTarget();
+  const heading = document.querySelector('#devlog-gallery-section .section-heading');
+  const readMore = document.querySelector('#devlog-gallery-section .btn-read-more');
+
+  if (requested === 'devlog-readmore') {
+    return readMore || heading;
+  }
+  if (requested === 'devlog-heading') {
+    return heading;
+  }
+  return null;
+}
+
 function openDevlogOffcanvasFromDeepLink(attempt = 0) {
   if (hasAutoOpenedDevlogOffcanvas || !shouldOpenOffcanvas('devlog')) return;
 
@@ -451,6 +480,22 @@ function openDevlogOffcanvasFromDeepLink(attempt = 0) {
 
   hasAutoOpenedDevlogOffcanvas = true;
   openOffcanvas();
+}
+
+function applyDevlogDeepLinkIntent() {
+  if (hasAppliedDevlogDeepLink) return;
+  hasAppliedDevlogDeepLink = true;
+
+  const targetEl = findDevlogScrollTargetElement();
+  if (targetEl) {
+    requestScrollToElement(targetEl, 'deeplink:devlog');
+  }
+
+  if (shouldOpenOffcanvas('devlog')) {
+    waitForTwoAnimationFrames().then(() => {
+      openDevlogOffcanvasFromDeepLink();
+    });
+  }
 }
 
 function setupInfiniteScroll() {
@@ -650,15 +695,19 @@ function runPendingReturnFlow(pendingState) {
 // Auto-initialize and return restoration bootstrap
 if (typeof window !== 'undefined') {
   const pendingState = loadAndConsumePendingReturnState();
+  const requestedScrollTarget = getRequestedScrollTarget();
+  const wantsDevlogIntent = shouldOpenOffcanvas('devlog')
+    || requestedScrollTarget === 'devlog-heading'
+    || requestedScrollTarget === 'devlog-readmore';
   if (pendingState) {
     runPendingReturnFlow(pendingState);
-  } else if (shouldOpenOffcanvas('devlog')) {
+  } else if (wantsDevlogIntent) {
     const start = () => {
       if (!isInitialized) {
         initDevlogGallery();
       }
       devlogReadyPromise.then(() => {
-        openDevlogOffcanvasFromDeepLink();
+        applyDevlogDeepLinkIntent();
       });
     };
 
