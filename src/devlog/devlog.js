@@ -12,6 +12,9 @@
 import { createReadMoreButton } from './toggle-buttons.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
+const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
+const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
+const DEVLOG_RETURN_TTL_MS = 30 * 60 * 1000;
 
 let sessions = [];
 let isInitialized = false;
@@ -30,6 +33,93 @@ function getSessionEndValue(session) {
   const end = session.end || session.start;
   const value = end ? Date.parse(end) : 0;
   return Number.isNaN(value) ? 0 : value;
+}
+
+function readSessionJson(key) {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn(`[devlog] Failed to parse sessionStorage key: ${key}`, error);
+    return null;
+  }
+}
+
+function writeSessionJson(key, value) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn(`[devlog] Failed to write sessionStorage key: ${key}`, error);
+  }
+}
+
+function removeSessionKey(key) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch (error) {
+    console.warn(`[devlog] Failed to remove sessionStorage key: ${key}`, error);
+  }
+}
+
+function persistReturnState(source, sessionId) {
+  if (typeof window === 'undefined') return;
+
+  const listView = document.getElementById('offcanvas-list-view');
+  const fromOffcanvas = source === 'offcanvas';
+  writeSessionJson(DEVLOG_RETURN_STATE_KEY, {
+    source,
+    sessionId,
+    pageScrollY: window.scrollY,
+    offcanvasOpen: fromOffcanvas,
+    offcanvasScrollTop: fromOffcanvas && listView ? listView.scrollTop : 0,
+    displayedCount: fromOffcanvas ? galleryState.displayedCount : 0,
+    savedAt: Date.now(),
+  });
+}
+
+function consumePendingReturnState() {
+  const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
+  if (!intent) return null;
+  removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
+
+  const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
+  removeSessionKey(DEVLOG_RETURN_STATE_KEY);
+  if (!state || !Number.isFinite(state.savedAt)) return null;
+  if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
+  return state;
+}
+
+function restoreFromPendingReturnState() {
+  const state = consumePendingReturnState();
+  if (!state) return;
+
+  if (state.offcanvasOpen) {
+    const openWithRestore = () => openOffcanvas({ restoreState: state });
+    if (typeof bootstrap === 'undefined') {
+      if (document.readyState === 'complete') {
+        setTimeout(openWithRestore, 0);
+      } else {
+        window.addEventListener('load', openWithRestore, { once: true });
+      }
+      return;
+    }
+    openWithRestore();
+    return;
+  }
+
+  const restoreY = Number.isFinite(state.pageScrollY) ? state.pageScrollY : 0;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo(0, restoreY);
+    });
+  });
 }
 
 /**
@@ -87,6 +177,7 @@ async function loadSessions() {
   galleryState.sessions = sessions;
   console.log('[devlog] Loaded', sessions.length, 'sessions');
   buildGallery();
+  restoreFromPendingReturnState();
 }
 
 function generateDemoData() {
@@ -118,7 +209,7 @@ function buildGallery() {
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
 
-    const card = createCardElement(session, lang);
+    const card = createCardElement(session, lang, 'main');
     col.appendChild(card);
     row.appendChild(col);
   });
@@ -143,12 +234,15 @@ function buildGallery() {
  * カードDOM要素を生成（メイン画面・Offcanvas共用）
  * カードクリックで devlog.html?id=xxx に遷移
  */
-function createCardElement(session, lang) {
+function createCardElement(session, lang, source = 'main') {
   const href = `./devlog.html?id=${session.id}`;
 
   const link = document.createElement('a');
   link.className = 'kesson-card-link text-decoration-none';
   link.href = href;
+  link.addEventListener('click', () => {
+    persistReturnState(source, session.id);
+  });
   link.setAttribute(
     'aria-label',
     lang === 'en'
@@ -190,16 +284,47 @@ function createCardElement(session, lang) {
 // Offcanvas + 無限スクロール
 // ============================================================
 
-function openOffcanvas() {
+function openOffcanvas({ restoreState = null } = {}) {
   const offcanvasEl = document.getElementById('devlogOffcanvas');
+  if (!offcanvasEl || typeof bootstrap === 'undefined') {
+    console.warn('[devlog] Offcanvas is not ready');
+    return;
+  }
+
   if (!galleryState.offcanvas) {
     galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
   }
 
   galleryState.displayedCount = 0;
-  document.getElementById('offcanvas-gallery').innerHTML = '';
+  const galleryEl = document.getElementById('offcanvas-gallery');
+  if (galleryEl) galleryEl.innerHTML = '';
   showListView();
-  loadMoreSessions();
+
+  const requestedCount = restoreState && restoreState.offcanvasOpen
+    ? restoreState.displayedCount
+    : galleryState.batchSize;
+  const targetCount = Math.min(
+    galleryState.sessions.length,
+    Math.max(
+      galleryState.batchSize,
+      Number.isFinite(requestedCount) ? requestedCount : galleryState.batchSize
+    )
+  );
+
+  while (galleryState.displayedCount < targetCount) {
+    loadMoreSessions();
+  }
+
+  if (restoreState && restoreState.offcanvasOpen) {
+    const restoreScrollTop = Number.isFinite(restoreState.offcanvasScrollTop)
+      ? restoreState.offcanvasScrollTop
+      : 0;
+    offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
+      offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
+      const listView = document.getElementById('offcanvas-list-view');
+      if (listView) listView.scrollTop = restoreScrollTop;
+    });
+  }
 
   galleryState.offcanvas.show();
 }
@@ -252,7 +377,7 @@ function renderSessionCards(sessionsToRender) {
   sessionsToRender.forEach(session => {
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
-    const card = createCardElement(session, lang);
+    const card = createCardElement(session, lang, 'offcanvas');
     col.appendChild(card);
     row.appendChild(col);
   });

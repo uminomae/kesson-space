@@ -229,12 +229,27 @@
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('id');
     const lang = params.get('lang') || document.documentElement.lang || 'ja';
+    const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
 
     const titleEl = document.getElementById('devlog-title');
     const metaEl = document.getElementById('devlog-meta');
     const coverEl = document.getElementById('devlog-cover');
     const contentEl = document.getElementById('devlog-content');
     const errorEl = document.getElementById('devlog-error');
+    const backLinkEl = document.querySelector('.back-link');
+
+    if (backLinkEl) {
+      backLinkEl.addEventListener('click', () => {
+        try {
+          sessionStorage.setItem(
+            DEVLOG_RETURN_INTENT_KEY,
+            JSON.stringify({ requestedAt: Date.now(), sessionId })
+          );
+        } catch (e) {
+          console.warn('[devlog] Failed to store return intent:', e);
+        }
+      });
+    }
 
     function showError(message) {
       if (errorEl) {
