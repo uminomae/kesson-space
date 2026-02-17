@@ -142,6 +142,7 @@ function createXLogoGroup() {
                     uGlowStrength: { value: xLogoParams.glowStrength },
                     uRimPower:     { value: xLogoParams.rimPower },
                     uInnerGlow:    { value: xLogoParams.innerGlow },
+                    uBrightness:   { value: 1.0 },
                     uHover:        { value: 0.0 },
                 },
                 vertexShader: xLogoVertexShader,
@@ -546,6 +547,7 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
         if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * hoverBoost;
         if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+        if (u.uBrightness) u.uBrightness.value = breathDim;
     }
 }
 
@@ -660,6 +662,7 @@ export function rebuildXLogo() {
         if (u && u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength;
         if (u && u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u && u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
+        if (u && u.uBrightness) u.uBrightness.value = 1.0;
     }
     if (_xLogoMaterials.length > 0) {
         const config = getXLogoMaterialConfig();
