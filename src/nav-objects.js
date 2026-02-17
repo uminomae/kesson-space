@@ -22,6 +22,7 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
+const XLOGO_MOBILE_BREAKPOINT = 768;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
     { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
@@ -85,7 +86,6 @@ function applyXLogoMaterial(mesh) {
 
 function createXLogoGroup() {
     const group = new THREE.Group();
-    group.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
 
     // --- 不可視ヒットスプライト（レイキャスト用） ---
     const hitMat = new THREE.SpriteMaterial({
@@ -157,8 +157,22 @@ function createXLogoGroup() {
     );
 
     group.userData = { hitSprite, xLogoMesh: null, xLogoRoot: null, xLogoBaseRotY: 0 };
+    applyXLogoGroupPosition(group);
 
     return group;
+}
+
+function getResponsiveXLogoPosition() {
+    const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= XLOGO_MOBILE_BREAKPOINT;
+    const posX = isMobileViewport ? -Math.max(1, Math.abs(xLogoParams.posX)) : xLogoParams.posX;
+    return { posX, posY: xLogoParams.posY, posZ: xLogoParams.posZ };
+}
+
+function applyXLogoGroupPosition(group) {
+    if (!group) return;
+    const { posX, posY, posZ } = getResponsiveXLogoPosition();
+    group.userData.baseY = posY;
+    group.position.set(posX, posY, posZ);
 }
 
 // --- devPanelからのパラメータ更新 ---
@@ -286,10 +300,8 @@ export function createXLogoObjects(scene) {
         external: true,
     };
 
-    Object.assign(xGroup.userData, {
-        baseY: xLogoParams.posY,
-        isXLogo: true,
-    });
+    Object.assign(xGroup.userData, { isXLogo: true });
+    applyXLogoGroupPosition(xGroup);
 
     scene.add(xGroup);
     _xLogoGroup = xGroup;
@@ -387,6 +399,7 @@ export function updateNavObjects(navMeshes, time, camera) {
 
 export function updateXLogo(time) {
     if (!_xLogoGroup) return;
+    applyXLogoGroupPosition(_xLogoGroup);
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
@@ -556,8 +569,7 @@ export function rebuildXLogo() {
 // --- devPanelからの位置更新 ---
 export function updateXLogoPosition() {
     if (!_xLogoGroup) return;
-    _xLogoGroup.userData.baseY = xLogoParams.posY;
-    _xLogoGroup.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
+    applyXLogoGroupPosition(_xLogoGroup);
 }
 
 export function getXLogoGroup() {
