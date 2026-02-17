@@ -31,3 +31,20 @@ export function getInteractionScaleFromViewportHeight(options) {
 export function interactionWorldFromViewportHeight(baseWorldUnit, options) {
     return baseWorldUnit * getInteractionScaleFromViewportHeight(options);
 }
+
+export function pxFromViewportHeight(basePx, options) {
+    return basePx * getViewportHeightScale(options);
+}
+
+export function interactionPxFromViewportHeight(basePx, {
+    minScale = 1.0,
+    maxScale = 1.35,
+    dprBase = 2.0,
+    dprMinScale = 1.0,
+    dprMaxScale = 1.15,
+} = {}) {
+    const viewportScale = getViewportHeightScale({ minScale, maxScale });
+    const dpr = typeof window === 'undefined' ? dprBase : (window.devicePixelRatio || dprBase);
+    const dprScale = Math.min(dprMaxScale, Math.max(dprMinScale, dpr / dprBase));
+    return basePx * viewportScale * dprScale;
+}

@@ -5,6 +5,7 @@ import { toggles } from './config.js';
 import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
 import { createNavObjects, updateNavObjects, setGemHover, setXLogoHover, isNavLabelFocused } from './nav-objects.js';
 import { getScrollProgress } from './controls.js';
+import { interactionPxFromViewportHeight } from './nav/responsive.js';
 
 let _camera;
 let _renderer;
@@ -15,7 +16,12 @@ let _navMeshes = [];
 let _xLogoGroup = null;
 
 let _pointerDownPos = null;
-const DRAG_THRESHOLD = 5;
+const DRAG_THRESHOLD_BASE_PX = 5;
+
+function getDragThresholdPx() {
+    // Phase C: 入力しきい値のみレスポンシブ化（演出パラメータは対象外）
+    return interactionPxFromViewportHeight(DRAG_THRESHOLD_BASE_PX);
+}
 
 function onPointerDown(event) {
     _pointerDownPos = { x: event.clientX, y: event.clientY };
@@ -31,7 +37,7 @@ function onPointerUp(event) {
 
     const dx = event.clientX - _pointerDownPos.x;
     const dy = event.clientY - _pointerDownPos.y;
-    if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+    if (Math.sqrt(dx * dx + dy * dy) > getDragThresholdPx()) {
         _pointerDownPos = null;
         return;
     }
