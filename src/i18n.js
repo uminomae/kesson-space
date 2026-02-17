@@ -2,6 +2,7 @@
 
 const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
 export const LANG_CHANGE_EVENT = 'kesson:lang-change';
+const LANG_SCROLL_ONCE_KEY = 'kesson.lang.scroll-restoration-once.v1';
 
 const STRINGS = {
     ja: {
@@ -68,8 +69,16 @@ function normalizeLang(lang) {
     return lang === 'en' ? 'en' : 'ja';
 }
 
+function armLangScrollRestorationOnce() {
+    try {
+        window.sessionStorage.setItem(LANG_SCROLL_ONCE_KEY, '1');
+    } catch (error) {
+        // sessionStorage may be unavailable in private mode or strict environments.
+    }
+}
+
 // URL・DOM・通知を一括で更新（リロードなし）
-export function setLang(nextLang, { scrollToTop = true } = {}) {
+export function setLang(nextLang, { scrollToTop = true, reload = false } = {}) {
     const previous = detectLang();
     const next = normalizeLang(nextLang);
 
@@ -80,6 +89,12 @@ export function setLang(nextLang, { scrollToTop = true } = {}) {
         url.searchParams.delete('lang');
     } else {
         url.searchParams.set('lang', next);
+    }
+
+    if (reload) {
+        armLangScrollRestorationOnce();
+        window.location.assign(url.toString());
+        return next;
     }
 
     window.history.replaceState(window.history.state, '', url.toString());

@@ -9,8 +9,33 @@
     gtag('js', new Date());
     gtag('config', 'G-X5WQCB3JYT');
   </script>
-  <!-- Keep browser from restoring previous scroll position -->
-  <script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual';</script>
+  <!-- Default: preserve native back/forward restoration.
+       Enable one-shot manual mode only when language-switch flow explicitly requests it. -->
+  <script>
+    (function () {
+      if (!('scrollRestoration' in history)) return;
+
+      var LANG_SCROLL_ONCE_KEY = 'kesson.lang.scroll-restoration-once.v1';
+      var shouldUseManual = false;
+
+      try {
+        shouldUseManual = window.sessionStorage.getItem(LANG_SCROLL_ONCE_KEY) === '1';
+        if (shouldUseManual) {
+          window.sessionStorage.removeItem(LANG_SCROLL_ONCE_KEY);
+        }
+      } catch (error) {
+        shouldUseManual = false;
+      }
+
+      history.scrollRestoration = shouldUseManual ? 'manual' : 'auto';
+
+      if (shouldUseManual) {
+        window.addEventListener('pageshow', function () {
+          history.scrollRestoration = 'auto';
+        }, { once: true });
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>欠損駆動思考 - Kesson Space</title>
