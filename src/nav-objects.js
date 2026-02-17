@@ -543,7 +543,7 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
     if (data.xLogoMesh && data.xLogoMesh.material && data.xLogoMesh.material.uniforms) {
         const u = data.xLogoMesh.material.uniforms;
         if (u.uTime) u.uTime.value = time;
-        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * breathDim * hoverBoost;
+        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * hoverBoost;
         if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
     }
