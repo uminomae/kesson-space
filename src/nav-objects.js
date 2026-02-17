@@ -27,7 +27,7 @@ const XLOGO_MOBILE_BREAKPOINT = 768;
 // 1) 左は固定pxガター（画面幅が変わっても見た目の余白が一定）
 // 2) 右側は固定%を上限（狭幅時に中央へ寄りすぎない）
 const XLOGO_MOBILE_LEFT_GUTTER_PX = 84;
-const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.16;
+const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.12;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const XLOGO_SOLVE_DELTA_X = 1.0;
 const NAV_POSITIONS = [
