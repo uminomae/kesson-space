@@ -22,8 +22,9 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
-// Xロゴは「画面幅に対して5%」を基準位置にする。
-const XLOGO_TARGET_VIEWPORT_PERCENT = 0.05;
+// Xロゴ位置ターゲット（将来ここだけ調整すれば良い）
+const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
+const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.15;  // 上から 15%
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
@@ -169,11 +170,19 @@ function createXLogoGroup() {
 }
 
 function getMobileXLogoViewportPercent() {
-    return XLOGO_TARGET_VIEWPORT_PERCENT;
+    return XLOGO_TARGET_VIEWPORT_X_PERCENT;
+}
+
+function getXLogoViewportTopPercent() {
+    return XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT;
 }
 
 function estimateXLogoHalfWidthWorld() {
     // Hit sprite はレイキャスト用で実体より大きいため、表示境界には使わない。
+    return Math.max(0.08, xLogoParams.meshScale * 0.55);
+}
+
+function estimateXLogoHalfHeightWorld() {
     return Math.max(0.08, xLogoParams.meshScale * 0.55);
 }
 
@@ -198,6 +207,28 @@ function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercen
     return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
 }
 
+function solveXLogoPosYForViewportTopPercent(camera, worldX, worldZ, viewportTopPercent) {
+    if (!camera) return xLogoParams.posY;
+    const topPercent = THREE.MathUtils.clamp(viewportTopPercent, 0.05, 0.95);
+    const targetNdcY = THREE.MathUtils.clamp(1 - (topPercent * 2), -0.95, 0.95);
+    camera.updateMatrixWorld(true);
+    _xLogoSolveMatrix.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse);
+    const e = _xLogoSolveMatrix.elements;
+
+    // clipY = a*y + b, clipW = c*y + d, ndcY = clipY / clipW
+    const a = e[5];
+    const c = e[7];
+    const b = (e[1] * worldX) + (e[9] * worldZ) + e[13];
+    const d = (e[3] * worldX) + (e[11] * worldZ) + e[15];
+    const denom = (targetNdcY * c) - a;
+    if (!Number.isFinite(denom) || Math.abs(denom) < 1e-6) {
+        return xLogoParams.posY;
+    }
+
+    const solved = (b - (targetNdcY * d)) / denom;
+    return Number.isFinite(solved) ? solved : xLogoParams.posY;
+}
+
 function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.posY) {
     if (!camera || typeof camera.updateMatrixWorld !== 'function') {
         return {
@@ -217,19 +248,26 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
 
     const minVisiblePercent = THREE.MathUtils.clamp(halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
     const maxVisiblePercent = 1 - minVisiblePercent;
-    const clampedBasePercent = THREE.MathUtils.clamp(basePercent, minVisiblePercent, maxVisiblePercent);
-    const needsAdjustment = Math.abs(clampedBasePercent - basePercent) > 1e-4;
+    const targetXPercent = THREE.MathUtils.clamp(getMobileXLogoViewportPercent(), minVisiblePercent, maxVisiblePercent);
 
-    const preferredPercent = getMobileXLogoViewportPercent();
-    const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_TARGET_VIEWPORT_PERCENT);
-    const targetPercent = minVisiblePercent > rightBoundPercent
-        ? minVisiblePercent
-        : THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
+    const halfHeightWorld = estimateXLogoHalfHeightWorld();
+    _xLogoSolveVecB.set(xLogoParams.posX, worldY + halfHeightWorld, xLogoParams.posZ).project(camera);
+    const halfNdcY = Math.abs(_xLogoSolveVecB.y - _xLogoSolveVecA.y);
+    const halfTopPercent = halfNdcY * 0.5;
+    const minVisibleTopPercent = THREE.MathUtils.clamp(halfTopPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
+    const maxVisibleTopPercent = 1 - minVisibleTopPercent;
+    const targetYTopPercent = THREE.MathUtils.clamp(getXLogoViewportTopPercent(), minVisibleTopPercent, maxVisibleTopPercent);
 
-    const posX = needsAdjustment || Math.abs(basePercent - targetPercent) > 1e-4
-        ? solveXLogoPosXForViewportPercent(camera, worldY, xLogoParams.posZ, targetPercent)
-        : xLogoParams.posX;
-    return { posX, posY: worldY, posZ: xLogoParams.posZ };
+    // X/Yは互いに弱く依存するため2回解いて収束させる
+    let solvedY = solveXLogoPosYForViewportTopPercent(camera, xLogoParams.posX, xLogoParams.posZ, targetYTopPercent);
+    let solvedX = solveXLogoPosXForViewportPercent(camera, solvedY, xLogoParams.posZ, targetXPercent);
+    solvedY = solveXLogoPosYForViewportTopPercent(camera, solvedX, xLogoParams.posZ, targetYTopPercent);
+
+    return {
+        posX: Number.isFinite(solvedX) ? solvedX : xLogoParams.posX,
+        posY: Number.isFinite(solvedY) ? solvedY : worldY,
+        posZ: xLogoParams.posZ,
+    };
 }
 
 function applyXLogoGroupPosition(group, camera = _xLogoCamera, yOffset = 0) {
@@ -466,9 +504,8 @@ export function updateNavObjects(navMeshes, time, camera) {
 export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    const yFloatOffset = Math.sin(time * 0.5 + 4.0) * 0.5;
-    // 実描画Yに合わせてXを解くことで、投影上のX%誤差を抑える。
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, yFloatOffset);
+    // X/Yともに画面基準%でアンカーする（必要時のみ可視クランプ）。
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
