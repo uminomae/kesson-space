@@ -3,7 +3,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
-import { breathIntensity } from './animation-utils.js';
 import { toggles, gemParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
@@ -148,7 +147,6 @@ function createXLogoGroup() {
                     uGlowStrength: { value: xLogoParams.glowStrength },
                     uRimPower:     { value: xLogoParams.rimPower },
                     uInnerGlow:    { value: xLogoParams.innerGlow },
-                    uBrightness:   { value: 1.0 },
                     uHover:        { value: 0.0 },
                 },
                 vertexShader: xLogoVertexShader,
@@ -516,7 +514,7 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
-export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
+export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
     // グループ位置はビューポートソルバーで確定（浮遊オフセットなし）
@@ -542,14 +540,13 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
         rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
     }
 
-    const breathDim = breathIntensity(breathVal);
     const hoverBoost = _xLogoHover ? 1.25 : 1.0;
     const config = getXLogoMaterialConfig();
 
     if (_xLogoMaterials.length > 0) {
         _xLogoMaterials.forEach((mat) => {
             if (!mat) return;
-            mat.emissiveIntensity = config.emissiveIntensity * breathDim * hoverBoost;
+            mat.emissiveIntensity = config.emissiveIntensity * hoverBoost;
             mat.metalness = config.metalness;
             mat.roughness = config.roughness;
         });
@@ -561,7 +558,6 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
         if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * hoverBoost;
         if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
-        if (u.uBrightness) u.uBrightness.value = breathDim;
     }
 }
 
@@ -679,7 +675,6 @@ export function rebuildXLogo() {
         if (u && u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength;
         if (u && u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u && u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
-        if (u && u.uBrightness) u.uBrightness.value = 1.0;
     }
     if (_xLogoMaterials.length > 0) {
         const config = getXLogoMaterialConfig();

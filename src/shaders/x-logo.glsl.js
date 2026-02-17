@@ -26,7 +26,6 @@ uniform float uTime;
 uniform float uGlowStrength;
 uniform float uRimPower;
 uniform float uInnerGlow;
-uniform float uBrightness;
 uniform float uHover;
 
 varying vec3 vNormal;
@@ -79,7 +78,7 @@ void main() {
     color += baseColor * (fill * 0.85 + glow * 0.6 + inner * 0.2);
     color += rimColor * rim;
 
-    color *= pulse * (1.0 + uHover * 0.25) * uBrightness;
+    color *= pulse * (1.0 + uHover * 0.25);
 
     float alpha = (fill * 0.8 + glow * 0.6 + rim * 0.5) * pulse;
     alpha = clamp(alpha * (1.0 + uHover * 0.3), 0.0, 1.0);
