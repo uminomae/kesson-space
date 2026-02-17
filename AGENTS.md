@@ -54,9 +54,15 @@ Do not cross-commit between worktrees.
 
 ### 3.1 Branch flow
 
-1. Implementation branch → `feature/dev` → `main`
-2. Direct commit/merge to `main` is prohibited
-3. Visual confirmation required before `feature/dev` → `main`
+```
+main（起点）→ 実装ブランチ → feature/dev（統合テスト）→ PR → main
+```
+
+1. 実装ブランチは `main` から作成する
+2. 実装完了後、`feature/dev` にマージして統合テスト
+3. 目視確認OK後、PR を作成（`feature/dev` → `main`）
+4. PR body に `Closes #XX` を含めて Issue を自動クローズ
+5. Direct commit/merge to `main` is prohibited
 
 ### 3.2 Commit format
 
@@ -67,81 +73,64 @@ Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`, `test`
 1. CSS policy: prefer Bootstrap, keep custom CSS minimal
 2. UX policy: mobile-first, prioritize scroll UX
 
-## 5. Review and Issue Rules (Mandatory)
+## 5. Issue-Centric Workflow (Mandatory)
 
-1. Code review: flag `P0` and `P1` findings
-2. After completing a task, close the related GitHub Issue with a confirmation comment
-3. Task management: GitHub Issues are the source of truth (TODO.md is deprecated)
+**GitHub Issues が唯一の正本。** CURRENT.md / TODO.md は廃止済み。
 
-## 6. Completion Report Format (Mandatory)
+### 5.1 Issue as Source of Truth
 
-Codex / Claude Code / その他委譲先エージェントの完了報告は、以下の形式で統一する。
-DT への報告時、およびユーザーが代理報告する場合も同様。
+- タスクの起票・優先度管理・進捗追跡は全て GitHub Issues で行う
+- ラベル P0〜P3 で優先度管理
+- `docs/CURRENT.md`, `docs/TODO.md` は更新しない（廃止済み）
 
+### 5.2 Issue Progress Comments（常駐スキル）
+
+**全エージェントは作業中の Issue に進捗をコメントとして細かく記録する。**
+これにより CURRENT.md の手動更新が不要になり、AI環境差があっても Issue スレッドを読めば現在の状態が分かる。
+
+記録タイミング:
+- **着手時**: ブランチ名、ワークツリーパス、作業方針
+- **中間報告**: 実装の進捗、発生した問題、方針変更
+- **完了時**: 変更ファイル一覧、コミットSHA、テスト結果、未実施事項
+
+コメント例（着手時）:
 ```
-## 完了報告: #{issue番号} {タイトル}
-
-### 環境
-- Issue: #{番号}
-- ワークツリー: {パス}
-- ブランチ: {ブランチ名}
-
-### 実施内容
-- 変更ファイル: {ファイルパス一覧}
-- コミット: {SHA (short)} / ❌ 未コミット（理由）
-- メッセージ: {コミットメッセージ}
-- Push: ✅ origin/{ブランチ名} / ❌ 未Push（理由）
-
-### 検証
-- {テスト名}: {passed/failed 件数}
-- 構文チェック: ✅ / ❌
-- ブラウザ目視: ✅ / ❌ / 未実施（理由）
-- GL error: ✅なし / ❌あり / 未確認
-
-### Issue
-- クローズ: ✅ (コメントURL) / ❌ 未クローズ（理由）
-
-### 未実施事項（あれば）
-- {未実施内容と理由}
+🚀 着手
+- ブランチ: `feature/kesson-codex-app-47`
+- WT: `/Users/uminomae/dev/kesson-codex-app-47`
+- 方針: scroll-coordinator.js に history.scrollRestoration = 'manual' を追加
 ```
 
-### ルール
-
-1. 全フィールド必須。該当なしの場合は「N/A」と記載
-2. テスト結果は passed/failed の数値を必ず含める
-3. 未実施事項がある場合は理由を明記
-4. コミットSHAは short hash (7文字) で記載
-5. Push先は `origin/{ブランチ名}` の形式で明記
-
-### 記入例
-
+コメント例（完了時）:
 ```
-## 完了報告: #36 config re-exportテスト追加
-
-### 環境
-- Issue: #36
-- ワークツリー: /Users/uminomae/dev/kesson-codex-app-test36
-- ブランチ: feature/kesson-codex-app-test36
-
-### 実施内容
-- 変更ファイル: tests/config-exports.test.js (新規)
-- コミット: 27f44d3
-- メッセージ: test: add runtime import verification for config re-export chain (#36)
-- Push: ✅ origin/feature/kesson-codex-app-test36
-
-### 検証
-- config-exports.test.js: 34 passed, 0 failed
-- config-consistency.test.js: 39 passed, 0 failed
-- 構文チェック: ✅
-- ブラウザ目視: N/A（テストのみ）
-- GL error: N/A
-
-### Issue
-- クローズ: ✅ (issuecomment-3911125059)
-
-### 未実施事項
-- なし
+✅ 実装完了
+- コミット: `17b2b0a`
+- 変更: `index.html`, `src/scroll-coordinator.js`
+- テスト: config-consistency 39 passed, node --check pass
+- Push: origin/feature/kesson-codex-app-47
 ```
+
+### 5.3 Issue Close Flow
+
+1. 実装完了 → feature/dev マージ → 目視確認
+2. 目視確認 OK → PR 作成（`Closes #XX` 付き）→ main マージ
+3. Issue 自動クローズ（PR keyword で）
+4. 必要に応じてクローズコメントに確認内容を追記
+
+### 5.4 AI 環境差への対応
+
+Issue コメントは全エージェント（DT / Claude Code / Codex / Gemini）の共通コミュニケーションチャネルとして機能する。エージェント間で環境差があっても、Issue スレッドを読めば現在の状態が分かる。
+
+## 6. Completion Report
+
+完了報告は **Issue コメント（§5.2）と PR body** で行う。
+専用フォーマットファイルは不要。
+
+PR body に含めるもの:
+- 実装概要
+- 変更ファイル一覧
+- テスト結果
+- `Closes #XX`
 
 ## 7. Codex Docs Hub
 

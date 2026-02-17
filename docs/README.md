@@ -1,7 +1,7 @@
 # kesson-space ドキュメントハブ
 
-**バージョン**: 2.2
-**更新日**: 2026-02-15
+**バージョン**: 3.0
+**更新日**: 2026-02-17
 
 本ファイルはドキュメントの目次。詳細は各ファイルを参照。
 
@@ -23,6 +23,17 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 ---
 
+## タスク管理
+
+**GitHub Issues が唯一の正本。**
+→ https://github.com/uminomae/kesson-space/issues
+
+- 進捗追跡: Issue コメントで記録（AGENTS.md §5.2）
+- 優先度: P0〜P3 ラベル
+- 完了: PR の `Closes #XX` で自動クローズ
+
+---
+
 ## ドキュメント構成
 
 ### Tier 1: 毎セッション参照
@@ -30,8 +41,8 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 | ファイル | 内容 |
 |---------|------|
 | [../README.md](../README.md) | セッション起動（エントリーポイント） |
-| [CURRENT.md](./CURRENT.md) | 今セッションの状態・引き継ぎ |
-| [TODO.md](./TODO.md) | タスクバックログ |
+| [../AGENTS.md](../AGENTS.md) | ブランチルール・Issue進捗コメント・品質ガード |
+| [GitHub Issues](https://github.com/uminomae/kesson-space/issues) | タスク正本・進捗追跡 |
 
 ### Tier 2: タスクに応じて参照
 
@@ -56,7 +67,6 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 | ファイル | 内容 |
 |---------|------|
-| [issues/](./issues/) | 大規模タスクの設計書（ISS-NNN） |
 | [prompts/](./prompts/) | Gemini向けプロンプト履歴 |
 | [codex/README.md](./codex/README.md) | Codex App ワークツリー向けの運用メモ置き場 |
 
@@ -100,3 +110,4 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 | 2026-02-14 | 2.0 | ドキュメント階層再構成。詳細を専用ファイルに分離 |
 | 2026-02-15 | 2.1 | 監督構造セクション新設。DT→Claude Code→Codex体系を明文化 |
 | 2026-02-15 | 2.2 | ルートREADMEをセッション起点に再設計。監督構造を参照リンク化 |
+| 2026-02-17 | 3.0 | Issue-Centric移行。CURRENT.md/TODO.md廃止、Issue進捗コメント導入 |

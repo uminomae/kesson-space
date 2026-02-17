@@ -67,26 +67,25 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 
 指示書を受け取ったら、または新セッション開始時に以下を実行:
 
-1. `docs/CURRENT.md` を読んで現在の状態を把握
+1. GitHub Issues（open）を確認して現在の状態を把握
 2. `pwd` でワークツリーを確認（§2テーブルと照合）
 3. `git status && git log --oneline -5` で作業環境を確認
 4. ユーザーに状態レポートを報告:
    - 現在のワークツリー・ブランチ
    - 直近のコミット
-   - 推奨タスク（`docs/TODO.md` の P0/P1）
+   - 推奨タスク（Issue の P0/P1 ラベル）
 5. 負荷判定（🟢低/🟡中/🔴高）— 🔴の場合は分割提案
 
 ## 5. セッション終了チェックリスト
 
 セッション終了前に必ず実行:
 
-- [ ] `docs/CURRENT.md` 更新（セッション番号・実施内容・決定事項・次タスク）
-- [ ] `docs/TODO.md` 更新（完了→完了済み移動、新規タスク追加）
-- [ ] コミット: `docs: session #XX end — update CURRENT/TODO`
+- [ ] 作業中の Issue にコメントで進捗を記録（AGENTS.md §5.2 準拠）
+- [ ] コミット: `docs: session #XX end` （必要に応じて）
 - [ ] `git push origin <branch>`
 - [ ] ユーザーに完了報告
 
-**注意: CURRENT.md / TODO.md の main への反映は DTチャット（Claude.ai プロジェクト）が正本管理者として行う。CLIは自分の作業ブランチ内で更新し push するのみ。main への直接 push は行わない。**
+**注意: main への直接 push は行わない。PR経由でマージする。**
 
 ## 6. 委譲マトリクス
 
@@ -106,15 +105,14 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 
 ### 技術スタック
 
-- Three.js 0.160.0 (ES Modules, importmap, ビルドツールなし)
+- Three.js 0.160.0 (ES Modules, importmap, self-host `vendor/`)
 - Bootstrap 5.3.3 (CDN, `?dev` 時のみ動的ロード)
 - ローカルサーバー: `./serve.sh` → http://localhost:3001/
 - デプロイ: GitHub Pages (main ブランチ直接)
 
 ### 参照リンク
 
-- [docs/CURRENT.md](docs/CURRENT.md) — 進捗・引き継ぎ
-- [docs/TODO.md](docs/TODO.md) — タスクバックログ
+- [GitHub Issues](https://github.com/uminomae/kesson-space/issues) — タスク正本・進捗追跡
 - [docs/AGENT-RULES.md](docs/AGENT-RULES.md) — マルチエージェント運用ルール（完全版）
 - [skills/project-management-agent.md](skills/project-management-agent.md) — 委譲判断・指示書生成
 - [skills/shared-quality.md](skills/shared-quality.md) — コーディング品質基準
