@@ -115,16 +115,31 @@ function persistReturnState(source, sessionId) {
   });
 }
 
-function consumePendingReturnState() {
+function getPendingReturnState() {
   const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
   if (!intent) return null;
-  removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
-
   const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
-  removeSessionKey(DEVLOG_RETURN_STATE_KEY);
   if (!state || !Number.isFinite(state.savedAt)) return null;
   if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
   return state;
+}
+
+function consumePendingReturnState() {
+  const state = getPendingReturnState();
+  removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
+  removeSessionKey(DEVLOG_RETURN_STATE_KEY);
+  return state;
+}
+
+function restoreMainScrollImmediately(state) {
+  const restoreY = Number.isFinite(state?.pageScrollY) ? state.pageScrollY : 0;
+  window.scrollTo(0, restoreY);
+  requestAnimationFrame(() => {
+    window.scrollTo(0, restoreY);
+  });
+  setTimeout(() => {
+    window.scrollTo(0, restoreY);
+  }, 120);
 }
 
 function restoreFromPendingReturnState() {
@@ -523,6 +538,16 @@ if (typeof window !== 'undefined') {
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+      const pending = getPendingReturnState();
+      if (pending && !pending.offcanvasOpen) {
+        restoreMainScrollImmediately(consumePendingReturnState());
+      }
+      if (pending && pending.offcanvasOpen && !isInitialized) {
+        console.log('[devlog] Pending offcanvas return detected, initializing immediately');
+        initDevlogGallery();
+        observer.disconnect();
+        return;
+      }
       const section = document.getElementById('devlog-gallery-section');
       if (section) {
         console.log('[devlog] Observing gallery section');
@@ -532,12 +557,22 @@ if (typeof window !== 'undefined') {
       }
     });
   } else {
+    const pending = getPendingReturnState();
+    if (pending && !pending.offcanvasOpen) {
+      restoreMainScrollImmediately(consumePendingReturnState());
+    }
+    if (pending && pending.offcanvasOpen && !isInitialized) {
+      console.log('[devlog] Pending offcanvas return detected, initializing immediately');
+      initDevlogGallery();
+      observer.disconnect();
+    } else {
     const section = document.getElementById('devlog-gallery-section');
     if (section) {
       console.log('[devlog] Observing gallery section');
       observer.observe(section);
     } else {
       console.warn('[devlog] Gallery section not found');
+    }
     }
   }
 }
