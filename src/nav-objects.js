@@ -24,12 +24,10 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 const TRI_R = 9;
 const XLOGO_MOBILE_BREAKPOINT = 768;
 // モバイルは「デスクトップのアイコン自動整列」風に左カラムへ寄せる。
-// 将来3アイコン縦並びを前提に、カラム中心Xを固定（可視クランプは下流で適用）。
-const XLOGO_MOBILE_STACK_COLUMN_X_PERCENT = 0.12;
-const XLOGO_MOBILE_STACK_MIN_LEFT_PX = 76;
-const XLOGO_MOBILE_STACK_MAX_LEFT_PX = 104;
-const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.1;
-const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.2;
+// 1) 左は固定pxガター（画面幅が変わっても見た目の余白が一定）
+// 2) 右側は固定%を上限（狭幅時に中央へ寄りすぎない）
+const XLOGO_MOBILE_LEFT_GUTTER_PX = 84;
+const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.16;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const XLOGO_SOLVE_DELTA_X = 1.0;
 const NAV_POSITIONS = [
@@ -176,21 +174,11 @@ function createXLogoGroup() {
 
 function getMobileXLogoViewportPercent() {
     if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth) || window.innerWidth <= 0) {
-        return XLOGO_MOBILE_STACK_COLUMN_X_PERCENT;
+        return XLOGO_MOBILE_RIGHT_BOUND_PERCENT;
     }
-    const viewportWidth = window.innerWidth;
-    const rawLeftPx = viewportWidth * XLOGO_MOBILE_STACK_COLUMN_X_PERCENT;
-    const clampedLeftPx = THREE.MathUtils.clamp(
-        rawLeftPx,
-        XLOGO_MOBILE_STACK_MIN_LEFT_PX,
-        XLOGO_MOBILE_STACK_MAX_LEFT_PX
-    );
-    const alignedPercent = clampedLeftPx / viewportWidth;
-    return THREE.MathUtils.clamp(
-        alignedPercent,
-        XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT,
-        XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT
-    );
+    const viewportWidth = Math.max(1, window.innerWidth);
+    const fromLeftPxPercent = XLOGO_MOBILE_LEFT_GUTTER_PX / viewportWidth;
+    return Math.min(fromLeftPxPercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
 }
 
 function solveXLogoPosXForViewportPercent(baseNdcX, slope, viewportPercent) {
@@ -227,19 +215,25 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera) {
     const halfNdc = Math.abs((slope / XLOGO_SOLVE_DELTA_X) * hitHalfWorld);
     const halfPercent = halfNdc * 0.5;
 
-    const requestedPercent = getMobileXLogoViewportPercent();
-    const minVisiblePercent = THREE.MathUtils.clamp(
-        Math.max(requestedPercent, halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT),
-        XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT,
-        0.45
-    );
+    const minVisiblePercent = THREE.MathUtils.clamp(halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
     const maxVisiblePercent = 1 - minVisiblePercent;
-    const clampedPercent = THREE.MathUtils.clamp(basePercent, minVisiblePercent, maxVisiblePercent);
-    const needsAdjustment = Math.abs(clampedPercent - basePercent) > 1e-4;
+    const clampedBasePercent = THREE.MathUtils.clamp(basePercent, minVisiblePercent, maxVisiblePercent);
+    const needsAdjustment = Math.abs(clampedBasePercent - basePercent) > 1e-4;
 
     const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= XLOGO_MOBILE_BREAKPOINT;
-    const posX = (isMobileViewport || needsAdjustment)
-        ? solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, clampedPercent)
+    if (isMobileViewport) {
+        const preferredPercent = getMobileXLogoViewportPercent();
+        const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
+        const targetPercent = THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
+        return {
+            posX: solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, targetPercent),
+            posY: xLogoParams.posY,
+            posZ: xLogoParams.posZ,
+        };
+    }
+
+    const posX = needsAdjustment
+        ? solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, clampedBasePercent)
         : xLogoParams.posX;
     return { posX, posY: xLogoParams.posY, posZ: xLogoParams.posZ };
 }
