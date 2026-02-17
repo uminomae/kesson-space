@@ -24,7 +24,7 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 const TRI_R = 9;
 // Xロゴ位置ターゲット（将来ここだけ調整すれば良い）
 const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
-const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.15;  // 上から 15%
+const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;  // 上から 20%
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
