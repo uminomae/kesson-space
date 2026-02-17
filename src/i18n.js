@@ -74,8 +74,7 @@ export function switchLang() {
     } else {
         url.searchParams.set('lang', next);
     }
-    // Fix #42: ブラウザのスクロール復元を無効化してトップから開始
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    // Fix #42: リロード前に明示的にトップへ戻す（scrollRestoration は index.html <head> で初期化）
     window.scrollTo(0, 0);
     window.location.href = url.toString();
 }
