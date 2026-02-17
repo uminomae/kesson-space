@@ -4,6 +4,7 @@
 import { toggles, breathConfig } from './config.js';
 import { detectLang } from './i18n.js';
 import { requestScroll } from './scroll-coordinator.js';
+import { pxFromViewportHeight } from './nav/responsive.js';
 
 // --- DOM要素キャッシュ ---
 let _overlay;
@@ -95,7 +96,9 @@ export function refreshGuideLang() {
 function isNearBottom() {
     const scrollBottom = window.scrollY + window.innerHeight;
     const docHeight = document.documentElement.scrollHeight;
-    return (docHeight - scrollBottom) < 60;
+    // Phase C: px固定をビューポート基準へ置換（UI近接判定のみ対象）
+    const nearBottomThresholdPx = pxFromViewportHeight(60, { minScale: 0.7, maxScale: 1.4 });
+    return (docHeight - scrollBottom) < nearBottomThresholdPx;
 }
 
 /**
@@ -104,7 +107,8 @@ function isNearBottom() {
  * @param {number} breathVal  - 呼吸値 (0~1)
  */
 export function updateScrollUI(scrollProg, breathVal) {
-    const atTop = window.scrollY < 20;
+    const atTopThresholdPx = pxFromViewportHeight(20, { minScale: 0.7, maxScale: 1.4 });
+    const atTop = window.scrollY < atTopThresholdPx;
     const atBottom = isNearBottom();
 
     // --- 共通フェード係数（credit と同じタイミング） ---
