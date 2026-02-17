@@ -11,6 +11,7 @@
 
 import { requestScroll } from '../scroll-coordinator.js';
 import { createReadMoreButton } from './toggle-buttons.js';
+import { shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
 const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
@@ -34,6 +35,7 @@ let galleryState = {
   isLoading: false,       // 読み込み中フラグ
   offcanvas: null          // Bootstrap Offcanvasインスタンス
 };
+let hasAutoOpenedDevlogOffcanvas = false;
 
 
 function getSessionEndValue(session) {
@@ -437,6 +439,20 @@ function openOffcanvas({ restoreState = null } = {}) {
   galleryState.offcanvas.show();
 }
 
+function openDevlogOffcanvasFromDeepLink(attempt = 0) {
+  if (hasAutoOpenedDevlogOffcanvas || !shouldOpenOffcanvas('devlog')) return;
+
+  if (typeof bootstrap === 'undefined' || !bootstrap.Offcanvas) {
+    if (attempt < 30) {
+      window.setTimeout(() => openDevlogOffcanvasFromDeepLink(attempt + 1), 100);
+    }
+    return;
+  }
+
+  hasAutoOpenedDevlogOffcanvas = true;
+  openOffcanvas();
+}
+
 function setupInfiniteScroll() {
   const { listView, offcanvasBody } = getOffcanvasScrollNodes();
   const targets = [listView, offcanvasBody].filter(Boolean);
@@ -636,6 +652,21 @@ if (typeof window !== 'undefined') {
   const pendingState = loadAndConsumePendingReturnState();
   if (pendingState) {
     runPendingReturnFlow(pendingState);
+  } else if (shouldOpenOffcanvas('devlog')) {
+    const start = () => {
+      if (!isInitialized) {
+        initDevlogGallery();
+      }
+      devlogReadyPromise.then(() => {
+        openDevlogOffcanvasFromDeepLink();
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+      start();
+    }
   } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', observeGallerySection, { once: true });
   } else {

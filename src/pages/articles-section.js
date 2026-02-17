@@ -1,12 +1,15 @@
 // articles-section.js
 // INDEX から切り出した ARTICLES セクション初期化ロジック。
 
+import { shouldOpenOffcanvas } from '../offcanvas-deeplink.js';
+
 const API_URL = 'https://uminomae.github.io/pjdhiro/api/kesson-articles.json';
 const MOCK_URL = './assets/articles/articles.json';
 const INITIAL_DISPLAY = 3;
 const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 
 let hasNotifiedArticlesReady = false;
+let hasAutoOpenedArticlesOffcanvas = false;
 
 function notifyArticlesReady(status = 'ok') {
     if (hasNotifiedArticlesReady || typeof window === 'undefined') return;
@@ -143,6 +146,24 @@ function setupFilters({ articles, filterButtons, offcanvasGrid, offcanvasCount }
     renderOffcanvasArticles(activeType);
 }
 
+function openArticlesOffcanvasFromDeepLink(attempt = 0) {
+    if (hasAutoOpenedArticlesOffcanvas || !shouldOpenOffcanvas('articles')) return;
+
+    const offcanvasEl = document.getElementById('articlesOffcanvas');
+    if (!offcanvasEl) return;
+
+    if (typeof bootstrap === 'undefined' || !bootstrap.Offcanvas) {
+        if (attempt < 30) {
+            window.setTimeout(() => openArticlesOffcanvasFromDeepLink(attempt + 1), 100);
+        }
+        return;
+    }
+
+    hasAutoOpenedArticlesOffcanvas = true;
+    const instance = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+    instance.show();
+}
+
 async function initArticlesSection() {
     const grid = document.getElementById('articles-grid');
     const errorEl = document.getElementById('articles-error');
@@ -184,6 +205,7 @@ async function initArticlesSection() {
     }
 
     notifyArticlesReady('ok');
+    openArticlesOffcanvasFromDeepLink();
 }
 
 async function safeInitArticlesSection() {
