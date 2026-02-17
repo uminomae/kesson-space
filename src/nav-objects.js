@@ -508,7 +508,7 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 
     // 浮遊アニメーション: グループ内の子メッシュに直接適用
-    const floatY = Math.sin(time * 0.6) * 0.15;
+    const floatY = Math.sin(time * 0.6) * 0.30;
     const data = _xLogoGroup.userData;
     if (data.xLogoRoot) {
         data.xLogoRoot.position.y = floatY;
