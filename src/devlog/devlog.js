@@ -35,6 +35,37 @@ function getSessionEndValue(session) {
   return Number.isNaN(value) ? 0 : value;
 }
 
+function waitForImages(rootEl, timeoutMs = 1500) {
+  if (!rootEl) return Promise.resolve();
+  const pendingImages = Array.from(rootEl.querySelectorAll('img')).filter((img) => !img.complete);
+  if (pendingImages.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let resolved = false;
+    let remaining = pendingImages.length;
+
+    const finish = () => {
+      if (resolved) return;
+      resolved = true;
+      resolve();
+    };
+
+    const timer = setTimeout(finish, timeoutMs);
+    const onImageDone = () => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearTimeout(timer);
+        finish();
+      }
+    };
+
+    pendingImages.forEach((img) => {
+      img.addEventListener('load', onImageDone, { once: true });
+      img.addEventListener('error', onImageDone, { once: true });
+    });
+  });
+}
+
 function readSessionJson(key) {
   if (typeof window === 'undefined') return null;
 
@@ -115,11 +146,7 @@ function restoreFromPendingReturnState() {
   }
 
   const restoreY = Number.isFinite(state.pageScrollY) ? state.pageScrollY : 0;
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      window.scrollTo(0, restoreY);
-    });
-  });
+  window.scrollTo(0, restoreY);
 }
 
 /**
@@ -177,6 +204,7 @@ async function loadSessions() {
   galleryState.sessions = sessions;
   console.log('[devlog] Loaded', sessions.length, 'sessions');
   buildGallery();
+  await waitForImages(containerEl);
   restoreFromPendingReturnState();
 }
 
@@ -319,10 +347,22 @@ function openOffcanvas({ restoreState = null } = {}) {
     const restoreScrollTop = Number.isFinite(restoreState.offcanvasScrollTop)
       ? restoreState.offcanvasScrollTop
       : 0;
+    const restorePageY = Number.isFinite(restoreState.pageScrollY)
+      ? restoreState.pageScrollY
+      : 0;
     offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
       offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
       const listView = document.getElementById('offcanvas-list-view');
-      if (listView) listView.scrollTop = restoreScrollTop;
+      window.scrollTo(0, restorePageY);
+      if (listView) {
+        listView.scrollTop = restoreScrollTop;
+        requestAnimationFrame(() => {
+          listView.scrollTop = restoreScrollTop;
+        });
+        waitForImages(galleryEl).then(() => {
+          listView.scrollTop = restoreScrollTop;
+        });
+      }
     });
   }
 
