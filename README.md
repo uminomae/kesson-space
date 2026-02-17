@@ -2,6 +2,9 @@
 
 > 欠損駆動思考の3D体験空間
 
+**⚠️ 本READMEはClaude DT（Claude.ai Desktop / Web チャット）用の運用ルールです。**
+他のエージェント（Claude Code CLI, OpenAI Codex, Gemini等）は [AGENTS.md §0](AGENTS.md) の読み替えガイドに従い、自環境に適用してください。全エージェント共通のルールは [AGENTS.md](AGENTS.md) の §3, §5, §6 を参照。
+
 ---
 
 ## 🔴🔴🔴 最重要ルール: 委譲完了後フロー（絶対遵守）
@@ -13,14 +16,14 @@
 │  1. 実装ブランチを feature/dev にマージ          │
 │  2. ユーザーに pull + サーバー起動コマンド提示    │
 │  3. ⛔ 停止 — ユーザーの目視確認を待つ           │
-│  4. OK → main マージ / NG → fix指示書作成        │
+│  4. OK → PR作成（Closes #XX）→ mainマージ       │
+│     NG → fix指示書作成                           │
 └─────────────────────────────────────────────────┘
 ```
 
 ### 🚫 絶対禁止
 
 - **目視確認前に次タスクに着手すること**
-- **目視確認前に CURRENT.md / TODO.md を更新すること**
 - **目視確認前に新しい指示書を作成すること**
 - **「ドキュメントだけだから」と例外扱いすること**
 - **目視確認待ちの間に feature/dev へ追加コミットすること**
@@ -36,13 +39,9 @@ git pull origin feature/dev
 python3 -m http.server 3001
 # → http://localhost:3001/
 
-# 2. ユーザーが OK と言ったら → main マージ
-cd /Users/uminomae/Documents/GitHub/kesson-space
-git fetch origin
-git checkout main
-git pull origin main
-git merge origin/feature/dev
-git push origin main
+# 2. ユーザーが OK と言ったら → PR作成 → mainマージ
+# GitHub API経由で PR (feature/dev → main) を作成
+# PR body に Closes #XX を含めて Issue 自動クローズ
 ```
 
 ---
@@ -53,7 +52,7 @@ git push origin main
 
 DTの役割は以下に限定する:
 - プロジェクト管理・タスク分析・指示書作成
-- ドキュメント（README, CURRENT.md, TODO.md等）の更新
+- ドキュメント（README等）の更新
 - GitHub API経由のマージ・PR操作
 - バグ分析・CSS比較等のレビュー作業
 
@@ -70,7 +69,7 @@ DTの役割は以下に限定する:
 1. 実装ブランチ → feature/dev マージ **直後に停止**
 2. ユーザーにpull + サーバー起動コマンドを提示
 3. **ユーザーが「OK」または「問題あり」を回答するまで待機**
-4. OK → main マージへ進む / 問題あり → fix指示書を作成
+4. OK → PR作成（`Closes #XX`）→ mainマージ / 問題あり → fix指示書を作成
 
 ### 禁止事項
 
@@ -78,32 +77,12 @@ DTの役割は以下に限定する:
 - 目視確認をスキップして次タスクに着手すること
 - 「ドキュメント更新だけだから」と例外扱いすること
 
-### マージ → 目視確認 → main の流れ
-
-```bash
-# 1. 目視チェック（DT確認用ワークツリー）
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
-git fetch origin
-git checkout feature/dev
-git pull origin feature/dev
-python3 -m http.server 3001
-# → http://localhost:3001/
-
-# 2. OK後に main マージ（mainワークツリー）
-cd /Users/uminomae/Documents/GitHub/kesson-space
-git fetch origin
-git checkout main
-git pull origin main
-git merge origin/feature/dev
-git push origin main
-```
-
 ### ワークツリー使い分け
 
 | 操作 | ワークツリー | パス |
 |---|---|---|
 | 目視確認 | **claudeDT** | `/Users/uminomae/Documents/GitHub/kesson-space-claudeDT` |
-| mainマージ | **main** | `/Users/uminomae/Documents/GitHub/kesson-space` |
+| mainマージ | **GitHub API** | PR経由 |
 
 ---
 
@@ -119,6 +98,7 @@ git push origin main
 | エージェント | 役割 | 詳細 |
 |---|---|---|
 | 📋 プロジェクト管理 | タスク委譲・指示書生成 | [skills/project-management-agent.md](skills/project-management-agent.md) |
+| 📝 Issue進捗記録 | 作業中Issueにコメント記録 | [AGENTS.md §5.2](AGENTS.md) |
 | 🩺 セッションヘルス | コンテキスト監視 | [docs/AGENT-RULES.md §8](docs/AGENT-RULES.md) |
 | 🔎 PKガード | ドキュメント参照最適化 | [docs/AGENT-RULES.md §7](docs/AGENT-RULES.md) |
 
@@ -129,7 +109,8 @@ git push origin main
 
 ### Step 2: 状態確認
 
-→ [docs/CURRENT.md](docs/CURRENT.md) を読む
+→ [GitHub Issues](https://github.com/uminomae/kesson-space/issues) の open 一覧を確認
+→ P0/P1 ラベルの Issue を優先把握
 
 ### Step 3: ワークツリー確認
 
@@ -179,12 +160,14 @@ DTセッション中のコンテキスト消費を抑制するための一時フ
 ## ブランチ戦略
 
 ```
-実装ブランチ → feature/dev（🔴目視確認ゲート） → main（本番デプロイ）
+main（起点）→ 実装ブランチ → feature/dev（🔴目視確認ゲート）→ PR（Closes #XX）→ main
 ```
 
 - `main` への直接コミット禁止
+- 実装ブランチは `main` から作成する
 - `feature/dev` は目視確認用のステージング
 - **feature/dev マージ後、目視確認OKまで追加コミット禁止**
+- 目視確認OK後、PR を作成して main にマージ
 - 実装ブランチは `claude/*` または `feature/*` 命名
 
 ---
