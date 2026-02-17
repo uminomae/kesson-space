@@ -22,12 +22,9 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
-const XLOGO_MOBILE_BREAKPOINT = 768;
-// モバイルは「デスクトップのアイコン自動整列」風に左カラムへ寄せる。
-// 1) 左は固定pxガター（画面幅が変わっても見た目の余白が一定）
-// 2) 右側は固定%を上限（狭幅時に中央へ寄りすぎない）
+// Xロゴは「左固定px + 右固定%上限」で配置する。
 const XLOGO_MOBILE_LEFT_GUTTER_PX = 84;
-const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.12;
+const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.10;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
@@ -207,20 +204,20 @@ function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercen
     return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
 }
 
-function getResponsiveXLogoPosition(camera = _xLogoCamera) {
+function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.posY) {
     if (!camera || typeof camera.updateMatrixWorld !== 'function') {
         return {
             posX: -Math.max(1, Math.abs(xLogoParams.posX)),
-            posY: xLogoParams.posY,
+            posY: worldY,
             posZ: xLogoParams.posZ,
         };
     }
 
     camera.updateMatrixWorld(true);
-    _xLogoSolveVecA.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ).project(camera);
+    _xLogoSolveVecA.set(xLogoParams.posX, worldY, xLogoParams.posZ).project(camera);
     const basePercent = (_xLogoSolveVecA.x + 1) * 0.5;
     const halfWorld = estimateXLogoHalfWidthWorld();
-    _xLogoSolveVecB.set(xLogoParams.posX + halfWorld, xLogoParams.posY, xLogoParams.posZ).project(camera);
+    _xLogoSolveVecB.set(xLogoParams.posX + halfWorld, worldY, xLogoParams.posZ).project(camera);
     const halfNdc = Math.abs(_xLogoSolveVecB.x - _xLogoSolveVecA.x);
     const halfPercent = halfNdc * 0.5;
 
@@ -229,31 +226,23 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera) {
     const clampedBasePercent = THREE.MathUtils.clamp(basePercent, minVisiblePercent, maxVisiblePercent);
     const needsAdjustment = Math.abs(clampedBasePercent - basePercent) > 1e-4;
 
-    const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= XLOGO_MOBILE_BREAKPOINT;
-    if (isMobileViewport) {
-        const preferredPercent = getMobileXLogoViewportPercent();
-        const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
-        // 右側固定%を優先。可視クランプがそれを上回る場合でも、モバイルでは右に寄せ過ぎない。
-        const targetPercent = minVisiblePercent > rightBoundPercent
-            ? rightBoundPercent
-            : THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
-        return {
-            posX: solveXLogoPosXForViewportPercent(camera, xLogoParams.posY, xLogoParams.posZ, targetPercent),
-            posY: xLogoParams.posY,
-            posZ: xLogoParams.posZ,
-        };
-    }
+    const preferredPercent = getMobileXLogoViewportPercent();
+    const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
+    const targetPercent = minVisiblePercent > rightBoundPercent
+        ? minVisiblePercent
+        : THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
 
-    const posX = needsAdjustment
-        ? solveXLogoPosXForViewportPercent(camera, xLogoParams.posY, xLogoParams.posZ, clampedBasePercent)
+    const posX = needsAdjustment || Math.abs(basePercent - targetPercent) > 1e-4
+        ? solveXLogoPosXForViewportPercent(camera, worldY, xLogoParams.posZ, targetPercent)
         : xLogoParams.posX;
-    return { posX, posY: xLogoParams.posY, posZ: xLogoParams.posZ };
+    return { posX, posY: worldY, posZ: xLogoParams.posZ };
 }
 
-function applyXLogoGroupPosition(group, camera = _xLogoCamera) {
+function applyXLogoGroupPosition(group, camera = _xLogoCamera, yOffset = 0) {
     if (!group) return;
-    const { posX, posY, posZ } = getResponsiveXLogoPosition(camera);
-    group.userData.baseY = posY;
+    const worldY = xLogoParams.posY + yOffset;
+    const { posX, posY, posZ } = getResponsiveXLogoPosition(camera, worldY);
+    group.userData.baseY = xLogoParams.posY;
     group.position.set(posX, posY, posZ);
 }
 
@@ -483,15 +472,15 @@ export function updateNavObjects(navMeshes, time, camera) {
 export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    // X オブジェクトは「モバイル時のみ画面幅%起点」で再配置し、狭幅でも画面内に収める。
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
+    const yFloatOffset = Math.sin(time * 0.5 + 4.0) * 0.5;
+    // 実描画Yに合わせてXを解くことで、投影上のX%誤差を抑える。
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, yFloatOffset);
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
     if (!_xLogoGroup.visible) return;
 
     const data = _xLogoGroup.userData;
-    _xLogoGroup.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
 
     const rotTarget = data.xLogoRoot || data.xLogoMesh;
     if (rotTarget) {
