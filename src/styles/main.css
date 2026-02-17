@@ -1238,3 +1238,21 @@
     .dev-export-btn {
       font-size: 0.68rem;
     }
+
+    /* ============================
+       Tech Stack Footer（左下、控えめ）
+       ============================ */
+    #tech-footer {
+      position: relative;
+      z-index: 5;
+      text-align: left;
+      padding: 2rem 3% 1.5rem;
+      pointer-events: none;
+    }
+    .tech-footer-line {
+      font-size: clamp(0.35rem, 1.5vmin, 0.55rem);
+      color: rgba(150, 175, 210, 0.25);
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+    }
