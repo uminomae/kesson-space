@@ -15,10 +15,16 @@ const SESSIONS_URL = './assets/devlog/sessions.json';
 const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
 const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
 const DEVLOG_RETURN_TTL_MS = 30 * 60 * 1000;
+const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 
 let sessions = [];
 let isInitialized = false;
 let containerEl = null;
+let devlogReadyResolved = false;
+let resolveDevlogReady = null;
+const devlogReadyPromise = new Promise((resolve) => {
+  resolveDevlogReady = resolve;
+});
 
 let galleryState = {
   sessions: [],           // 全セッションデータ
@@ -33,6 +39,12 @@ function getSessionEndValue(session) {
   const end = session.end || session.start;
   const value = end ? Date.parse(end) : 0;
   return Number.isNaN(value) ? 0 : value;
+}
+
+function markDevlogReady() {
+  if (devlogReadyResolved) return;
+  devlogReadyResolved = true;
+  if (resolveDevlogReady) resolveDevlogReady();
 }
 
 function waitForImages(rootEl, timeoutMs = 1500) {
@@ -115,59 +127,45 @@ function persistReturnState(source, sessionId) {
   });
 }
 
-function getPendingReturnState() {
+function loadAndConsumePendingReturnState() {
   const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
   if (!intent) return null;
-  const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
-  if (!state || !Number.isFinite(state.savedAt)) return null;
-  if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
-  return state;
-}
 
-function consumePendingReturnState() {
-  const state = getPendingReturnState();
+  const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
   removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
   removeSessionKey(DEVLOG_RETURN_STATE_KEY);
+
+  if (!state || !Number.isFinite(state.savedAt)) return null;
+  if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
+  if (!Number.isFinite(state.pageScrollY)) return null;
+
   return state;
 }
 
-function restoreMainScrollImmediately(state) {
-  const restoreY = Number.isFinite(state?.pageScrollY) ? state.pageScrollY : 0;
-  const applyIfNearTop = () => {
-    if (window.scrollY <= 8) {
-      window.scrollTo(0, restoreY);
-    }
-  };
+function waitForArticlesReady(timeoutMs = 3000) {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (window.__kessonArticlesReady === true) return Promise.resolve();
 
-  applyIfNearTop();
-  requestAnimationFrame(() => {
-    applyIfNearTop();
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener(ARTICLES_READY_EVENT, onReady);
+      clearTimeout(timer);
+      resolve();
+    };
+    const onReady = () => finish();
+    const timer = setTimeout(finish, timeoutMs);
+    window.addEventListener(ARTICLES_READY_EVENT, onReady, { once: true });
   });
-  setTimeout(() => {
-    applyIfNearTop();
-  }, 120);
 }
 
-function restoreFromPendingReturnState() {
-  const state = consumePendingReturnState();
-  if (!state) return;
-
-  if (state.offcanvasOpen) {
-    const openWithRestore = () => openOffcanvas({ restoreState: state });
-    if (typeof bootstrap === 'undefined') {
-      if (document.readyState === 'complete') {
-        setTimeout(openWithRestore, 0);
-      } else {
-        window.addEventListener('load', openWithRestore, { once: true });
-      }
-      return;
-    }
-    openWithRestore();
-    return;
-  }
-
-  const restoreY = Number.isFinite(state.pageScrollY) ? state.pageScrollY : 0;
-  window.scrollTo(0, restoreY);
+function restoreMainPageScroll(state) {
+  const restoreY = Number.isFinite(state?.pageScrollY) ? state.pageScrollY : 0;
+  requestAnimationFrame(() => {
+    window.scrollTo(0, restoreY);
+  });
 }
 
 /**
@@ -226,7 +224,7 @@ async function loadSessions() {
   console.log('[devlog] Loaded', sessions.length, 'sessions');
   buildGallery();
   await waitForImages(containerEl);
-  restoreFromPendingReturnState();
+  markDevlogReady();
 }
 
 function generateDemoData() {
@@ -374,14 +372,9 @@ function openOffcanvas({ restoreState = null } = {}) {
     offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
       offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
       const listView = document.getElementById('offcanvas-list-view');
-      if (window.scrollY <= 8) {
-        window.scrollTo(0, restorePageY);
-      }
+      window.scrollTo(0, restorePageY);
       if (listView) {
         listView.scrollTop = restoreScrollTop;
-        requestAnimationFrame(() => {
-          listView.scrollTop = restoreScrollTop;
-        });
         waitForImages(galleryEl).then(() => {
           listView.scrollTop = restoreScrollTop;
         });
@@ -532,10 +525,9 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Auto-initialize when gallery section is visible (IntersectionObserver)
-if (typeof window !== 'undefined') {
+function observeGallerySection() {
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting && !isInitialized) {
         console.log('[devlog] Section visible, initializing gallery');
         initDevlogGallery();
@@ -544,43 +536,48 @@ if (typeof window !== 'undefined') {
     });
   }, { threshold: 0.1 });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      const pending = getPendingReturnState();
-      if (pending && !pending.offcanvasOpen) {
-        restoreMainScrollImmediately(consumePendingReturnState());
-      }
-      if (pending && pending.offcanvasOpen && !isInitialized) {
-        console.log('[devlog] Pending offcanvas return detected, initializing immediately');
-        initDevlogGallery();
-        observer.disconnect();
-        return;
-      }
-      const section = document.getElementById('devlog-gallery-section');
-      if (section) {
-        console.log('[devlog] Observing gallery section');
-        observer.observe(section);
-      } else {
-        console.warn('[devlog] Gallery section not found');
-      }
-    });
+  const section = document.getElementById('devlog-gallery-section');
+  if (section) {
+    console.log('[devlog] Observing gallery section');
+    observer.observe(section);
   } else {
-    const pending = getPendingReturnState();
-    if (pending && !pending.offcanvasOpen) {
-      restoreMainScrollImmediately(consumePendingReturnState());
-    }
-    if (pending && pending.offcanvasOpen && !isInitialized) {
-      console.log('[devlog] Pending offcanvas return detected, initializing immediately');
+    console.warn('[devlog] Gallery section not found');
+  }
+}
+
+function runPendingReturnFlow(pendingState) {
+  const start = () => {
+    if (!isInitialized) {
       initDevlogGallery();
-      observer.disconnect();
-    } else {
-    const section = document.getElementById('devlog-gallery-section');
-    if (section) {
-      console.log('[devlog] Observing gallery section');
-      observer.observe(section);
-    } else {
-      console.warn('[devlog] Gallery section not found');
     }
+
+    if (pendingState.offcanvasOpen) {
+      devlogReadyPromise.then(() => {
+        openOffcanvas({ restoreState: pendingState });
+      });
+      return;
     }
+
+    Promise.all([devlogReadyPromise, waitForArticlesReady()]).then(() => {
+      restoreMainPageScroll(pendingState);
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+}
+
+// Auto-initialize and return restoration bootstrap
+if (typeof window !== 'undefined') {
+  const pendingState = loadAndConsumePendingReturnState();
+  if (pendingState) {
+    runPendingReturnFlow(pendingState);
+  } else if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeGallerySection, { once: true });
+  } else {
+    observeGallerySection();
   }
 }
