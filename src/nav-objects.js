@@ -504,8 +504,9 @@ export function updateNavObjects(navMeshes, time, camera) {
 export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    // X/Yともに画面基準%でアンカーする（必要時のみ可視クランプ）。
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
+    // 浮遊アニメーション（ゆらゆら）
+    const floatOffset = Math.sin(time * 0.6) * 0.15;
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, floatOffset);
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
