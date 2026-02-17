@@ -270,12 +270,12 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
     };
 }
 
-function applyXLogoGroupPosition(group, camera = _xLogoCamera, yOffset = 0) {
+function applyXLogoGroupPosition(group, camera = _xLogoCamera) {
     if (!group) return;
     const worldY = xLogoParams.posY;
     const { posX, posY, posZ } = getResponsiveXLogoPosition(camera, worldY);
     group.userData.baseY = xLogoParams.posY;
-    group.position.set(posX, posY + yOffset, posZ);
+    group.position.set(posX, posY, posZ);
 }
 
 // --- devPanelからのパラメータ更新 ---
@@ -504,15 +504,21 @@ export function updateNavObjects(navMeshes, time, camera) {
 export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    // 浮遊アニメーション（ゆらゆら）
-    const floatOffset = Math.sin(time * 0.6) * 0.15;
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, floatOffset);
+    // グループ位置はビューポートソルバーで確定（浮遊オフセットなし）
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
+
+    // 浮遊アニメーション: グループ内の子メッシュに直接適用
+    const floatY = Math.sin(time * 0.6) * 0.15;
+    const data = _xLogoGroup.userData;
+    if (data.xLogoRoot) {
+        data.xLogoRoot.position.y = floatY;
+    } else if (data.xLogoMesh) {
+        data.xLogoMesh.position.y = floatY;
+    }
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
     if (!_xLogoGroup.visible) return;
-
-    const data = _xLogoGroup.userData;
 
     const rotTarget = data.xLogoRoot || data.xLogoMesh;
     if (rotTarget) {
