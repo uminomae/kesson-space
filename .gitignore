@@ -4,6 +4,8 @@ node_modules/
 # Build
 dist/
 build/
+!vendor/three@0.160.0/build/
+!vendor/three@0.160.0/build/three.module.js
 
 # IDE
 .vscode/
