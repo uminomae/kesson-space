@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { breathValue } from '../animation-utils.js';
+import { breathIntensity, breathValue } from '../animation-utils.js';
 import { distortionParams, fluidParams } from '../config.js';
 
 export function createNavMeshFinder(scene) {
@@ -58,6 +58,8 @@ export function startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
+    xLogoAmbient,
+    xLogoKey,
 }) {
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
@@ -75,6 +77,10 @@ export function startRenderLoop({
         const time = clock.getElapsedTime();
 
         const breathVal = breathValue(time, breathConfig.period);
+        // xLogoシーンのライトをメインの呼吸に同期（暗部を強く、明部は1.3まで）
+        const breathDim = breathIntensity(breathVal);
+        if (xLogoAmbient) xLogoAmbient.intensity = 0.6 * breathDim;
+        if (xLogoKey) xLogoKey.intensity = 0.9 * breathDim;
         const scrollProg = getScrollProgress();
         updateScrollUI(scrollProg, breathVal);
 
@@ -85,7 +91,7 @@ export function startRenderLoop({
         syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
-        updateXLogo(time, xLogoCamera);
+        updateXLogo(time, xLogoCamera, breathVal);
 
         const navs = findNavMeshes();
 
@@ -160,9 +166,9 @@ export function startRenderLoop({
             composer.render();
         } else {
             renderer.render(scene, camera);
+            renderer.clearDepth();
+            renderer.render(xLogoScene, xLogoCamera);
         }
-        renderer.clearDepth();
-        renderer.render(xLogoScene, xLogoCamera);
     }
 
     animate();

@@ -1,4 +1,5 @@
 import { getRawMouse } from '../mouse-state.js';
+import { pxFromViewportHeight } from './responsive.js';
 
 export function createNavLabelButton({
     text,
@@ -110,8 +111,11 @@ export function updateLabelPosition({ el, worldPos, yOffset, camera, scrollFade 
     const gazeScreenY = 1.0 - gaze.y;
     const dy = labelNdcY - gazeScreenY;
     const gazeDist = Math.sqrt(dx * dx + dy * dy);
-    const blurPx = Math.max(0, (gazeDist - 0.15) * 8.0);
-    const clampedBlur = Math.min(blurPx, 4.0);
+    // Phase C: ブラー演出のpxしきい値のみレスポンシブ化（材質などの演出定数は対象外）
+    const blurGain = pxFromViewportHeight(8.0, { minScale: 0.85, maxScale: 1.25 });
+    const blurMax = pxFromViewportHeight(4.0, { minScale: 0.85, maxScale: 1.25 });
+    const blurPx = Math.max(0, (gazeDist - 0.15) * blurGain);
+    const clampedBlur = Math.min(blurPx, blurMax);
     el.style.filter = `blur(${clampedBlur.toFixed(1)}px)`;
     el.style.opacity = String(scrollFade);
     el.style.pointerEvents = scrollFade > 0.1 ? 'auto' : 'none';

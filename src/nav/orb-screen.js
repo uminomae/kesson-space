@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 
-const ORB_3D_RADIUS = 2.0;
 const FOCUSED_ORB_STRENGTH_BOOST = 0.35;
 const FOCUSED_ORB_STRENGTH_MAX = 1.35;
 
@@ -10,6 +9,14 @@ const _camRight = new THREE.Vector3();
 const _centerView = new THREE.Vector3();
 const _centerNDC = new THREE.Vector3();
 const _edgeNDC = new THREE.Vector3();
+
+function getOrbWorldRadius(group) {
+    const coreScaleX = group?.userData?.core?.scale?.x;
+    if (Number.isFinite(coreScaleX) && coreScaleX > 0) {
+        return coreScaleX * 0.5;
+    }
+    return 2.0;
+}
 
 export function computeOrbScreenData(navMeshes, camera, focusedOrbIndex) {
     const data = [];
@@ -23,7 +30,7 @@ export function computeOrbScreenData(navMeshes, camera, focusedOrbIndex) {
         }
         camera.getWorldDirection(_camRight);
         _camRight.cross(camera.up).normalize();
-        _orbEdge.copy(_orbCenter).addScaledVector(_camRight, ORB_3D_RADIUS);
+        _orbEdge.copy(_orbCenter).addScaledVector(_camRight, getOrbWorldRadius(group));
 
         _centerNDC.copy(_orbCenter).project(camera);
         _edgeNDC.copy(_orbEdge).project(camera);

@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
+import { breathIntensity } from './animation-utils.js';
 import { toggles, gemParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
@@ -19,6 +20,7 @@ import {
     updateLabelPosition as updateSingleLabel,
 } from './nav/labels.js';
 import { computeOrbScreenData } from './nav/orb-screen.js';
+import { interactionWorldFromViewportHeight, worldFromViewportHeight } from './nav/responsive.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
@@ -26,6 +28,7 @@ const TRI_R = 9;
 const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
 const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;  // 上から 20%
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
+const ORB_HIT_BASE_SCALE = 4.0;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
     { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
@@ -53,6 +56,10 @@ function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
         _gemMesh = mesh;
     });
+}
+
+function getResponsiveOrbHitScale() {
+    return interactionWorldFromViewportHeight(ORB_HIT_BASE_SCALE);
 }
 
 // ========================================
@@ -270,9 +277,9 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
     };
 }
 
-function applyXLogoGroupPosition(group, camera = _xLogoCamera, yOffset = 0) {
+function applyXLogoGroupPosition(group, camera = _xLogoCamera) {
     if (!group) return;
-    const worldY = xLogoParams.posY + yOffset;
+    const worldY = xLogoParams.posY;
     const { posX, posY, posZ } = getResponsiveXLogoPosition(camera, worldY);
     group.userData.baseY = xLogoParams.posY;
     group.position.set(posX, posY, posZ);
@@ -331,7 +338,8 @@ export function createNavObjects(scene) {
             depthWrite: false,
         });
         const coreSprite = new THREE.Sprite(hitMaterial);
-        coreSprite.scale.set(4.0, 4.0, 4.0);
+        const orbHitScale = getResponsiveOrbHitScale();
+        coreSprite.scale.set(orbHitScale, orbHitScale, orbHitScale);
 
         coreSprite.userData = {
             type: 'nav',
@@ -348,7 +356,7 @@ export function createNavObjects(scene) {
             baseY: pos.position[1],
             index: index,
             core: coreSprite,
-            baseScale: 4.0,
+            baseScale: orbHitScale,
         };
 
         scene.add(group);
@@ -489,30 +497,43 @@ export function refreshNavLanguage() {
 }
 
 export function updateNavObjects(navMeshes, time, camera) {
+    const orbFloatAmplitude = worldFromViewportHeight(0.3);
+    const orbHitScale = getResponsiveOrbHitScale();
     navMeshes.forEach((obj) => {
         const data = obj.userData;
 
         if (data.isGem) {
             updateGemGroupAnimation(obj, time);
         } else {
-            const floatOffset = Math.sin(time * 0.8 + data.index) * 0.3;
+            if (data.core) {
+                data.core.scale.set(orbHitScale, orbHitScale, orbHitScale);
+                data.baseScale = orbHitScale;
+            }
+            const floatOffset = Math.sin(time * 0.8 + data.index) * orbFloatAmplitude;
             obj.position.y = data.baseY + floatOffset;
         }
     });
 }
 
-export function updateXLogo(time, camera = _xLogoCamera) {
+export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    // 浮遊アニメーション（ゆらゆら）
-    const floatOffset = Math.sin(time * 0.6) * 0.15;
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, floatOffset);
+    // グループ位置はビューポートソルバーで確定（浮遊オフセットなし）
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
+
+    // 浮遊アニメーション: グループ内の子メッシュに直接適用
+    const xLogoFloatAmplitude = worldFromViewportHeight(0.30);
+    const floatY = Math.sin(time * 0.6) * xLogoFloatAmplitude;
+    const data = _xLogoGroup.userData;
+    if (data.xLogoRoot) {
+        data.xLogoRoot.position.y = floatY;
+    } else if (data.xLogoMesh) {
+        data.xLogoMesh.position.y = floatY;
+    }
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
     if (!_xLogoGroup.visible) return;
-
-    const data = _xLogoGroup.userData;
 
     const rotTarget = data.xLogoRoot || data.xLogoMesh;
     if (rotTarget) {
@@ -520,14 +541,14 @@ export function updateXLogo(time, camera = _xLogoCamera) {
         rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
     }
 
-    const pulse = 1.0 + Math.sin(time * 0.6) * 0.06;
+    const breathDim = breathIntensity(breathVal);
     const hoverBoost = _xLogoHover ? 1.25 : 1.0;
     const config = getXLogoMaterialConfig();
 
     if (_xLogoMaterials.length > 0) {
         _xLogoMaterials.forEach((mat) => {
             if (!mat) return;
-            mat.emissiveIntensity = config.emissiveIntensity * pulse * hoverBoost;
+            mat.emissiveIntensity = config.emissiveIntensity * breathDim * hoverBoost;
             mat.metalness = config.metalness;
             mat.roughness = config.roughness;
         });
@@ -536,7 +557,7 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     if (data.xLogoMesh && data.xLogoMesh.material && data.xLogoMesh.material.uniforms) {
         const u = data.xLogoMesh.material.uniforms;
         if (u.uTime) u.uTime.value = time;
-        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * pulse * hoverBoost;
+        if (u.uGlowStrength) u.uGlowStrength.value = xLogoParams.glowStrength * hoverBoost;
         if (u.uRimPower) u.uRimPower.value = xLogoParams.rimPower;
         if (u.uInnerGlow) u.uInnerGlow.value = xLogoParams.innerGlow;
     }
@@ -569,6 +590,8 @@ const LABEL_Y_OFFSET = 3.5;
 export function updateNavLabels(navMeshes, camera) {
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
+    const orbLabelYOffset = worldFromViewportHeight(LABEL_Y_OFFSET);
+    const gemLabelYOffset = worldFromViewportHeight(gemParams.labelYOffset);
 
     navMeshes.forEach((group, i) => {
         if (group.userData.isGem || group.userData.isXLogo) return;
@@ -586,7 +609,7 @@ export function updateNavLabels(navMeshes, camera) {
         updateSingleLabel({
             el,
             worldPos: _labelWorldPos,
-            yOffset: LABEL_Y_OFFSET,
+            yOffset: orbLabelYOffset,
             camera,
             scrollFade,
         });
@@ -603,7 +626,7 @@ export function updateNavLabels(navMeshes, camera) {
         updateSingleLabel({
             el: _gemLabelElement,
             worldPos: _labelWorldPos,
-            yOffset: gemParams.labelYOffset,
+            yOffset: gemLabelYOffset,
             camera,
             scrollFade,
         });
@@ -613,6 +636,7 @@ export function updateNavLabels(navMeshes, camera) {
 export function updateXLogoLabel(camera) {
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
+    const xLogoLabelYOffset = worldFromViewportHeight(xLogoParams.labelYOffset);
 
     if (_xLogoLabelElement && _xLogoGroup) {
         if (!visible || scrollFade <= 0) {
@@ -625,7 +649,7 @@ export function updateXLogoLabel(camera) {
         updateSingleLabel({
             el: _xLogoLabelElement,
             worldPos: _labelWorldPos,
-            yOffset: xLogoParams.labelYOffset,
+            yOffset: xLogoLabelYOffset,
             camera,
             scrollFade,
         });

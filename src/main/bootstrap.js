@@ -32,6 +32,10 @@ export function bootstrapMainScene(container) {
 
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
+    const xLogoPass = new RenderPass(xLogoScene, xLogoCamera);
+    xLogoPass.clear = false;
+    xLogoPass.clearDepth = true;
+    composer.addPass(xLogoPass);
 
     const distortionPass = new ShaderPass(DistortionShader);
     composer.addPass(distortionPass);
@@ -56,5 +60,7 @@ export function bootstrapMainScene(container) {
         xLogoScene,
         xLogoCamera,
         xLogoGroup,
+        xLogoAmbient,
+        xLogoKey,
     };
 }
