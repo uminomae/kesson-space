@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { breathValue } from '../animation-utils.js';
+import { distortionParams, fluidParams } from '../config.js';
 
 export function createNavMeshFinder(scene) {
     let navMeshesCache = [];
@@ -78,6 +79,7 @@ export function startRenderLoop({
         const navs = findNavMeshes();
 
         if (toggles.fluidField) {
+            distortionPass.uniforms.uFluidInfluence.value = fluidParams.influence;
             fluidSystem.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
             fluidSystem.uniforms.uMouseVelocity.value.set(mouse.velX, mouse.velY);
             fluidSystem.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
@@ -123,8 +125,19 @@ export function startRenderLoop({
         distortionPass.uniforms.uTime.value = time;
         distortionPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
 
-        if (!toggles.heatHaze) distortionPass.uniforms.uHeatHaze.value = 0;
-        if (!toggles.dof) distortionPass.uniforms.uDofStrength.value = 0;
+        if (toggles.heatHaze) {
+            distortionPass.uniforms.uHeatHaze.value = distortionParams.heatHaze;
+            distortionPass.uniforms.uHeatHazeRadius.value = distortionParams.heatHazeRadius;
+            distortionPass.uniforms.uHeatHazeSpeed.value = distortionParams.heatHazeSpeed;
+        } else {
+            distortionPass.uniforms.uHeatHaze.value = 0;
+        }
+        if (toggles.dof) {
+            distortionPass.uniforms.uDofStrength.value = distortionParams.dofStrength;
+            distortionPass.uniforms.uDofFocusRadius.value = distortionParams.dofFocusRadius;
+        } else {
+            distortionPass.uniforms.uDofStrength.value = 0;
+        }
 
         updateNavLabels(navs, camera);
         updateXLogoLabel(xLogoCamera);
