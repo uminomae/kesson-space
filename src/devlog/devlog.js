@@ -133,12 +133,18 @@ function consumePendingReturnState() {
 
 function restoreMainScrollImmediately(state) {
   const restoreY = Number.isFinite(state?.pageScrollY) ? state.pageScrollY : 0;
-  window.scrollTo(0, restoreY);
+  const applyIfNearTop = () => {
+    if (window.scrollY <= 8) {
+      window.scrollTo(0, restoreY);
+    }
+  };
+
+  applyIfNearTop();
   requestAnimationFrame(() => {
-    window.scrollTo(0, restoreY);
+    applyIfNearTop();
   });
   setTimeout(() => {
-    window.scrollTo(0, restoreY);
+    applyIfNearTop();
   }, 120);
 }
 
@@ -368,7 +374,9 @@ function openOffcanvas({ restoreState = null } = {}) {
     offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
       offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
       const listView = document.getElementById('offcanvas-list-view');
-      window.scrollTo(0, restorePageY);
+      if (window.scrollY <= 8) {
+        window.scrollTo(0, restorePageY);
+      }
       if (listView) {
         listView.scrollTop = restoreScrollTop;
         requestAnimationFrame(() => {
