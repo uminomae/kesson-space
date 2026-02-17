@@ -23,18 +23,16 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
 | **main** | `/Users/uminomae/dev/kesson-main` | main | 本番（直接コミット非推奨） |
-| Claude Code CLI | `/Users/uminomae/dev/kesson-claude-code-cli` | feature/* | 設計・複合タスク |
-| Claude DT Code | `/Users/uminomae/dev/kesson-claude-dt-code` | feature/dt-code | Web版Claude Code実装用（⚠️CLIは触らない） |
-| DT 確認用 | `/Users/uminomae/dev/kesson-claude-dt-check` | feature/dev | ブラウザ確認 |
-| Codex App | `/Users/uminomae/dev/kesson-codex-app` | feature/* | クラウド版Codex App用（PoC・コードレビュー・一発実装）。モデル: codex 5.2/5.3 |
-| Codex CLI | `/Users/uminomae/dev/kesson-codex-cli` | feature/codex-tasks | 定型作業 |
+| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | feature/dev | 目視確認ゲート・ステージング |
+| Codex App 1 | `/Users/uminomae/dev/kesson-codex-1` | feature/codex-1 | Codex App 実装用 |
+| Codex App 2 | `/Users/uminomae/dev/kesson-codex-2` | feature/codex-2 | Codex App 実装用 |
+| Codex App 3 | `/Users/uminomae/dev/kesson-codex-3` | feature/codex-3 | Codex App 実装用 |
 
 ### ワークツリールール
 
 - 作業前に `pwd` で現在のワークツリーを確認する（誤ワークツリーでの変更を防止）
 - 作業開始時は `git fetch origin && git pull` で最新化する
 - 指示書にはワークツリーパスとブランチを必ず明記する
-- **`kesson-claude-dt-code` はDT Code専用。CLIからの編集禁止**
 
 ## 3. ガードルール
 

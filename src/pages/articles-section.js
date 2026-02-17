@@ -1,12 +1,17 @@
 // articles-section.js
 // INDEX から切り出した ARTICLES セクション初期化ロジック。
 
+import { getRequestedScrollTarget, shouldOpenOffcanvas, hasDeepLinkIntent } from '../offcanvas-deeplink.js';
+import { requestScroll, SCROLL_PRIORITY, commitNavigationIntent } from '../scroll-coordinator.js';
+
 const API_URL = 'https://uminomae.github.io/pjdhiro/api/kesson-articles.json';
 const MOCK_URL = './assets/articles/articles.json';
 const INITIAL_DISPLAY = 3;
 const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 
 let hasNotifiedArticlesReady = false;
+let hasAutoOpenedArticlesOffcanvas = false;
+let hasAppliedArticlesDeepLink = false;
 
 function notifyArticlesReady(status = 'ok') {
     if (hasNotifiedArticlesReady || typeof window === 'undefined') return;
@@ -143,6 +148,71 @@ function setupFilters({ articles, filterButtons, offcanvasGrid, offcanvasCount }
     renderOffcanvasArticles(activeType);
 }
 
+function waitForTwoAnimationFrames() {
+    return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
+}
+
+function requestScrollToElement(el, source, priority = SCROLL_PRIORITY.DEFAULT) {
+    if (!el) return;
+    const targetY = window.scrollY + el.getBoundingClientRect().top - 24;
+    requestScroll(targetY, source, { behavior: 'auto', priority });
+}
+
+function findArticlesScrollTargetElement() {
+    const requested = getRequestedScrollTarget();
+    const heading = document.querySelector('#articles-section .section-heading-link');
+    const readMore = document.querySelector('#articles-section .btn-read-more');
+
+    if (requested === 'articles-readmore') {
+        return readMore || heading;
+    }
+    if (requested === 'articles-heading') {
+        return heading;
+    }
+    return null;
+}
+
+function openArticlesOffcanvasFromDeepLink(attempt = 0) {
+    if (hasAutoOpenedArticlesOffcanvas || !shouldOpenOffcanvas('articles')) return;
+
+    const offcanvasEl = document.getElementById('articlesOffcanvas');
+    if (!offcanvasEl) return;
+
+    if (typeof bootstrap === 'undefined' || !bootstrap.Offcanvas) {
+        if (attempt < 30) {
+            window.setTimeout(() => openArticlesOffcanvasFromDeepLink(attempt + 1), 100);
+        }
+        return;
+    }
+
+    hasAutoOpenedArticlesOffcanvas = true;
+    const instance = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+    instance.show();
+}
+
+function applyArticlesDeepLinkIntent() {
+    if (!hasDeepLinkIntent()) return;
+    if (hasAppliedArticlesDeepLink) return;
+    hasAppliedArticlesDeepLink = true;
+
+    const targetEl = findArticlesScrollTargetElement();
+    if (targetEl) {
+        requestScrollToElement(targetEl, 'deeplink:articles', SCROLL_PRIORITY.DEEP_LINK);
+    }
+
+    if (shouldOpenOffcanvas('articles')) {
+        waitForTwoAnimationFrames().then(() => {
+            openArticlesOffcanvasFromDeepLink();
+        });
+    }
+
+    commitNavigationIntent('articles:deeplink');
+}
+
 async function initArticlesSection() {
     const grid = document.getElementById('articles-grid');
     const errorEl = document.getElementById('articles-error');
@@ -184,6 +254,7 @@ async function initArticlesSection() {
     }
 
     notifyArticlesReady('ok');
+    applyArticlesDeepLinkIntent();
 }
 
 async function safeInitArticlesSection() {

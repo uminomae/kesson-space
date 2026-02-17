@@ -57,6 +57,7 @@ const {
     renderer,
     composer,
     distortionPass,
+    dofPass,
     fluidSystem,
     liquidSystem,
     liquidTarget,
@@ -70,11 +71,14 @@ initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamera });
 initScrollUI();
 
 const findNavMeshes = createNavMeshFinder(scene);
-const applyDevValue = createDevValueApplier({ distortionPass, fluidSystem, liquidSystem });
+const applyDevValue = createDevValueApplier({ distortionPass, dofPass, fluidSystem, liquidSystem });
 
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel(applyDevValue);
+    });
+    import('./dev-links-panel.js').then(({ initDevLinksPanel }) => {
+        initDevLinksPanel();
     });
 }
 
@@ -105,6 +109,7 @@ startRenderLoop({
     renderer,
     composer,
     distortionPass,
+    dofPass,
     fluidSystem,
     liquidSystem,
     liquidTarget,

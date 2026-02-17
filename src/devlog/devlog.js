@@ -9,8 +9,9 @@
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
-import { requestScroll } from '../scroll-coordinator.js';
+import { requestScroll, SCROLL_PRIORITY, commitNavigationIntent } from '../scroll-coordinator.js';
 import { createReadMoreButton } from './toggle-buttons.js';
+import { getRequestedScrollTarget, shouldOpenOffcanvas, hasDeepLinkIntent } from '../offcanvas-deeplink.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
 const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
@@ -34,6 +35,8 @@ let galleryState = {
   isLoading: false,       // 読み込み中フラグ
   offcanvas: null          // Bootstrap Offcanvasインスタンス
 };
+let hasAutoOpenedDevlogOffcanvas = false;
+let hasAppliedDevlogDeepLink = false;
 
 
 function getSessionEndValue(session) {
@@ -190,13 +193,11 @@ function persistReturnState(source, sessionId) {
   });
 }
 
-function loadAndConsumePendingReturnState() {
+function loadPendingReturnState() {
   const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
   if (!intent) return null;
 
   const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
-  removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
-  removeSessionKey(DEVLOG_RETURN_STATE_KEY);
 
   if (!state || !Number.isFinite(state.savedAt)) return null;
   if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
@@ -204,6 +205,11 @@ function loadAndConsumePendingReturnState() {
   if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return null;
 
   return state;
+}
+
+function consumeReturnState() {
+  removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
+  removeSessionKey(DEVLOG_RETURN_STATE_KEY);
 }
 
 function waitForArticlesReady(timeoutMs = 3000) {
@@ -437,6 +443,64 @@ function openOffcanvas({ restoreState = null } = {}) {
   galleryState.offcanvas.show();
 }
 
+function waitForTwoAnimationFrames() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(resolve);
+    });
+  });
+}
+
+function requestScrollToElement(el, source, priority = SCROLL_PRIORITY.DEFAULT) {
+  if (!el) return;
+  const targetY = window.scrollY + el.getBoundingClientRect().top - 24;
+  requestScroll(targetY, source, { behavior: 'auto', priority });
+}
+
+function findDevlogScrollTargetElement() {
+  const requested = getRequestedScrollTarget();
+  const heading = document.querySelector('#devlog-gallery-section .section-heading');
+  const readMore = document.querySelector('#devlog-gallery-section .btn-read-more');
+
+  if (requested === 'devlog-readmore') {
+    return readMore || heading;
+  }
+  if (requested === 'devlog-heading') {
+    return heading;
+  }
+  return null;
+}
+
+function openDevlogOffcanvasFromDeepLink(attempt = 0) {
+  if (hasAutoOpenedDevlogOffcanvas || !shouldOpenOffcanvas('devlog')) return;
+
+  if (typeof bootstrap === 'undefined' || !bootstrap.Offcanvas) {
+    if (attempt < 30) {
+      window.setTimeout(() => openDevlogOffcanvasFromDeepLink(attempt + 1), 100);
+    }
+    return;
+  }
+
+  hasAutoOpenedDevlogOffcanvas = true;
+  openOffcanvas();
+}
+
+function applyDevlogDeepLinkIntent() {
+  if (hasAppliedDevlogDeepLink) return;
+  hasAppliedDevlogDeepLink = true;
+
+  const targetEl = findDevlogScrollTargetElement();
+  if (targetEl) {
+    requestScrollToElement(targetEl, 'deeplink:devlog', SCROLL_PRIORITY.DEEP_LINK);
+  }
+
+  if (shouldOpenOffcanvas('devlog')) {
+    waitForTwoAnimationFrames().then(() => {
+      openDevlogOffcanvasFromDeepLink();
+    });
+  }
+}
+
 function setupInfiniteScroll() {
   const { listView, offcanvasBody } = getOffcanvasScrollNodes();
   const targets = [listView, offcanvasBody].filter(Boolean);
@@ -613,6 +677,7 @@ function runPendingReturnFlow(pendingState) {
     if (pendingState.offcanvasOpen) {
       devlogReadyPromise.then(() => {
         openOffcanvas({ restoreState: pendingState });
+        consumeReturnState();
       });
       return;
     }
@@ -621,7 +686,9 @@ function runPendingReturnFlow(pendingState) {
     requestScroll(pendingState.pageScrollY, 'devlog-return:page', {
       waitFor: Promise.all([devlogReadyPromise, waitForArticlesReady()]),
       behavior: 'auto',
+      priority: SCROLL_PRIORITY.RETURN_RESTORE,
     });
+    consumeReturnState();
   };
 
   if (document.readyState === 'loading') {
@@ -633,12 +700,43 @@ function runPendingReturnFlow(pendingState) {
 
 // Auto-initialize and return restoration bootstrap
 if (typeof window !== 'undefined') {
-  const pendingState = loadAndConsumePendingReturnState();
-  if (pendingState) {
-    runPendingReturnFlow(pendingState);
-  } else if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', observeGallerySection, { once: true });
+  const urlHasIntent = hasDeepLinkIntent();
+  const requestedScrollTarget = getRequestedScrollTarget();
+  const wantsDevlogIntent = shouldOpenOffcanvas('devlog')
+    || requestedScrollTarget === 'devlog-heading'
+    || requestedScrollTarget === 'devlog-readmore';
+
+  if (urlHasIntent) {
+    // URL priority: ignore return state if URL intent exists.
+    if (wantsDevlogIntent) {
+      const start = () => {
+        if (!isInitialized) {
+          initDevlogGallery();
+        }
+        devlogReadyPromise.then(() => {
+          applyDevlogDeepLinkIntent();
+          commitNavigationIntent('devlog:deeplink');
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start, { once: true });
+      } else {
+        start();
+      }
+    } else if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', observeGallerySection, { once: true });
+    } else {
+      observeGallerySection();
+    }
   } else {
-    observeGallerySection();
+    const pendingState = loadPendingReturnState();
+    if (pendingState) {
+      runPendingReturnFlow(pendingState);
+    } else if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', observeGallerySection, { once: true });
+    } else {
+      observeGallerySection();
+    }
   }
 }

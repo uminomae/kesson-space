@@ -50,7 +50,7 @@ function applyLiquidUniform(liquidSystem, configKey, value) {
     if (configKey == 'highlightB') liquidSystem.uniforms.render.uHighlight.value.z = value;
 }
 
-export function createDevValueApplier({ distortionPass, fluidSystem, liquidSystem }) {
+export function createDevValueApplier({ distortionPass, dofPass, fluidSystem, liquidSystem }) {
     return function applyDevValue(key, value) {
         const entry = DEV_PARAM_REGISTRY[key];
         if (!entry || !entry.apply) {
@@ -79,7 +79,11 @@ export function createDevValueApplier({ distortionPass, fluidSystem, liquidSyste
                     }
                     break;
                 case 'uniform': {
-                    const target = action.target === 'distortionPass' ? distortionPass : fluidSystem;
+                    const target = action.target === 'distortionPass'
+                        ? distortionPass
+                        : action.target === 'dofPass'
+                            ? dofPass
+                            : fluidSystem;
                     if (target && target.uniforms && target.uniforms[action.uniform]) {
                         target.uniforms[action.uniform].value = value;
                     }

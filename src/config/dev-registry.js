@@ -21,9 +21,12 @@ const DISTORTION_UNIFORM_MAP = {
     heatHaze:       'uHeatHaze',
     heatHazeRadius: 'uHeatHazeRadius',
     heatHazeSpeed:  'uHeatHazeSpeed',
+    fluidInfluence: 'uFluidInfluence',
+};
+
+const DOF_UNIFORM_MAP = {
     dofStrength:    'uDofStrength',
     dofFocusRadius: 'uDofFocusRadius',
-    fluidInfluence: 'uFluidInfluence',
 };
 
 const HALO_COLOR_MAP = {
@@ -138,6 +141,12 @@ export const DEV_PARAM_REGISTRY = (() => {
                 entry.uniform = DISTORTION_UNIFORM_MAP[key];
                 entry.description = entry.label;
                 entry.apply.push({ kind: 'uniform', target: 'distortionPass', uniform: DISTORTION_UNIFORM_MAP[key] });
+            }
+
+            if (key in DOF_UNIFORM_MAP) {
+                entry.uniform = DOF_UNIFORM_MAP[key];
+                entry.description = entry.label;
+                entry.apply.push({ kind: 'uniform', target: 'dofPass', uniform: DOF_UNIFORM_MAP[key] });
             }
 
             if (key in HALO_COLOR_MAP) {

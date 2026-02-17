@@ -2,6 +2,9 @@
   "private": true,
   "type": "module",
   "description": "kesson-space dev scripts",
+  "scripts": {
+    "deeplinks": "node scripts/print-deeplinks.mjs"
+  },
   "devDependencies": {
     "puppeteer": "^24.37.3"
   }

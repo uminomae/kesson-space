@@ -32,7 +32,7 @@
 
 ```bash
 # 1. 目視チェック（DT確認用ワークツリー）
-cd /Users/uminomae/Documents/GitHub/kesson-space-claudeDT
+cd /Users/uminomae/dev/kesson-space
 git fetch origin
 git checkout feature/dev
 git pull origin feature/dev
@@ -81,7 +81,7 @@ DTの役割は以下に限定する:
 
 | 操作 | ワークツリー | パス |
 |---|---|---|
-| 目視確認 | **claudeDT** | `/Users/uminomae/Documents/GitHub/kesson-space-claudeDT` |
+| 目視確認 | **claudeDT** | `/Users/uminomae/dev/kesson-space` |
 | mainマージ | **GitHub API** | PR経由 |
 
 ---
@@ -183,6 +183,32 @@ main（起点）→ 実装ブランチ → feature/dev（🔴目視確認ゲー�
 ```bash
 ./serve.sh  # → http://localhost:3001/
 ```
+
+## Deep Link Presets
+
+Deep link URL presets are managed in:
+
+- `assets/deeplinks.json`
+
+Print all preset URLs:
+
+```bash
+npm run deeplinks
+```
+
+Print one preset URL (copy ready):
+
+```bash
+node scripts/print-deeplinks.mjs articles_readmore_open
+```
+
+Use local server origin:
+
+```bash
+node scripts/print-deeplinks.mjs articles_readmore_open --base http://localhost:5173
+```
+
+In browser dev mode (`?dev`), a separate `LINKS` offcanvas hub is available (independent from the parameter tuning panel).
 
 ---
 

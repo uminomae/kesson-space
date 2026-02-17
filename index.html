@@ -121,7 +121,23 @@
   <section id="articles-section">
     <div class="section-content-wrap">
       <div class="container">
-        <h2 class="section-heading">ARTICLES</h2>
+        <h2 class="section-heading">
+          <button
+            type="button"
+            class="section-heading-link"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#articlesOffcanvas"
+            aria-controls="articlesOffcanvas"
+            aria-label="ARTICLES を開く">
+            ARTICLES
+          </button>
+          <a
+            href="#articles-section"
+            class="section-heading-jump-link"
+            aria-label="ARTICLES セクションへのリンク（Offcanvasは開かない）">
+            #
+          </a>
+        </h2>
         <div id="articles-error" class="d-none"></div>
         <div id="articles-grid" class="row g-3"></div>
       </div>
@@ -141,6 +157,13 @@
       <h2>TRACES</h2>
     </div>
   </section>
+
+  <!-- Tech Stack Footer -->
+  <footer id="tech-footer">
+    <div class="tech-footer-line">GitHub Pages</div>
+    <div class="tech-footer-line">Vanilla JS · ES Modules</div>
+    <div class="tech-footer-line">Three.js · Bootstrap</div>
+  </footer>
 
   <!-- Bootstrap Offcanvas（右からスライドイン） -->
   <div class="offcanvas offcanvas-end offcanvas-kesson"

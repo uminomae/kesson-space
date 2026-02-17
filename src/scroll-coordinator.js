@@ -3,6 +3,13 @@
 // Other modules must request scrolling through requestScroll().
 
 export const SCROLL_RESTORATION_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
+export const SCROLL_PRIORITY = Object.freeze({
+  DEEP_LINK: 100,
+  RETURN_RESTORE: 50,
+  INITIAL_TOP: 10,
+  BFCACHE: 5,
+  DEFAULT: 1,
+});
 const PAGE_EXIT_ARM_SOURCE = 'page-exit';
 
 let lockDepth = 0;
@@ -10,6 +17,7 @@ let activeRequestId = 0;
 let pendingRequest = null;
 let isFlushing = false;
 let lifecycleInitialized = false;
+let initPhase = false;
 
 function normalizeY(targetY) {
   if (!Number.isFinite(targetY)) return 0;
@@ -70,10 +78,11 @@ function waitForTwoAnimationFrames() {
   });
 }
 
-function requestTop(source = 'unknown') {
+function requestTop(source = 'unknown', priority = SCROLL_PRIORITY.INITIAL_TOP) {
   requestScroll(0, source, {
     behavior: 'auto',
     waitFor: waitForTwoAnimationFrames(),
+    priority,
   });
 }
 
@@ -95,6 +104,12 @@ function flushPendingRequest() {
 }
 
 export function requestScroll(targetY, source = 'unknown', options = {}) {
+  const priority = Number.isFinite(options.priority) ? options.priority : SCROLL_PRIORITY.DEFAULT;
+
+  if (initPhase && pendingRequest && pendingRequest.priority >= priority) {
+    return;
+  }
+
   activeRequestId += 1;
   pendingRequest = {
     id: activeRequestId,
@@ -102,7 +117,19 @@ export function requestScroll(targetY, source = 'unknown', options = {}) {
     source,
     behavior: normalizeBehavior(options.behavior),
     waitFor: toPromise(options.waitFor),
+    priority,
   };
+
+  if (!initPhase) {
+    flushPendingRequest();
+  }
+}
+
+export function commitNavigationIntent(source = 'unknown') {
+  if (!initPhase) return;
+  initPhase = false;
+  console.log('[scroll] commitNavigationIntent:', source,
+    pendingRequest ? `winner=${pendingRequest.source}(p=${pendingRequest.priority})` : 'no-pending');
   flushPendingRequest();
 }
 
@@ -147,6 +174,7 @@ export function applyInitialScrollRestoration() {
 export function initScrollCoordinator({ forceTopOnLoad = true } = {}) {
   if (lifecycleInitialized || !hasWindow()) return;
   lifecycleInitialized = true;
+  initPhase = true;
 
   applyInitialScrollRestoration();
 
@@ -159,11 +187,23 @@ export function initScrollCoordinator({ forceTopOnLoad = true } = {}) {
 
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
-      requestTop('bfcache-return');
+      console.log('[scroll] bfcache pageshow - no forced scroll');
     }
   });
 
   if (forceTopOnLoad) {
-    requestTop('initial-load');
+    requestTop('initial-load', SCROLL_PRIORITY.INITIAL_TOP);
+  }
+
+  const autoCommit = () => {
+    waitForTwoAnimationFrames().then(() => {
+      commitNavigationIntent('auto-commit');
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoCommit, { once: true });
+  } else {
+    autoCommit();
   }
 }

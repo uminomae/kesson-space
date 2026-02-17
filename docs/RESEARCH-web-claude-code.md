@@ -1,10 +1,10 @@
 # Web版 Claude Code 検証レポート
 
-**検証日**: 2026-02-16  
-**検証内容**: DTアプリ「コード」機能（Web版 Claude Code）で T-040-11 Read More を実装  
-**セッションID**: `session_01RaSUALi81owW3pZAcKXsP3`  
-**ブランチ**: `claude/test-vs-cli-differences-Mejjf`  
-**コミット**: `0cc44c1`  
+**検証日**: 2026-02-16
+**検証内容**: DTアプリ「コード」機能（Web版 Claude Code）で T-040-11 Read More を実装
+**セッションID**: `session_01RaSUALi81owW3pZAcKXsP3`
+**ブランチ**: `claude/test-vs-cli-differences-Mejjf`
+**コミット**: `0cc44c1`
 
 ---
 
@@ -111,7 +111,7 @@ git checkout feature/kesson-articles
 ## 前提手順
 
 ### CLI (Codex)
-ワークツリー: `/Users/uminomae/Documents/GitHub/kesson-articles`
+ワークツリー: `/Users/uminomae/dev/kesson-articles`
 → 追加手順なし
 
 ### Web版 Claude Code
