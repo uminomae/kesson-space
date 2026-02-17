@@ -3,11 +3,13 @@
 // Other modules must request scrolling through requestScroll().
 
 export const SCROLL_RESTORATION_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
+const PAGE_EXIT_ARM_SOURCE = 'page-exit';
 
 let lockDepth = 0;
 let activeRequestId = 0;
 let pendingRequest = null;
 let isFlushing = false;
+let lifecycleInitialized = false;
 
 function normalizeY(targetY) {
   if (!Number.isFinite(targetY)) return 0;
@@ -21,6 +23,58 @@ function normalizeBehavior(behavior) {
 function toPromise(waitFor) {
   if (!waitFor) return Promise.resolve();
   return Promise.resolve(waitFor).catch(() => {});
+}
+
+function hasWindow() {
+  return typeof window !== 'undefined';
+}
+
+function canControlHistoryRestoration() {
+  return hasWindow() && typeof history !== 'undefined' && 'scrollRestoration' in history;
+}
+
+function readAndConsumeManualArm() {
+  if (!hasWindow()) return false;
+  try {
+    const armedPayload = window.sessionStorage.getItem(SCROLL_RESTORATION_ONCE_KEY);
+    const shouldUseManual = Boolean(armedPayload);
+    if (shouldUseManual) {
+      window.sessionStorage.removeItem(SCROLL_RESTORATION_ONCE_KEY);
+    }
+    return shouldUseManual;
+  } catch (error) {
+    return false;
+  }
+}
+
+function setScrollRestorationMode(mode) {
+  if (!canControlHistoryRestoration()) return;
+  history.scrollRestoration = mode === 'manual' ? 'manual' : 'auto';
+}
+
+function resetRestorationToAutoOnNextPageShow() {
+  if (!hasWindow() || !canControlHistoryRestoration()) return;
+  window.addEventListener('pageshow', () => {
+    setScrollRestorationMode('auto');
+  }, { once: true });
+}
+
+function waitForTwoAnimationFrames() {
+  if (!hasWindow() || typeof window.requestAnimationFrame !== 'function') {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(resolve);
+    });
+  });
+}
+
+function requestTop(source = 'unknown') {
+  requestScroll(0, source, {
+    behavior: 'auto',
+    waitFor: waitForTwoAnimationFrames(),
+  });
 }
 
 function flushPendingRequest() {
@@ -68,7 +122,7 @@ export function unlockScroll(source = 'unknown') {
 }
 
 export function armManualRestoration(source = 'unknown') {
-  if (typeof window === 'undefined') return;
+  if (!hasWindow()) return;
   try {
     window.sessionStorage.setItem(SCROLL_RESTORATION_ONCE_KEY, JSON.stringify({
       armedAt: Date.now(),
@@ -76,5 +130,40 @@ export function armManualRestoration(source = 'unknown') {
     }));
   } catch (error) {
     // Ignore sessionStorage failures in restrictive environments.
+  }
+}
+
+export function applyInitialScrollRestoration() {
+  if (!canControlHistoryRestoration()) return false;
+
+  const shouldUseManual = readAndConsumeManualArm();
+  setScrollRestorationMode(shouldUseManual ? 'manual' : 'auto');
+  if (shouldUseManual) {
+    resetRestorationToAutoOnNextPageShow();
+  }
+  return shouldUseManual;
+}
+
+export function initScrollCoordinator({ forceTopOnLoad = true } = {}) {
+  if (lifecycleInitialized || !hasWindow()) return;
+  lifecycleInitialized = true;
+
+  applyInitialScrollRestoration();
+
+  const armForNextLoad = () => {
+    armManualRestoration(PAGE_EXIT_ARM_SOURCE);
+  };
+
+  window.addEventListener('pagehide', armForNextLoad, { capture: true });
+  window.addEventListener('beforeunload', armForNextLoad, { capture: true });
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      requestTop('bfcache-return');
+    }
+  });
+
+  if (forceTopOnLoad) {
+    requestTop('initial-load');
   }
 }

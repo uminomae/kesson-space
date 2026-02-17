@@ -9,33 +9,9 @@
     gtag('js', new Date());
     gtag('config', 'G-X5WQCB3JYT');
   </script>
-  <!-- Default: preserve native back/forward restoration.
-       One-shot manual mode is armed by scroll-coordinator before navigation. -->
-  <script>
-    (function () {
-      if (!('scrollRestoration' in history)) return;
-
-      var SCROLL_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
-      var shouldUseManual = false;
-
-      try {
-        var armedPayload = window.sessionStorage.getItem(SCROLL_ONCE_KEY);
-        shouldUseManual = Boolean(armedPayload);
-        if (shouldUseManual) {
-          window.sessionStorage.removeItem(SCROLL_ONCE_KEY);
-        }
-      } catch (error) {
-        shouldUseManual = false;
-      }
-
-      history.scrollRestoration = shouldUseManual ? 'manual' : 'auto';
-
-      if (shouldUseManual) {
-        window.addEventListener('pageshow', function () {
-          history.scrollRestoration = 'auto';
-        }, { once: true });
-      }
-    })();
+  <script type="module">
+    import { initScrollCoordinator } from './src/scroll-coordinator.js';
+    initScrollCoordinator();
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,8 +22,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./src/styles/main.css">
 
-  <!-- PERF: CDN TLS接続を先行確立 -->
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <!-- FIX: Google Fonts — Noto Serif JP (高品質明朝体) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,8 +33,8 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+        "three": "./vendor/three@0.160.0/build/three.module.js",
+        "three/addons/": "./vendor/three@0.160.0/examples/jsm/",
         "marked": "https://cdn.jsdelivr.net/npm/marked@15.0.7/lib/marked.esm.js"
       }
     }

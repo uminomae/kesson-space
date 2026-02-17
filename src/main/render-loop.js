@@ -60,6 +60,14 @@ export function startRenderLoop({
 }) {
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
+    const syncXLogoCameraOptics = (srcCamera, dstCamera) => {
+        if (!srcCamera || !dstCamera || srcCamera === dstCamera) return;
+        dstCamera.fov = srcCamera.fov;
+        dstCamera.aspect = srcCamera.aspect;
+        dstCamera.near = srcCamera.near;
+        dstCamera.far = srcCamera.far;
+        dstCamera.updateProjectionMatrix();
+    };
 
     function animate() {
         requestAnimationFrame(animate);
@@ -72,9 +80,11 @@ export function startRenderLoop({
         const mouse = updateMouseSmoothing();
 
         updateControls(time, breathVal);
+        // xLogo は別シーン。カメラ位置/回転は固定し、光学パラメータのみ同期する。
+        syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
-        updateXLogo(time);
+        updateXLogo(time, xLogoCamera);
 
         const navs = findNavMeshes();
 

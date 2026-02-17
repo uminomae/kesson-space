@@ -22,6 +22,10 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
+// Xロゴ位置ターゲット（将来ここだけ調整すれば良い）
+const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
+const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;  // 上から 20%
+const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
     { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
@@ -38,8 +42,12 @@ let _xLogoMesh = null;
 let _xLogoRoot = null;
 let _xLogoMaterials = [];
 let _xLogoHover = false;
+let _xLogoCamera = null;
 let _scene = null;
 let _navMeshes = null;
+const _xLogoSolveVecA = new THREE.Vector3();
+const _xLogoSolveVecB = new THREE.Vector3();
+const _xLogoSolveMatrix = new THREE.Matrix4();
 
 function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
@@ -85,7 +93,6 @@ function applyXLogoMaterial(mesh) {
 
 function createXLogoGroup() {
     const group = new THREE.Group();
-    group.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
 
     // --- 不可視ヒットスプライト（レイキャスト用） ---
     const hitMat = new THREE.SpriteMaterial({
@@ -157,8 +164,118 @@ function createXLogoGroup() {
     );
 
     group.userData = { hitSprite, xLogoMesh: null, xLogoRoot: null, xLogoBaseRotY: 0 };
+    applyXLogoGroupPosition(group);
 
     return group;
+}
+
+function getMobileXLogoViewportPercent() {
+    return XLOGO_TARGET_VIEWPORT_X_PERCENT;
+}
+
+function getXLogoViewportTopPercent() {
+    return XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT;
+}
+
+function estimateXLogoHalfWidthWorld() {
+    // Hit sprite はレイキャスト用で実体より大きいため、表示境界には使わない。
+    return Math.max(0.08, xLogoParams.meshScale * 0.55);
+}
+
+function estimateXLogoHalfHeightWorld() {
+    return Math.max(0.08, xLogoParams.meshScale * 0.55);
+}
+
+function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercent) {
+    if (!camera) return -Math.max(1, Math.abs(xLogoParams.posX));
+    const targetNdcX = THREE.MathUtils.clamp((viewportPercent * 2) - 1, -0.95, 0.95);
+    camera.updateMatrixWorld(true);
+    _xLogoSolveMatrix.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse);
+    const e = _xLogoSolveMatrix.elements;
+
+    // clipX = a*x + b, clipW = c*x + d, ndcX = clipX / clipW
+    const a = e[0];
+    const c = e[3];
+    const b = (e[4] * worldY) + (e[8] * worldZ) + e[12];
+    const d = (e[7] * worldY) + (e[11] * worldZ) + e[15];
+    const denom = (targetNdcX * c) - a;
+    if (!Number.isFinite(denom) || Math.abs(denom) < 1e-6) {
+        return -Math.max(1, Math.abs(xLogoParams.posX));
+    }
+
+    const solved = (b - (targetNdcX * d)) / denom;
+    return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
+}
+
+function solveXLogoPosYForViewportTopPercent(camera, worldX, worldZ, viewportTopPercent) {
+    if (!camera) return xLogoParams.posY;
+    const topPercent = THREE.MathUtils.clamp(viewportTopPercent, 0.05, 0.95);
+    const targetNdcY = THREE.MathUtils.clamp(1 - (topPercent * 2), -0.95, 0.95);
+    camera.updateMatrixWorld(true);
+    _xLogoSolveMatrix.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse);
+    const e = _xLogoSolveMatrix.elements;
+
+    // clipY = a*y + b, clipW = c*y + d, ndcY = clipY / clipW
+    const a = e[5];
+    const c = e[7];
+    const b = (e[1] * worldX) + (e[9] * worldZ) + e[13];
+    const d = (e[3] * worldX) + (e[11] * worldZ) + e[15];
+    const denom = (targetNdcY * c) - a;
+    if (!Number.isFinite(denom) || Math.abs(denom) < 1e-6) {
+        return xLogoParams.posY;
+    }
+
+    const solved = (b - (targetNdcY * d)) / denom;
+    return Number.isFinite(solved) ? solved : xLogoParams.posY;
+}
+
+function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.posY) {
+    if (!camera || typeof camera.updateMatrixWorld !== 'function') {
+        return {
+            posX: -Math.max(1, Math.abs(xLogoParams.posX)),
+            posY: worldY,
+            posZ: xLogoParams.posZ,
+        };
+    }
+
+    camera.updateMatrixWorld(true);
+    _xLogoSolveVecA.set(xLogoParams.posX, worldY, xLogoParams.posZ).project(camera);
+    const basePercent = (_xLogoSolveVecA.x + 1) * 0.5;
+    const halfWorld = estimateXLogoHalfWidthWorld();
+    _xLogoSolveVecB.set(xLogoParams.posX + halfWorld, worldY, xLogoParams.posZ).project(camera);
+    const halfNdc = Math.abs(_xLogoSolveVecB.x - _xLogoSolveVecA.x);
+    const halfPercent = halfNdc * 0.5;
+
+    const minVisiblePercent = THREE.MathUtils.clamp(halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
+    const maxVisiblePercent = 1 - minVisiblePercent;
+    const targetXPercent = THREE.MathUtils.clamp(getMobileXLogoViewportPercent(), minVisiblePercent, maxVisiblePercent);
+
+    const halfHeightWorld = estimateXLogoHalfHeightWorld();
+    _xLogoSolveVecB.set(xLogoParams.posX, worldY + halfHeightWorld, xLogoParams.posZ).project(camera);
+    const halfNdcY = Math.abs(_xLogoSolveVecB.y - _xLogoSolveVecA.y);
+    const halfTopPercent = halfNdcY * 0.5;
+    const minVisibleTopPercent = THREE.MathUtils.clamp(halfTopPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
+    const maxVisibleTopPercent = 1 - minVisibleTopPercent;
+    const targetYTopPercent = THREE.MathUtils.clamp(getXLogoViewportTopPercent(), minVisibleTopPercent, maxVisibleTopPercent);
+
+    // X/Yは互いに弱く依存するため2回解いて収束させる
+    let solvedY = solveXLogoPosYForViewportTopPercent(camera, xLogoParams.posX, xLogoParams.posZ, targetYTopPercent);
+    let solvedX = solveXLogoPosXForViewportPercent(camera, solvedY, xLogoParams.posZ, targetXPercent);
+    solvedY = solveXLogoPosYForViewportTopPercent(camera, solvedX, xLogoParams.posZ, targetYTopPercent);
+
+    return {
+        posX: Number.isFinite(solvedX) ? solvedX : xLogoParams.posX,
+        posY: Number.isFinite(solvedY) ? solvedY : worldY,
+        posZ: xLogoParams.posZ,
+    };
+}
+
+function applyXLogoGroupPosition(group, camera = _xLogoCamera, yOffset = 0) {
+    if (!group) return;
+    const worldY = xLogoParams.posY + yOffset;
+    const { posX, posY, posZ } = getResponsiveXLogoPosition(camera, worldY);
+    group.userData.baseY = xLogoParams.posY;
+    group.position.set(posX, posY, posZ);
 }
 
 // --- devPanelからのパラメータ更新 ---
@@ -271,7 +388,8 @@ export function createNavObjects(scene) {
     return navMeshes;
 }
 
-export function createXLogoObjects(scene) {
+export function createXLogoObjects(scene, camera = null) {
+    _xLogoCamera = camera || _xLogoCamera;
     const lang = detectLang();
     const strings = t(lang);
     const xData = strings.xLogo;
@@ -286,10 +404,8 @@ export function createXLogoObjects(scene) {
         external: true,
     };
 
-    Object.assign(xGroup.userData, {
-        baseY: xLogoParams.posY,
-        isXLogo: true,
-    });
+    Object.assign(xGroup.userData, { isXLogo: true });
+    applyXLogoGroupPosition(xGroup, _xLogoCamera);
 
     scene.add(xGroup);
     _xLogoGroup = xGroup;
@@ -385,15 +501,17 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
-export function updateXLogo(time) {
+export function updateXLogo(time, camera = _xLogoCamera) {
+    _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
+    // X/Yともに画面基準%でアンカーする（必要時のみ可視クランプ）。
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
     if (!_xLogoGroup.visible) return;
 
     const data = _xLogoGroup.userData;
-    _xLogoGroup.position.y = data.baseY + Math.sin(time * 0.5 + 4.0) * 0.5;
 
     const rotTarget = data.xLogoRoot || data.xLogoMesh;
     if (rotTarget) {
@@ -554,10 +672,10 @@ export function rebuildXLogo() {
 }
 
 // --- devPanelからの位置更新 ---
-export function updateXLogoPosition() {
+export function updateXLogoPosition(camera = _xLogoCamera) {
+    _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    _xLogoGroup.userData.baseY = xLogoParams.posY;
-    _xLogoGroup.position.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ);
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 }
 
 export function getXLogoGroup() {
