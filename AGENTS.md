@@ -81,12 +81,16 @@ DT への報告時、およびユーザーが代理報告する場合も同様�
 ```
 ## 完了報告: #{issue番号} {タイトル}
 
+### 環境
+- Issue: #{番号}
+- ワークツリー: {パス}
+- ブランチ: {ブランチ名}
+
 ### 実施内容
 - 変更ファイル: {ファイルパス一覧}
-- コミット: {SHA (short)}
+- コミット: {SHA (short)} / ❌ 未コミット（理由）
 - メッセージ: {コミットメッセージ}
-- ブランチ: {ブランチ名}
-- Push: ✅ / ❌
+- Push: ✅ origin/{ブランチ名} / ❌ 未Push（理由）
 
 ### 検証
 - {テスト名}: {passed/failed 件数}
@@ -107,6 +111,37 @@ DT への報告時、およびユーザーが代理報告する場合も同様�
 2. テスト結果は passed/failed の数値を必ず含める
 3. 未実施事項がある場合は理由を明記
 4. コミットSHAは short hash (7文字) で記載
+5. Push先は `origin/{ブランチ名}` の形式で明記
+
+### 記入例
+
+```
+## 完了報告: #36 config re-exportテスト追加
+
+### 環境
+- Issue: #36
+- ワークツリー: /Users/uminomae/dev/kesson-codex-app-test36
+- ブランチ: feature/kesson-codex-app-test36
+
+### 実施内容
+- 変更ファイル: tests/config-exports.test.js (新規)
+- コミット: 27f44d3
+- メッセージ: test: add runtime import verification for config re-export chain (#36)
+- Push: ✅ origin/feature/kesson-codex-app-test36
+
+### 検証
+- config-exports.test.js: 34 passed, 0 failed
+- config-consistency.test.js: 39 passed, 0 failed
+- 構文チェック: ✅
+- ブラウザ目視: N/A（テストのみ）
+- GL error: N/A
+
+### Issue
+- クローズ: ✅ (issuecomment-3911125059)
+
+### 未実施事項
+- なし
+```
 
 ## 7. Codex Docs Hub
 
