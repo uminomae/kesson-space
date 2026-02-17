@@ -29,7 +29,6 @@ const XLOGO_MOBILE_BREAKPOINT = 768;
 const XLOGO_MOBILE_LEFT_GUTTER_PX = 84;
 const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.12;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
-const XLOGO_SOLVE_DELTA_X = 1.0;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
     { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
@@ -51,6 +50,7 @@ let _scene = null;
 let _navMeshes = null;
 const _xLogoSolveVecA = new THREE.Vector3();
 const _xLogoSolveVecB = new THREE.Vector3();
+const _xLogoSolveMatrix = new THREE.Matrix4();
 
 function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
@@ -181,9 +181,29 @@ function getMobileXLogoViewportPercent() {
     return Math.min(fromLeftPxPercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
 }
 
-function solveXLogoPosXForViewportPercent(baseNdcX, slope, viewportPercent) {
+function estimateXLogoHalfWidthWorld() {
+    // Hit sprite はレイキャスト用で実体より大きいため、表示境界には使わない。
+    return Math.max(0.08, xLogoParams.meshScale * 0.55);
+}
+
+function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercent) {
+    if (!camera) return -Math.max(1, Math.abs(xLogoParams.posX));
     const targetNdcX = THREE.MathUtils.clamp((viewportPercent * 2) - 1, -0.95, 0.95);
-    const solved = xLogoParams.posX + ((targetNdcX - baseNdcX) / slope) * XLOGO_SOLVE_DELTA_X;
+    camera.updateMatrixWorld(true);
+    _xLogoSolveMatrix.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse);
+    const e = _xLogoSolveMatrix.elements;
+
+    // clipX = a*x + b, clipW = c*x + d, ndcX = clipX / clipW
+    const a = e[0];
+    const c = e[3];
+    const b = (e[4] * worldY) + (e[8] * worldZ) + e[12];
+    const d = (e[7] * worldY) + (e[11] * worldZ) + e[15];
+    const denom = (targetNdcX * c) - a;
+    if (!Number.isFinite(denom) || Math.abs(denom) < 1e-6) {
+        return -Math.max(1, Math.abs(xLogoParams.posX));
+    }
+
+    const solved = (b - (targetNdcX * d)) / denom;
     return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
 }
 
@@ -198,21 +218,10 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera) {
 
     camera.updateMatrixWorld(true);
     _xLogoSolveVecA.set(xLogoParams.posX, xLogoParams.posY, xLogoParams.posZ).project(camera);
-    _xLogoSolveVecB.set(xLogoParams.posX + XLOGO_SOLVE_DELTA_X, xLogoParams.posY, xLogoParams.posZ).project(camera);
-
-    const slope = _xLogoSolveVecB.x - _xLogoSolveVecA.x;
-    if (!Number.isFinite(slope) || Math.abs(slope) < 1e-4) {
-        return {
-            posX: -Math.max(1, Math.abs(xLogoParams.posX)),
-            posY: xLogoParams.posY,
-            posZ: xLogoParams.posZ,
-        };
-    }
-
     const basePercent = (_xLogoSolveVecA.x + 1) * 0.5;
-    const hitScaleX = _xLogoGroup?.userData?.hitSprite?.scale?.x;
-    const hitHalfWorld = Number.isFinite(hitScaleX) ? Math.max(0.01, hitScaleX * 0.5) : Math.max(0.01, xLogoParams.meshScale * 1.5);
-    const halfNdc = Math.abs((slope / XLOGO_SOLVE_DELTA_X) * hitHalfWorld);
+    const halfWorld = estimateXLogoHalfWidthWorld();
+    _xLogoSolveVecB.set(xLogoParams.posX + halfWorld, xLogoParams.posY, xLogoParams.posZ).project(camera);
+    const halfNdc = Math.abs(_xLogoSolveVecB.x - _xLogoSolveVecA.x);
     const halfPercent = halfNdc * 0.5;
 
     const minVisiblePercent = THREE.MathUtils.clamp(halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
@@ -229,14 +238,14 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera) {
             ? rightBoundPercent
             : THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
         return {
-            posX: solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, targetPercent),
+            posX: solveXLogoPosXForViewportPercent(camera, xLogoParams.posY, xLogoParams.posZ, targetPercent),
             posY: xLogoParams.posY,
             posZ: xLogoParams.posZ,
         };
     }
 
     const posX = needsAdjustment
-        ? solveXLogoPosXForViewportPercent(_xLogoSolveVecA.x, slope, clampedBasePercent)
+        ? solveXLogoPosXForViewportPercent(camera, xLogoParams.posY, xLogoParams.posZ, clampedBasePercent)
         : xLogoParams.posX;
     return { posX, posY: xLogoParams.posY, posZ: xLogoParams.posZ };
 }
