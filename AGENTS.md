@@ -1,5 +1,28 @@
 # AGENTS Instructions for kesson-space
 
+## 0. How to Read This Document
+
+**Primary audience**: Claude DT (Claude.ai Desktop / Web chat).
+The rules, examples, and workflows below are written from the DT perspective.
+
+**For other agents** (Claude Code CLI, OpenAI Codex App/CLI, Gemini MCP, etc.):
+Adapt the rules to your own environment. Specifically:
+
+| DT concept | Adapt to your environment |
+|---|---|
+| "GitHub API経由でPR作成" | Use `git` CLI or your platform's merge mechanism |
+| Worktree paths (`/Users/uminomae/...`) | Use your assigned worktree or working directory |
+| "目視確認ゲート" | This is the DT's responsibility. Implementation agents push and report; DT handles the gate |
+| "セッションキャッシュ" | DT-only. Other agents use Issue comments for state handoff |
+| `skills/project-management-agent.md` | DT-only skill. Other agents follow instructions received from DT |
+
+**Language policy**: Rules are written in mixed Japanese/English. Section headings and key terms are kept in English for cross-LLM readability. Examples may use Japanese.
+
+**Universal rules** (apply to ALL agents regardless of environment):
+- §3: Git and Branch Rules
+- §5: Issue-Centric Workflow (especially §5.2 Issue Progress Comments)
+- §6: Completion Report format
+
 ## 1. Session Start (Mandatory)
 
 At the start of every new conversation in this repository:
@@ -50,18 +73,18 @@ Each worktree reads its instruction from `docs/codex/INSTRUCTION-{issue#}.md` on
 
 Do not cross-commit between worktrees.
 
-## 3. Git and Branch Rules (Mandatory)
+## 3. Git and Branch Rules (Mandatory — ALL agents)
 
 ### 3.1 Branch flow
 
 ```
-main（起点）→ 実装ブランチ → feature/dev（統合テスト）→ PR → main
+main (base) → implementation branch → feature/dev (integration test) → PR → main
 ```
 
-1. 実装ブランチは `main` から作成する
-2. 実装完了後、`feature/dev` にマージして統合テスト
-3. 目視確認OK後、PR を作成（`feature/dev` → `main`）
-4. PR body に `Closes #XX` を含めて Issue を自動クローズ
+1. Create implementation branches from `main`
+2. After implementation, merge to `feature/dev` for integration testing
+3. After visual confirmation (DT's responsibility), create PR (`feature/dev` → `main`)
+4. PR body must include `Closes #XX` to auto-close the Issue
 5. Direct commit/merge to `main` is prohibited
 
 ### 3.2 Commit format
@@ -73,63 +96,65 @@ Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`, `test`
 1. CSS policy: prefer Bootstrap, keep custom CSS minimal
 2. UX policy: mobile-first, prioritize scroll UX
 
-## 5. Issue-Centric Workflow (Mandatory)
+## 5. Issue-Centric Workflow (Mandatory — ALL agents)
 
-**GitHub Issues が唯一の正本。** CURRENT.md / TODO.md は廃止済み。
+**GitHub Issues are the single source of truth.** `docs/CURRENT.md` and `docs/TODO.md` are deprecated — do not read or update them.
 
 ### 5.1 Issue as Source of Truth
 
-- タスクの起票・優先度管理・進捗追跡は全て GitHub Issues で行う
-- ラベル P0〜P3 で優先度管理
-- `docs/CURRENT.md`, `docs/TODO.md` は更新しない（廃止済み）
+- All task creation, priority management, and progress tracking happens in GitHub Issues
+- Priority labels: P0 (critical) through P3 (idea)
+- `docs/CURRENT.md`, `docs/TODO.md` — deprecated, do not update
 
-### 5.2 Issue Progress Comments（常駐スキル）
+### 5.2 Issue Progress Comments (Resident Skill — ALL agents)
 
-**全エージェントは作業中の Issue に進捗をコメントとして細かく記録する。**
-これにより CURRENT.md の手動更新が不要になり、AI環境差があっても Issue スレッドを読めば現在の状態が分かる。
+**Every agent must record progress as comments on the active Issue.**
+This eliminates the need for manual CURRENT.md updates and ensures that any agent — regardless of environment — can read the Issue thread to understand current state.
 
-記録タイミング:
-- **着手時**: ブランチ名、ワークツリーパス、作業方針
-- **中間報告**: 実装の進捗、発生した問題、方針変更
-- **完了時**: 変更ファイル一覧、コミットSHA、テスト結果、未実施事項
+Record at these timings:
+- **Start**: branch name, working directory (if applicable), approach
+- **Interim**: progress, problems encountered, direction changes
+- **Completion**: changed files, commit SHA, test results, outstanding items
 
-コメント例（着手時）:
+Example (start):
 ```
-🚀 着手
-- ブランチ: `feature/kesson-codex-app-47`
-- WT: `/Users/uminomae/dev/kesson-codex-app-47`
-- 方針: scroll-coordinator.js に history.scrollRestoration = 'manual' を追加
+🚀 Started
+- Branch: `feature/kesson-codex-app-47`
+- Approach: add history.scrollRestoration = 'manual' to scroll-coordinator.js
 ```
 
-コメント例（完了時）:
+Example (completion):
 ```
-✅ 実装完了
-- コミット: `17b2b0a`
-- 変更: `index.html`, `src/scroll-coordinator.js`
-- テスト: config-consistency 39 passed, node --check pass
-- Push: origin/feature/kesson-codex-app-47
+✅ Implementation complete
+- Commit: `17b2b0a`
+- Changed: `index.html`, `src/scroll-coordinator.js`
+- Tests: config-consistency 39 passed, node --check pass
+- Pushed: origin/feature/kesson-codex-app-47
 ```
+
+Note: Include worktree path only if relevant to your environment. Cloud-based agents (e.g., Codex App) may omit it.
 
 ### 5.3 Issue Close Flow
 
-1. 実装完了 → feature/dev マージ → 目視確認
-2. 目視確認 OK → PR 作成（`Closes #XX` 付き）→ main マージ
-3. Issue 自動クローズ（PR keyword で）
-4. 必要に応じてクローズコメントに確認内容を追記
+1. Implementation complete → merge to feature/dev → visual confirmation (DT handles this)
+2. Visual confirmation OK → create PR with `Closes #XX` → merge to main
+3. Issue auto-closes via PR keyword
+4. Optionally add a close comment with confirmation details
 
-### 5.4 AI 環境差への対応
+Note: Steps 1-2 are orchestrated by DT. Implementation agents complete their work, push, and report via Issue comment. DT handles the feature/dev merge, visual gate, and PR creation.
 
-Issue コメントは全エージェント（DT / Claude Code / Codex / Gemini）の共通コミュニケーションチャネルとして機能する。エージェント間で環境差があっても、Issue スレッドを読めば現在の状態が分かる。
+### 5.4 Cross-Agent Communication
 
-## 6. Completion Report
+Issue comments serve as the shared communication channel across all agents (DT / Claude Code / Codex / Gemini). Regardless of environment differences, reading the Issue thread reveals current state.
 
-完了報告は **Issue コメント（§5.2）と PR body** で行う。
-専用フォーマットファイルは不要。
+## 6. Completion Report (ALL agents)
 
-PR body に含めるもの:
-- 実装概要
-- 変更ファイル一覧
-- テスト結果
+Report completion via **Issue comment (§5.2) and PR body**. No separate report file needed.
+
+PR body should include:
+- Implementation summary
+- Changed files
+- Test results
 - `Closes #XX`
 
 ## 7. Codex Docs Hub
@@ -145,6 +170,6 @@ If guidance conflicts, follow this order:
 
 1. User's direct request
 2. This `AGENTS.md`
-3. `./README.md`
+3. `./README.md` (DT-specific operational rules)
 4. `./docs/README.md`
 5. Other repository docs
