@@ -73,14 +73,49 @@ Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`, `test`
 2. After completing a task, close the related GitHub Issue with a confirmation comment
 3. Task management: GitHub Issues are the source of truth (TODO.md is deprecated)
 
-## 6. Codex Docs Hub
+## 6. Completion Report Format (Mandatory)
+
+Codex / Claude Code / その他委譲先エージェントの完了報告は、以下の形式で統一する。
+DT への報告時、およびユーザーが代理報告する場合も同様。
+
+```
+## 完了報告: #{issue番号} {タイトル}
+
+### 実施内容
+- 変更ファイル: {ファイルパス一覧}
+- コミット: {SHA (short)}
+- メッセージ: {コミットメッセージ}
+- ブランチ: {ブランチ名}
+- Push: ✅ / ❌
+
+### 検証
+- {テスト名}: {passed/failed 件数}
+- 構文チェック: ✅ / ❌
+- ブラウザ目視: ✅ / ❌ / 未実施（理由）
+- GL error: ✅なし / ❌あり / 未確認
+
+### Issue
+- クローズ: ✅ (コメントURL) / ❌ 未クローズ（理由）
+
+### 未実施事項（あれば）
+- {未実施内容と理由}
+```
+
+### ルール
+
+1. 全フィールド必須。該当なしの場合は「N/A」と記載
+2. テスト結果は passed/failed の数値を必ず含める
+3. 未実施事項がある場合は理由を明記
+4. コミットSHAは short hash (7文字) で記載
+
+## 7. Codex Docs Hub
 
 Codex App operation notes and instruction files:
 
 - `./docs/codex/README.md`
 - `./docs/codex/INSTRUCTION-*.md` (per-issue instructions on feature branches)
 
-## 7. Priority Order
+## 8. Priority Order
 
 If guidance conflicts, follow this order:
 
