@@ -2,6 +2,9 @@
 
 > 欠損駆動思考の3D体験空間
 
+**⚠️ 本READMEはClaude DT（Claude.ai Desktop / Web チャット）用の運用ルールです。**
+他のエージェント（Claude Code CLI, OpenAI Codex, Gemini等）は [AGENTS.md §0](AGENTS.md) の読み替えガイドに従い、自環境に適用してください。全エージェント共通のルールは [AGENTS.md](AGENTS.md) の §3, §5, §6 を参照。
+
 ---
 
 ## 🔴🔴🔴 最重要ルール: 委譲完了後フロー（絶対遵守）
