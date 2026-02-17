@@ -84,6 +84,10 @@ function applyGuideLang() {
     });
 }
 
+export function refreshGuideLang() {
+    applyGuideLang();
+}
+
 /**
  * ページ最下部判定
  */

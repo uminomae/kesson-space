@@ -317,6 +317,22 @@ export function destroyDevlogGallery() {
   isInitialized = false;
 }
 
+export function refreshDevlogLanguage() {
+  if (!isInitialized) return;
+
+  buildGallery();
+
+  const offcanvasContainer = document.getElementById('offcanvas-gallery');
+  if (!offcanvasContainer) return;
+
+  const shown = galleryState.displayedCount;
+  offcanvasContainer.innerHTML = '';
+  if (shown > 0) {
+    renderSessionCards(galleryState.sessions.slice(0, shown));
+    updateSessionCount();
+  }
+}
+
 // ライトボックス画像クリックで閉じる
 if (typeof window !== 'undefined') {
   const lbImg = document.getElementById('lightbox-image');
