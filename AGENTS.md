@@ -11,7 +11,7 @@ Adapt the rules to your own environment. Specifically:
 | DT concept | Adapt to your environment |
 |---|---|
 | "GitHub API経由でPR作成" | Use `git` CLI or your platform's merge mechanism |
-| Worktree paths (`/Users/uminomae/...`) | Use your assigned worktree or working directory |
+| Worktree paths (`/Users/uminomae/dev/...`) | Use your assigned worktree or working directory |
 | "目視確認ゲート" | This is the DT's responsibility. Implementation agents push and report; DT handles the gate |
 | "セッションキャッシュ" | DT-only. Other agents use Issue comments for state handoff |
 | `skills/project-management-agent.md` | DT-only skill. Other agents follow instructions received from DT |
@@ -54,19 +54,25 @@ Loading policy:
 ### 2.1 Naming Convention
 
 - Format: `kesson-{llm}-{app}-{suffix}`
-- Branch: `feature/{worktree-name}`
-- Example: worktree `kesson-codex-app-test36` → branch `feature/kesson-codex-app-test36`
+- Branch: `feature/{worktree-name}` or `feature/codex-N`
+- Example: worktree `kesson-codex-1` → branch `feature/codex-1`
 
-### 2.2 Default Worktree
+### 2.2 Current Worktrees
 
-Default Codex worktree: `/Users/uminomae/dev/kesson-codex-app`
+| ワークツリー | パス | ブランチ | 用途 |
+|---|---|---|---|
+| **main** | `/Users/uminomae/dev/kesson-main` | main | 本番（直接コミット非推奨） |
+| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | feature/dev | 目視確認ゲート・ステージング |
+| Codex App 1 | `/Users/uminomae/dev/kesson-codex-1` | feature/codex-1 | Codex App 実装用 |
+| Codex App 2 | `/Users/uminomae/dev/kesson-codex-2` | feature/codex-2 | Codex App 実装用 |
+| Codex App 3 | `/Users/uminomae/dev/kesson-codex-3` | feature/codex-3 | Codex App 実装用 |
 
 ### 2.3 Parallel Worktrees
 
 When working on multiple issues in parallel, each gets its own worktree:
 
 ```
-kesson-codex-app-{suffix}  →  feature/kesson-codex-app-{suffix}
+kesson-codex-N  →  feature/codex-N
 ```
 
 Each worktree reads its instruction from `docs/codex/INSTRUCTION-{issue#}.md` on the corresponding branch.
@@ -119,7 +125,7 @@ Record at these timings:
 Example (start):
 ```
 🚀 Started
-- Branch: `feature/kesson-codex-app-47`
+- Branch: `feature/codex-1`
 - Approach: add history.scrollRestoration = 'manual' to scroll-coordinator.js
 ```
 
@@ -129,7 +135,7 @@ Example (completion):
 - Commit: `17b2b0a`
 - Changed: `index.html`, `src/scroll-coordinator.js`
 - Tests: config-consistency 39 passed, node --check pass
-- Pushed: origin/feature/kesson-codex-app-47
+- Pushed: origin/feature/codex-1
 ```
 
 Note: Include worktree path only if relevant to your environment. Cloud-based agents (e.g., Codex App) may omit it.
