@@ -628,6 +628,26 @@
       outline-offset: 4px;
     }
 
+    .section-heading-jump-link {
+      margin-left: 0.6em;
+      color: rgba(180, 200, 230, 0.45);
+      text-decoration: none;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: none;
+      vertical-align: baseline;
+    }
+
+    .section-heading-jump-link:hover {
+      color: rgba(200, 220, 250, 0.72);
+      text-decoration: underline;
+    }
+
+    .section-heading-jump-link:focus-visible {
+      outline: 1px solid rgba(150, 190, 255, 0.7);
+      outline-offset: 4px;
+    }
+
     /* Articles error message */
     #articles-error {
       color: #f87171;
