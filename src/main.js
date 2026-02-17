@@ -8,43 +8,46 @@ import { initNavigation, updateNavigation } from './navigation.js';
 import { createDevValueApplier } from './main/dev-apply.js';
 import { bootstrapMainScene } from './main/bootstrap.js';
 import { attachResizeHandler, createNavMeshFinder, startRenderLoop } from './main/render-loop.js';
-import { getOrbScreenData, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
+import { getOrbScreenData, refreshNavLanguage, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
 import { initLangToggle } from './lang-toggle.js';
-import { detectLang, t } from './i18n.js';
+import { detectLang, LANG_CHANGE_EVENT, t } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
-import { initScrollUI, updateScrollUI } from './scroll-ui.js';
+import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
 initMouseTracking();
 
-const lang = detectLang();
-const strings = t(lang);
+function applyPageLanguage(lang) {
+    const strings = t(lang);
 
-const titleH1 = document.getElementById('title-h1');
-const titleSub = document.getElementById('title-sub');
-if (titleH1) titleH1.textContent = strings.title;
-if (titleSub) titleSub.textContent = strings.subtitle;
+    const titleH1 = document.getElementById('title-h1');
+    const titleSub = document.getElementById('title-sub');
+    if (titleH1) titleH1.textContent = strings.title;
+    if (titleSub) titleSub.textContent = strings.subtitle;
 
-const creditCollab = document.getElementById('credit-collab');
-if (creditCollab) creditCollab.textContent = strings.credit;
-const creditSig = document.getElementById('credit-signature');
-if (creditSig) creditSig.textContent = strings.creditSignature;
+    const creditCollab = document.getElementById('credit-collab');
+    if (creditCollab) creditCollab.textContent = strings.credit;
+    const creditSig = document.getElementById('credit-signature');
+    if (creditSig) creditSig.textContent = strings.creditSignature;
 
-const taglineContainer = document.getElementById('taglines');
-if (taglineContainer && strings.taglines) {
-    taglineContainer.innerHTML = '';
-    const isEn = lang === 'en';
-    strings.taglines.forEach((text) => {
-        const p = document.createElement('p');
-        p.className = isEn ? 'tagline-en' : 'tagline';
-        p.textContent = text;
-        taglineContainer.appendChild(p);
-    });
+    const taglineContainer = document.getElementById('taglines');
+    if (taglineContainer && strings.taglines) {
+        taglineContainer.innerHTML = '';
+        const isEn = lang === 'en';
+        strings.taglines.forEach((text) => {
+            const p = document.createElement('p');
+            p.className = isEn ? 'tagline-en' : 'tagline';
+            p.textContent = text;
+            taglineContainer.appendChild(p);
+        });
+    }
+
+    document.documentElement.lang = lang;
 }
 
-document.documentElement.lang = lang;
+applyPageLanguage(detectLang());
 initLangToggle();
 
 const container = document.getElementById('canvas-container');
@@ -75,7 +78,20 @@ if (DEV_MODE) {
     });
 }
 
-import('./devlog/devlog.js');
+let refreshDevlogLanguage = null;
+import('./devlog/devlog.js').then((mod) => {
+    refreshDevlogLanguage = mod.refreshDevlogLanguage || null;
+});
+
+window.addEventListener(LANG_CHANGE_EVENT, (event) => {
+    const nextLang = event.detail?.lang || detectLang();
+    applyPageLanguage(nextLang);
+    refreshGuideLang();
+    refreshNavLanguage();
+    if (typeof refreshDevlogLanguage === 'function') {
+        refreshDevlogLanguage();
+    }
+});
 
 const clock = new THREE.Clock();
 attachResizeHandler({ camera, xLogoCamera, renderer, composer });

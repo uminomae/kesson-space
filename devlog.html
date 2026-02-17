@@ -186,7 +186,7 @@
   <!-- コンテンツオーバーレイ -->
   <div id="content-overlay">
     <main class="container py-5 devlog-shell">
-      <a class="back-link mb-4" href="index.html#devlog-gallery-section">← 一覧に戻る</a>
+      <a class="back-link mb-4" href="index.html">← 一覧に戻る</a>
 
       <div class="mb-4">
         <div class="devlog-meta mb-2" id="devlog-meta"></div>
@@ -229,12 +229,32 @@
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('id');
     const lang = params.get('lang') || document.documentElement.lang || 'ja';
+    const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
+    const SCROLL_RESTORATION_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
 
     const titleEl = document.getElementById('devlog-title');
     const metaEl = document.getElementById('devlog-meta');
     const coverEl = document.getElementById('devlog-cover');
     const contentEl = document.getElementById('devlog-content');
     const errorEl = document.getElementById('devlog-error');
+    const backLinkEl = document.querySelector('.back-link');
+
+    if (backLinkEl) {
+      backLinkEl.addEventListener('click', () => {
+        try {
+          sessionStorage.setItem(
+            SCROLL_RESTORATION_ONCE_KEY,
+            JSON.stringify({ armedAt: Date.now(), source: 'devlog-back-link' })
+          );
+          sessionStorage.setItem(
+            DEVLOG_RETURN_INTENT_KEY,
+            JSON.stringify({ requestedAt: Date.now(), sessionId })
+          );
+        } catch (e) {
+          console.warn('[devlog] Failed to store return intent:', e);
+        }
+      });
+    }
 
     function showError(message) {
       if (errorEl) {
