@@ -77,6 +77,9 @@ if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel(applyDevValue);
     });
+    import('./dev-links-panel.js').then(({ initDevLinksPanel }) => {
+        initDevLinksPanel();
+    });
 }
 
 let refreshDevlogLanguage = null;
