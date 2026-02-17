@@ -162,7 +162,7 @@ export const xLogoParams = {
     posX: -20,
     posY: 5,
     posZ: 11,
-    labelYOffset: 0.5,
+    labelYOffset: 1.5,
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---
