@@ -1,4 +1,4 @@
-# AGENTS Instructions for /Users/uminomae/dev/kesson-codex-app
+# AGENTS Instructions for kesson-space
 
 ## 1. Session Start (Mandatory)
 
@@ -26,31 +26,41 @@ Loading policy:
 2. Expand to full sections only when needed for the active task
 3. Avoid bulk-loading unrelated long docs in one pass
 
-## 2. Fixed Worktree Rule (Mandatory)
+## 2. Worktree Rules (Mandatory)
 
-Always use the same Codex App worktree for this project:
+### 2.1 Naming Convention
 
-- Worktree path: `/Users/uminomae/dev/kesson-codex-app`
+- Format: `kesson-{llm}-{app}-{suffix}`
+- Branch: `feature/{worktree-name}`
+- Example: worktree `kesson-codex-app-test36` → branch `feature/kesson-codex-app-test36`
 
-Do not switch execution target to other local worktrees unless the user explicitly requests it.
+### 2.2 Default Worktree
+
+Default Codex worktree: `/Users/uminomae/dev/kesson-codex-app`
+
+### 2.3 Parallel Worktrees
+
+When working on multiple issues in parallel, each gets its own worktree:
+
+```
+kesson-codex-app-{suffix}  →  feature/kesson-codex-app-{suffix}
+```
+
+Each worktree reads its instruction from `docs/codex/INSTRUCTION-{issue#}.md` on the corresponding branch.
+
+Do not cross-commit between worktrees.
 
 ## 3. Git and Branch Rules (Mandatory)
 
 ### 3.1 Branch flow
 
-1. Implementation branch -> `feature/dev` -> `main`
+1. Implementation branch → `feature/dev` → `main`
 2. Direct commit/merge to `main` is prohibited
+3. Visual confirmation required before `feature/dev` → `main`
 
-### 3.2 Naming
+### 3.2 Commit format
 
-1. Naming convention: `kesson-{llm}-{app}-{suffix}`
-2. Worktree name: `kesson-codex-app`
-3. Working branch baseline: `feature/kesson-codex-app`
-4. Local path format example: `<dev-root>/kesson-codex-app`
-
-### 3.3 Commit format
-
-Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`
+Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`, `test`
 
 ## 4. Implementation Rules (Mandatory)
 
@@ -59,14 +69,16 @@ Use Conventional Commits only: `fix`, `feat`, `refactor`, `docs`
 
 ## 5. Review and Issue Rules (Mandatory)
 
-1. Code review: flag only `P0` and `P1` findings
+1. Code review: flag `P0` and `P1` findings
 2. After completing a task, close the related GitHub Issue with a confirmation comment
+3. Task management: GitHub Issues are the source of truth (TODO.md is deprecated)
 
 ## 6. Codex Docs Hub
 
-Codex App operation notes:
+Codex App operation notes and instruction files:
 
 - `./docs/codex/README.md`
+- `./docs/codex/INSTRUCTION-*.md` (per-issue instructions on feature branches)
 
 ## 7. Priority Order
 
