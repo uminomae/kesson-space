@@ -166,9 +166,9 @@ export function startRenderLoop({
             composer.render();
         } else {
             renderer.render(scene, camera);
+            renderer.clearDepth();
+            renderer.render(xLogoScene, xLogoCamera);
         }
-        renderer.clearDepth();
-        renderer.render(xLogoScene, xLogoCamera);
     }
 
     animate();
