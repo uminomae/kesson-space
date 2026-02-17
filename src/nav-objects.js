@@ -272,10 +272,10 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
 
 function applyXLogoGroupPosition(group, camera = _xLogoCamera, yOffset = 0) {
     if (!group) return;
-    const worldY = xLogoParams.posY + yOffset;
+    const worldY = xLogoParams.posY;
     const { posX, posY, posZ } = getResponsiveXLogoPosition(camera, worldY);
     group.userData.baseY = xLogoParams.posY;
-    group.position.set(posX, posY, posZ);
+    group.position.set(posX, posY + yOffset, posZ);
 }
 
 // --- devPanelからのパラメータ更新 ---
