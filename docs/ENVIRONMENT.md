@@ -1,7 +1,7 @@
 # ENVIRONMENT.md — 開発環境・ツールチェーン
 
-**バージョン**: 1.1
-**更新日**: 2026-02-15
+**バージョン**: 1.2
+**更新日**: 2026-02-17
 
 ---
 
@@ -26,7 +26,7 @@ OpenAI Codex CLI ──────→ バックグラウンド並列作業
 ### 環境ごとの能力
 
 | 環境 | リモート操作 | ローカル操作 | MCP連携 | 並列実行 |
-|------|-------------|-------------|--------|---------| 
+|------|-------------|-------------|--------|---------|
 | Claude.ai + MCP | ✅ GitHub MCP | ✅ Codex MCP | ✅ | ❌ |
 | Claude Code (CLI) | ❌ | ✅ 直接 | ❌ | ❌ |
 | OpenAI Codex CLI | ❌ | ✅ 直接 | ❌ | ✅ |
@@ -128,7 +128,7 @@ codex --version
 
 ```bash
 # 対話モード
-cd /Users/uminomae/dev/kesson-codex
+cd /Users/uminomae/dev/kesson-codex-1
 codex
 
 # ワンショット実行
@@ -140,7 +140,7 @@ codex "docs/TODO.mdを分析して優先度レポートを作成" &
 
 ### 並列作業のルール
 
-1. **Codex作業は専用ワークツリー `kesson-codex` で行う**
+1. **Codex作業は専用ワークツリー `kesson-codex-1` ~ `kesson-codex-3` で行う**
 2. タスクはファイル単位で分離（衝突回避）
 3. mainへのマージは人間が判断
 
@@ -154,34 +154,25 @@ kesson-spaceでは `git worktree` を使い、エージェントごとに別デ�
 
 ```
 /Users/uminomae/dev/
-├── kesson-space/           ← main（人間がマージ判断 / 本番）
-├── kesson-claudeCode/      ← feature/claude-code（Claude Code専用）
-├── kesson-codex/           ← feature/codex-tasks（OpenAI Codex CLI専用）
-├── kesson-space-claudeDT/  ← feature/devlog-content（Claude DT専用）
-└── kesson-space-feature/   ← feature/*（その他開発用）
+├── kesson-main/       ← main（本番・直接コミット非推奨）
+├── kesson-codex-app/  ← feature/dev（目視確認ゲート・ステージング）
+├── kesson-codex-1/    ← feature/codex-1（Codex App 実装用）
+├── kesson-codex-2/    ← feature/codex-2（Codex App 実装用）
+└── kesson-codex-3/    ← feature/codex-3（Codex App 実装用）
 ```
 
 ### 確認コマンド
 
 ```bash
-git -C kesson-space worktree list
+git -C /Users/uminomae/dev/kesson-main worktree list
 ```
 
 ### 新規ワークツリー作成
 
 ```bash
 cd /Users/uminomae/dev
-git -C kesson-space worktree add ../kesson-new -b feature/new-branch
+git -C kesson-main worktree add ../kesson-new -b feature/new-branch
 ```
-
-### Claude Code用ワークツリー
-
-**kesson-claudeCode** は Claude Code（CLI）専用のワークツリー。
-
-- **対象リポジトリ**: kesson-space
-- **ブランチ**: feature/claude-code
-- **用途**: Claude Codeでkesson-spaceリポジトリを操作する際に使用
-- **mainへの直接編集禁止**: 必ずこのワークツリーで作業し、完了後にmainへマージ
 
 ### メリット
 
@@ -189,25 +180,14 @@ git -C kesson-space worktree add ../kesson-new -b feature/new-branch
 - ブランチ切り替えでファイルが入れ替わらない
 - **エージェント間の衝突回避**（物理的に別ディレクトリ）
 - 比較しながら作業できる
-- Claude Code と DTアプリで作業ディレクトリを分離
-
-### Codex経由でのWorktree操作
-
-```
-# mainディレクトリで作業
-codex:codex prompt="cd /Users/uminomae/dev/kesson-space && git status"
-
-# featureディレクトリで作業
-codex:codex prompt="cd /Users/uminomae/dev/kesson-space-feature && git status"
-```
 
 ### 注意：checkoutエラー
 
 Worktree構成の場合、別ディレクトリでチェックアウト済みのブランチには切り替えられない。
 
 ```
-$ git checkout feature/codex-tasks
-fatal: 'feature/codex-tasks' is already checked out at '/path/to/kesson-codex'
+$ git checkout feature/codex-1
+fatal: 'feature/codex-1' is already checked out at '/Users/uminomae/dev/kesson-codex-1'
 ```
 
 → 該当ディレクトリに移動して作業する。
