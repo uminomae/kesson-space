@@ -9,6 +9,7 @@
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
+import { requestScroll } from '../scroll-coordinator.js';
 import { createReadMoreButton } from './toggle-buttons.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
@@ -138,6 +139,7 @@ function loadAndConsumePendingReturnState() {
   if (!state || !Number.isFinite(state.savedAt)) return null;
   if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
   if (!Number.isFinite(state.pageScrollY)) return null;
+  if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return null;
 
   return state;
 }
@@ -158,13 +160,6 @@ function waitForArticlesReady(timeoutMs = 3000) {
     const onReady = () => finish();
     const timer = setTimeout(finish, timeoutMs);
     window.addEventListener(ARTICLES_READY_EVENT, onReady, { once: true });
-  });
-}
-
-function restoreMainPageScroll(state) {
-  const restoreY = Number.isFinite(state?.pageScrollY) ? state.pageScrollY : 0;
-  requestAnimationFrame(() => {
-    window.scrollTo(0, restoreY);
   });
 }
 
@@ -372,8 +367,10 @@ function openOffcanvas({ restoreState = null } = {}) {
     offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
       offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
       const listView = document.getElementById('offcanvas-list-view');
-      window.scrollTo(0, restorePageY);
+      // IMPORTANT: window scroll must be owned by scroll-coordinator.
+      requestScroll(restorePageY, 'devlog-return:offcanvas-page');
       if (listView) {
+        // Offcanvas internal scroll is a different scroll container; keep direct assignment.
         listView.scrollTop = restoreScrollTop;
         waitForImages(galleryEl).then(() => {
           listView.scrollTop = restoreScrollTop;
@@ -558,8 +555,10 @@ function runPendingReturnFlow(pendingState) {
       return;
     }
 
-    Promise.all([devlogReadyPromise, waitForArticlesReady()]).then(() => {
-      restoreMainPageScroll(pendingState);
+    // IMPORTANT: window scroll must have one owner (scroll-coordinator).
+    requestScroll(pendingState.pageScrollY, 'devlog-return:page', {
+      waitFor: Promise.all([devlogReadyPromise, waitForArticlesReady()]),
+      behavior: 'auto',
     });
   };
 

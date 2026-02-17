@@ -1,8 +1,9 @@
 // i18n.js — 言語切替（?lang=en / ?lang=ja）
 
+import { armManualRestoration, lockScroll, requestScroll, unlockScroll } from './scroll-coordinator.js';
+
 const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
 export const LANG_CHANGE_EVENT = 'kesson:lang-change';
-const LANG_SCROLL_ONCE_KEY = 'kesson.lang.scroll-restoration-once.v1';
 
 const STRINGS = {
     ja: {
@@ -69,14 +70,6 @@ function normalizeLang(lang) {
     return lang === 'en' ? 'en' : 'ja';
 }
 
-function armLangScrollRestorationOnce() {
-    try {
-        window.sessionStorage.setItem(LANG_SCROLL_ONCE_KEY, '1');
-    } catch (error) {
-        // sessionStorage may be unavailable in private mode or strict environments.
-    }
-}
-
 // URL・DOM・通知を一括で更新（リロードなし）
 export function setLang(nextLang, { scrollToTop = true, reload = false } = {}) {
     const previous = detectLang();
@@ -92,18 +85,27 @@ export function setLang(nextLang, { scrollToTop = true, reload = false } = {}) {
     }
 
     if (reload) {
-        armLangScrollRestorationOnce();
+        armManualRestoration('lang-switch');
         window.location.assign(url.toString());
         return next;
     }
 
-    window.history.replaceState(window.history.state, '', url.toString());
-    document.documentElement.lang = next;
-    if (scrollToTop) window.scrollTo(0, 0);
+    lockScroll('lang-switch');
+    try {
+        window.history.replaceState(window.history.state, '', url.toString());
+        document.documentElement.lang = next;
 
-    window.dispatchEvent(new CustomEvent(LANG_CHANGE_EVENT, {
-        detail: { lang: next, previous },
-    }));
+        window.dispatchEvent(new CustomEvent(LANG_CHANGE_EVENT, {
+            detail: { lang: next, previous },
+        }));
+
+        if (scrollToTop) {
+            // Scroll is requested while locked; coordinator executes once after unlock.
+            requestScroll(0, 'lang-switch', { behavior: 'auto' });
+        }
+    } finally {
+        unlockScroll('lang-switch');
+    }
 
     return next;
 }

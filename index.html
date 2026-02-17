@@ -10,18 +10,19 @@
     gtag('config', 'G-X5WQCB3JYT');
   </script>
   <!-- Default: preserve native back/forward restoration.
-       Enable one-shot manual mode only when language-switch flow explicitly requests it. -->
+       One-shot manual mode is armed by scroll-coordinator before navigation. -->
   <script>
     (function () {
       if (!('scrollRestoration' in history)) return;
 
-      var LANG_SCROLL_ONCE_KEY = 'kesson.lang.scroll-restoration-once.v1';
+      var SCROLL_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
       var shouldUseManual = false;
 
       try {
-        shouldUseManual = window.sessionStorage.getItem(LANG_SCROLL_ONCE_KEY) === '1';
+        var armedPayload = window.sessionStorage.getItem(SCROLL_ONCE_KEY);
+        shouldUseManual = Boolean(armedPayload);
         if (shouldUseManual) {
-          window.sessionStorage.removeItem(LANG_SCROLL_ONCE_KEY);
+          window.sessionStorage.removeItem(SCROLL_ONCE_KEY);
         }
       } catch (error) {
         shouldUseManual = false;

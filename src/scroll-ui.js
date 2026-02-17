@@ -3,6 +3,7 @@
 
 import { toggles, breathConfig } from './config.js';
 import { detectLang } from './i18n.js';
+import { requestScroll } from './scroll-coordinator.js';
 
 // --- DOM要素キャッシュ ---
 let _overlay;
@@ -68,7 +69,7 @@ export function destroyScrollUI() {
 }
 
 function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    requestScroll(0, 'scroll-ui:scroll-to-top', { behavior: 'smooth' });
 }
 
 /**
