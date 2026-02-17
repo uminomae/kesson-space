@@ -22,9 +22,8 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
-// Xロゴは「左固定px + 右固定%上限」で配置する。
-const XLOGO_MOBILE_LEFT_GUTTER_PX = 84;
-const XLOGO_MOBILE_RIGHT_BOUND_PERCENT = 0.10;
+// Xロゴは「画面幅に対して5%」を基準位置にする。
+const XLOGO_TARGET_VIEWPORT_PERCENT = 0.05;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
@@ -170,12 +169,7 @@ function createXLogoGroup() {
 }
 
 function getMobileXLogoViewportPercent() {
-    if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth) || window.innerWidth <= 0) {
-        return XLOGO_MOBILE_RIGHT_BOUND_PERCENT;
-    }
-    const viewportWidth = Math.max(1, window.innerWidth);
-    const fromLeftPxPercent = XLOGO_MOBILE_LEFT_GUTTER_PX / viewportWidth;
-    return Math.min(fromLeftPxPercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
+    return XLOGO_TARGET_VIEWPORT_PERCENT;
 }
 
 function estimateXLogoHalfWidthWorld() {
@@ -227,7 +221,7 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
     const needsAdjustment = Math.abs(clampedBasePercent - basePercent) > 1e-4;
 
     const preferredPercent = getMobileXLogoViewportPercent();
-    const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_MOBILE_RIGHT_BOUND_PERCENT);
+    const rightBoundPercent = Math.min(maxVisiblePercent, XLOGO_TARGET_VIEWPORT_PERCENT);
     const targetPercent = minVisiblePercent > rightBoundPercent
         ? minVisiblePercent
         : THREE.MathUtils.clamp(preferredPercent, minVisiblePercent, rightBoundPercent);
