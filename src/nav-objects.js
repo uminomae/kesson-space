@@ -23,6 +23,10 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 // --- 正三角形配置（XZ平面） ---
 const TRI_R = 9;
 const XLOGO_MOBILE_BREAKPOINT = 768;
+const XLOGO_MOBILE_VIEWPORT_X_PERCENT = 0.2;
+const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.16;
+const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.3;
+const XLOGO_SOLVE_DELTA_X = 1.0;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
     { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
@@ -39,8 +43,11 @@ let _xLogoMesh = null;
 let _xLogoRoot = null;
 let _xLogoMaterials = [];
 let _xLogoHover = false;
+let _xLogoCamera = null;
 let _scene = null;
 let _navMeshes = null;
+const _xLogoSolveVecA = new THREE.Vector3();
+const _xLogoSolveVecB = new THREE.Vector3();
 
 function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
@@ -162,15 +169,53 @@ function createXLogoGroup() {
     return group;
 }
 
-function getResponsiveXLogoPosition() {
+function getMobileXLogoViewportPercent() {
+    if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth) || window.innerWidth <= 0) {
+        return XLOGO_MOBILE_VIEWPORT_X_PERCENT;
+    }
+    const viewportRatio = Math.min(1, Math.max(0, window.innerWidth / XLOGO_MOBILE_BREAKPOINT));
+    const adaptivePercent = XLOGO_MOBILE_VIEWPORT_X_PERCENT + (1 - viewportRatio) * 0.06;
+    return Math.min(
+        XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT,
+        Math.max(XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT, adaptivePercent)
+    );
+}
+
+function solveXLogoPosXForViewportPercent(basePosY, basePosZ, camera, viewportPercent) {
+    if (!camera || typeof camera.updateMatrixWorld !== 'function') {
+        return -Math.max(1, Math.abs(xLogoParams.posX));
+    }
+
+    camera.updateMatrixWorld(true);
+    _xLogoSolveVecA.set(xLogoParams.posX, basePosY, basePosZ).project(camera);
+    _xLogoSolveVecB.set(xLogoParams.posX + XLOGO_SOLVE_DELTA_X, basePosY, basePosZ).project(camera);
+
+    const slope = _xLogoSolveVecB.x - _xLogoSolveVecA.x;
+    if (!Number.isFinite(slope) || Math.abs(slope) < 1e-4) {
+        return -Math.max(1, Math.abs(xLogoParams.posX));
+    }
+
+    const targetNdcX = THREE.MathUtils.clamp((viewportPercent * 2) - 1, -0.95, 0.95);
+    const solved = xLogoParams.posX + ((targetNdcX - _xLogoSolveVecA.x) / slope) * XLOGO_SOLVE_DELTA_X;
+    return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
+}
+
+function getResponsiveXLogoPosition(camera = _xLogoCamera) {
     const isMobileViewport = typeof window !== 'undefined' && window.innerWidth <= XLOGO_MOBILE_BREAKPOINT;
-    const posX = isMobileViewport ? -Math.max(1, Math.abs(xLogoParams.posX)) : xLogoParams.posX;
+    const posX = isMobileViewport
+        ? solveXLogoPosXForViewportPercent(
+            xLogoParams.posY,
+            xLogoParams.posZ,
+            camera,
+            getMobileXLogoViewportPercent()
+        )
+        : xLogoParams.posX;
     return { posX, posY: xLogoParams.posY, posZ: xLogoParams.posZ };
 }
 
-function applyXLogoGroupPosition(group) {
+function applyXLogoGroupPosition(group, camera = _xLogoCamera) {
     if (!group) return;
-    const { posX, posY, posZ } = getResponsiveXLogoPosition();
+    const { posX, posY, posZ } = getResponsiveXLogoPosition(camera);
     group.userData.baseY = posY;
     group.position.set(posX, posY, posZ);
 }
@@ -285,7 +330,8 @@ export function createNavObjects(scene) {
     return navMeshes;
 }
 
-export function createXLogoObjects(scene) {
+export function createXLogoObjects(scene, camera = null) {
+    _xLogoCamera = camera || _xLogoCamera;
     const lang = detectLang();
     const strings = t(lang);
     const xData = strings.xLogo;
@@ -301,7 +347,7 @@ export function createXLogoObjects(scene) {
     };
 
     Object.assign(xGroup.userData, { isXLogo: true });
-    applyXLogoGroupPosition(xGroup);
+    applyXLogoGroupPosition(xGroup, _xLogoCamera);
 
     scene.add(xGroup);
     _xLogoGroup = xGroup;
@@ -397,9 +443,11 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
-export function updateXLogo(time) {
+export function updateXLogo(time, camera = _xLogoCamera) {
+    _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    applyXLogoGroupPosition(_xLogoGroup);
+    // X オブジェクトは「モバイル時のみ画面幅%起点」で再配置し、狭幅でも画面内に収める。
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
@@ -567,9 +615,10 @@ export function rebuildXLogo() {
 }
 
 // --- devPanelからの位置更新 ---
-export function updateXLogoPosition() {
+export function updateXLogoPosition(camera = _xLogoCamera) {
+    _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    applyXLogoGroupPosition(_xLogoGroup);
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
 }
 
 export function getXLogoGroup() {
