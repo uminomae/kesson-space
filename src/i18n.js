@@ -1,6 +1,9 @@
 // i18n.js — 言語切替（?lang=en / ?lang=ja）
 
+import { armManualRestoration, lockScroll, requestScroll, unlockScroll } from './scroll-coordinator.js';
+
 const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
+export const LANG_CHANGE_EVENT = 'kesson:lang-change';
 
 const STRINGS = {
     ja: {
@@ -63,10 +66,16 @@ export function t(lang) {
     return STRINGS[lang] || STRINGS.ja;
 }
 
-// --- 言語トグル（URLパラメータ切替でリロード）---
-export function switchLang() {
-    const current = detectLang();
-    const next = current === 'ja' ? 'en' : 'ja';
+function normalizeLang(lang) {
+    return lang === 'en' ? 'en' : 'ja';
+}
+
+// URL・DOM・通知を一括で更新（リロードなし）
+export function setLang(nextLang, { scrollToTop = true, reload = false } = {}) {
+    const previous = detectLang();
+    const next = normalizeLang(nextLang);
+
+    if (previous === next) return next;
 
     const url = new URL(window.location);
     if (next === 'ja') {
@@ -74,7 +83,35 @@ export function switchLang() {
     } else {
         url.searchParams.set('lang', next);
     }
-    // Fix #42: リロード前に明示的にトップへ戻す（scrollRestoration は index.html <head> で初期化）
-    window.scrollTo(0, 0);
-    window.location.href = url.toString();
+
+    if (reload) {
+        armManualRestoration('lang-switch');
+        window.location.assign(url.toString());
+        return next;
+    }
+
+    lockScroll('lang-switch');
+    try {
+        window.history.replaceState(window.history.state, '', url.toString());
+        document.documentElement.lang = next;
+
+        window.dispatchEvent(new CustomEvent(LANG_CHANGE_EVENT, {
+            detail: { lang: next, previous },
+        }));
+
+        if (scrollToTop) {
+            // Scroll is requested while locked; coordinator executes once after unlock.
+            requestScroll(0, 'lang-switch', { behavior: 'auto' });
+        }
+    } finally {
+        unlockScroll('lang-switch');
+    }
+
+    return next;
+}
+
+// --- 言語トグル（URLパラメータ切替）---
+export function switchLang() {
+    const next = detectLang() === 'ja' ? 'en' : 'ja';
+    return setLang(next);
 }

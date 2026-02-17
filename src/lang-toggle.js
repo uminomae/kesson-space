@@ -1,11 +1,19 @@
 // lang-toggle.js — 言語切替トグルUI（右上、世界観に溶け込む控えめなテキスト）
 // ISS-001: aria-label 追加
 
-import { detectLang, t, switchLang } from './i18n.js';
+import { detectLang, LANG_CHANGE_EVENT, t, switchLang } from './i18n.js';
+
+function applyToggleText(btn, lang) {
+    const strings = t(lang);
+    btn.textContent = strings.toggleLabel;
+    btn.setAttribute(
+        'aria-label',
+        lang === 'ja' ? '言語を英語に切り替え' : 'Switch language to Japanese'
+    );
+}
 
 export function initLangToggle() {
     const lang = detectLang();
-    const strings = t(lang);
 
     // --- スタイル注入 ---
     const style = document.createElement('style');
@@ -38,12 +46,19 @@ export function initLangToggle() {
     document.head.appendChild(style);
 
     // --- ボタン生成 ---
+    const existing = document.getElementById('lang-toggle');
+    if (existing instanceof HTMLButtonElement) {
+        applyToggleText(existing, lang);
+        return;
+    }
+
     const btn = document.createElement('button');
     btn.id = 'lang-toggle';
-    btn.textContent = strings.toggleLabel;
-    // CHANGED: aria-label 追加
-    btn.setAttribute('aria-label',
-        lang === 'ja' ? '言語を英語に切り替え' : 'Switch language to Japanese');
+    applyToggleText(btn, lang);
     btn.addEventListener('click', switchLang);
+    window.addEventListener(LANG_CHANGE_EVENT, (event) => {
+        const nextLang = event.detail?.lang || detectLang();
+        applyToggleText(btn, nextLang);
+    });
     document.body.appendChild(btn);
 }

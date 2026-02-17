@@ -4,6 +4,16 @@
 const API_URL = 'https://uminomae.github.io/pjdhiro/api/kesson-articles.json';
 const MOCK_URL = './assets/articles/articles.json';
 const INITIAL_DISPLAY = 3;
+const ARTICLES_READY_EVENT = 'kesson:articles-ready';
+
+let hasNotifiedArticlesReady = false;
+
+function notifyArticlesReady(status = 'ok') {
+    if (hasNotifiedArticlesReady || typeof window === 'undefined') return;
+    hasNotifiedArticlesReady = true;
+    window.__kessonArticlesReady = true;
+    window.dispatchEvent(new CustomEvent(ARTICLES_READY_EVENT, { detail: { status } }));
+}
 
 function normalizeType(item) {
     return item.type === 'page' ? 'page' : 'post';
@@ -143,7 +153,10 @@ async function initArticlesSection() {
         ? Array.from(filterGroup.querySelectorAll('.articles-filter-btn'))
         : [];
 
-    if (!grid) return;
+    if (!grid) {
+        notifyArticlesReady('no-grid');
+        return;
+    }
 
     const articles = await fetchArticles();
     if (!articles || articles.length === 0) {
@@ -151,6 +164,7 @@ async function initArticlesSection() {
             errorEl.textContent = '記事データの読み込みに失敗しました。';
             errorEl.classList.remove('d-none');
         }
+        notifyArticlesReady('empty');
         return;
     }
 
@@ -168,10 +182,21 @@ async function initArticlesSection() {
     if (offcanvasGrid) {
         setupFilters({ articles, filterButtons, offcanvasGrid, offcanvasCount });
     }
+
+    notifyArticlesReady('ok');
+}
+
+async function safeInitArticlesSection() {
+    try {
+        await initArticlesSection();
+    } catch (error) {
+        console.error('[articles] init failed:', error);
+        notifyArticlesReady('error');
+    }
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initArticlesSection, { once: true });
+    document.addEventListener('DOMContentLoaded', safeInitArticlesSection, { once: true });
 } else {
-    initArticlesSection();
+    safeInitArticlesSection();
 }

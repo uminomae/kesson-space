@@ -9,13 +9,23 @@
  * Usage: import { initDevlogGallery } from './devlog/devlog.js';
  */
 
+import { requestScroll } from '../scroll-coordinator.js';
 import { createReadMoreButton } from './toggle-buttons.js';
 
 const SESSIONS_URL = './assets/devlog/sessions.json';
+const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
+const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
+const DEVLOG_RETURN_TTL_MS = 30 * 60 * 1000;
+const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 
 let sessions = [];
 let isInitialized = false;
 let containerEl = null;
+let devlogReadyResolved = false;
+let resolveDevlogReady = null;
+const devlogReadyPromise = new Promise((resolve) => {
+  resolveDevlogReady = resolve;
+});
 
 let galleryState = {
   sessions: [],           // 全セッションデータ
@@ -30,6 +40,189 @@ function getSessionEndValue(session) {
   const end = session.end || session.start;
   const value = end ? Date.parse(end) : 0;
   return Number.isNaN(value) ? 0 : value;
+}
+
+function markDevlogReady() {
+  if (devlogReadyResolved) return;
+  devlogReadyResolved = true;
+  if (resolveDevlogReady) resolveDevlogReady();
+}
+
+function waitForImages(rootEl, timeoutMs = 1500) {
+  if (!rootEl) return Promise.resolve();
+  const pendingImages = Array.from(rootEl.querySelectorAll('img')).filter((img) => !img.complete);
+  if (pendingImages.length === 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let resolved = false;
+    let remaining = pendingImages.length;
+
+    const finish = () => {
+      if (resolved) return;
+      resolved = true;
+      resolve();
+    };
+
+    const timer = setTimeout(finish, timeoutMs);
+    const onImageDone = () => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearTimeout(timer);
+        finish();
+      }
+    };
+
+    pendingImages.forEach((img) => {
+      img.addEventListener('load', onImageDone, { once: true });
+      img.addEventListener('error', onImageDone, { once: true });
+    });
+  });
+}
+
+function readSessionJson(key) {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn(`[devlog] Failed to parse sessionStorage key: ${key}`, error);
+    return null;
+  }
+}
+
+function writeSessionJson(key, value) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn(`[devlog] Failed to write sessionStorage key: ${key}`, error);
+  }
+}
+
+function removeSessionKey(key) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch (error) {
+    console.warn(`[devlog] Failed to remove sessionStorage key: ${key}`, error);
+  }
+}
+
+function getOffcanvasScrollNodes() {
+  const offcanvasEl = document.getElementById('devlogOffcanvas');
+  if (!offcanvasEl) {
+    return { offcanvasEl: null, listView: null, offcanvasBody: null };
+  }
+  const listView = document.getElementById('offcanvas-list-view');
+  const offcanvasBody = offcanvasEl.querySelector('.offcanvas-body');
+  return { offcanvasEl, listView, offcanvasBody };
+}
+
+function readOffcanvasScrollState() {
+  const { listView, offcanvasBody } = getOffcanvasScrollNodes();
+  const listTop = listView ? listView.scrollTop : 0;
+  const bodyTop = offcanvasBody ? offcanvasBody.scrollTop : 0;
+
+  let container = 'list-view';
+  let top = listTop;
+
+  if (bodyTop > listTop) {
+    container = 'offcanvas-body';
+    top = bodyTop;
+  } else if (listTop === 0 && bodyTop === 0 && offcanvasBody && listView) {
+    const listScrollable = listView.scrollHeight > listView.clientHeight + 1;
+    const bodyScrollable = offcanvasBody.scrollHeight > offcanvasBody.clientHeight + 1;
+    if (bodyScrollable && !listScrollable) {
+      container = 'offcanvas-body';
+    }
+  }
+
+  return { top, container, listTop, bodyTop };
+}
+
+function applyOffcanvasScrollState(state) {
+  const { listView, offcanvasBody } = getOffcanvasScrollNodes();
+  if (!listView && !offcanvasBody) return;
+
+  const fallbackTop = Number.isFinite(state?.offcanvasScrollTop) ? state.offcanvasScrollTop : 0;
+  const container = state?.offcanvasScrollContainer;
+  const listTop = Number.isFinite(state?.offcanvasListScrollTop)
+    ? state.offcanvasListScrollTop
+    : (container === 'list-view' ? fallbackTop : null);
+  const bodyTop = Number.isFinite(state?.offcanvasBodyScrollTop)
+    ? state.offcanvasBodyScrollTop
+    : (container === 'offcanvas-body' ? fallbackTop : null);
+
+  if (container === 'list-view') {
+    if (listView) listView.scrollTop = Number.isFinite(listTop) ? listTop : fallbackTop;
+    return;
+  }
+  if (container === 'offcanvas-body') {
+    if (offcanvasBody) offcanvasBody.scrollTop = Number.isFinite(bodyTop) ? bodyTop : fallbackTop;
+    return;
+  }
+
+  // Backward compatibility for legacy states without container metadata.
+  if (listView) listView.scrollTop = fallbackTop;
+  if (offcanvasBody) offcanvasBody.scrollTop = fallbackTop;
+}
+
+function persistReturnState(source, sessionId) {
+  if (typeof window === 'undefined') return;
+
+  const fromOffcanvas = source === 'offcanvas';
+  const offcanvasState = fromOffcanvas ? readOffcanvasScrollState() : null;
+  writeSessionJson(DEVLOG_RETURN_STATE_KEY, {
+    source,
+    sessionId,
+    pageScrollY: window.scrollY,
+    offcanvasOpen: fromOffcanvas,
+    offcanvasScrollTop: offcanvasState ? offcanvasState.top : 0,
+    offcanvasScrollContainer: offcanvasState ? offcanvasState.container : null,
+    offcanvasListScrollTop: offcanvasState ? offcanvasState.listTop : 0,
+    offcanvasBodyScrollTop: offcanvasState ? offcanvasState.bodyTop : 0,
+    displayedCount: fromOffcanvas ? galleryState.displayedCount : 0,
+    savedAt: Date.now(),
+  });
+}
+
+function loadAndConsumePendingReturnState() {
+  const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
+  if (!intent) return null;
+
+  const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
+  removeSessionKey(DEVLOG_RETURN_INTENT_KEY);
+  removeSessionKey(DEVLOG_RETURN_STATE_KEY);
+
+  if (!state || !Number.isFinite(state.savedAt)) return null;
+  if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
+  if (!Number.isFinite(state.pageScrollY)) return null;
+  if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return null;
+
+  return state;
+}
+
+function waitForArticlesReady(timeoutMs = 3000) {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (window.__kessonArticlesReady === true) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener(ARTICLES_READY_EVENT, onReady);
+      clearTimeout(timer);
+      resolve();
+    };
+    const onReady = () => finish();
+    const timer = setTimeout(finish, timeoutMs);
+    window.addEventListener(ARTICLES_READY_EVENT, onReady, { once: true });
+  });
 }
 
 /**
@@ -87,6 +280,8 @@ async function loadSessions() {
   galleryState.sessions = sessions;
   console.log('[devlog] Loaded', sessions.length, 'sessions');
   buildGallery();
+  await waitForImages(containerEl);
+  markDevlogReady();
 }
 
 function generateDemoData() {
@@ -118,7 +313,7 @@ function buildGallery() {
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
 
-    const card = createCardElement(session, lang);
+    const card = createCardElement(session, lang, 'main');
     col.appendChild(card);
     row.appendChild(col);
   });
@@ -143,12 +338,15 @@ function buildGallery() {
  * カードDOM要素を生成（メイン画面・Offcanvas共用）
  * カードクリックで devlog.html?id=xxx に遷移
  */
-function createCardElement(session, lang) {
+function createCardElement(session, lang, source = 'main') {
   const href = `./devlog.html?id=${session.id}`;
 
   const link = document.createElement('a');
   link.className = 'kesson-card-link text-decoration-none';
   link.href = href;
+  link.addEventListener('click', () => {
+    persistReturnState(source, session.id);
+  });
   link.setAttribute(
     'aria-label',
     lang === 'en'
@@ -190,31 +388,73 @@ function createCardElement(session, lang) {
 // Offcanvas + 無限スクロール
 // ============================================================
 
-function openOffcanvas() {
+function openOffcanvas({ restoreState = null } = {}) {
   const offcanvasEl = document.getElementById('devlogOffcanvas');
+  if (!offcanvasEl || typeof bootstrap === 'undefined') {
+    console.warn('[devlog] Offcanvas is not ready');
+    return;
+  }
+
   if (!galleryState.offcanvas) {
     galleryState.offcanvas = new bootstrap.Offcanvas(offcanvasEl);
   }
 
   galleryState.displayedCount = 0;
-  document.getElementById('offcanvas-gallery').innerHTML = '';
+  const galleryEl = document.getElementById('offcanvas-gallery');
+  if (galleryEl) galleryEl.innerHTML = '';
   showListView();
-  loadMoreSessions();
+
+  const requestedCount = restoreState && restoreState.offcanvasOpen
+    ? restoreState.displayedCount
+    : galleryState.batchSize;
+  const targetCount = Math.min(
+    galleryState.sessions.length,
+    Math.max(
+      galleryState.batchSize,
+      Number.isFinite(requestedCount) ? requestedCount : galleryState.batchSize
+    )
+  );
+
+  while (galleryState.displayedCount < targetCount) {
+    loadMoreSessions();
+  }
+
+  if (restoreState && restoreState.offcanvasOpen) {
+    const restorePageY = Number.isFinite(restoreState.pageScrollY)
+      ? restoreState.pageScrollY
+      : 0;
+    offcanvasEl.addEventListener('shown.bs.offcanvas', function onShown() {
+      offcanvasEl.removeEventListener('shown.bs.offcanvas', onShown);
+      // IMPORTANT: window scroll must be owned by scroll-coordinator.
+      requestScroll(restorePageY, 'devlog-return:offcanvas-page');
+      applyOffcanvasScrollState(restoreState);
+      waitForImages(galleryEl).then(() => {
+        applyOffcanvasScrollState(restoreState);
+      });
+    });
+  }
 
   galleryState.offcanvas.show();
 }
 
 function setupInfiniteScroll() {
-  const container = document.getElementById('offcanvas-list-view');
-  if (!container) return;
+  const { listView, offcanvasBody } = getOffcanvasScrollNodes();
+  const targets = [listView, offcanvasBody].filter(Boolean);
+  if (targets.length === 0) return;
 
-  container.addEventListener('scroll', () => {
+  const onScroll = (event) => {
     if (galleryState.isLoading) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = container;
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) return;
+    const { scrollTop, scrollHeight, clientHeight } = target;
     if (scrollTop + clientHeight >= scrollHeight - 100) {
       loadMoreSessions();
     }
+  };
+
+  targets.forEach((target) => {
+    target.addEventListener('scroll', onScroll, { passive: true });
   });
 }
 
@@ -252,7 +492,7 @@ function renderSessionCards(sessionsToRender) {
   sessionsToRender.forEach(session => {
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
-    const card = createCardElement(session, lang);
+    const card = createCardElement(session, lang, 'offcanvas');
     col.appendChild(card);
     row.appendChild(col);
   });
@@ -317,6 +557,22 @@ export function destroyDevlogGallery() {
   isInitialized = false;
 }
 
+export function refreshDevlogLanguage() {
+  if (!isInitialized) return;
+
+  buildGallery();
+
+  const offcanvasContainer = document.getElementById('offcanvas-gallery');
+  if (!offcanvasContainer) return;
+
+  const shown = galleryState.displayedCount;
+  offcanvasContainer.innerHTML = '';
+  if (shown > 0) {
+    renderSessionCards(galleryState.sessions.slice(0, shown));
+    updateSessionCount();
+  }
+}
+
 // ライトボックス画像クリックで閉じる
 if (typeof window !== 'undefined') {
   const lbImg = document.getElementById('lightbox-image');
@@ -328,10 +584,9 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Auto-initialize when gallery section is visible (IntersectionObserver)
-if (typeof window !== 'undefined') {
+function observeGallerySection() {
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting && !isInitialized) {
         console.log('[devlog] Section visible, initializing gallery');
         initDevlogGallery();
@@ -340,23 +595,50 @@ if (typeof window !== 'undefined') {
     });
   }, { threshold: 0.1 });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      const section = document.getElementById('devlog-gallery-section');
-      if (section) {
-        console.log('[devlog] Observing gallery section');
-        observer.observe(section);
-      } else {
-        console.warn('[devlog] Gallery section not found');
-      }
-    });
+  const section = document.getElementById('devlog-gallery-section');
+  if (section) {
+    console.log('[devlog] Observing gallery section');
+    observer.observe(section);
   } else {
-    const section = document.getElementById('devlog-gallery-section');
-    if (section) {
-      console.log('[devlog] Observing gallery section');
-      observer.observe(section);
-    } else {
-      console.warn('[devlog] Gallery section not found');
+    console.warn('[devlog] Gallery section not found');
+  }
+}
+
+function runPendingReturnFlow(pendingState) {
+  const start = () => {
+    if (!isInitialized) {
+      initDevlogGallery();
     }
+
+    if (pendingState.offcanvasOpen) {
+      devlogReadyPromise.then(() => {
+        openOffcanvas({ restoreState: pendingState });
+      });
+      return;
+    }
+
+    // IMPORTANT: window scroll must have one owner (scroll-coordinator).
+    requestScroll(pendingState.pageScrollY, 'devlog-return:page', {
+      waitFor: Promise.all([devlogReadyPromise, waitForArticlesReady()]),
+      behavior: 'auto',
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+}
+
+// Auto-initialize and return restoration bootstrap
+if (typeof window !== 'undefined') {
+  const pendingState = loadAndConsumePendingReturnState();
+  if (pendingState) {
+    runPendingReturnFlow(pendingState);
+  } else if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeGallerySection, { once: true });
+  } else {
+    observeGallerySection();
   }
 }

@@ -188,6 +188,11 @@ function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex) {
     });
 }
 
+function replaceLabel(oldLabel, text, extraClass, url, isExternal, navType, navIndex) {
+    if (oldLabel instanceof HTMLElement) oldLabel.remove();
+    return createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex);
+}
+
 // ========================================
 // 公開API
 // ========================================
@@ -292,6 +297,79 @@ export function createXLogoObjects(scene) {
     _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true, 'xlogo');
 
     return xGroup;
+}
+
+export function refreshNavLanguage() {
+    const strings = t(detectLang());
+
+    if (_navMeshes && _navMeshes.length > 0) {
+        let orbIndex = 0;
+        _navMeshes.forEach((group) => {
+            if (group.userData.isGem || group.userData.isXLogo) return;
+            const navItem = strings.nav[orbIndex];
+            if (!navItem) {
+                orbIndex += 1;
+                return;
+            }
+
+            const core = group.userData.core;
+            if (core && core.userData) {
+                core.userData.url = navItem.url;
+                core.userData.label = navItem.label;
+            }
+
+            _labelElements[orbIndex] = replaceLabel(
+                _labelElements[orbIndex],
+                navItem.label,
+                '',
+                navItem.url,
+                false,
+                'orb',
+                orbIndex
+            );
+            orbIndex += 1;
+        });
+
+        for (let i = orbIndex; i < _labelElements.length; i += 1) {
+            const label = _labelElements[i];
+            if (label instanceof HTMLElement) label.remove();
+        }
+        _labelElements.length = orbIndex;
+    }
+
+    if (_gemGroup && strings.gem) {
+        const hit = _gemGroup.userData.hitSprite;
+        if (hit && hit.userData) {
+            hit.userData.url = strings.gem.url;
+            hit.userData.label = strings.gem.label;
+        }
+
+        _gemLabelElement = replaceLabel(
+            _gemLabelElement,
+            strings.gem.label,
+            'nav-label--gem',
+            strings.gem.url,
+            true,
+            'gem'
+        );
+    }
+
+    if (_xLogoGroup && strings.xLogo) {
+        const hit = _xLogoGroup.userData.hitSprite;
+        if (hit && hit.userData) {
+            hit.userData.url = strings.xLogo.url;
+            hit.userData.label = strings.xLogo.label;
+        }
+
+        _xLogoLabelElement = replaceLabel(
+            _xLogoLabelElement,
+            strings.xLogo.label,
+            'nav-label--x',
+            strings.xLogo.url,
+            true,
+            'xlogo'
+        );
+    }
 }
 
 export function updateNavObjects(navMeshes, time, camera) {
