@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "basePath": "/kesson-space/",
+  "presets": {
+    "articles_readmore_open": {
+      "label": "Open ARTICLES offcanvas at Read More",
+      "path": "/kesson-space/",
+      "query": {
+        "open": "articles",
+        "scroll": "articles-readmore"
+      }
+    },
+    "articles_open": {
+      "label": "Open ARTICLES offcanvas with default target",
+      "path": "/kesson-space/",
+      "query": {
+        "open": "articles"
+      }
+    },
+    "articles_heading_scroll": {
+      "label": "Scroll to ARTICLES heading only",
+      "path": "/kesson-space/",
+      "query": {
+        "scroll": "articles-heading"
+      }
+    },
+    "devlog_readmore_open": {
+      "label": "Open DEVLOG offcanvas at Read More",
+      "path": "/kesson-space/",
+      "query": {
+        "open": "devlog",
+        "scroll": "devlog-readmore"
+      }
+    },
+    "devlog_open": {
+      "label": "Open DEVLOG offcanvas with default target",
+      "path": "/kesson-space/",
+      "query": {
+        "open": "devlog"
+      }
+    },
+    "devlog_heading_scroll": {
+      "label": "Scroll to DEVLOG heading only",
+      "path": "/kesson-space/",
+      "query": {
+        "scroll": "devlog-heading"
+      }
+    }
+  }
+}

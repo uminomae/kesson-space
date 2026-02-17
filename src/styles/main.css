@@ -1104,6 +1104,81 @@
       border-bottom: 1px solid rgba(100, 150, 255, 0.06);
     }
 
+    /* ============================
+       Dev Links Hub (?dev)
+       ============================ */
+    #dev-links-toggle {
+      position: fixed;
+      top: calc(50% + 95px);
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 1001;
+      background: rgba(20, 30, 50, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(100, 150, 255, 0.15);
+      border-right: none;
+      border-radius: 4px 0 0 4px;
+      color: rgba(180, 200, 255, 0.75);
+      font-size: 0.62rem;
+      font-family: monospace;
+      padding: 8px 5px;
+      cursor: pointer;
+      writing-mode: vertical-rl;
+      letter-spacing: 0.1em;
+      transition: all 0.3s ease;
+    }
+    #dev-links-toggle:hover {
+      color: rgba(210, 225, 255, 0.95);
+      background: rgba(30, 45, 70, 0.84);
+    }
+
+    .offcanvas-links {
+      --bs-offcanvas-width: min(520px, 92vw);
+      width: min(520px, 92vw);
+    }
+
+    #devLinksOffcanvas .nav-tabs {
+      border-bottom-color: rgba(110, 140, 200, 0.35);
+    }
+    #devLinksOffcanvas .nav-tabs .nav-link {
+      color: rgba(190, 210, 240, 0.75);
+      border: 1px solid transparent;
+      border-bottom: none;
+    }
+    #devLinksOffcanvas .nav-tabs .nav-link.active {
+      color: rgba(220, 232, 255, 0.96);
+      background: rgba(34, 44, 67, 0.78);
+      border-color: rgba(110, 140, 200, 0.35);
+    }
+
+    .dev-links-item {
+      background: rgba(14, 18, 30, 0.84);
+      border-color: rgba(100, 140, 210, 0.24) !important;
+    }
+    .dev-links-key {
+      font-size: 0.66rem;
+      color: rgba(170, 190, 220, 0.7);
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+    .dev-links-url {
+      font-size: 0.68rem;
+      color: rgba(153, 202, 255, 0.95);
+      user-select: all;
+      white-space: normal;
+      word-break: break-all;
+    }
+    .dev-links-json-preview {
+      max-height: 40vh;
+      overflow: auto;
+      border: 1px solid rgba(100, 140, 210, 0.24);
+      border-radius: 0.35rem;
+      background: rgba(12, 16, 26, 0.92);
+      color: rgba(167, 214, 255, 0.9);
+      padding: 0.75rem;
+      font-size: 0.7rem;
+    }
+
     #dev-panel .form-check {
       display: flex;
       justify-content: space-between;

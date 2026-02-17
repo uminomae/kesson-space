@@ -184,6 +184,32 @@ main（起点）→ 実装ブランチ → feature/dev（🔴目視確認ゲー�
 ./serve.sh  # → http://localhost:3001/
 ```
 
+## Deep Link Presets
+
+Deep link URL presets are managed in:
+
+- `assets/deeplinks.json`
+
+Print all preset URLs:
+
+```bash
+npm run deeplinks
+```
+
+Print one preset URL (copy ready):
+
+```bash
+node scripts/print-deeplinks.mjs articles_readmore_open
+```
+
+Use local server origin:
+
+```bash
+node scripts/print-deeplinks.mjs articles_readmore_open --base http://localhost:5173
+```
+
+In browser dev mode (`?dev`), a separate `LINKS` offcanvas hub is available (independent from the parameter tuning panel).
+
 ---
 
 ## 関連プロジェクト
