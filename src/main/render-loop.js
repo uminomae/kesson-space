@@ -40,6 +40,7 @@ export function startRenderLoop({
     renderer,
     composer,
     distortionPass,
+    dofPass,
     fluidSystem,
     liquidSystem,
     liquidTarget,
@@ -134,6 +135,8 @@ export function startRenderLoop({
         distortionPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
         distortionPass.uniforms.uTime.value = time;
         distortionPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
+        dofPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+        dofPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
 
         if (toggles.heatHaze) {
             distortionPass.uniforms.uHeatHaze.value = distortionParams.heatHaze;
@@ -143,10 +146,10 @@ export function startRenderLoop({
             distortionPass.uniforms.uHeatHaze.value = 0;
         }
         if (toggles.dof) {
-            distortionPass.uniforms.uDofStrength.value = distortionParams.dofStrength;
-            distortionPass.uniforms.uDofFocusRadius.value = distortionParams.dofFocusRadius;
+            dofPass.uniforms.uDofStrength.value = distortionParams.dofStrength;
+            dofPass.uniforms.uDofFocusRadius.value = distortionParams.dofFocusRadius;
         } else {
-            distortionPass.uniforms.uDofStrength.value = 0;
+            dofPass.uniforms.uDofStrength.value = 0;
         }
 
         updateNavLabels(navs, camera);

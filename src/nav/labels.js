@@ -80,7 +80,7 @@ export function updateLabelPosition({ el, worldPos, yOffset, camera, scrollFade 
     worldPos.project(camera);
 
     const canKeyboardFocus = scrollFade > 0.1;
-    if (worldPos.z > 1.0) {
+    if (worldPos.z > 1.0 || worldPos.z < -1.0) {
         const isFocused = document.activeElement === el;
         if (isFocused) {
             el.classList.remove('nav-label--hidden');

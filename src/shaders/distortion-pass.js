@@ -1,5 +1,5 @@
 // distortion-pass.js — ポストプロセスシェーダー
-// 流体フィールド + 鬼火屈折 + 熱波 + DOF + リキッド
+// 流体フィールド + 鬼火屈折 + 熱波 + リキッド（DOFは最終パスで適用）
 // ★ 初期値は config.js の distortionParams / fluidParams / liquidParams を参照
 
 import * as THREE from 'three';
@@ -32,8 +32,6 @@ export const DistortionShader = {
         'uHeatHaze':      { value: distortionParams.heatHaze },
         'uHeatHazeRadius':{ value: distortionParams.heatHazeRadius },
         'uHeatHazeSpeed': { value: distortionParams.heatHazeSpeed },
-        'uDofStrength':   { value: distortionParams.dofStrength },
-        'uDofFocusRadius':{ value: distortionParams.dofFocusRadius },
     },
 
     vertexShader: /* glsl */`
@@ -70,8 +68,6 @@ export const DistortionShader = {
         uniform float uHeatHaze;
         uniform float uHeatHazeRadius;
         uniform float uHeatHazeSpeed;
-        uniform float uDofStrength;
-        uniform float uDofFocusRadius;
         varying vec2 vUv;
 
         float hash(vec2 p) {
@@ -146,17 +142,9 @@ export const DistortionShader = {
                 uv += vec2(hx, hy) * uHeatHaze * heatMask;
             }
 
-            // 2. DOF
-            float dofDist = length(mouseAspect);
-            float dofBlur = smoothstep(uDofFocusRadius, uDofFocusRadius + 0.5, dofDist) * uDofStrength;
-            vec3 color;
-            if (dofBlur > 0.0005) {
-                color = discBlur(uv, dofBlur);
-            } else {
-                color = texture2D(tDiffuse, uv).rgb;
-            }
+            vec3 color = texture2D(tDiffuse, uv).rgb;
 
-            // 3. 鬼火オーブ屈折
+            // 2. 鬼火オーブ屈折
             float totalHalo = 0.0;
             float totalInnerGlow = 0.0;
             for (int i = 0; i < 3; i++) {
@@ -203,7 +191,7 @@ export const DistortionShader = {
             color += uHaloColor * totalHalo * uHaloIntensity;
             color += uHaloColor * totalInnerGlow * uInnerGlow;
 
-            // 4. リキッドエフェクト（マウス追従・透明屈折のみ）
+            // 3. リキッドエフェクト（マウス追従・透明屈折のみ）
             vec4 liquid = texture2D(tLiquid, vUv);
             if (liquid.a > uLiquidThreshold && uLiquidStrength > uLiquidThreshold) {
                 // 液体の屈折効果のみ（色なし・透明）
@@ -212,6 +200,66 @@ export const DistortionShader = {
                 // 屈折した色のみ適用（白色ブレンドなし）
                 color = mix(color, refractedColor, liquid.a * uLiquidStrength);
             }
+
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+export const CameraDofShader = {
+    // 一眼レフのようなレンズ由来のボケを想定した「カメラ最終段」DOF。
+    // このパスは composer の最後で実行し、画面全体に一貫して適用する。
+    uniforms: {
+        'tDiffuse':       { value: null },
+        'uAspect':        { value: 1.0 },
+        'uMouse':         { value: new THREE.Vector2(0.5, 0.5) },
+        'uDofStrength':   { value: distortionParams.dofStrength },
+        'uDofFocusRadius':{ value: distortionParams.dofFocusRadius },
+    },
+
+    vertexShader: /* glsl */`
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+
+    fragmentShader: /* glsl */`
+        uniform sampler2D tDiffuse;
+        uniform float uAspect;
+        uniform vec2 uMouse;
+        uniform float uDofStrength;
+        uniform float uDofFocusRadius;
+        varying vec2 vUv;
+
+        vec3 discBlur(vec2 uv, float blurAmt) {
+            vec3 col = texture2D(tDiffuse, uv).rgb;
+            if (blurAmt < 0.0005) return col;
+            float totalWeight = 1.0;
+            float goldenAngle = 2.39996;
+            for (int i = 1; i <= 12; i++) {
+                float fi = float(i);
+                float angle = fi * goldenAngle;
+                float radius = sqrt(fi / 12.0) * blurAmt;
+                vec2 offset = vec2(cos(angle), sin(angle)) * radius;
+                offset.x /= uAspect;
+                float weight = 1.0 - (fi / 13.0) * 0.4;
+                col += texture2D(tDiffuse, uv + offset).rgb * weight;
+                totalWeight += weight;
+            }
+            return col / totalWeight;
+        }
+
+        void main() {
+            vec2 uv = vUv;
+            vec2 mouseAspect = vec2((uv.x - uMouse.x) * uAspect, uv.y - uMouse.y);
+            float dofDist = length(mouseAspect);
+            float dofBlur = smoothstep(uDofFocusRadius, uDofFocusRadius + 0.5, dofDist) * uDofStrength;
+
+            vec3 color = (dofBlur > 0.0005)
+                ? discBlur(uv, dofBlur)
+                : texture2D(tDiffuse, uv).rgb;
 
             gl_FragColor = vec4(color, 1.0);
         }

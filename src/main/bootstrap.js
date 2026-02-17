@@ -5,7 +5,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 import { createScene } from '../scene.js';
 import { createXLogoObjects } from '../nav-objects.js';
-import { DistortionShader } from '../shaders/distortion-pass.js';
+import { CameraDofShader, DistortionShader } from '../shaders/distortion-pass.js';
 import { createFluidSystem } from '../shaders/fluid-field.js';
 import { createLiquidSystem } from '../shaders/liquid.js';
 import { liquidParams } from '../config.js';
@@ -38,12 +38,18 @@ export function bootstrapMainScene(container) {
     distortionPass.uniforms.uLiquidOffsetScale.value = liquidParams.refractOffsetScale;
     distortionPass.uniforms.uLiquidThreshold.value = liquidParams.refractThreshold;
 
+    // DOFは一眼レフのレンズボケのように「最終画像全体」に掛けたいので最後段で適用する。
+    // 先に掛けると、その後段のオーブ屈折などがシャープに再描画されてボケ対象から外れて見える。
+    const dofPass = new ShaderPass(CameraDofShader);
+    composer.addPass(dofPass);
+
     return {
         scene,
         camera,
         renderer,
         composer,
         distortionPass,
+        dofPass,
         fluidSystem,
         liquidSystem,
         liquidTarget,
