@@ -96,39 +96,10 @@ export const quantumFieldFragmentShader = `
         return value;
     }
 
-    float quantumField(vec2 pos) {
-        float totalRe = 0.0;
-        float totalIm = 0.0;
-        int waveCount = int(clamp(uWaveCount, 1.0, 12.0));
-
-        for (int n = 0; n < 12; n++) {
-            if (n >= waveCount) break;
-
-            float idx = float(n);
-            float theta = idx * 6.28318530718 / float(waveCount) + uTime * 0.05;
-            float kMag = uBaseFreq * (1.0 + idx * 0.3);
-            vec2 k = kMag * vec2(cos(theta), sin(theta));
-            float omega = uDispersion * dot(k, k);
-            float phi = fbm(pos * uNoiseScale + vec2(idx * 7.3, idx * 7.3 + 13.1)) * uNoiseAmp;
-
-            float phase = dot(k, pos) - omega * uTime * uSpeed + phi;
-            totalRe += cos(phase);
-            totalIm += sin(phase);
-        }
-
-        float w = float(waveCount);
-        return (totalRe * totalRe + totalIm * totalIm) / (w * w);
-    }
-
     void main() {
         vec2 pos = vUv * 2.0 - 1.0;
         float safeHeight = max(uResolution.y, 1.0);
         pos.x *= uResolution.x / safeHeight;
-
-        float width = max(uEnvelopeWidth, 0.001);
-        float envelope = exp(-dot(pos, pos) / (width * width));
-        float probability = quantumField(pos) * envelope;
-        probability = 1.0 - exp(-probability * 2.2);
 
         float transHalf = max(uTransitionWidth, 0.001) * 0.5;
         float transition = smoothstep(
@@ -137,15 +108,58 @@ export const quantumFieldFragmentShader = `
             pos.x
         );
 
-        float focused = pow(max(probability, 0.0), mix(1.0, 3.2, transition));
-        float density = mix(probability, focused, transition);
+        float packetWidth = max(uEnvelopeWidth, 0.2);
+        float packetEnvelope = exp(-pow((pos.x + 0.72) / packetWidth, 2.0));
+        float transitionFade = 1.0 - smoothstep(
+            uTransitionCenter - transHalf * 0.4,
+            uTransitionCenter + transHalf * 1.2,
+            pos.x
+        );
+        float amplitudeEnvelope = packetEnvelope * transitionFade;
 
+        int waveCount = int(clamp(uWaveCount, 1.0, 12.0));
+        float waveY = 0.0;
+        for (int n = 0; n < 12; n++) {
+            if (n >= waveCount) break;
+            float idx = float(n);
+            float k = uBaseFreq * (1.0 + idx * 0.22);
+            float omega = uDispersion * k * k;
+            float phaseNoise = fbm(
+                vec2(
+                    pos.x * uNoiseScale * (1.0 + idx * 0.14) + idx * 3.7,
+                    uTime * 0.08 - idx * 1.9
+                )
+            ) * uNoiseAmp;
+            float phase = k * pos.x - omega * uTime * uSpeed + idx * 1.618 + phaseNoise;
+            float compAmp = 0.95 / (1.0 + idx * 0.55);
+            waveY += compAmp * sin(phase);
+        }
+        waveY *= 0.22 * amplitudeEnvelope;
+        waveY += fbm(vec2(pos.x * uNoiseScale * 0.45 - uTime * 0.06, uTime * 0.11)) * 0.05 * uNoiseAmp * amplitudeEnvelope;
+
+        float lineWidth = mix(0.055, 0.01, transition);
+        float dist = abs(pos.y - waveY);
+        float lineCore = 1.0 - smoothstep(lineWidth, lineWidth * 1.9, dist);
+        float lineGlow = 1.0 / (dist * (34.0 + transition * 10.0) + 0.02);
+        float lineStrength = (lineCore * 1.25 + lineGlow * 0.2) * amplitudeEnvelope;
+
+        vec2 particleCenter = vec2(
+            uTransitionCenter + transHalf * 1.45,
+            0.06 * sin(uTime * uSpeed * 0.45)
+            + 0.02 * fbm(vec2(uTime * 0.07, 11.0))
+        );
+        float particleDist = length(pos - particleCenter);
+        float particleCore = 1.0 - smoothstep(0.03, 0.085, particleDist);
+        float particleGlow = 1.0 / (particleDist * 28.0 + 0.03);
+        float particleStrength = transition * (particleCore * 1.9 + particleGlow * 0.45);
+
+        float edgeFade = smoothstep(1.85, 0.2, length(pos));
+        float density = lineStrength + particleStrength;
         vec3 baseColor = vec3(uColorR, uColorG, uColorB);
         vec3 glowColor = vec3(uGlowR, uGlowG, uGlowB);
-        vec3 color = baseColor * density + glowColor * pow(density, 3.0);
+        vec3 lineColor = mix(baseColor, glowColor, 0.6 + 0.4 * lineCore);
+        vec3 color = lineColor * lineStrength + glowColor * particleStrength;
         color *= uIntensity;
-
-        float edgeFade = smoothstep(1.8, 0.25, length(pos));
         float alpha = density * edgeFade * uOpacity;
 
         if (alpha < 0.001) discard;
