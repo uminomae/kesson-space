@@ -7,7 +7,7 @@ scroll-coordinator に priority 機構を導入し、起動時のナビゲーシ
 Issue: https://github.com/uminomae/kesson-space/issues/50
 
 ## 作業ブランチ
-`feature/dev`
+`dev`
 
 ## ルール
 - 既存の export API シグネチャは後方互換を維持する（priority は options 内のオプショナル）

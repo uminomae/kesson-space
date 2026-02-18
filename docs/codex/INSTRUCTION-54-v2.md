@@ -8,7 +8,7 @@ https://github.com/uminomae/kesson-space/issues/54
 自身の環境を判定してから操作マッピングに従って実装すること。
 
 ## 作業ブランチ
-- ベース: `feature/dev`
+- ベース: `dev`
 - 作業: `feature/kesson-codex-app-xlogo-float54-v2`
 
 ## 背景
@@ -84,7 +84,7 @@ applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, floatOffset);
 
 ## 禁止事項
 - `main` ブランチへの直接 push 禁止
-- `feature/dev` への直接マージ禁止
+- `dev` への直接マージ禁止
 - `applyXLogoGroupPosition()` と `updateXLogo()` 以外の関数への変更禁止
 - 新規ファイルの追加禁止
 - 新規依存ライブラリの追加禁止

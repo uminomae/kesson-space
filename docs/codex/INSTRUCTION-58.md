@@ -8,7 +8,7 @@ https://github.com/uminomae/kesson-space/issues/58
 自身の環境を判定してから操作マッピングに従って実装すること。
 
 ## 作業ブランチ
-- ベース: `feature/dev`
+- ベース: `dev`
 - 作業: `feature/kesson-codex-2-breath58`
 
 ## 背景
@@ -151,7 +151,7 @@ if (xLogoKey) xLogoKey.intensity = 0.9 * breathDim;
 
 ## 禁止事項
 - `main` ブランチへの直接 push 禁止
-- `feature/dev` への直接マージ禁止
+- `dev` への直接マージ禁止
 - `bootstrap.js`, `main.js`, `render-loop.js` 以外のファイルへの変更禁止
 - 新規ファイルの追加禁止
 - 新規依存ライブラリの追加禁止

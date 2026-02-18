@@ -8,7 +8,7 @@
 https://github.com/uminomae/kesson-space/issues/20
 
 ## 作業ブランチ
-- ベース: `feature/dev`
+- ベース: `dev`
 - 作業: `feature/kesson-codex-app-statsjs20`
 
 ## 概要
@@ -155,7 +155,7 @@ DEV モードでなくても import 自体は安全。ただし tree-shaking の
 
 ## 禁止事項
 - main ブランチへの直接 push 禁止
-- feature/dev への直接マージ禁止
+- dev への直接マージ禁止
 - 対象外ファイルの変更禁止（`src/dev-stats.js`（新規）, `src/main.js`, `src/main/render-loop.js` のみ変更可）
 - npm / package.json への依存追加禁止（CDN script タグのみ）
 - index.html の importmap 変更禁止（script タグで動的ロードする方式を使う）

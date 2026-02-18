@@ -4,7 +4,7 @@
 https://github.com/uminomae/kesson-space/issues/42
 
 ## ブランチ
-`feature/kesson-codex-app-scroll42`（feature/dev から分岐）
+`feature/kesson-codex-app-scroll42`（dev から分岐）
 
 ## 現状
 DT（プロジェクト管理）が暫定的に以下2箇所を修正済み。品質確認・調整が必要。

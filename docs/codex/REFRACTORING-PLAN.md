@@ -3,7 +3,7 @@
 ## 目的
 
 - 機能回帰を出さずに、段階的に保守性を上げる
-- 既存ルール（Bootstrap優先、モバイルファースト、feature/dev経由）を維持する
+- 既存ルール（Bootstrap優先、モバイルファースト、dev経由）を維持する
 - テスト可能な単位に分割し、変更の安全性を上げる
 
 ## フェーズ進捗（2026-02-17）
@@ -58,4 +58,4 @@
 ## 参照
 
 - タスク管理: [GitHub Issues](https://github.com/uminomae/kesson-space/issues)
-- ブランチ戦略: implementation branch → `feature/dev` → `main`
+- ブランチ戦略: implementation branch → `dev` → `main`

@@ -110,7 +110,7 @@ github:create_or_update_file で各ファイルをコミット
 ## 禁止事項
 
 - main ブランチへの直接 push 禁止
-- feature/dev への直接マージ禁止
+- dev への直接マージ禁止
 - src/ 配下のコード変更（ドキュメント系タスクの場合）
 - index.html の変更（ドキュメント系タスクの場合）
 - この指示書に記載のない変更

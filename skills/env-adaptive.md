@@ -47,7 +47,7 @@
 自身の環境を判定してから操作マッピングに従って実装すること。
 
 ## 作業ブランチ
-- ベース: `feature/dev`
+- ベース: `dev`
 - 作業: `feature/xxx`
 
 ## 完了条件
@@ -57,7 +57,7 @@
 ## 実装手順
 
 ### Step 1: ファイルを読む
-- 対象: リモート `feature/dev` ブランチの `src/config.js`
+- 対象: リモート `dev` ブランチの `src/config.js`
 
 ### Step 2: ファイルを編集
 - 対象: `src/config.js`
@@ -73,7 +73,7 @@
 
 ## 禁止事項
 - main ブランチへの直接 push 禁止
-- feature/dev への直接マージ禁止
+- dev への直接マージ禁止
 - 既存ファイルの意図しない変更禁止
 ```
 
@@ -89,7 +89,7 @@ DT（このチャット）:
   4. ブランチ作成（必要なら github:create_branch）
   5. ユーザーに報告:
      「指示書を push しました。DT App Code で以下を伝えてください:
-      リモート feature/dev ブランチの docs/prompts/INSTRUCTION-TXXX.md を読み実装せよ」
+      リモート dev ブランチの docs/prompts/INSTRUCTION-TXXX.md を読み実装せよ」
 
 ユーザー: 「cli で XXX」
               ↓

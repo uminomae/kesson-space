@@ -60,4 +60,4 @@ fix(T-055): remove duplicate nav-label CSS that blocked keyboard focus styles
 
 ## Branch Strategy
 - Work on: `feature/bugfix-t055-keyboard-nav`
-- Target merge: `feature/dev`
+- Target merge: `dev`

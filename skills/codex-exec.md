@@ -98,7 +98,7 @@ Claude Code CLI
   │  結果確認・DT に報告
   ▼
 DT チャット
-  │  目視確認 → feature/dev マージ
+  │  目視確認 → dev マージ
 ```
 
 ## 出力の扱い
