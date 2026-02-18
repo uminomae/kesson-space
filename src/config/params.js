@@ -20,6 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    quantumField: false,
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -180,6 +181,19 @@ export const vortexParams = {
     posY:     -20,   // water surface level
     posZ:     0,
     size:     200,
+};
+
+// --- 量子場パラメータ（波動→粒子の二重性） ---
+export const quantumFieldParams = {
+    opacity: 0.8,
+    slitPosition: 0.4,
+    waveCount: 5,
+    particleIntensity: 1.0,
+    speed: 0.5,
+    posX: 15,
+    posY: 0,
+    posZ: 5,
+    size: 30,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
