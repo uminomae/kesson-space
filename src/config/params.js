@@ -20,6 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    quantumField: false,  // デフォルトOFF
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -180,6 +181,31 @@ export const vortexParams = {
     posY:     -20,   // water surface level
     posZ:     0,
     size:     200,
+};
+
+// --- 量子場波動関数パラメータ ---
+export const quantumFieldParams = {
+    speed:            0.3,     // 時間進行速度
+    intensity:        1.2,     // 全体輝度
+    waveCount:        12.0,    // 重ね合わせ波の数
+    baseFreq:         3.0,     // 基本波数
+    dispersion:       0.08,    // 分散関係の強さ（ω = dispersion * k²）
+    noiseAmp:         1.5,     // 位相ノイズ振幅（大→リキッド感強）
+    noiseScale:       0.8,     // 位相ノイズ空間周波数
+    envelopeWidth:    2.0,     // ガウシアンエンベロープ幅
+    transitionCenter: 0.2,     // 波動→集中 遷移の中心x座標
+    transitionWidth:  0.8,     // 遷移の幅（大→緩やか）
+    colorR:           0.04,    // ベースカラー（深い青）
+    colorG:           0.10,
+    colorB:           0.18,
+    glowR:            0.10,    // 発光カラー（シアン）
+    glowG:            0.35,
+    glowB:            0.55,
+    opacity:          0.85,
+    posX:             8,
+    posY:             -5,
+    posZ:             5,
+    size:             15,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
