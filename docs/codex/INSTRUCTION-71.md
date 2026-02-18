@@ -12,27 +12,54 @@ https://github.com/uminomae/kesson-space/issues/71
 - 作業: `feature/kesson-codex-app-sdf71`
 
 ## 概要
-Raymarching + SDF（Signed Distance Function）で、深海シーン内に脈動する有機的な「意識体」を描画する。
+Raymarching + SDF（Signed Distance Function）で、**専用シーン内**に脈動する有機的な「意識体」を描画する。
 Three.js のメッシュジオメトリではなく、**フラグメントシェーダー内の数学だけで3D形状をリアルタイム生成**する。
+
+## ビジュアルリファレンス
+- **テーマ**: 量子の場理論・意識
+- **色味**: 青白い発光（白コア + 青〜水色のリムライト）、黒背景に対して浮かぶ
+- **質感**: 内部から光る半透明体（SSS風）+ 強いリムライト縁取り
+- **形状**: 複数の光球が滑らかに融合・脈動するアメーバ的形態
+- **参考イメージ**: 発光する白い球体群、波動パターン、軌道リング — 量子的な佇まい
 
 ## アーキテクチャ
 
-### 統合方式
-- `PlaneGeometry(4, 4)` + カスタム `ShaderMaterial` を既存 `scene` に `Mesh` として追加
-- `transparent: true`, `depthWrite: false`, `side: THREE.DoubleSide`
-- 背景ピクセルは `discard` で透過 → 既存シーンの上に重なる
-- `renderOrder` を高めに設定し、ナビオーブより手前に描画
+### 統合方式 — 別シーン方式（xLogoScene パターン踏襲）
 
-### ファイル構成（新規3ファイル + 既存2ファイル変更）
+既存の xLogoScene と同じ方式で、**SDF専用のシーン・カメラ**を持つ。
 
-**新規ファイル:**
+```
+メインシーン（scene + camera）         → 深海・オーブ・流体
+xLogoシーン（xLogoScene + xLogoCamera） → Xロゴ（既存）
+sdfシーン（sdfScene + sdfCamera）       → SDF意識体（新規）
+```
+
+描画順序（render-loop.js の animate() 末尾）:
+```javascript
+renderer.clear();
+if (toggles.postProcess) {
+    composer.render();
+} else {
+    renderer.render(scene, camera);
+}
+renderer.clearDepth();
+renderer.render(xLogoScene, xLogoCamera);
+renderer.clearDepth();
+if (toggles.sdfEntity) {
+    renderer.render(sdfScene, sdfCamera);
+}
+```
+
+### ファイル構成
+
+**新規ファイル（2つ）:**
 1. `src/shaders/sdf-entity.glsl.js` — 頂点 + フラグメントシェーダー（GLSL）
-2. `src/sdf-entity.js` — Three.js 統合モジュール（Mesh 生成、uniform 更新）
+2. `src/sdf-entity.js` — Three.js 統合（Scene/Camera/Mesh 生成、uniform 更新）
 
-**変更ファイル:**
+**変更ファイル（3つ）:**
 3. `src/config/params.js` — `toggles` に `sdfEntity: true` 追加、`sdfEntityParams` 追加
-4. `src/main/render-loop.js` — animate() 内で SDF entity の uniform 更新呼び出し追加
-5. `src/main.js` — `bootstrapMainScene` 後に SDF entity を初期化・scene に追加
+4. `src/main.js` — SDF entity 初期化、startRenderLoop に渡す
+5. `src/main/render-loop.js` — animate() に SDF 描画追加
 
 ---
 
@@ -41,16 +68,18 @@ Three.js のメッシュジオメトリではなく、**フラグメントシェ
 ### Step 1: 既存ファイルを読む
 以下のファイルをリモート `feature/kesson-codex-app-sdf71` ブランチから読み、構造を把握すること:
 - `src/config/params.js` — toggles と xxxParams の定義パターン
-- `src/main.js` — エントリポイントの構造
-- `src/main/render-loop.js` — animate() の構造、breathValue の使い方
+- `src/main.js` — エントリポイント。特に xLogoScene/xLogoCamera の生成パターンを参考にする
+- `src/main/render-loop.js` — animate() の末尾の描画順序（scene → xLogoScene）を参考にする
+- `src/main/bootstrap.js` — bootstrapMainScene の戻り値パターン
 - `src/shaders/gem-orb.glsl.js` — GLSL-in-JS の命名・export パターン参考
 - `src/animation-utils.js` — `breathValue()` の引数・戻り値
 
 ### Step 2: `src/shaders/sdf-entity.glsl.js` を新規作成
 
 GLSL-in-JS 形式（テンプレートリテラルで export）。
+`export const sdfEntityVert = \`...\`;` / `export const sdfEntityFrag = \`...\`;` の形式。
 
-#### 頂点シェーダー
+#### 頂点シェーダー（sdfEntityVert）
 ```glsl
 varying vec2 vUv;
 void main() {
@@ -59,7 +88,7 @@ void main() {
 }
 ```
 
-#### フラグメントシェーダー要件
+#### フラグメントシェーダー（sdfEntityFrag）要件
 
 **uniforms:**
 - `uniform float uTime;` — 経過時間
@@ -70,7 +99,6 @@ void main() {
 **必須実装 — SDF プリミティブ関数:**
 ```glsl
 float sdSphere(vec3 p, float r) { return length(p) - r; }
-float sdTorus(vec3 p, vec2 t) { vec2 q = vec2(length(p.xz) - t.x, p.y); return length(q) - t.y; }
 ```
 
 **必須実装 — SDF 合成演算:**
@@ -81,21 +109,21 @@ float opSmoothUnion(float d1, float d2, float k) {
 }
 ```
 
-**必須実装 — 3D ノイズ（simplex or value noise）:**
+**必須実装 — 3D ノイズ:**
 - 表面変形用。hash関数ベースの value noise で十分。
-- `noise.glsl.js` に既存の `snoise` があるが、**シェーダー内に自己完結で書くこと**（import 不要にする）。
+- **シェーダー内に自己完結で書くこと**（外部 import 不要）。
 
 **必須実装 — Scene SDF（距離関数の合成）:**
-- メイン球体（半径 0.8）+ ノイズ変形
+- メイン球体（半径 0.8）+ ノイズ変形で表面を歪ませる
 - サブ球体 3〜4個（半径 0.3〜0.5）をメイン周囲に配置、`sin(uTime)` で軌道変化
-- 全体を `opSmoothUnion(k=0.5)` でブレンド → アメーバ状の有機体
+- 全体を `opSmoothUnion(k=0.5)` でブレンド → 融合する光球群
 - `uBreath` でメイン球体半径を `0.8 + 0.1 * uBreath` のように脈動
 
 **必須実装 — Raymarching ループ:**
 ```glsl
 float rayMarch(vec3 ro, vec3 rd) {
     float t = 0.0;
-    for (int i = 0; i < 64; i++) {  // 64 steps（モバイル性能考慮）
+    for (int i = 0; i < 64; i++) {
         vec3 p = ro + rd * t;
         float d = sceneSDF(p);
         if (d < 0.001) break;
@@ -118,11 +146,12 @@ vec3 calcNormal(vec3 p) {
 }
 ```
 
-**必須実装 — ライティング:**
-- ディフューズ: 上方ライト `vec3(0.3, 1.0, 0.5)` で `max(dot(normal, lightDir), 0.0)`
-- リムライト: `pow(1.0 - max(dot(normal, -rd), 0.0), 3.0)` → 青白い縁取り
-- 内部発光: SSS 風に `exp(-distance * 2.0)` で中心が光る
-- カラー: 深海テーマ `vec3(0.1, 0.3, 0.8)` ベース、リムは `vec3(0.4, 0.6, 1.0)`
+**必須実装 — ライティング（青白い発光体）:**
+- **ベースカラー**: `vec3(0.6, 0.8, 1.0)` — 青白い基調
+- **ディフューズ**: 上方ライト `normalize(vec3(0.3, 1.0, 0.5))` で基本照明
+- **リムライト（強め）**: `pow(1.0 - max(dot(normal, -rd), 0.0), 3.0)` × `vec3(0.4, 0.7, 1.0)` — 青い縁取り。強度高め（×1.5〜2.0）
+- **内部発光（SSS風）**: `exp(-hitDist * 3.0)` × `vec3(0.9, 0.95, 1.0)` — 白く光るコア
+- **最終色の加算合成**: diffuse + rim + sss をブレンドし、中心ほど白く、縁ほど青白い
 
 **必須実装 — 背景透過:**
 - Raymarching で hit しなかったピクセルは `discard;` で完全透過
@@ -132,12 +161,23 @@ vec3 calcNormal(vec3 p) {
 
 ### Step 3: `src/sdf-entity.js` を新規作成
 
+**別シーン方式**: xLogoScene のパターンに倣い、専用の Scene + Camera + Mesh を生成。
+
 ```javascript
-// sdf-entity.js — Raymarching SDF 意識体
+// sdf-entity.js — Raymarching SDF 意識体（別シーン方式）
 import * as THREE from 'three';
 import { sdfEntityVert, sdfEntityFrag } from './shaders/sdf-entity.glsl.js';
 
 export function createSdfEntity() {
+    // --- 専用シーン ---
+    const sdfScene = new THREE.Scene();
+
+    // --- 専用カメラ（正面から見る固定カメラ） ---
+    const sdfCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    sdfCamera.position.set(0, 0, 5);
+    sdfCamera.lookAt(0, 0, 0);
+
+    // --- SDF Plane ---
     const geometry = new THREE.PlaneGeometry(4, 4);
     const material = new THREE.ShaderMaterial({
         vertexShader: sdfEntityVert,
@@ -149,44 +189,41 @@ export function createSdfEntity() {
             uTime: { value: 0 },
             uBreath: { value: 0 },
             uMouse: { value: new THREE.Vector2(0, 0) },
-            uResolution: { value: new THREE.Vector2(512, 512) },
+            uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         },
     });
 
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.renderOrder = 5;
-    // 初期位置: シーン中央やや下、ナビオーブの間
-    mesh.position.set(0, -5, 20);
-    // カメラ方向を常に向く
-    mesh.userData.isSdfEntity = true;
+    mesh.position.set(0, 0, 0);  // シーン中央
+    sdfScene.add(mesh);
 
-    return { mesh, material };
+    return { sdfScene, sdfCamera, mesh, material };
 }
 
-export function updateSdfEntity(material, time, breathVal, mouse) {
+export function updateSdfEntity(material, sdfCamera, mainCamera, time, breathVal, mouse) {
     material.uniforms.uTime.value = time;
     material.uniforms.uBreath.value = breathVal;
     material.uniforms.uMouse.value.set(mouse.smoothX || 0, mouse.smoothY || 0);
+    material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+
+    // メインカメラと光学パラメータを同期
+    sdfCamera.aspect = mainCamera.aspect;
+    sdfCamera.updateProjectionMatrix();
 }
 ```
-
-**重要:** `mesh` は billboard（常にカメラを向く）にする。`render-loop.js` 内で `mesh.lookAt(camera.position)` を毎フレーム呼ぶ。
 
 ### Step 4: `src/config/params.js` を変更
 
 #### toggles に追加:
+`orbRefraction: true,` の次の行に:
 ```javascript
 sdfEntity: true,  // Raymarching SDF 意識体
 ```
-`orbRefraction: true,` の次の行に追加。
 
 #### sdfEntityParams を新規追加（ファイル末尾、`vortexParams` の後）:
 ```javascript
 // --- SDF Entity パラメータ ---
 export const sdfEntityParams = {
-    posX: 0,
-    posY: -5,
-    posZ: 20,
     planeSize: 4,
 };
 ```
@@ -203,11 +240,13 @@ import { createSdfEntity } from './sdf-entity.js';
 let sdfEntity = null;
 if (toggles.sdfEntity) {
     sdfEntity = createSdfEntity();
-    scene.add(sdfEntity.mesh);
 }
 ```
 
-`startRenderLoop` の引数オブジェクトに `sdfEntity` を追加。
+`startRenderLoop` の呼び出しの引数オブジェクトに追加:
+```javascript
+sdfEntity,
+```
 
 ### Step 6: `src/main/render-loop.js` を変更
 
@@ -216,19 +255,64 @@ import 追加:
 import { updateSdfEntity } from '../sdf-entity.js';
 ```
 
-`startRenderLoop` の引数に `sdfEntity` を追加。
+`startRenderLoop` の分割代入引数に `sdfEntity` を追加。
 
-`animate()` 内、`updateNavigation(time);` の後あたりに追加:
+`animate()` 内、`updateXLogo(time, xLogoCamera);` の後あたりに追加:
 ```javascript
 if (toggles.sdfEntity && sdfEntity) {
-    sdfEntity.mesh.lookAt(camera.position);
-    updateSdfEntity(sdfEntity.material, time, breathVal, mouse);
+    updateSdfEntity(sdfEntity.material, sdfEntity.sdfCamera, camera, time, breathVal, mouse);
 }
 ```
 
-### Step 7: コミット & プッシュ
-- メッセージ: `feat: add raymarching SDF consciousness entity (#71)`
-- `Fix #71` をメッセージに含める
+`animate()` 末尾の描画ブロックを変更。現在:
+```javascript
+renderer.clear();
+if (toggles.postProcess) {
+    composer.render();
+} else {
+    renderer.render(scene, camera);
+    renderer.clearDepth();
+    renderer.render(xLogoScene, xLogoCamera);
+}
+statsEnd();
+```
+
+変更後:
+```javascript
+renderer.clear();
+if (toggles.postProcess) {
+    composer.render();
+} else {
+    renderer.render(scene, camera);
+}
+renderer.clearDepth();
+renderer.render(xLogoScene, xLogoCamera);
+if (toggles.sdfEntity && sdfEntity) {
+    renderer.clearDepth();
+    renderer.render(sdfEntity.sdfScene, sdfEntity.sdfCamera);
+}
+statsEnd();
+```
+
+**注意**: `postProcess` が true の場合も xLogoScene と sdfScene を描画するよう、
+xLogoScene の描画を if ブロックの**外**に移動する。既存コードでは xLogoScene が
+else ブロック内にあるが、これを外に出す。
+
+### Step 7: resize ハンドラー更新
+
+`attachResizeHandler` 内の `onResize()` で sdfCamera の aspect も更新する。
+`startRenderLoop` の引数に `sdfEntity` を渡し、`attachResizeHandler` にも渡す:
+
+```javascript
+// attachResizeHandler 内
+if (sdfEntity) {
+    sdfEntity.sdfCamera.aspect = camera.aspect;
+    sdfEntity.sdfCamera.updateProjectionMatrix();
+}
+```
+
+### Step 8: コミット & プッシュ
+- メッセージ: `feat: add raymarching SDF consciousness entity (Fix #71)`
 - ブランチ: `feature/kesson-codex-app-sdf71`
 
 ---
@@ -239,12 +323,14 @@ if (toggles.sdfEntity && sdfEntity) {
 - 既存シェーダーファイルの変更禁止（新規ファイルのみ）
 - npm / 外部ライブラリの追加禁止（Three.js の既存 import のみ使用）
 - Raymarching のステップ数を 80 以上にしない（モバイル性能考慮）
+- `postProcess` 有効時のメインシーン描画（composer.render()）を変更しない
 
 ## 完了条件
 - [ ] `node --check` が新規・変更ファイル全てで通過
 - [ ] `git status --short` クリーン
 - [ ] シェーダーコンパイルエラーが出ないよう、GLSL 構文を慎重に確認
 - [ ] `sdfEntityVert` / `sdfEntityFrag` が正しく export されている
+- [ ] 別シーン方式で描画されること（sdfScene + sdfCamera）
 
 ---
 
@@ -261,10 +347,10 @@ if (toggles.sdfEntity && sdfEntity) {
 
 ### 変更ファイル一覧
 - `src/shaders/sdf-entity.glsl.js` — 新規: Raymarching フラグメントシェーダー
-- `src/sdf-entity.js` — 新規: Three.js 統合モジュール
+- `src/sdf-entity.js` — 新規: Three.js 統合（別シーン方式）
 - `src/config/params.js` — toggles.sdfEntity 追加、sdfEntityParams 追加
-- `src/main.js` — SDF entity 初期化・scene追加
-- `src/main/render-loop.js` — animate() に SDF uniform 更新追加
+- `src/main.js` — SDF entity 初期化
+- `src/main/render-loop.js` — animate() に SDF 更新・描画追加
 
 ### 検証結果
 - [ ] `node --check` 通過（対象: 上記5ファイル）
