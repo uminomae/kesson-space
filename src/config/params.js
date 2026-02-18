@@ -20,7 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
-    particleStorm: true,  // 波動パーティクル砂嵐（デフォルトON）
+    particleStorm: false,  // デフォルトOFF（devパネルで手動ON）
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -203,6 +203,38 @@ export const particleStormParams = {
     posY:        0,       // メッシュ位置Y
     posZ:        5,       // メッシュ位置Z
     size:        60,      // メッシュスケール
+
+    // --- 色・明るさ（NEW）---
+    brightColorR:  0.7,    // 高密度域の色 R
+    brightColorG:  0.85,   // 高密度域の色 G
+    brightColorB:  1.0,    // 高密度域の色 B
+    colorMix:      0.5,    // base↔bright の混合度（densityベース, 0=baseのみ）
+    brightness:    1.0,    // 全体の明るさ乗数
+    contrast:      1.0,    // 粒の明暗コントラスト（0.5=ソフト, 2.0=ハード）
+    saturation:    1.0,    // 彩度（0=モノクロ, 1=通常, 2=鮮やか）
+
+    // --- 発光（NEW）---
+    glowAmount:    0.0,    // 粒の発光量（0=なし, 1=強い）
+    glowSpread:    2.0,    // 発光の広がり（累乗の逆数的, 小さい=広い）
+    glowColorR:    0.4,    // 発光色 R
+    glowColorG:    0.7,    // 発光色 G
+    glowColorB:    1.0,    // 発光色 B
+
+    // --- ぼかし・ソフトネス（NEW）---
+    softness:      0.0,    // 粒のエッジのぼかし（0=シャープ, 1=ぼやけ）
+    bloomAmount:   0.0,    // 全体的なブルーム風の光にじみ（0=なし, 1=強い）
+
+    // --- フェード・マスク（NEW）---
+    edgeFadeStart: 1.8,    // エッジフェード開始距離
+    edgeFadeEnd:   0.3,    // エッジフェード終了距離
+    centerDim:     0.0,    // 中心の減光（0=なし, 1=中心が暗い）
+    densityFloor:  0.0,    // 密度の最低値（0=完全に消える, 0.3=薄く残る）
+
+    // --- 動き（NEW）---
+    flickerSpeed:  2.0,    // 粒の明滅速度
+    flickerAmount: 0.5,    // 明滅の振幅（0=明滅なし, 1=完全に消える瞬間あり）
+    driftSpeed:    0.0,    // 全体のゆっくりドリフト速度
+    driftAngle:    0.0,    // ドリフト方向（ラジアン）
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---

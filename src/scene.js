@@ -181,6 +181,28 @@ export function updateScene(time) {
         pu.uColorR.value = particleStormParams.colorR;
         pu.uColorG.value = particleStormParams.colorG;
         pu.uColorB.value = particleStormParams.colorB;
+        pu.uBrightColorR.value = particleStormParams.brightColorR;
+        pu.uBrightColorG.value = particleStormParams.brightColorG;
+        pu.uBrightColorB.value = particleStormParams.brightColorB;
+        pu.uColorMix.value = particleStormParams.colorMix;
+        pu.uBrightness.value = particleStormParams.brightness;
+        pu.uContrast.value = particleStormParams.contrast;
+        pu.uSaturation.value = particleStormParams.saturation;
+        pu.uPSGlowAmount.value = particleStormParams.glowAmount;
+        pu.uPSGlowSpread.value = particleStormParams.glowSpread;
+        pu.uPSGlowColorR.value = particleStormParams.glowColorR;
+        pu.uPSGlowColorG.value = particleStormParams.glowColorG;
+        pu.uPSGlowColorB.value = particleStormParams.glowColorB;
+        pu.uSoftness.value = particleStormParams.softness;
+        pu.uBloomAmount.value = particleStormParams.bloomAmount;
+        pu.uEdgeFadeStart.value = particleStormParams.edgeFadeStart;
+        pu.uEdgeFadeEnd.value = particleStormParams.edgeFadeEnd;
+        pu.uCenterDim.value = particleStormParams.centerDim;
+        pu.uDensityFloor.value = particleStormParams.densityFloor;
+        pu.uFlickerSpeed.value = particleStormParams.flickerSpeed;
+        pu.uFlickerAmount.value = particleStormParams.flickerAmount;
+        pu.uDriftSpeed.value = particleStormParams.driftSpeed;
+        pu.uDriftAngle.value = particleStormParams.driftAngle;
         pu.uResolution.value.set(window.innerWidth, window.innerHeight);
         _particleStormMesh.position.set(
             particleStormParams.posX,
