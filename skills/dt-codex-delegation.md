@@ -124,14 +124,13 @@ Codex / Claude Code が作業完了時に出力する報告フォーマット。
 ## 目視確認用コマンド
 
 指示書の末尾に以下も転記すること。ユーザーが目視確認する際のコマンド。
+**実装ワークツリーで直接確認する。** serve.sh がポート3001でサーバーを起動する。
 
 ````markdown
 ## 目視確認手順（DT / ユーザー用）
 ```bash
-cd ~/dev/kesson-claude-dt-check
-git fetch
-git merge origin/feature/kesson-codex-app-{keyword}{issue番号}
-npx http-server . -p 3001 -c-1
+cd ~/dev/kesson-codex-{app|cli}{N}
+./serve.sh
 # ブラウザで http://localhost:3001 を開いて確認
 ```
 ````
@@ -145,10 +144,8 @@ npx http-server . -p 3001 -c-1
 3. **feature/dev へのマージは目視確認後のみ**
 4. ユーザーに目視確認を依頼:
    ```bash
-   cd ~/dev/kesson-claude-dt-check
-   git fetch
-   git merge origin/feature/kesson-codex-app-{keyword}{issue番号}
-   npx http-server . -p 3001 -c-1
+   cd ~/dev/kesson-codex-{app|cli}{N}
+   ./serve.sh
    # ブラウザで http://localhost:3001 を開いて確認
    ```
 5. 目視確認 OK → feature/dev マージ → Issue クローズコメント
