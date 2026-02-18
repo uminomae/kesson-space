@@ -105,7 +105,7 @@ export const quantumFieldParams = {
 
 ### ブランチ・ワークツリー
 - ブランチ: `feature/kesson-codex-app-quantum73`
-- ワークツリー: `~/dev/kesson-codex-app`
+- ワークツリー: `~/dev/kesson-codex-2`
 
 ### コミット
 - SHA: `xxxxxxx`
