@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { breathIntensity, breathValue } from '../animation-utils.js';
 import { distortionParams, fluidParams } from '../config.js';
+import { statsBegin, statsEnd } from '../dev-stats.js';
 
 export function createNavMeshFinder(scene) {
     let navMeshesCache = [];
@@ -74,6 +75,7 @@ export function startRenderLoop({
 
     function animate() {
         requestAnimationFrame(animate);
+        statsBegin();
         const time = clock.getElapsedTime();
 
         const breathVal = breathValue(time, breathConfig.period);
@@ -169,6 +171,7 @@ export function startRenderLoop({
             renderer.clearDepth();
             renderer.render(xLogoScene, xLogoCamera);
         }
+        statsEnd();
     }
 
     animate();
