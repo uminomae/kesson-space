@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import {
-    sceneParams, toggles, vortexParams,
+    sceneParams, toggles, vortexParams, quantumFieldParams,
     FOG_V002_COLOR, FOG_V002_DENSITY,
     FOG_V004_COLOR, FOG_V004_DENSITY,
 } from './config.js';
@@ -12,6 +12,7 @@ import { createBackgroundMaterial, createBackgroundMesh } from './shaders/backgr
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
 import { createKessonMaterial, createKessonMeshes } from './shaders/kesson.js';
 import { createVortexMaterial, createVortexMesh } from './shaders/vortex.js';
+import { createQuantumFieldMaterial, createQuantumFieldMesh } from './shaders/quantum-field.js';
 
 export { sceneParams } from './config.js';
 
@@ -24,6 +25,8 @@ let _bgMesh;
 let _scene;
 let _vortexMaterial;
 let _vortexMesh;
+let _quantumFieldMaterial;
+let _quantumFieldMesh;
 
 // GC削減: フォグ色を事前確保（毎フレーム new しない）
 const _fogColor = new THREE.Color();
@@ -76,6 +79,11 @@ export function createScene(container) {
     _vortexMaterial = createVortexMaterial();
     _vortexMesh = createVortexMesh(_vortexMaterial);
     scene.add(_vortexMesh);
+
+    // 量子場リキッド（Raymarching SDF）
+    _quantumFieldMaterial = createQuantumFieldMaterial();
+    _quantumFieldMesh = createQuantumFieldMesh(_quantumFieldMaterial);
+    scene.add(_quantumFieldMesh);
 
     return { scene, camera, renderer, kessonMeshes: _kessonMeshes };
 }
@@ -152,5 +160,37 @@ export function updateScene(time) {
         vu.uArmCount.value = vortexParams.armCount;
         _vortexMesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
         _vortexMesh.scale.set(vortexParams.size, vortexParams.size, 1);
+    }
+
+    // --- 量子場リキッド ---
+    _quantumFieldMesh.visible = toggles.quantumField;
+    if (toggles.quantumField) {
+        const qfu = _quantumFieldMaterial.uniforms;
+        qfu.uTime.value = time;
+        qfu.uResolution.value.set(window.innerWidth, window.innerHeight);
+        qfu.uSpeed.value = quantumFieldParams.speed;
+        qfu.uIntensity.value = quantumFieldParams.intensity;
+        qfu.uNoiseScale.value = quantumFieldParams.noiseScale;
+        qfu.uNoiseAmp.value = quantumFieldParams.noiseAmp;
+        qfu.uBlobCount.value = quantumFieldParams.blobCount;
+        qfu.uSmoothK.value = quantumFieldParams.smoothK;
+        qfu.uSubsurface.value = quantumFieldParams.subsurface;
+        qfu.uColorR.value = quantumFieldParams.colorR;
+        qfu.uColorG.value = quantumFieldParams.colorG;
+        qfu.uColorB.value = quantumFieldParams.colorB;
+        qfu.uGlowR.value = quantumFieldParams.glowR;
+        qfu.uGlowG.value = quantumFieldParams.glowG;
+        qfu.uGlowB.value = quantumFieldParams.glowB;
+        qfu.uOpacity.value = quantumFieldParams.opacity;
+        _quantumFieldMesh.position.set(
+            quantumFieldParams.posX,
+            quantumFieldParams.posY,
+            quantumFieldParams.posZ
+        );
+        _quantumFieldMesh.scale.set(
+            quantumFieldParams.size,
+            quantumFieldParams.size,
+            1
+        );
     }
 }
