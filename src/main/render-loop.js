@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { breathIntensity, breathValue } from '../animation-utils.js';
 import { distortionParams, fluidParams } from '../config.js';
 import { statsBegin, statsEnd } from '../dev-stats.js';
+import { updateSdfEntity } from '../sdf-entity.js';
 
 export function createNavMeshFinder(scene) {
     let navMeshesCache = [];
@@ -64,6 +65,7 @@ export function startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
+    sdfEntity,
 }) {
     // DECISION: destructure grouped inputs once at the boundary so animate() keeps flat local names.
     // This avoids repetitive dot access in the hot path while preserving the grouped external API. (Phase A-2 / 2026-02-19)
@@ -116,12 +118,18 @@ export function startRenderLoop({
 
     // DECISION: controls/scene/navigation/x-logo updates remain in one phase to preserve camera-optics sync ordering.
     // KEPT: this stays separate from effects so post-process uniforms always see the post-update scene state. (Phase B-3 / 2026-02-19)
-    function updateScenePhase(time, breathVal) {
+    function updateScenePhase(time, breathVal, mouse) {
         updateControls(time, breathVal);
         // xLogo は別シーン。カメラ位置/回転は固定し、光学パラメータのみ同期する。
         syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
+
+        if (toggles.sdfEntity && sdfEntity) {
+            sdfEntity.mesh.lookAt(camera.position);
+            updateSdfEntity(sdfEntity.material, time, breathVal, mouse);
+        }
+
         updateXLogo(time, xLogoCamera);
     }
 
@@ -221,7 +229,7 @@ export function startRenderLoop({
 
         const breathVal = updateBreathAndScroll(time);
         const mouse = updateMouseSmoothing();
-        updateScenePhase(time, breathVal);
+        updateScenePhase(time, breathVal, mouse);
 
         const navs = findNavMeshes();
         updateEffects(time, mouse, navs);

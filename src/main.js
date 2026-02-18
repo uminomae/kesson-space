@@ -20,6 +20,7 @@ import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
+import { createSdfEntity } from './sdf-entity.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
@@ -43,6 +44,12 @@ const {
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
+
+let sdfEntity = null;
+if (toggles.sdfEntity) {
+    sdfEntity = createSdfEntity();
+    scene.add(sdfEntity.mesh);
+}
 
 const findNavMeshes = createNavMeshFinder(scene);
 const applyDevValue = createDevValueApplier({
@@ -99,4 +106,5 @@ startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
+    sdfEntity,
 });
