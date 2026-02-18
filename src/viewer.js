@@ -2,6 +2,8 @@
 // raw.githubusercontent.com から draft.md を fetch → marked.js でパース → HTML レンダリング
 // PDF はダウンロードリンクとして残す
 
+import DOMPurify from 'dompurify';
+
 // CHANGED: marked を動的importに変更（初期ロード時の20.8KB削減）
 // marked はオーブクリック時にのみ必要
 let _markedParser = null;
@@ -83,7 +85,7 @@ export function openViewer(content) {
     if (!_viewer) _viewer = createViewer();
     const contentEl = _viewer.querySelector('.viewer-content');
     contentEl.className = 'viewer-content';
-    contentEl.innerHTML = content;
+    contentEl.innerHTML = DOMPurify.sanitize(content);
 
     requestAnimationFrame(() => {
         _viewer.classList.add('visible');
@@ -241,7 +243,7 @@ export async function openPdfViewer(pdfUrl, label) {
         const { meta, body } = parseFrontmatter(raw);
 
         // 本文をそのまま marked.js でレンダリング（タイトルは本文の # から来る）
-        const html = marked.parse(body);
+        const html = DOMPurify.sanitize(marked.parse(body));
 
         // 来歴情報（generator_model + generated）
         const model = meta.generator_model || '';

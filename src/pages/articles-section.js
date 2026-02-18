@@ -33,33 +33,73 @@ function formatDate(dateStr) {
     });
 }
 
+function sanitizeHttpUrl(url, fallback = '#') {
+    if (typeof url !== 'string') return fallback;
+    const trimmed = url.trim();
+    if (!trimmed) return fallback;
+    return /^https?:\/\//i.test(trimmed) ? trimmed : fallback;
+}
+
 function createCard(item) {
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
 
     const normalizedType = normalizeType(item);
     const dateText = formatDate(item.date);
-    const teaserHtml = item.teaser
-        ? `<img src="${item.teaser}" class="card-img-top" alt="" onerror="this.style.display='none'">`
-        : '';
-    const excerptHtml = item.excerpt ? `<p class="card-text">${item.excerpt}</p>` : '';
+    const safeUrl = sanitizeHttpUrl(item.url, '#');
+    const safeTeaserUrl = sanitizeHttpUrl(item.teaser, '');
+    const titleText = typeof item.title === 'string' ? item.title : '';
+    const excerptText = typeof item.excerpt === 'string' ? item.excerpt : '';
 
-    col.innerHTML = `
-      <a href="${item.url}" target="_blank" rel="noopener"
-         class="text-decoration-none"
-         aria-label="${item.title} を読む">
-        <div class="card kesson-card h-100">
-          ${teaserHtml}
-          <div class="card-body">
-            <span class="badge bg-secondary mb-2 badge-article-type">
-              ${normalizedType}
-            </span>
-            <h6 class="card-title mb-1">${item.title}</h6>
-            ${excerptHtml}
-            <small>${dateText}</small>
-          </div>
-        </div>
-      </a>`;
+    const link = document.createElement('a');
+    link.href = safeUrl;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.className = 'text-decoration-none';
+    link.setAttribute('aria-label', `${titleText || '記事'} を読む`);
+
+    const card = document.createElement('div');
+    card.className = 'card kesson-card h-100';
+
+    if (safeTeaserUrl) {
+        const teaserImg = document.createElement('img');
+        teaserImg.src = safeTeaserUrl;
+        teaserImg.className = 'card-img-top';
+        teaserImg.alt = '';
+        teaserImg.addEventListener('error', () => {
+            teaserImg.style.display = 'none';
+        });
+        card.appendChild(teaserImg);
+    }
+
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge bg-secondary mb-2 badge-article-type';
+    badge.textContent = normalizedType;
+
+    const title = document.createElement('h6');
+    title.className = 'card-title mb-1';
+    title.textContent = titleText;
+
+    const date = document.createElement('small');
+    date.textContent = dateText;
+
+    cardBody.appendChild(badge);
+    cardBody.appendChild(title);
+
+    if (excerptText) {
+        const excerpt = document.createElement('p');
+        excerpt.className = 'card-text';
+        excerpt.textContent = excerptText;
+        cardBody.appendChild(excerpt);
+    }
+
+    cardBody.appendChild(date);
+    card.appendChild(cardBody);
+    link.appendChild(card);
+    col.appendChild(link);
 
     return col;
 }
