@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { breathIntensity, breathValue } from '../animation-utils.js';
 import { distortionParams, fluidParams } from '../config.js';
 import { statsBegin, statsEnd } from '../dev-stats.js';
+import { updateSdfEntity } from '../sdf-entity.js';
 
 export function createNavMeshFinder(scene) {
     let navMeshesCache = [];
@@ -61,6 +62,7 @@ export function startRenderLoop({
     liquidParams,
     xLogoAmbient,
     xLogoKey,
+    sdfEntity,
 }) {
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
@@ -93,6 +95,12 @@ export function startRenderLoop({
         syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
+
+        if (toggles.sdfEntity && sdfEntity) {
+            sdfEntity.mesh.lookAt(camera.position);
+            updateSdfEntity(sdfEntity.material, time, breathVal, mouse);
+        }
+
         updateXLogo(time, xLogoCamera);
 
         const navs = findNavMeshes();

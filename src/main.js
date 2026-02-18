@@ -14,6 +14,7 @@ import { detectLang, LANG_CHANGE_EVENT, t } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
+import { createSdfEntity } from './sdf-entity.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
@@ -71,6 +72,12 @@ const {
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamera });
 initScrollUI();
+
+let sdfEntity = null;
+if (toggles.sdfEntity) {
+    sdfEntity = createSdfEntity();
+    scene.add(sdfEntity.mesh);
+}
 
 const findNavMeshes = createNavMeshFinder(scene);
 const applyDevValue = createDevValueApplier({ distortionPass, dofPass, fluidSystem, liquidSystem });
@@ -136,4 +143,5 @@ startRenderLoop({
     liquidParams,
     xLogoAmbient,
     xLogoKey,
+    sdfEntity,
 });

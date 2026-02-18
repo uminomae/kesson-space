@@ -19,6 +19,7 @@ export const toggles = {
     heatHaze: false,
     dof: true,
     orbRefraction: true,
+    sdfEntity: true,  // Raymarching SDF 意識体
     vortex: false,  // デフォルトOFF（手動でONにする）
 };
 
@@ -180,6 +181,14 @@ export const vortexParams = {
     posY:     -20,   // water surface level
     posZ:     0,
     size:     200,
+};
+
+// --- SDF Entity パラメータ ---
+export const sdfEntityParams = {
+    posX: 0,
+    posY: -5,
+    posZ: 20,
+    planeSize: 4,
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---
