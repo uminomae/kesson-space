@@ -82,6 +82,11 @@ if (DEV_MODE) {
     import('./dev-links-panel.js').then(({ initDevLinksPanel }) => {
         initDevLinksPanel();
     });
+    import('./dev-stats.js').then(({ initDevStats }) => {
+        initDevStats().catch((err) => {
+            console.warn('[dev-stats] init failed:', err.message);
+        });
+    });
 }
 
 let refreshDevlogLanguage = null;
