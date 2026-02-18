@@ -12,7 +12,7 @@ DT は**プロジェクト管理専任**であり、コード実装を直接行�
 
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
-| kesson-main | ~/dev/kesson-main | main | 本番。読み取り参照用 |
+| kesson-space | ~/dev/kesson-space | main | 本番。読み取り参照用 |
 | kesson-claude-dt-check | ~/dev/kesson-claude-dt-check | feature/dev | DT 目視確認・ステージング |
 | kesson-codex-app1 | ~/dev/kesson-codex-app1 | (可変) | Codex DT app 用 |
 | kesson-codex-app2 | ~/dev/kesson-codex-app2 | (可変) | Codex DT app 用 |
