@@ -14,28 +14,19 @@ DT は**プロジェクト管理専任**であり、コード実装を直接行�
 |---|---|---|---|
 | kesson-main | ~/dev/kesson-main | main | 本番。読み取り参照用 |
 | kesson-claude-dt-check | ~/dev/kesson-claude-dt-check | feature/dev | DT 目視確認・ステージング |
-| kesson-codex-app | ~/dev/kesson-codex-app | (可変) | Codex 直列実行用 |
+| kesson-codex-app1 | ~/dev/kesson-codex-app1 | (可変) | Codex DT app 用 |
+| kesson-codex-app2 | ~/dev/kesson-codex-app2 | (可変) | Codex DT app 用 |
+| kesson-codex-app3 | ~/dev/kesson-codex-app3 | (可変) | Codex DT app 用 |
+| kesson-codex-cli1 | ~/dev/kesson-codex-cli1 | (可変) | Codex CLI 用 |
+| kesson-codex-cli2 | ~/dev/kesson-codex-cli2 | (可変) | Codex CLI 用 |
+| kesson-codex-cli3 | ~/dev/kesson-codex-cli3 | (可変) | Codex CLI 用 |
 
-### 一時ワークツリー（並列時のみ）
+### ワークツリーの使い分け
 
-並列実行が必要な場合のみ追加作成。命名規則: `kesson-codex-app-{suffix}`
-
-```bash
-cd ~/dev/kesson-main
-git worktree add ../kesson-codex-app-{suffix} feature/kesson-codex-app-{suffix}
-```
-
-直列実行（大半のケース）では **kesson-codex-app で checkout を切り替えるだけ**。新規ワークツリーは不要。
-
----
-
-## 直列 vs 並列の判断
-
-| 条件 | 方式 |
-|------|------|
-| タスク1本、依存なし | **直列**: kesson-codex-app でブランチ切替 |
-| 独立タスク2本以上、同時進行したい | **並列**: 一時ワークツリーを追加 |
-| 依存関係あり（A完了後にB） | **直列**: 順番に実行 |
+- **Codex DT app**: ブラウザ版 Codex App から実行する場合は `kesson-codex-app{N}` を使用
+- **Codex CLI**: ターミナルから `codex` コマンドで実行する場合は `kesson-codex-cli{N}` を使用
+- 並列実行時は空いている番号（1〜3）を使う
+- 直列実行時は同じワークツリーでブランチを切り替える
 
 ---
 
@@ -61,6 +52,7 @@ github:create_branch
 - 指示書には以下を必ず含める:
   - Issue リンク
   - ブランチ名
+  - **使用ワークツリー（ユーザー指定に従う）**
   - 対象ファイルと修正内容
   - 完了条件
   - 禁止事項（スコープ外変更、新規依存追加）
@@ -69,9 +61,9 @@ github:create_branch
 
 ### Step 4: ユーザーにコマンド提示
 
-#### 直列（kesson-codex-app 再利用）
+#### Codex CLI の場合（kesson-codex-cli{N} を使用）
 ```bash
-cd ~/dev/kesson-codex-app
+cd ~/dev/kesson-codex-cli{N}
 git fetch
 git checkout feature/kesson-codex-app-{keyword}{issue番号}
 git pull
@@ -80,16 +72,14 @@ codex --approval-mode on-failure \
   "リモート feature/kesson-codex-app-{keyword}{issue番号} ブランチの docs/codex/INSTRUCTION-{issue番号}.md を読み、指示に従って作業してください。"
 ```
 
-#### 並列（一時ワークツリー）
+#### Codex DT App の場合（kesson-codex-app{N} を使用）
 ```bash
-cd ~/dev/kesson-main
+cd ~/dev/kesson-codex-app{N}
 git fetch
-git worktree add ../kesson-codex-app-{suffix} feature/kesson-codex-app-{suffix}
-cd ../kesson-codex-app-{suffix}
-
-codex --approval-mode on-failure \
-  "リモート feature/kesson-codex-app-{suffix} ブランチの docs/codex/INSTRUCTION-{issue番号}.md を読み、指示に従って作業してください。"
+git checkout feature/kesson-codex-app-{keyword}{issue番号}
+git pull
 ```
+→ Codex App のブラウザ UI から指示書のパスを指定して実行。
 
 ---
 
@@ -103,7 +93,7 @@ Codex / Claude Code が作業完了時に出力する報告フォーマット。
 
 ### ブランチ・ワークツリー
 - ブランチ: `feature/kesson-codex-app-{keyword}{issue番号}`
-- ワークツリー: `~/dev/kesson-codex-app` or `~/dev/kesson-codex-app-{suffix}`
+- ワークツリー: `~/dev/kesson-codex-{app|cli}{N}`
 
 ### コミット
 - SHA: `xxxxxxx`
@@ -156,5 +146,6 @@ Codex / Claude Code が作業完了時に出力する報告フォーマット。
 
 委譲後のセッション状態を `~/Library/Caches/kesson-agent/session/state.md` に記録:
 - ブランチ名と Issue 番号
-- 委譲先（Codex / Claude Code）
+- 委譲先（Codex CLI / Codex App）
+- 使用ワークツリー（kesson-codex-{app|cli}{N}）
 - 状態（⏳未着手 / 🔄実行中 / ✅完了報告済 / 👁️目視確認待ち）
