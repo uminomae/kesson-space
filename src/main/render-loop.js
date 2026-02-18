@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { breathIntensity, breathValue } from '../animation-utils.js';
-import { distortionParams, fluidParams } from '../config.js';
+import { distortionParams, fluidParams, quantumWaveParams } from '../config.js';
 import { statsBegin, statsEnd } from '../dev-stats.js';
 
 export function createNavMeshFinder(scene) {
@@ -118,6 +118,13 @@ export function startRenderLoop({
             distortionPass.uniforms.uLiquidStrength.value = liquidParams.densityMul;
         } else {
             distortionPass.uniforms.uLiquidStrength.value = 0;
+        }
+
+        // 量子波屈折
+        if (toggles.quantumWave) {
+            distortionPass.uniforms.uQWaveStrength.value = quantumWaveParams.strength;
+        } else {
+            distortionPass.uniforms.uQWaveStrength.value = 0;
         }
 
         if (toggles.navOrbs && toggles.orbRefraction) {

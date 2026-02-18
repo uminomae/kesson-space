@@ -20,6 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    quantumWave: true,  // 量子波屈折（デフォルトON）
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -115,6 +116,19 @@ export const liquidParams = {
     highlightR:  0.9,
     highlightG:  0.9,
     highlightB:  0.9,
+};
+
+// --- 量子波屈折パラメータ ---
+export const quantumWaveParams = {
+    strength:    0.025,   // 屈折の強さ（UVオフセット最大量）
+    speed:       0.15,    // 波の時間進行速度
+    baseFreq:    3.0,     // 基本周波数
+    dispersion:  0.08,    // 分散関係 ω = dispersion * k²
+    noiseAmp:    0.3,     // FBM位相ノイズ振幅（リキッド揺らぎ用）
+    noiseScale:  2.0,     // ノイズスケール
+    waveCount:   8.0,     // 重ね合わせ波数
+    envelope:    0.6,     // ガウシアンエンベロープ幅
+    yInfluence:  0.3,     // y方向の歪み影響度（0で水平のみ）
 };
 
 // --- ポストプロセス（歪み・オーブ・熱波・DOF）パラメータ ---
