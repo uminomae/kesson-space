@@ -11,6 +11,9 @@ https://github.com/uminomae/kesson-space/issues/71
 - ベース: `feature/dev`
 - 作業: `feature/kesson-codex-app-sdf71`
 
+## 使用ワークツリー
+- `~/dev/kesson-codex-app1`
+
 ## 概要
 Raymarching + SDF（Signed Distance Function）で、**専用シーン内**に脈動する有機的な「意識体」を描画する。
 Three.js のメッシュジオメトリではなく、**フラグメントシェーダー内の数学だけで3D形状をリアルタイム生成**する。
@@ -338,7 +341,7 @@ if (sdfEntity) {
 
 ### ブランチ・ワークツリー
 - ブランチ: `feature/kesson-codex-app-sdf71`
-- ワークツリー: `~/dev/kesson-codex-app` or `~/dev/kesson-codex-app-sdf71`
+- ワークツリー: `~/dev/kesson-codex-app1`
 
 ### コミット
 - SHA: `xxxxxxx`
