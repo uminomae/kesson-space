@@ -41,6 +41,20 @@ export const DistortionShader = {
         'uQWaveCount':      { value: quantumWaveParams.waveCount },
         'uQWaveEnvelope':   { value: quantumWaveParams.envelope },
         'uQWaveYInfluence': { value: quantumWaveParams.yInfluence },
+        'uQWaveGlowAmount':  { value: quantumWaveParams.glowAmount },
+        'uQWaveGlowColorR':  { value: quantumWaveParams.glowColorR },
+        'uQWaveGlowColorG':  { value: quantumWaveParams.glowColorG },
+        'uQWaveGlowColorB':  { value: quantumWaveParams.glowColorB },
+        'uQWaveCaberration': { value: quantumWaveParams.caberration },
+        'uQWaveRimBright':   { value: quantumWaveParams.rimBright },
+        'uQWaveBlurAmount':  { value: quantumWaveParams.blurAmount },
+        'uQWaveFogDensity':  { value: quantumWaveParams.fogDensity },
+        'uQWaveFogColorR':   { value: quantumWaveParams.fogColorR },
+        'uQWaveFogColorG':   { value: quantumWaveParams.fogColorG },
+        'uQWaveFogColorB':   { value: quantumWaveParams.fogColorB },
+        'uQWaveDarken':      { value: quantumWaveParams.darken },
+        'uQWaveTurbulence':  { value: quantumWaveParams.turbulence },
+        'uQWaveSharpness':   { value: quantumWaveParams.sharpness },
     },
 
     vertexShader: /* glsl */`
@@ -86,6 +100,20 @@ export const DistortionShader = {
         uniform float uQWaveCount;
         uniform float uQWaveEnvelope;
         uniform float uQWaveYInfluence;
+        uniform float uQWaveGlowAmount;
+        uniform float uQWaveGlowColorR;
+        uniform float uQWaveGlowColorG;
+        uniform float uQWaveGlowColorB;
+        uniform float uQWaveCaberration;
+        uniform float uQWaveRimBright;
+        uniform float uQWaveBlurAmount;
+        uniform float uQWaveFogDensity;
+        uniform float uQWaveFogColorR;
+        uniform float uQWaveFogColorG;
+        uniform float uQWaveFogColorB;
+        uniform float uQWaveDarken;
+        uniform float uQWaveTurbulence;
+        uniform float uQWaveSharpness;
         varying vec2 vUv;
 
         float hash(vec2 p) {
@@ -219,60 +247,105 @@ export const DistortionShader = {
                 color = mix(color, refractedColor, liquid.a * uLiquidStrength);
             }
 
-            // 4. 量子波屈折（透明リキッドレンズ）
+            // 4. 量子波屈折（透明リキッドレンズ + 拡張エフェクト）
             if (uQWaveStrength > 0.0001) {
-                // 波動関数 ψ の勾配を計算し、UVオフセットに変換
-                // 8波の重ね合わせ（分散関係 ω = dispersion * k²）
                 float qGradX = 0.0;
                 float qGradY = 0.0;
                 float qPsi = 0.0;
 
                 int qCount = int(clamp(uQWaveCount, 1.0, 8.0));
 
-                // 位相ノイズ（リキッド揺らぎ）
+                // 位相ノイズ（リキッド揺らぎ + 乱流）
                 float phaseNoise = 0.0;
                 if (uQWaveNoiseAmp > 0.001) {
-                    phaseNoise = fbm(vUv * uQWaveNoiseScale * 6.0 + vec2(uTime * 0.05, uTime * 0.03)) * uQWaveNoiseAmp;
+                    vec2 noiseCoord = vUv * uQWaveNoiseScale * 6.0 + vec2(uTime * 0.05, uTime * 0.03);
+                    phaseNoise = fbm(noiseCoord) * uQWaveNoiseAmp;
+                }
+                // 乱流: 小スケールの高周波ノイズを追加
+                float turb = 0.0;
+                if (uQWaveTurbulence > 0.001) {
+                    turb = (valueNoise(vUv * 50.0 + uTime * 0.3) - 0.5) * uQWaveTurbulence;
                 }
 
                 for (int n = 0; n < 8; n++) {
                     if (n >= qCount) break;
                     float idx = float(n);
-
-                    // 波数ベクトル（やや斜めの方向にばらつかせる）
                     float angle = idx * 0.4 + 0.1 * sin(idx * 2.3);
                     float kMag = uQWaveBaseFreq * (1.0 + idx * 0.25);
                     float kx = kMag * cos(angle);
                     float ky = kMag * sin(angle) * uQWaveYInfluence;
-
-                    // 分散関係
                     float omega = uQWaveDispersion * kMag * kMag;
-
-                    // 位相
-                    float phase = kx * vUv.x + ky * vUv.y - omega * uTime * uQWaveSpeed + idx * 1.618 + phaseNoise;
-
-                    // 振幅減衰（高次ほど弱い）
+                    float phase = kx * vUv.x + ky * vUv.y - omega * uTime * uQWaveSpeed + idx * 1.618 + phaseNoise + turb;
                     float amp = 1.0 / (1.0 + idx * 0.4);
-
-                    // ψ と ∂ψ/∂x, ∂ψ/∂y の解析的計算
                     qPsi   += amp * sin(phase);
                     qGradX += amp * kx * cos(phase);
                     qGradY += amp * ky * cos(phase);
                 }
 
-                // ガウシアンエンベロープ（画面中心からの距離で減衰）
+                // ガウシアンエンベロープ
                 float envDist = length(vUv - 0.5) * 2.0;
                 float envelope = exp(-envDist * envDist / max(uQWaveEnvelope * uQWaveEnvelope, 0.01));
 
-                // 勾配 → UVオフセット（勾配の逆方向 = レンズ効果）
-                vec2 qOffset = vec2(-qGradX, -qGradY) * uQWaveStrength * envelope;
+                // 波の強度（正規化 |ψ|）— エフェクトのマスクに使用
+                float psiAbs = abs(qPsi) / max(uQWaveCount * 0.5, 1.0);
+                psiAbs = clamp(psiAbs, 0.0, 1.0);
 
-                // アスペクト比補正
+                // シャープネス適用（勾配のコントラスト調整）
+                float gradMag = length(vec2(qGradX, qGradY));
+                float sharpFactor = mix(0.5, 2.0, uQWaveSharpness);
+                qGradX *= sharpFactor;
+                qGradY *= sharpFactor;
+
+                // 勾配 → UVオフセット（屈折）
+                vec2 qOffset = vec2(-qGradX, -qGradY) * uQWaveStrength * envelope;
                 qOffset.x /= uAspect;
 
-                // 背景をずらして読む
-                vec3 qRefracted = texture2D(tDiffuse, vUv + qOffset).rgb;
+                // --- ぼかし ---
+                vec3 qRefracted;
+                if (uQWaveBlurAmount > 0.0005) {
+                    float blurAmt = uQWaveBlurAmount * psiAbs * envelope;
+                    qRefracted = discBlur(vUv + qOffset, blurAmt);
+                } else {
+                    qRefracted = texture2D(tDiffuse, vUv + qOffset).rgb;
+                }
+
+                // --- 色収差 ---
+                if (uQWaveCaberration > 0.0001) {
+                    float ca = uQWaveCaberration * psiAbs * envelope;
+                    qRefracted.r = texture2D(tDiffuse, vUv + qOffset * (1.0 + ca)).r;
+                    qRefracted.b = texture2D(tDiffuse, vUv + qOffset * (1.0 - ca)).b;
+                }
+
+                // 屈折適用
                 color = mix(color, qRefracted, envelope);
+
+                // --- 暗化 ---
+                if (uQWaveDarken > 0.001) {
+                    float darkMask = psiAbs * envelope * uQWaveDarken;
+                    color *= (1.0 - darkMask);
+                }
+
+                // --- 霧（白濁）---
+                if (uQWaveFogDensity > 0.001) {
+                    vec3 fogColor = vec3(uQWaveFogColorR, uQWaveFogColorG, uQWaveFogColorB);
+                    float fogMask = psiAbs * envelope * uQWaveFogDensity;
+                    color = mix(color, fogColor, fogMask);
+                }
+
+                // --- 発光 ---
+                if (uQWaveGlowAmount > 0.001) {
+                    vec3 glowColor = vec3(uQWaveGlowColorR, uQWaveGlowColorG, uQWaveGlowColorB);
+                    float glowMask = psiAbs * psiAbs * envelope * uQWaveGlowAmount;
+                    color += glowColor * glowMask;
+                }
+
+                // --- リムライト ---
+                if (uQWaveRimBright > 0.001) {
+                    // 勾配の大きさ = 屈折のエッジ → リムライト
+                    float normGrad = clamp(gradMag * 0.1, 0.0, 1.0);
+                    float rimMask = normGrad * envelope * uQWaveRimBright;
+                    color += vec3(rimMask * 0.5, rimMask * 0.7, rimMask * 1.0);
+                }
             }
 
             gl_FragColor = vec4(color, 1.0);

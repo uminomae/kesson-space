@@ -122,7 +122,31 @@ export function startRenderLoop({
 
         // 量子波屈折
         if (toggles.quantumWave) {
-            distortionPass.uniforms.uQWaveStrength.value = quantumWaveParams.strength;
+            const qp = quantumWaveParams;
+            const du = distortionPass.uniforms;
+            du.uQWaveStrength.value = qp.strength;
+            du.uQWaveSpeed.value = qp.speed;
+            du.uQWaveBaseFreq.value = qp.baseFreq;
+            du.uQWaveDispersion.value = qp.dispersion;
+            du.uQWaveNoiseAmp.value = qp.noiseAmp;
+            du.uQWaveNoiseScale.value = qp.noiseScale;
+            du.uQWaveCount.value = qp.waveCount;
+            du.uQWaveEnvelope.value = qp.envelope;
+            du.uQWaveYInfluence.value = qp.yInfluence;
+            du.uQWaveGlowAmount.value = qp.glowAmount;
+            du.uQWaveGlowColorR.value = qp.glowColorR;
+            du.uQWaveGlowColorG.value = qp.glowColorG;
+            du.uQWaveGlowColorB.value = qp.glowColorB;
+            du.uQWaveCaberration.value = qp.caberration;
+            du.uQWaveRimBright.value = qp.rimBright;
+            du.uQWaveBlurAmount.value = qp.blurAmount;
+            du.uQWaveFogDensity.value = qp.fogDensity;
+            du.uQWaveFogColorR.value = qp.fogColorR;
+            du.uQWaveFogColorG.value = qp.fogColorG;
+            du.uQWaveFogColorB.value = qp.fogColorB;
+            du.uQWaveDarken.value = qp.darken;
+            du.uQWaveTurbulence.value = qp.turbulence;
+            du.uQWaveSharpness.value = qp.sharpness;
         } else {
             distortionPass.uniforms.uQWaveStrength.value = 0;
         }
