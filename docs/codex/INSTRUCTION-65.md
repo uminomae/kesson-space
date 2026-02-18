@@ -8,7 +8,7 @@
 https://github.com/uminomae/kesson-space/issues/65
 
 ## 作業ブランチ
-- ベース: `feature/dev`
+- ベース: `dev`
 - 作業: `feature/kesson-codex-app-css-vars65`
 
 ## スコープ
@@ -81,7 +81,7 @@ https://github.com/uminomae/kesson-space/issues/65
 
 ## 禁止事項
 - main ブランチへの直接 push 禁止
-- feature/dev への直接マージ禁止
+- dev への直接マージ禁止
 - main.css 以外のファイル変更禁止
 - フォント変数化（Phase 2）に手を出さない
 - 上記パターン表に完全一致しない色の変換禁止

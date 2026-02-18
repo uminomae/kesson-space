@@ -155,7 +155,7 @@ kesson-spaceでは `git worktree` を使い、エージェントごとに別デ�
 ```
 /Users/uminomae/dev/
 ├── kesson-main/       ← main（本番・直接コミット非推奨）
-├── kesson-codex-app/  ← feature/dev（目視確認ゲート・ステージング）
+├── kesson-codex-app/  ← dev（目視確認ゲート・ステージング）
 ├── kesson-codex-1/    ← feature/codex-1（Codex App 実装用）
 ├── kesson-codex-2/    ← feature/codex-2（Codex App 実装用）
 └── kesson-codex-3/    ← feature/codex-3（Codex App 実装用）

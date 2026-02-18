@@ -13,7 +13,7 @@ DT は**プロジェクト管理専任**であり、コード実装を直接行�
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
 | kesson-main | ~/dev/kesson-main | main | 本番。読み取り参照用 |
-| kesson-claude-dt-check | ~/dev/kesson-claude-dt-check | feature/dev | DT 目視確認・ステージング |
+| kesson-claude-dt-check | ~/dev/kesson-claude-dt-check | dev | DT 目視確認・ステージング |
 | kesson-codex-app1 | ~/dev/kesson-codex-app1 | (可変) | Codex DT app 用 |
 | kesson-codex-app2 | ~/dev/kesson-codex-app2 | (可変) | Codex DT app 用 |
 | kesson-codex-app3 | ~/dev/kesson-codex-app3 | (可変) | Codex DT app 用 |
@@ -37,14 +37,14 @@ DT は**プロジェクト管理専任**であり、コード実装を直接行�
 - Issue 番号を控える
 
 ### Step 2: ブランチ作成
-- feature/dev から分岐
+- dev から分岐
 - 命名: `feature/kesson-codex-app-{keyword}{issue番号}`
 
 ```
 DT が GitHub API で実行:
 github:create_branch
   branch: feature/kesson-codex-app-{keyword}{issue番号}
-  from_branch: feature/dev
+  from_branch: dev
 ```
 
 ### Step 3: 指示書作成・プッシュ
@@ -141,14 +141,14 @@ cd ~/dev/kesson-codex-{app|cli}{N}
 
 1. Codex から完了報告を受領（上記テンプレートで構造化された報告）
 2. コミット内容を GitHub API で確認
-3. **feature/dev へのマージは目視確認後のみ**
+3. **dev へのマージは目視確認後のみ**
 4. ユーザーに目視確認を依頼:
    ```bash
    cd ~/dev/kesson-codex-{app|cli}{N}
    ./serve.sh
    # ブラウザで http://localhost:3001 を開いて確認
    ```
-5. 目視確認 OK → feature/dev マージ → Issue クローズコメント
+5. 目視確認 OK → dev マージ → Issue クローズコメント
 6. **確認前に次作業・docs 更新・指示書作成は絶対禁止**
 
 ---

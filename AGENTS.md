@@ -62,7 +62,7 @@ Loading policy:
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
 | **main** | `/Users/uminomae/dev/kesson-main` | main | 本番（直接コミット非推奨） |
-| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | feature/dev | 目視確認ゲート・ステージング |
+| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | dev | 目視確認ゲート・ステージング |
 | Codex App 1 | `/Users/uminomae/dev/kesson-codex-1` | feature/codex-1 | Codex App 実装用 |
 | Codex App 2 | `/Users/uminomae/dev/kesson-codex-2` | feature/codex-2 | Codex App 実装用 |
 | Codex App 3 | `/Users/uminomae/dev/kesson-codex-3` | feature/codex-3 | Codex App 実装用 |
@@ -84,12 +84,12 @@ Do not cross-commit between worktrees.
 ### 3.1 Branch flow
 
 ```
-main (base) → implementation branch → feature/dev (integration test) → PR → main
+main (base) → implementation branch → dev (integration test) → PR → main
 ```
 
 1. Create implementation branches from `main`
-2. After implementation, merge to `feature/dev` for integration testing
-3. After visual confirmation (DT's responsibility), create PR (`feature/dev` → `main`)
+2. After implementation, merge to `dev` for integration testing
+3. After visual confirmation (DT's responsibility), create PR (`dev` → `main`)
 4. PR body must include `Closes #XX` to auto-close the Issue
 5. Direct commit/merge to `main` is prohibited
 
@@ -142,12 +142,12 @@ Note: Include worktree path only if relevant to your environment. Cloud-based ag
 
 ### 5.3 Issue Close Flow
 
-1. Implementation complete → merge to feature/dev → visual confirmation (DT handles this)
+1. Implementation complete → merge to dev → visual confirmation (DT handles this)
 2. Visual confirmation OK → create PR with `Closes #XX` → merge to main
 3. Issue auto-closes via PR keyword
 4. Optionally add a close comment with confirmation details
 
-Note: Steps 1-2 are orchestrated by DT. Implementation agents complete their work, push, and report via Issue comment. DT handles the feature/dev merge, visual gate, and PR creation.
+Note: Steps 1-2 are orchestrated by DT. Implementation agents complete their work, push, and report via Issue comment. DT handles the dev merge, visual gate, and PR creation.
 
 ### 5.4 Cross-Agent Communication
 
