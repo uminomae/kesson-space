@@ -3,7 +3,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
-import { breathIntensity } from './animation-utils.js';
 import { toggles, gemParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
@@ -515,7 +514,7 @@ export function updateNavObjects(navMeshes, time, camera) {
     });
 }
 
-export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
+export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
     // グループ位置はビューポートソルバーで確定（浮遊オフセットなし）
@@ -541,14 +540,13 @@ export function updateXLogo(time, camera = _xLogoCamera, breathVal = 1) {
         rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
     }
 
-    const breathDim = breathIntensity(breathVal);
     const hoverBoost = _xLogoHover ? 1.25 : 1.0;
     const config = getXLogoMaterialConfig();
 
     if (_xLogoMaterials.length > 0) {
         _xLogoMaterials.forEach((mat) => {
             if (!mat) return;
-            mat.emissiveIntensity = config.emissiveIntensity * breathDim * hoverBoost;
+            mat.emissiveIntensity = config.emissiveIntensity * hoverBoost;
             mat.metalness = config.metalness;
             mat.roughness = config.roughness;
         });

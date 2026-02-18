@@ -155,14 +155,14 @@ export const gemParams = {
 
 // --- Xロゴパラメータ ---
 export const xLogoParams = {
-    meshScale:     0.3,
+    meshScale:     0.6,
     glowStrength:  0.4,
     rimPower:      0.5,
     innerGlow:     0.1,
     posX: -20,
     posY: 5,
     posZ: 11,
-    labelYOffset: 0.5,
+    labelYOffset: 1.5,
 };
 
 // --- 渦パラメータ（M2 段階4: 個の立ち上がり）---

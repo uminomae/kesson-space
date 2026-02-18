@@ -7,7 +7,7 @@ export function breathValue(time, period, phase = DEFAULT_BREATH_PHASE) {
     return (Math.sin(time * Math.PI / period + phase) + 1) * 0.5;
 }
 
-export function breathIntensity(value, min = 0.1, max = 1.3, gamma = 1.6) {
+export function breathIntensity(value, min = 0.1, max = 2.0, gamma = 1.0) {
     const clamped = Math.max(0, Math.min(1, value));
     const curved = Math.pow(clamped, gamma);
     return min + (max - min) * curved;
