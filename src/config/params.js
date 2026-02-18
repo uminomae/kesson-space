@@ -20,6 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    particleStorm: true,  // 波動パーティクル砂嵐（デフォルトON）
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -180,6 +181,28 @@ export const vortexParams = {
     posY:     -20,   // water surface level
     posZ:     0,
     size:     200,
+};
+
+// --- 波動パーティクル砂嵐パラメータ ---
+export const particleStormParams = {
+    speed:       0.15,    // 波の時間進行速度
+    intensity:   1.0,     // 全体の明るさ
+    opacity:     0.7,     // 全体の透明度
+    baseFreq:    3.0,     // 基本周波数
+    dispersion:  0.08,    // 分散関係 ω = dispersion * k²
+    waveCount:   8.0,     // 重ね合わせ波数
+    noiseAmp:    0.3,     // FBM位相ノイズ振幅
+    noiseScale:  2.0,     // ノイズスケール
+    grainDensity: 800.0,  // 粒の密度（ハッシュグリッド解像度）
+    grainSize:   0.6,     // 粒の明るさカーブの鋭さ（0=ぼやけ 1=シャープ）
+    advectStrength: 0.02, // 波動場による移流の強さ
+    colorR:      0.3,     // ベース色 R
+    colorG:      0.6,     // ベース色 G
+    colorB:      0.9,     // ベース色 B
+    posX:        0,       // メッシュ位置X
+    posY:        0,       // メッシュ位置Y
+    posZ:        5,       // メッシュ位置Z
+    size:        60,      // メッシュスケール
 };
 
 // --- 後方互換（旧 DISTORTION_PARAMS） ---

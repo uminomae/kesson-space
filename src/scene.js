@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import {
-    sceneParams, toggles, vortexParams,
+    sceneParams, toggles, vortexParams, particleStormParams,
     FOG_V002_COLOR, FOG_V002_DENSITY,
     FOG_V004_COLOR, FOG_V004_DENSITY,
 } from './config.js';
@@ -12,6 +12,7 @@ import { createBackgroundMaterial, createBackgroundMesh } from './shaders/backgr
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
 import { createKessonMaterial, createKessonMeshes } from './shaders/kesson.js';
 import { createVortexMaterial, createVortexMesh } from './shaders/vortex.js';
+import { createParticleStormMaterial, createParticleStormMesh } from './shaders/particle-storm.js';
 
 export { sceneParams } from './config.js';
 
@@ -24,6 +25,8 @@ let _bgMesh;
 let _scene;
 let _vortexMaterial;
 let _vortexMesh;
+let _particleStormMaterial;
+let _particleStormMesh;
 
 // GC削減: フォグ色を事前確保（毎フレーム new しない）
 const _fogColor = new THREE.Color();
@@ -76,6 +79,11 @@ export function createScene(container) {
     _vortexMaterial = createVortexMaterial();
     _vortexMesh = createVortexMesh(_vortexMaterial);
     scene.add(_vortexMesh);
+
+    // 波動パーティクル砂嵐（#75）
+    _particleStormMaterial = createParticleStormMaterial();
+    _particleStormMesh = createParticleStormMesh(_particleStormMaterial);
+    scene.add(_particleStormMesh);
 
     return { scene, camera, renderer, kessonMeshes: _kessonMeshes };
 }
@@ -152,5 +160,34 @@ export function updateScene(time) {
         vu.uArmCount.value = vortexParams.armCount;
         _vortexMesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
         _vortexMesh.scale.set(vortexParams.size, vortexParams.size, 1);
+    }
+
+    // --- 波動パーティクル砂嵐 (#75) ---
+    _particleStormMesh.visible = toggles.particleStorm;
+    if (toggles.particleStorm) {
+        const pu = _particleStormMaterial.uniforms;
+        pu.uTime.value = time;
+        pu.uSpeed.value = particleStormParams.speed;
+        pu.uIntensity.value = particleStormParams.intensity;
+        pu.uOpacity.value = particleStormParams.opacity;
+        pu.uBaseFreq.value = particleStormParams.baseFreq;
+        pu.uDispersion.value = particleStormParams.dispersion;
+        pu.uWaveCount.value = particleStormParams.waveCount;
+        pu.uNoiseAmp.value = particleStormParams.noiseAmp;
+        pu.uNoiseScale.value = particleStormParams.noiseScale;
+        pu.uGrainDensity.value = particleStormParams.grainDensity;
+        pu.uGrainSize.value = particleStormParams.grainSize;
+        pu.uAdvectStrength.value = particleStormParams.advectStrength;
+        pu.uColorR.value = particleStormParams.colorR;
+        pu.uColorG.value = particleStormParams.colorG;
+        pu.uColorB.value = particleStormParams.colorB;
+        pu.uResolution.value.set(window.innerWidth, window.innerHeight);
+        _particleStormMesh.position.set(
+            particleStormParams.posX,
+            particleStormParams.posY,
+            particleStormParams.posZ
+        );
+        _particleStormMesh.scale.set(particleStormParams.size, particleStormParams.size, 1);
+        _particleStormMesh.lookAt(_camera.position);
     }
 }
