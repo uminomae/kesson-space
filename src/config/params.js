@@ -20,6 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    quantumWave: true,  // 量子波屈折（デフォルトON）
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -115,6 +116,33 @@ export const liquidParams = {
     highlightR:  0.9,
     highlightG:  0.9,
     highlightB:  0.9,
+};
+
+// --- 量子波屈折パラメータ ---
+export const quantumWaveParams = {
+    strength:    0.025,   // 屈折の強さ（UVオフセット最大量）
+    speed:       0.15,    // 波の時間進行速度
+    baseFreq:    3.0,     // 基本周波数
+    dispersion:  0.08,    // 分散関係 ω = dispersion * k²
+    noiseAmp:    0.3,     // FBM位相ノイズ振幅（リキッド揺らぎ用）
+    noiseScale:  2.0,     // ノイズスケール
+    waveCount:   8.0,     // 重ね合わせ波数
+    envelope:    0.6,     // ガウシアンエンベロープ幅
+    yInfluence:  0.3,     // y方向の歪み影響度（0で水平のみ）
+    glowAmount:   0.0,    // 波の振幅に応じた発光量（0=なし, 1=強い）
+    glowColorR:   0.3,    // 発光色 R（シアン系）
+    glowColorG:   0.6,    // 発光色 G
+    glowColorB:   0.9,    // 発光色 B
+    caberration:  0.0,    // 色収差量（0=なし, 0.01=微妙, 0.05=強い）
+    rimBright:    0.0,    // 歪みエッジのリムライト（0=なし, 1=強い）
+    blurAmount:   0.0,    // 歪み箇所のぼかし量（0=なし, 0.05=すりガラス的）
+    fogDensity:   0.0,    // 波の密度に応じた白濁（0=透明, 1=濃い霧）
+    fogColorR:    0.7,    // 霧の色 R
+    fogColorG:    0.8,    // 霧の色 G
+    fogColorB:    0.9,    // 霧の色 B
+    darken:       0.0,    // 歪み箇所の暗化量（0=なし, 1=完全に暗い）
+    turbulence:   0.0,    // 小スケール乱流ノイズ（0=なし, 1=荒い）
+    sharpness:    0.5,    // 波の勾配コントラスト（0=ソフト, 1=シャープ）
 };
 
 // --- ポストプロセス（歪み・オーブ・熱波・DOF）パラメータ ---
