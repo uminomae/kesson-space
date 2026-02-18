@@ -65,6 +65,7 @@ github:create_branch
   - 完了条件
   - 禁止事項（スコープ外変更、新規依存追加）
   - `Fix #{issue番号}` をコミットメッセージに含める指示
+  - **完了報告フォーマット**（§完了報告テンプレートを転記）
 
 ### Step 4: ユーザーにコマンド提示
 
@@ -92,9 +93,41 @@ codex --approval-mode on-failure \
 
 ---
 
+## 完了報告テンプレート
+
+Codex / Claude Code が作業完了時に出力する報告フォーマット。
+**指示書の末尾に必ずこのセクションを転記すること。**
+
+````markdown
+## 完了報告（実装者が記入）
+
+### ブランチ・ワークツリー
+- ブランチ: `feature/kesson-codex-app-{keyword}{issue番号}`
+- ワークツリー: `~/dev/kesson-codex-app` or `~/dev/kesson-codex-app-{suffix}`
+
+### コミット
+- SHA: `xxxxxxx`
+- メッセージ: `fix: ... (Fix #XX)`
+- push 先: `origin/feature/kesson-codex-app-{keyword}{issue番号}`
+
+### 変更ファイル一覧
+- `path/to/file1` — 変更概要
+- `path/to/file2` — 変更概要
+
+### 検証結果
+- [ ] `node --check` 通過（対象: ...）
+- [ ] `git status --short` クリーン
+- [ ] その他実行した検証コマンドと結果
+
+### 残作業・注意事項
+- （なければ「なし」と記入）
+````
+
+---
+
 ## 完了後フロー
 
-1. Codex から完了報告を受領
+1. Codex から完了報告を受領（上記テンプレートで構造化された報告）
 2. コミット内容を GitHub API で確認
 3. **feature/dev へのマージは目視確認後のみ**
 4. ユーザーに目視確認を依頼:
