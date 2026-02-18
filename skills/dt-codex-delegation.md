@@ -58,6 +58,7 @@ github:create_branch
   - 禁止事項（スコープ外変更、新規依存追加）
   - `Fix #{issue番号}` をコミットメッセージに含める指示
   - **完了報告フォーマット**（§完了報告テンプレートを転記）
+  - **目視確認用コマンド**（§目視確認用コマンドを転記）
 
 ### Step 4: ユーザーにコマンド提示
 
@@ -68,7 +69,7 @@ git fetch
 git checkout feature/kesson-codex-app-{keyword}{issue番号}
 git pull
 
-codex --approval-mode on-failure \
+codex -a on-failure \
   "リモート feature/kesson-codex-app-{keyword}{issue番号} ブランチの docs/codex/INSTRUCTION-{issue番号}.md を読み、指示に従って作業してください。"
 ```
 
@@ -88,8 +89,13 @@ git pull
 Codex / Claude Code が作業完了時に出力する報告フォーマット。
 **指示書の末尾に必ずこのセクションを転記すること。**
 
+> ⚠️ **実装者（Codex / Claude Code）への指示:**
+> 作業完了時、以下のテンプレートを**そのまま埋めて**出力すること。
+> 自由形式の報告は禁止。必ずこのフォーマットに従うこと。
+
 ````markdown
-## 完了報告（実装者が記入）
+---
+## 🔴 完了報告（実装者が必ずこのフォーマットで出力すること）
 
 ### ブランチ・ワークツリー
 - ブランチ: `feature/kesson-codex-app-{keyword}{issue番号}`
@@ -115,6 +121,23 @@ Codex / Claude Code が作業完了時に出力する報告フォーマット。
 
 ---
 
+## 目視確認用コマンド
+
+指示書の末尾に以下も転記すること。ユーザーが目視確認する際のコマンド。
+
+````markdown
+## 目視確認手順（DT / ユーザー用）
+```bash
+cd ~/dev/kesson-claude-dt-check
+git fetch
+git merge origin/feature/kesson-codex-app-{keyword}{issue番号}
+npx http-server . -p 3001 -c-1
+# ブラウザで http://localhost:3001 を開いて確認
+```
+````
+
+---
+
 ## 完了後フロー
 
 1. Codex から完了報告を受領（上記テンプレートで構造化された報告）
@@ -123,8 +146,10 @@ Codex / Claude Code が作業完了時に出力する報告フォーマット。
 4. ユーザーに目視確認を依頼:
    ```bash
    cd ~/dev/kesson-claude-dt-check
-   git pull
-   # serve.sh で動作確認
+   git fetch
+   git merge origin/feature/kesson-codex-app-{keyword}{issue番号}
+   npx http-server . -p 3001 -c-1
+   # ブラウザで http://localhost:3001 を開いて確認
    ```
 5. 目視確認 OK → feature/dev マージ → Issue クローズコメント
 6. **確認前に次作業・docs 更新・指示書作成は絶対禁止**
