@@ -5,6 +5,8 @@ import {
   xLogoParams,
   vortexParams,
   liquidParams,
+  quantumWaveParams,
+  particleStormParams,
   toggles,
 } from './params.js';
 import { DEV_TOGGLES, DEV_SECTIONS } from './dev-ui.js';
@@ -105,6 +107,75 @@ const LIQUID_CONFIG_MAP = {
     liquidHighB:        'highlightB',
 };
 
+const QUANTUM_WAVE_MAP = {
+    qwStrength:    'strength',
+    qwSpeed:       'speed',
+    qwBaseFreq:    'baseFreq',
+    qwDispersion:  'dispersion',
+    qwNoiseAmp:    'noiseAmp',
+    qwNoiseScale:  'noiseScale',
+    qwWaveCount:   'waveCount',
+    qwEnvelope:    'envelope',
+    qwYInfluence:  'yInfluence',
+    qwGlowAmount:  'glowAmount',
+    qwGlowColorR:  'glowColorR',
+    qwGlowColorG:  'glowColorG',
+    qwGlowColorB:  'glowColorB',
+    qwCaberration: 'caberration',
+    qwRimBright:   'rimBright',
+    qwBlurAmount:  'blurAmount',
+    qwFogDensity:  'fogDensity',
+    qwFogColorR:   'fogColorR',
+    qwFogColorG:   'fogColorG',
+    qwFogColorB:   'fogColorB',
+    qwDarken:      'darken',
+    qwTurbulence:  'turbulence',
+    qwSharpness:   'sharpness',
+};
+
+const PARTICLE_STORM_MAP = {
+    psSpeed:        'speed',
+    psIntensity:    'intensity',
+    psOpacity:      'opacity',
+    psBaseFreq:     'baseFreq',
+    psDispersion:   'dispersion',
+    psWaveCount:    'waveCount',
+    psNoiseAmp:     'noiseAmp',
+    psNoiseScale:   'noiseScale',
+    psGrainDensity: 'grainDensity',
+    psGrainSize:    'grainSize',
+    psAdvect:       'advectStrength',
+    psColorR:       'colorR',
+    psColorG:       'colorG',
+    psColorB:       'colorB',
+    psBrightR:      'brightColorR',
+    psBrightG:      'brightColorG',
+    psBrightB:      'brightColorB',
+    psColorMix:     'colorMix',
+    psBrightness:   'brightness',
+    psContrast:     'contrast',
+    psSaturation:   'saturation',
+    psGlowAmount:   'glowAmount',
+    psGlowSpread:   'glowSpread',
+    psGlowColorR:   'glowColorR',
+    psGlowColorG:   'glowColorG',
+    psGlowColorB:   'glowColorB',
+    psSoftness:     'softness',
+    psBloom:        'bloomAmount',
+    psEdgeFadeStart:'edgeFadeStart',
+    psEdgeFadeEnd:  'edgeFadeEnd',
+    psCenterDim:    'centerDim',
+    psDensityFloor: 'densityFloor',
+    psFlickerSpeed: 'flickerSpeed',
+    psFlickerAmt:   'flickerAmount',
+    psDriftSpeed:   'driftSpeed',
+    psDriftAngle:   'driftAngle',
+    psPosX:         'posX',
+    psPosY:         'posY',
+    psPosZ:         'posZ',
+    psSize:         'size',
+};
+
 const OVERLAY_KEYS = new Set([
     'titleBottom',
     'titleLeft',
@@ -196,6 +267,14 @@ export const DEV_PARAM_REGISTRY = (() => {
             if (key in LIQUID_CONFIG_MAP) {
                 entry.apply.push({ kind: 'config', object: 'liquidParams', key: LIQUID_CONFIG_MAP[key] });
                 entry.apply.push({ kind: 'liquidUniform', key: LIQUID_CONFIG_MAP[key] });
+            }
+
+            if (key in QUANTUM_WAVE_MAP) {
+                entry.apply.push({ kind: 'config', object: 'quantumWaveParams', key: QUANTUM_WAVE_MAP[key] });
+            }
+
+            if (key in PARTICLE_STORM_MAP) {
+                entry.apply.push({ kind: 'config', object: 'particleStormParams', key: PARTICLE_STORM_MAP[key] });
             }
 
             if (OVERLAY_KEYS.has(key)) {
