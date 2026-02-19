@@ -72,6 +72,13 @@ const XLOGO_POSITION_MAP = {
     xLogoPosZ: 'posZ',
 };
 
+const NAV_ORB_MAP = {
+    orbCenterX: 'centerX',
+    orbCenterY: 'centerY',
+    orbCenterZ: 'centerZ',
+    orbRadius: 'radius',
+};
+
 const VORTEX_MAP = {
     vortexSpeed:     'speed',
     vortexIntensity: 'intensity',
@@ -189,6 +196,11 @@ export const DEV_PARAM_REGISTRY = (() => {
                 entry.apply.push({ kind: 'updateXLogoPosition' });
             }
 
+            if (key in NAV_ORB_MAP) {
+                entry.apply.push({ kind: 'config', object: 'navOrbParams', key: NAV_ORB_MAP[key] });
+                entry.apply.push({ kind: 'updateNavOrbPosition' });
+            }
+
             if (key in VORTEX_MAP) {
                 entry.apply.push({ kind: 'config', object: 'vortexParams', key: VORTEX_MAP[key] });
             }
@@ -206,7 +218,8 @@ export const DEV_PARAM_REGISTRY = (() => {
                 entry.apply.push({ kind: 'autoRotate' });
             }
 
-            if (key === 'camX' || key === 'camY' || key === 'camZ') {
+            if (key === 'camX' || key === 'camY' || key === 'camZ'
+                || key === 'camTargetX' || key === 'camTargetY' || key === 'camTargetZ') {
                 entry.apply.push({ kind: 'camera' });
             }
 

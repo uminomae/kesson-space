@@ -256,6 +256,8 @@ export const CameraDofShader = {
             vec2 mouseAspect = vec2((uv.x - uMouse.x) * uAspect, uv.y - uMouse.y);
             float dofDist = length(mouseAspect);
             float dofBlur = smoothstep(uDofFocusRadius, uDofFocusRadius + 0.5, dofDist) * uDofStrength;
+            // 最外周でも「軽いぼけ」に収める（過度なモザイク化を防止）
+            dofBlur = min(dofBlur, 0.012);
 
             vec3 color = (dofBlur > 0.0005)
                 ? discBlur(uv, dofBlur)

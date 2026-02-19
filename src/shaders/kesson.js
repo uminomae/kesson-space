@@ -5,6 +5,9 @@ import * as THREE from 'three';
 import { noiseGLSL } from './noise.glsl.js';
 import { sceneParams, WARM_COLORS, COOL_COLORS } from '../config.js';
 
+const CAMERA_WRAP_LIGHT_COUNT = 2;
+const CAMERA_WRAP_COLORS = [0xff3b30, 0x3b82ff]; // red, blue
+
 export function createKessonMaterial() {
     return new THREE.ShaderMaterial({
         uniforms: {
@@ -151,26 +154,44 @@ export function createKessonMeshes(scene, baseMaterial) {
     const geo = new THREE.PlaneGeometry(12, 12);
 
     for (let i = 0; i < 40; i++) {
-        const isWarm = Math.random() > 0.5;
-        const colorPalette = isWarm ? WARM_COLORS : COOL_COLORS;
-        const colorStr = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        const isCameraWrap = i < CAMERA_WRAP_LIGHT_COUNT;
+        const colorStr = isCameraWrap
+            ? CAMERA_WRAP_COLORS[i % CAMERA_WRAP_COLORS.length]
+            : (() => {
+                const isWarm = Math.random() > 0.5;
+                const colorPalette = isWarm ? WARM_COLORS : COOL_COLORS;
+                return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            })();
 
         const mat = baseMaterial.clone();
         mat.uniforms.uColor.value = new THREE.Color(colorStr);
         mat.uniforms.uOffset.value = Math.random() * 1000.0;
 
         const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(
-            (Math.random() - 0.5) * 90,
-            (Math.random() - 0.5) * 40,
-            (Math.random() - 0.5) * 60 - 10
-        );
+        if (isCameraWrap) {
+            mesh.position.set(0, 0, 0);
+        } else {
+            // 既存分布（元実装）を維持
+            mesh.position.set(
+                (Math.random() - 0.5) * 90,
+                (Math.random() - 0.5) * 40,
+                (Math.random() - 0.5) * 60 - 10
+            );
+        }
 
         mesh.userData = {
             baseY: mesh.position.y,
             baseX: mesh.position.x,
+            baseZ: mesh.position.z,
             speed: 0.05 + Math.random() * 0.15,
-            id: i
+            id: i,
+            cameraWrap: isCameraWrap,
+            orbitRadius: isCameraWrap ? 10.5 : (9 + Math.random() * 18),
+            orbitHeight: isCameraWrap ? ((i % 2 === 0) ? 1.5 : -1.5) : ((Math.random() - 0.5) * 12),
+            orbitSpeed: isCameraWrap ? 0.38 : (0.18 + Math.random() * 0.35),
+            // 赤青を常に180度反対側に配置
+            orbitPhase: isCameraWrap ? (i * Math.PI) : (Math.random() * Math.PI * 2),
+            orbitDrift: (Math.random() - 0.5) * 4,
         };
 
         scene.add(mesh);

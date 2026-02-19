@@ -1,10 +1,11 @@
-import { setAutoRotateSpeed, setCameraPosition } from '../controls.js';
-import { rebuildGem, rebuildXLogo, updateGemPosition, updateXLogoPosition } from '../nav-objects.js';
+import { setAutoRotateSpeed, setCameraPosition, setCameraTarget } from '../controls.js';
+import { rebuildGem, rebuildXLogo, updateGemPosition, updateNavOrbPositions, updateXLogoPosition } from '../nav-objects.js';
 import {
     DEV_PARAM_REGISTRY,
     breathConfig,
     gemParams,
     liquidParams,
+    navOrbParams,
     sceneParams,
     toggles,
     vortexParams,
@@ -64,6 +65,7 @@ export function createDevValueApplier({ distortionPass, dofPass, fluidSystem, li
             sceneParams,
             gemParams,
             xLogoParams,
+            navOrbParams,
             vortexParams,
             liquidParams,
         };
@@ -108,8 +110,12 @@ export function createDevValueApplier({ distortionPass, dofPass, fluidSystem, li
                 case 'updateXLogoPosition':
                     updateXLogoPosition();
                     break;
+                case 'updateNavOrbPosition':
+                    updateNavOrbPositions();
+                    break;
                 case 'camera':
                     setCameraPosition(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+                    setCameraTarget(sceneParams.camTargetX, sceneParams.camTargetY, sceneParams.camTargetZ);
                     break;
                 case 'autoRotate':
                     setAutoRotateSpeed(value);

@@ -6,7 +6,7 @@ import {
     FOG_V002_COLOR, FOG_V002_DENSITY,
     FOG_V004_COLOR, FOG_V004_DENSITY,
 } from './config.js';
-import { CAMERA_FOV, CAMERA_NEAR, CAMERA_FAR, CAMERA_LOOK_AT_Z } from './constants.js';
+import { CAMERA_FOV, CAMERA_NEAR, CAMERA_FAR } from './constants.js';
 import { lerp } from './animation-utils.js';
 import { createBackgroundMaterial, createBackgroundMesh } from './shaders/background.js';
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
@@ -27,6 +27,10 @@ let _vortexMesh;
 
 // GC削減: フォグ色を事前確保（毎フレーム new しない）
 const _fogColor = new THREE.Color();
+const _kessonLegacyPos = new THREE.Vector3();
+const _kessonWrapPos = new THREE.Vector3();
+const _kessonToCam = new THREE.Vector3();
+const KESSON_CAMERA_WRAP_MIN_DISTANCE = 7.0;
 
 /**
  * カメラZ距離をアスペクト比から算出
@@ -54,7 +58,7 @@ export function createScene(container) {
 
     const camera = new THREE.PerspectiveCamera(CAMERA_FOV, aspect, CAMERA_NEAR, CAMERA_FAR);
     camera.position.set(sceneParams.camX, sceneParams.camY, camZ);
-    camera.lookAt(0, sceneParams.camTargetY, CAMERA_LOOK_AT_Z);
+    camera.lookAt(sceneParams.camTargetX, sceneParams.camTargetY, sceneParams.camTargetZ);
     _camera = camera;
 
     // レンダラー
@@ -132,8 +136,32 @@ export function updateScene(time) {
         u.uTintR.value = sceneParams.tintR;
         u.uTintG.value = sceneParams.tintG;
         u.uTintB.value = sceneParams.tintB;
-        mesh.position.y = mesh.userData.baseY + Math.sin(time * mesh.userData.speed + mesh.userData.id) * 2;
-        mesh.position.x = mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2;
+
+        const wobble = Math.sin(time * mesh.userData.speed + mesh.userData.id);
+        if (mesh.userData.cameraWrap) {
+            const orbitT = (time * mesh.userData.orbitSpeed) + mesh.userData.orbitPhase;
+            const orbitRadius = mesh.userData.orbitRadius + (wobble * 0.8);
+            _kessonWrapPos.set(
+                _camera.position.x + Math.sin(orbitT) * orbitRadius,
+                _camera.position.y + mesh.userData.orbitHeight + Math.sin(orbitT * 1.7 + mesh.userData.id) * 1.2,
+                _camera.position.z + Math.cos(orbitT) * orbitRadius
+            );
+
+            _kessonToCam.copy(_kessonWrapPos).sub(_camera.position);
+            const camDist = _kessonToCam.length();
+            if (camDist < KESSON_CAMERA_WRAP_MIN_DISTANCE && camDist > 0.0001) {
+                _kessonToCam.normalize().multiplyScalar(KESSON_CAMERA_WRAP_MIN_DISTANCE);
+                _kessonWrapPos.copy(_camera.position).add(_kessonToCam);
+            }
+            mesh.position.copy(_kessonWrapPos);
+        } else {
+            // それ以外はワールド空間に散在させる
+            mesh.position.set(
+                mesh.userData.baseX + Math.cos(time * mesh.userData.speed * 0.5 + mesh.userData.id) * 2,
+                mesh.userData.baseY + wobble * 2,
+                mesh.userData.baseZ + Math.sin(time * mesh.userData.speed * 0.35 + mesh.userData.id) * 2
+            );
+        }
         mesh.lookAt(_camera.position);
     });
 
