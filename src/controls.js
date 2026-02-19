@@ -32,6 +32,9 @@ let _autoRotateSpeed = 1.0;
 let _baseCamY = 0;
 let _baseCamX = -14;
 let _baseCamZ = 34;
+let _baseTargetX = 0;
+let _baseTargetY = LOOKAT_BASE_Y;
+let _baseTargetZ = 0;
 
 // スクロール進捗 (0 = 水面, 1 = 完全潜水)
 let _scrollProgress = 0;
@@ -67,6 +70,9 @@ export function initControls(camera, container, renderer) {
     _baseCamY = sceneParams.camY;
     _baseCamX = sceneParams.camX;
     _baseCamZ = sceneParams.camZ;
+    _baseTargetX = sceneParams.camTargetX;
+    _baseTargetY = sceneParams.camTargetY;
+    _baseTargetZ = sceneParams.camTargetZ;
 
     // --- touch-action: pan-y ---
     // ブラウザに「縦スクロールだけ任せる、横とピンチはJSで処理する」と宣言
@@ -208,6 +214,12 @@ export function setCameraPosition(x, y, z) {
     _baseCamZ = z;
 }
 
+export function setCameraTarget(x, y, z) {
+    _baseTargetX = x;
+    _baseTargetY = y;
+    _baseTargetZ = z;
+}
+
 // REMOVED: setTarget() — スクロール潜水モードでは未使用（lookAtはupdateControls内で計算）
 
 export function getScrollProgress() {
@@ -284,6 +296,6 @@ export function updateControls(time, breathVal = 0.5) {
     const diveY = _baseCamY - eased * DIVE_DEPTH;
 
     _camera.position.set(rotX, diveY, rotZ);
-    // lookAt: 原点中心（オーブの三角形重心と一致）
-    _camera.lookAt(0, LOOKAT_BASE_Y - eased * DIVE_DEPTH * 0.5, 0);
+    // lookAt: devパネルで調整可能な注視点 + 潜水時のYオフセット
+    _camera.lookAt(_baseTargetX, _baseTargetY - eased * DIVE_DEPTH * 0.5, _baseTargetZ);
 }

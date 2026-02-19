@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { detectLang, t } from './i18n.js';
-import { toggles, gemParams, xLogoParams } from './config.js';
+import { toggles, gemParams, navOrbParams, xLogoParams } from './config.js';
 import { getScrollProgress } from './controls.js';
 import { xLogoVertexShader, xLogoFragmentShader } from './shaders/x-logo.glsl.js';
 import {
@@ -21,7 +21,7 @@ import { computeOrbScreenData } from './nav/orb-screen.js';
 import { interactionWorldFromViewportHeight, worldFromViewportHeight } from './nav/responsive.js';
 
 // --- 正三角形配置（XZ平面） ---
-const TRI_R = 9;
+const NAV_ORB_ANGLES = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
 // Xロゴ位置ターゲット（将来ここだけ調整すれば良い）
 const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
 const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;  // 上から 20%
@@ -29,11 +29,6 @@ const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
 const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
 const ORB_HIT_BASE_SCALE = 4.0;
-const NAV_POSITIONS = [
-    { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
-    { position: [TRI_R * Math.sin(2*Math.PI/3),   -8, TRI_R * Math.cos(2*Math.PI/3)],  color: 0x7799dd },
-    { position: [TRI_R * Math.sin(4*Math.PI/3),   -8, TRI_R * Math.cos(4*Math.PI/3)],  color: 0x5577bb },
-];
 
 let _labelElements = [];
 let _gemLabelElement = null;
@@ -51,6 +46,25 @@ let _navMeshes = null;
 const _xLogoSolveVecA = new THREE.Vector3();
 const _xLogoSolveVecB = new THREE.Vector3();
 const _xLogoSolveMatrix = new THREE.Matrix4();
+
+function getNavOrbWorldPosition(index) {
+    const angle = NAV_ORB_ANGLES[index] ?? 0;
+    return [
+        navOrbParams.centerX + (Math.sin(angle) * navOrbParams.radius),
+        navOrbParams.centerY,
+        navOrbParams.centerZ + (Math.cos(angle) * navOrbParams.radius),
+    ];
+}
+
+function applyNavOrbPosition(group, index) {
+    if (!group) return;
+    const [x, y, z] = getNavOrbWorldPosition(index);
+    group.position.set(x, y, z);
+    group.userData.baseY = y;
+    if (group.userData.core?.userData) {
+        group.userData.core.userData.baseY = y;
+    }
+}
 
 function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
@@ -343,10 +357,11 @@ export function createNavObjects(scene) {
     const strings = t(lang);
 
     // --- PDFオーブ（既存） ---
-    NAV_POSITIONS.forEach((pos, index) => {
+    NAV_ORB_ANGLES.forEach((_angle, index) => {
         const navItem = strings.nav[index];
         const group = new THREE.Group();
-        group.position.set(...pos.position);
+        const navPosition = getNavOrbWorldPosition(index);
+        group.position.set(...navPosition);
 
         const hitMaterial = new THREE.SpriteMaterial({
             transparent: true,
@@ -361,7 +376,7 @@ export function createNavObjects(scene) {
             type: 'nav',
             url: navItem.url,
             label: navItem.label,
-            baseY: pos.position[1],
+            baseY: navPosition[1],
             index,
             isHitTarget: true,
         };
@@ -369,7 +384,7 @@ export function createNavObjects(scene) {
         group.add(coreSprite);
 
         group.userData = {
-            baseY: pos.position[1],
+            baseY: navPosition[1],
             index: index,
             core: coreSprite,
             baseScale: orbHitScale,
@@ -512,6 +527,13 @@ export function updateNavObjects(navMeshes, time, camera) {
         }
         const floatOffset = Math.sin(time * 0.8 + data.index) * orbFloatAmplitude;
         obj.position.y = data.baseY + floatOffset;
+    });
+}
+
+export function updateNavOrbPositions() {
+    if (!_navMeshes || _navMeshes.length === 0) return;
+    _navMeshes.forEach((group) => {
+        applyNavOrbPosition(group, group.userData.index ?? 0);
     });
 }
 
