@@ -3,15 +3,53 @@
 
 import { getRequestedScrollTarget, shouldOpenOffcanvas, hasDeepLinkIntent } from '../offcanvas-deeplink.js';
 import { requestScroll, SCROLL_PRIORITY, commitNavigationIntent } from '../scroll-coordinator.js';
+import { detectLang, LANG_CHANGE_EVENT } from '../i18n.js';
 
 const API_URL = 'https://uminomae.github.io/pjdhiro/api/kesson-articles.json';
 const MOCK_URL = './assets/articles/articles.json';
 const INITIAL_DISPLAY = 3;
 const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 
+const ARTICLE_UI = {
+    ja: {
+        articleLabel: '記事',
+        openArticle: 'を読む',
+        readMore: '▸ 続きを見る',
+        viewAll: '▸ すべて表示',
+        countUnit: '件',
+        typeAll: 'すべて',
+        typePage: 'ページ',
+        typePost: '記事',
+        loadingFailed: '記事データの読み込みに失敗しました。',
+    },
+    en: {
+        articleLabel: 'article',
+        openArticle: 'Read',
+        readMore: '▸ Read More',
+        viewAll: '▸ View All',
+        countUnit: 'articles',
+        typeAll: 'All',
+        typePage: 'Page',
+        typePost: 'Post',
+        loadingFailed: 'Failed to load article data.',
+    },
+};
+
 let hasNotifiedArticlesReady = false;
 let hasAutoOpenedArticlesOffcanvas = false;
 let hasAppliedArticlesDeepLink = false;
+
+const articlesState = {
+    articles: [],
+    activeType: 'all',
+    grid: null,
+    errorEl: null,
+    offcanvasGrid: null,
+    offcanvasCount: null,
+    filterButtons: [],
+    filterBound: false,
+    initialized: false,
+};
 
 function notifyArticlesReady(status = 'ok') {
     if (hasNotifiedArticlesReady || typeof window === 'undefined') return;
@@ -20,17 +58,85 @@ function notifyArticlesReady(status = 'ok') {
     window.dispatchEvent(new CustomEvent(ARTICLES_READY_EVENT, { detail: { status } }));
 }
 
+function normalizeLang(lang) {
+    return lang === 'en' ? 'en' : 'ja';
+}
+
+function getCurrentLang() {
+    return normalizeLang(detectLang());
+}
+
+function getUi(lang) {
+    return ARTICLE_UI[normalizeLang(lang)];
+}
+
 function normalizeType(item) {
     return item.type === 'page' ? 'page' : 'post';
 }
 
-function formatDate(dateStr) {
+function getTypeLabel(type, lang) {
+    const ui = getUi(lang);
+    if (type === 'page') return ui.typePage;
+    if (type === 'post') return ui.typePost;
+    return ui.typeAll;
+}
+
+function getLocalizedText(item, key, lang) {
+    if (!item || typeof item !== 'object') return '';
+
+    const normalizedLang = normalizeLang(lang);
+    const fallbackLang = normalizedLang === 'en' ? 'ja' : 'en';
+    const byLangKey = `${key}_${normalizedLang}`;
+    const fallbackByLangKey = `${key}_${fallbackLang}`;
+
+    if (typeof item[byLangKey] === 'string' && item[byLangKey].trim()) {
+        return item[byLangKey];
+    }
+    if (typeof item[fallbackByLangKey] === 'string' && item[fallbackByLangKey].trim()) {
+        return item[fallbackByLangKey];
+    }
+
+    const i18nValue = item[`${key}_i18n`];
+    if (i18nValue && typeof i18nValue === 'object') {
+        if (typeof i18nValue[normalizedLang] === 'string' && i18nValue[normalizedLang].trim()) {
+            return i18nValue[normalizedLang];
+        }
+        if (typeof i18nValue[fallbackLang] === 'string' && i18nValue[fallbackLang].trim()) {
+            return i18nValue[fallbackLang];
+        }
+    }
+
+    const base = item[key];
+    if (typeof base === 'string' && base.trim()) {
+        return base;
+    }
+    if (base && typeof base === 'object') {
+        if (typeof base[normalizedLang] === 'string' && base[normalizedLang].trim()) {
+            return base[normalizedLang];
+        }
+        if (typeof base[fallbackLang] === 'string' && base[fallbackLang].trim()) {
+            return base[fallbackLang];
+        }
+    }
+
+    return '';
+}
+
+function formatDate(dateStr, lang) {
     if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    });
+
+    const normalizedLang = normalizeLang(lang);
+    const locale = normalizedLang === 'en' ? 'en-US' : 'ja-JP';
+
+    try {
+        return new Date(dateStr).toLocaleDateString(locale, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+    } catch {
+        return '';
+    }
 }
 
 function sanitizeHttpUrl(url, fallback = '#') {
@@ -40,23 +146,33 @@ function sanitizeHttpUrl(url, fallback = '#') {
     return /^https?:\/\//i.test(trimmed) ? trimmed : fallback;
 }
 
-function createCard(item) {
+function buildArticleAriaLabel(titleText, lang) {
+    const ui = getUi(lang);
+    const safeTitle = titleText || ui.articleLabel;
+    if (normalizeLang(lang) === 'en') {
+        return `${ui.openArticle}: ${safeTitle}`;
+    }
+    return `${safeTitle}${ui.openArticle}`;
+}
+
+function createCard(item, lang = getCurrentLang()) {
+    const normalizedLang = normalizeLang(lang);
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
 
     const normalizedType = normalizeType(item);
-    const dateText = formatDate(item.date);
+    const dateText = formatDate(item.date, normalizedLang);
     const safeUrl = sanitizeHttpUrl(item.url, '#');
     const safeTeaserUrl = sanitizeHttpUrl(item.teaser, '');
-    const titleText = typeof item.title === 'string' ? item.title : '';
-    const excerptText = typeof item.excerpt === 'string' ? item.excerpt : '';
+    const titleText = getLocalizedText(item, 'title', normalizedLang);
+    const excerptText = getLocalizedText(item, 'excerpt', normalizedLang);
 
     const link = document.createElement('a');
     link.href = safeUrl;
     link.target = '_blank';
     link.rel = 'noopener';
     link.className = 'text-decoration-none';
-    link.setAttribute('aria-label', `${titleText || '記事'} を読む`);
+    link.setAttribute('aria-label', buildArticleAriaLabel(titleText, normalizedLang));
 
     const card = document.createElement('div');
     card.className = 'card kesson-card h-100';
@@ -77,7 +193,7 @@ function createCard(item) {
 
     const badge = document.createElement('span');
     badge.className = 'badge bg-secondary mb-2 badge-article-type';
-    badge.textContent = normalizedType;
+    badge.textContent = getTypeLabel(normalizedType, normalizedLang);
 
     const title = document.createElement('h6');
     title.className = 'card-title mb-1';
@@ -104,9 +220,12 @@ function createCard(item) {
     return col;
 }
 
-function createReadMoreButton(totalCount, visibleCount) {
+function createReadMoreButton(totalCount, visibleCount, lang = getCurrentLang()) {
+    const normalizedLang = normalizeLang(lang);
+    const ui = getUi(normalizedLang);
     const btnContainer = document.createElement('div');
     btnContainer.className = 'text-center mt-3';
+    btnContainer.dataset.role = 'articles-readmore-wrap';
 
     const btn = document.createElement('button');
     btn.className = 'btn-read-more';
@@ -116,76 +235,175 @@ function createReadMoreButton(totalCount, visibleCount) {
 
     const remaining = totalCount - visibleCount;
     btn.textContent = remaining > 0
-        ? `▸ Read More (${remaining})`
-        : `▸ View All (${totalCount})`;
+        ? `${ui.readMore} (${remaining})`
+        : `${ui.viewAll} (${totalCount})`;
 
     btnContainer.appendChild(btn);
     return btnContainer;
 }
 
+function getFilteredArticles(articles, type) {
+    if (type === 'all') return articles;
+    return articles.filter((item) => normalizeType(item) === type);
+}
+
+function updateFilterButtons({ filterButtons, activeType, lang }) {
+    const normalizedLang = normalizeLang(lang);
+    filterButtons.forEach((btn) => {
+        const type = btn.dataset.type || 'all';
+        const isActive = type === activeType;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        btn.textContent = getTypeLabel(type, normalizedLang);
+    });
+}
+
+function updateOffcanvasCount({ total, filtered, activeType, offcanvasCount, lang }) {
+    if (!offcanvasCount) return;
+    const ui = getUi(lang);
+
+    if (activeType === 'all') {
+        offcanvasCount.textContent = `${total} ${ui.countUnit}`;
+        return;
+    }
+    offcanvasCount.textContent = `${filtered} / ${total} ${ui.countUnit}`;
+}
+
+function renderOffcanvasArticles({ articles, activeType, offcanvasGrid, offcanvasCount, lang }) {
+    if (!offcanvasGrid) return;
+
+    const filtered = getFilteredArticles(articles, activeType);
+    offcanvasGrid.innerHTML = '';
+    filtered.forEach((item) => offcanvasGrid.appendChild(createCard(item, lang)));
+    updateOffcanvasCount({
+        total: articles.length,
+        filtered: filtered.length,
+        activeType,
+        offcanvasCount,
+        lang,
+    });
+}
+
+function setupFilters({ filterButtons }) {
+    if (articlesState.filterBound) return;
+
+    filterButtons.forEach((btn) => {
+        if (btn.dataset.kessonFilterBound === '1') return;
+        btn.dataset.kessonFilterBound = '1';
+
+        btn.addEventListener('click', () => {
+            const nextType = btn.dataset.type || 'all';
+            if (nextType === articlesState.activeType) return;
+
+            articlesState.activeType = nextType;
+            const lang = getCurrentLang();
+            updateFilterButtons({
+                filterButtons: articlesState.filterButtons,
+                activeType: articlesState.activeType,
+                lang,
+            });
+            renderOffcanvasArticles({
+                articles: articlesState.articles,
+                activeType: articlesState.activeType,
+                offcanvasGrid: articlesState.offcanvasGrid,
+                offcanvasCount: articlesState.offcanvasCount,
+                lang,
+            });
+        });
+    });
+
+    articlesState.filterBound = true;
+}
+
+function mergeArticleI18nFromMock(apiArticles, mockArticles) {
+    if (!Array.isArray(apiArticles) || !Array.isArray(mockArticles)) return apiArticles;
+
+    const indexByUrl = new Map();
+    mockArticles.forEach((item) => {
+        const key = sanitizeHttpUrl(item.url, '');
+        if (key) indexByUrl.set(key, item);
+    });
+
+    return apiArticles.map((item) => {
+        const key = sanitizeHttpUrl(item.url, '');
+        const fallback = key ? indexByUrl.get(key) : null;
+        if (!fallback) return item;
+
+        return {
+            ...item,
+            title_ja: item.title_ja || fallback.title_ja,
+            title_en: item.title_en || fallback.title_en,
+            excerpt_ja: item.excerpt_ja || fallback.excerpt_ja,
+            excerpt_en: item.excerpt_en || fallback.excerpt_en,
+        };
+    });
+}
+
 async function fetchArticles() {
+    let apiArticles = null;
+    let mockArticles = null;
+
     try {
         const res = await fetch(API_URL);
-        if (res.ok) return await res.json();
+        if (res.ok) apiArticles = await res.json();
     } catch (e) {
         console.warn('[articles] API unavailable:', e.message);
     }
 
     try {
         const res = await fetch(MOCK_URL);
-        if (res.ok) return await res.json();
+        if (res.ok) mockArticles = await res.json();
     } catch (e) {
-        console.error('[articles] Mock also failed:', e.message);
+        console.warn('[articles] Mock unavailable:', e.message);
     }
 
-    return null;
+    if (apiArticles && mockArticles) {
+        return mergeArticleI18nFromMock(apiArticles, mockArticles);
+    }
+    return apiArticles || mockArticles;
 }
 
-function setupFilters({ articles, filterButtons, offcanvasGrid, offcanvasCount }) {
-    let activeType = 'all';
+function renderMainArticles({ articles, grid, lang }) {
+    if (!grid) return;
 
-    function getFilteredArticles(type) {
-        if (type === 'all') return articles;
-        return articles.filter((item) => normalizeType(item) === type);
+    grid.innerHTML = '';
+
+    const initialItems = articles.slice(0, INITIAL_DISPLAY);
+    initialItems.forEach((item) => grid.appendChild(createCard(item, lang)));
+
+    const existingReadMore = grid.parentNode
+        ? grid.parentNode.querySelector('[data-role="articles-readmore-wrap"]')
+        : null;
+    if (existingReadMore) existingReadMore.remove();
+
+    if (articles.length > 0 && grid.parentNode) {
+        const readMoreButton = createReadMoreButton(articles.length, initialItems.length, lang);
+        grid.parentNode.insertBefore(readMoreButton, grid.nextSibling);
     }
+}
 
-    function updateFilterButtons() {
-        filterButtons.forEach((btn) => {
-            const isActive = btn.dataset.type === activeType;
-            btn.classList.toggle('is-active', isActive);
-            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-        });
-    }
+function renderArticlesByLanguage(lang = getCurrentLang()) {
+    const normalizedLang = normalizeLang(lang);
 
-    function updateOffcanvasCount(filteredCount) {
-        if (!offcanvasCount) return;
-        if (activeType === 'all') {
-            offcanvasCount.textContent = `${articles.length} articles`;
-            return;
-        }
-        offcanvasCount.textContent = `${filteredCount} / ${articles.length} articles`;
-    }
-
-    function renderOffcanvasArticles(type) {
-        if (!offcanvasGrid) return;
-        const filtered = getFilteredArticles(type);
-        offcanvasGrid.innerHTML = '';
-        filtered.forEach((item) => offcanvasGrid.appendChild(createCard(item)));
-        updateOffcanvasCount(filtered.length);
-    }
-
-    filterButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const nextType = btn.dataset.type || 'all';
-            if (nextType === activeType) return;
-            activeType = nextType;
-            updateFilterButtons();
-            renderOffcanvasArticles(activeType);
-        });
+    renderMainArticles({
+        articles: articlesState.articles,
+        grid: articlesState.grid,
+        lang: normalizedLang,
     });
 
-    updateFilterButtons();
-    renderOffcanvasArticles(activeType);
+    updateFilterButtons({
+        filterButtons: articlesState.filterButtons,
+        activeType: articlesState.activeType,
+        lang: normalizedLang,
+    });
+
+    renderOffcanvasArticles({
+        articles: articlesState.articles,
+        activeType: articlesState.activeType,
+        offcanvasGrid: articlesState.offcanvasGrid,
+        offcanvasCount: articlesState.offcanvasCount,
+        lang: normalizedLang,
+    });
 }
 
 function waitForTwoAnimationFrames() {
@@ -268,10 +486,16 @@ async function initArticlesSection() {
         return;
     }
 
+    articlesState.grid = grid;
+    articlesState.errorEl = errorEl;
+    articlesState.offcanvasGrid = offcanvasGrid;
+    articlesState.offcanvasCount = offcanvasCount;
+    articlesState.filterButtons = filterButtons;
+
     const articles = await fetchArticles();
     if (!articles || articles.length === 0) {
         if (errorEl) {
-            errorEl.textContent = '記事データの読み込みに失敗しました。';
+            errorEl.textContent = getUi(getCurrentLang()).loadingFailed;
             errorEl.classList.remove('d-none');
         }
         notifyArticlesReady('empty');
@@ -281,20 +505,20 @@ async function initArticlesSection() {
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
     console.log('[articles] total:', articles.length, 'initial:', INITIAL_DISPLAY, 'remaining:', articles.length - INITIAL_DISPLAY);
 
-    const initialItems = articles.slice(0, INITIAL_DISPLAY);
-    initialItems.forEach((item) => grid.appendChild(createCard(item)));
+    articlesState.articles = articles;
+    articlesState.activeType = 'all';
+    articlesState.initialized = true;
 
-    if (articles.length > 0 && grid.parentNode) {
-        const readMoreButton = createReadMoreButton(articles.length, initialItems.length);
-        grid.parentNode.insertBefore(readMoreButton, grid.nextSibling);
-    }
-
-    if (offcanvasGrid) {
-        setupFilters({ articles, filterButtons, offcanvasGrid, offcanvasCount });
-    }
+    setupFilters({ filterButtons });
+    renderArticlesByLanguage(getCurrentLang());
 
     notifyArticlesReady('ok');
     applyArticlesDeepLinkIntent();
+}
+
+export function refreshArticlesLanguage() {
+    if (!articlesState.initialized) return;
+    renderArticlesByLanguage(getCurrentLang());
 }
 
 async function safeInitArticlesSection() {
@@ -304,6 +528,12 @@ async function safeInitArticlesSection() {
         console.error('[articles] init failed:', error);
         notifyArticlesReady('error');
     }
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener(LANG_CHANGE_EVENT, () => {
+        refreshArticlesLanguage();
+    });
 }
 
 if (document.readyState === 'loading') {

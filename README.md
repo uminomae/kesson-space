@@ -256,6 +256,34 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 ./serve.sh  # → http://localhost:3001/
 ```
 
+## Devlog English Flow
+
+新規 devlog セッションを JA/EN で追加する場合は以下を揃える。
+
+1. `content/devlog/session-XXX.md`（日本語本文）
+2. `content/devlog/session-XXX.en.md`（英語本文）
+3. `assets/devlog/sessions.json` に以下を追加
+
+```json
+{
+  "id": "session-XXX",
+  "title_ja": "Part X: ...",
+  "title_en": "Part X: ...",
+  "date_range_ja": "2026-02-19",
+  "date_range_en": "Feb 19, 2026",
+  "content_by_lang": {
+    "ja": "./content/devlog/session-XXX.md",
+    "en": "./content/devlog/session-XXX.en.md"
+  }
+}
+```
+
+フォールバック方針:
+- `lang=en` で `*.en.md` が無い場合は `*.md` を表示
+- `title_en` / `date_range_en` が無い場合は `*_ja` を表示
+
+外部 blog サマリー（ARTICLES）も同様に `title_en` / `excerpt_en` を付与すると英語表示される。
+
 ## Deep Link Presets
 
 Deep link URL presets are managed in:

@@ -226,11 +226,32 @@
       headerIds: false,
     });
 
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('id');
-    const lang = params.get('lang') || document.documentElement.lang || 'ja';
     const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
     const SCROLL_RESTORATION_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
+    const SUPPORTED_LANGS = new Set(['ja', 'en']);
+    const UI = {
+      ja: {
+        backToIndex: '← 一覧に戻る',
+        loading: '読み込み中...',
+        devlogLabel: 'devlog',
+        sessionIdMissing: 'セッションIDが見つかりません。',
+        sessionNotFound: '指定されたセッションが見つかりません。',
+        sessionLoadFailed: 'セッションデータの読み込みに失敗しました。',
+      },
+      en: {
+        backToIndex: '← Back to list',
+        loading: 'Loading...',
+        devlogLabel: 'Devlog',
+        sessionIdMissing: 'Session id was not found.',
+        sessionNotFound: 'The requested session was not found.',
+        sessionLoadFailed: 'Failed to load session data.',
+      },
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('id');
+    const initialLang = params.get('lang') || document.documentElement.lang || 'ja';
+    const lang = normalizeLang(initialLang);
 
     const titleEl = document.getElementById('devlog-title');
     const metaEl = document.getElementById('devlog-meta');
@@ -239,7 +260,80 @@
     const errorEl = document.getElementById('devlog-error');
     const backLinkEl = document.querySelector('.back-link');
 
-    if (backLinkEl) {
+    document.documentElement.lang = lang;
+
+    function normalizeLang(nextLang) {
+      return SUPPORTED_LANGS.has(nextLang) ? nextLang : 'ja';
+    }
+
+    function t() {
+      return UI[lang];
+    }
+
+    function pickLocalized(session, key) {
+      const fallbackLang = lang === 'en' ? 'ja' : 'en';
+      const byLangKey = `${key}_${lang}`;
+      const fallbackByLangKey = `${key}_${fallbackLang}`;
+
+      if (typeof session[byLangKey] === 'string' && session[byLangKey].trim()) return session[byLangKey];
+      if (typeof session[fallbackByLangKey] === 'string' && session[fallbackByLangKey].trim()) return session[fallbackByLangKey];
+
+      const value = session[key];
+      if (typeof value === 'string' && value.trim()) return value;
+      if (value && typeof value === 'object') {
+        if (typeof value[lang] === 'string' && value[lang].trim()) return value[lang];
+        if (typeof value[fallbackLang] === 'string' && value[fallbackLang].trim()) return value[fallbackLang];
+      }
+      return '';
+    }
+
+    function getSessionTitle(session) {
+      return pickLocalized(session, 'title') || session.id;
+    }
+
+    function getSessionDateRange(session) {
+      return pickLocalized(session, 'date_range') || session.id;
+    }
+
+    function getSessionContentCandidates(session) {
+      const fallbackLang = lang === 'en' ? 'ja' : 'en';
+      const candidates = [];
+      const contentByLang = session.content_by_lang;
+      if (contentByLang && typeof contentByLang === 'object') {
+        if (typeof contentByLang[lang] === 'string' && contentByLang[lang].trim()) {
+          candidates.push(contentByLang[lang].trim());
+        }
+        if (typeof contentByLang[fallbackLang] === 'string' && contentByLang[fallbackLang].trim()) {
+          candidates.push(contentByLang[fallbackLang].trim());
+        }
+      }
+      if (lang === 'en') {
+        candidates.push(`./content/devlog/${session.id}.en.md`);
+      }
+      candidates.push(`./content/devlog/${session.id}.md`);
+      return [...new Set(candidates)];
+    }
+
+    async function loadSessionContent(session) {
+      const paths = getSessionContentCandidates(session);
+      for (const path of paths) {
+        try {
+          const res = await fetch(path);
+          if (!res.ok) continue;
+          const raw = await res.text();
+          const content = raw.replace(/^---\n[\s\S]*?\n---\n*/m, '').trim();
+          if (content) return content;
+        } catch (error) {
+          console.warn(`[devlog] Failed to load ${path}:`, error);
+        }
+      }
+      return null;
+    }
+
+    function setupBackLink() {
+      if (!backLinkEl) return;
+      backLinkEl.textContent = t().backToIndex;
+      backLinkEl.href = lang === 'en' ? 'index.html?lang=en' : 'index.html';
       backLinkEl.addEventListener('click', () => {
         try {
           sessionStorage.setItem(
@@ -264,23 +358,13 @@
       if (contentEl) contentEl.innerHTML = '';
     }
 
-    async function loadSessionContent(id) {
-      try {
-        const res = await fetch(`./content/devlog/${id}.md`);
-        if (!res.ok) return null;
-        const raw = await res.text();
-        const content = raw.replace(/^---\n[\s\S]*?\n---\n*/m, '').trim();
-        return content;
-      } catch (e) {
-        console.warn(`[devlog] Failed to load ${id}.md:`, e);
-        return null;
-      }
-    }
-
     async function loadSession() {
+      if (titleEl) titleEl.textContent = t().loading;
+      setupBackLink();
+
       if (!sessionId) {
-        showError('セッションIDが見つかりません。');
-        titleEl.textContent = 'devlog';
+        showError(t().sessionIdMissing);
+        if (titleEl) titleEl.textContent = t().devlogLabel;
         return;
       }
 
@@ -291,17 +375,17 @@
         const session = sessions.find((item) => item.id === sessionId);
 
         if (!session) {
-          showError('指定されたセッションが見つかりません。');
-          titleEl.textContent = sessionId;
+          showError(t().sessionNotFound);
+          if (titleEl) titleEl.textContent = sessionId;
           return;
         }
 
-        const sessionTitle = (lang === 'en' ? session.title_en : session.title_ja) || session.id;
-        titleEl.textContent = sessionTitle;
-        metaEl.textContent = session.date_range ? session.date_range : session.id;
-        document.title = `${sessionTitle} - devlog`;
+        const sessionTitle = getSessionTitle(session);
+        if (titleEl) titleEl.textContent = sessionTitle;
+        if (metaEl) metaEl.textContent = getSessionDateRange(session);
+        document.title = `${sessionTitle} - ${t().devlogLabel}`;
 
-        if (session.cover) {
+        if (session.cover && coverEl) {
           coverEl.src = session.cover;
           coverEl.classList.remove('d-none');
           coverEl.onerror = () => {
@@ -320,11 +404,11 @@
           });
         }
 
-        const rawContent = await loadSessionContent(session.id);
+        const rawContent = await loadSessionContent(session);
         contentEl.innerHTML = rawContent ? DOMPurify.sanitize(marked.parse(rawContent)) : '';
       } catch (e) {
         console.warn('[devlog] Failed to load sessions.json:', e);
-        showError('セッションデータの読み込みに失敗しました。');
+        showError(t().sessionLoadFailed);
       }
     }
 

@@ -19,6 +19,19 @@ const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
 const DEVLOG_RETURN_TTL_MS = 30 * 60 * 1000;
 const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 const TOPBAR_DEVLOG_TRIGGER_ID = 'topbar-devlog-btn';
+const SUPPORTED_LANGS = new Set(['ja', 'en']);
+const DEVLOG_UI_STRINGS = {
+  ja: {
+    openLabel: 'Devlogを開く',
+    loading: '読み込み中...',
+    sessionUnit: 'セッション',
+  },
+  en: {
+    openLabel: 'Open devlog session',
+    loading: 'Loading...',
+    sessionUnit: 'sessions',
+  },
+};
 
 let sessions = [];
 let isInitialized = false;
@@ -40,6 +53,57 @@ let hasAutoOpenedDevlogOffcanvas = false;
 let hasAppliedDevlogDeepLink = false;
 let hasBoundTopbarTrigger = false;
 let topbarOpenPending = false;
+
+function normalizeLang(lang) {
+  return SUPPORTED_LANGS.has(lang) ? lang : 'ja';
+}
+
+function getCurrentLang() {
+  if (typeof document === 'undefined') return 'ja';
+  return normalizeLang(document.documentElement.lang || 'ja');
+}
+
+function getUiStrings(lang) {
+  return DEVLOG_UI_STRINGS[normalizeLang(lang)];
+}
+
+function getSessionText(session, key, lang) {
+  if (!session || typeof session !== 'object') return '';
+  const normalizedLang = normalizeLang(lang);
+  const fallbackLang = normalizedLang === 'en' ? 'ja' : 'en';
+  const byLangKey = `${key}_${normalizedLang}`;
+  const fallbackByLangKey = `${key}_${fallbackLang}`;
+
+  if (typeof session[byLangKey] === 'string' && session[byLangKey].trim()) {
+    return session[byLangKey];
+  }
+  if (typeof session[fallbackByLangKey] === 'string' && session[fallbackByLangKey].trim()) {
+    return session[fallbackByLangKey];
+  }
+
+  const value = session[key];
+  if (typeof value === 'string' && value.trim()) return value;
+  if (value && typeof value === 'object') {
+    if (typeof value[normalizedLang] === 'string' && value[normalizedLang].trim()) return value[normalizedLang];
+    if (typeof value[fallbackLang] === 'string' && value[fallbackLang].trim()) return value[fallbackLang];
+  }
+  return '';
+}
+
+function getSessionTitle(session, lang) {
+  return getSessionText(session, 'title', lang) || session.id || '';
+}
+
+function getSessionDateRange(session, lang) {
+  return getSessionText(session, 'date_range', lang) || session.id || '';
+}
+
+function buildSessionHref(sessionId, lang) {
+  const params = new URLSearchParams();
+  params.set('id', sessionId);
+  if (normalizeLang(lang) === 'en') params.set('lang', 'en');
+  return `./devlog.html?${params.toString()}`;
+}
 
 
 function getSessionEndValue(session) {
@@ -300,7 +364,7 @@ function buildGallery() {
   const row = document.createElement('div');
   row.className = 'row g-3';
 
-  const lang = document.documentElement.lang || 'ja';
+  const lang = getCurrentLang();
   const visibleSessions = sessions.slice(0, 3);
 
   visibleSessions.forEach((session) => {
@@ -319,7 +383,7 @@ function buildGallery() {
     readMoreContainer.className = 'text-center mt-4';
     readMoreContainer.id = 'read-more-container';
     const remainingCount = sessions.length - visibleSessions.length;
-    const readMoreBtn = createReadMoreButton(openOffcanvas, remainingCount);
+    const readMoreBtn = createReadMoreButton(openOffcanvas, remainingCount, lang);
     readMoreContainer.appendChild(readMoreBtn);
     galleryContainer.appendChild(readMoreContainer);
   }
@@ -333,7 +397,10 @@ function buildGallery() {
  * カードクリックで devlog.html?id=xxx に遷移
  */
 function createCardElement(session, lang, source = 'main') {
-  const href = `./devlog.html?id=${session.id}`;
+  const sessionTitle = getSessionTitle(session, lang);
+  const sessionDateRange = getSessionDateRange(session, lang);
+  const href = buildSessionHref(session.id, lang);
+  const strings = getUiStrings(lang);
 
   const link = document.createElement('a');
   link.className = 'kesson-card-link text-decoration-none';
@@ -343,9 +410,7 @@ function createCardElement(session, lang, source = 'main') {
   });
   link.setAttribute(
     'aria-label',
-    lang === 'en'
-      ? `Open devlog session: ${session.title_en || session.title_ja}`
-      : `Devlogを開く: ${session.title_ja || session.title_en}`
+    `${strings.openLabel}: ${sessionTitle}`
   );
 
   const card = document.createElement('div');
@@ -354,7 +419,7 @@ function createCardElement(session, lang, source = 'main') {
   const img = document.createElement('img');
   img.className = 'card-img-top';
   img.src = session.cover;
-  img.alt = session.title_ja;
+  img.alt = sessionTitle;
   img.onerror = () => {
     img.onerror = null;
     img.src = './assets/devlog/covers/default.svg';
@@ -365,10 +430,10 @@ function createCardElement(session, lang, source = 'main') {
 
   const title = document.createElement('h6');
   title.className = 'card-title mb-1';
-  title.textContent = lang === 'en' ? session.title_en : session.title_ja;
+  title.textContent = sessionTitle;
 
   const date = document.createElement('small');
-  date.textContent = session.date_range;
+  date.textContent = sessionDateRange;
 
   cardBody.appendChild(title);
   cardBody.appendChild(date);
@@ -574,7 +639,7 @@ function renderSessionCards(sessionsToRender) {
     container.appendChild(row);
   }
 
-  const lang = document.documentElement.lang || 'ja';
+  const lang = getCurrentLang();
 
   sessionsToRender.forEach(session => {
     const col = document.createElement('div');
@@ -588,12 +653,14 @@ function renderSessionCards(sessionsToRender) {
 function showLoading() {
   const container = document.getElementById('offcanvas-gallery');
   let loader = document.getElementById('offcanvas-loading');
+  const lang = getCurrentLang();
+  const strings = getUiStrings(lang);
   if (!loader) {
     loader = document.createElement('div');
     loader.id = 'offcanvas-loading';
-    loader.textContent = 'Loading...';
     container.appendChild(loader);
   }
+  loader.textContent = strings.loading;
   loader.style.display = 'block';
 }
 
@@ -605,7 +672,8 @@ function hideLoading() {
 function updateSessionCount() {
   const countEl = document.getElementById('offcanvas-session-count');
   if (countEl) {
-    countEl.textContent = `${galleryState.displayedCount} / ${galleryState.sessions.length} sessions`;
+    const strings = getUiStrings(getCurrentLang());
+    countEl.textContent = `${galleryState.displayedCount} / ${galleryState.sessions.length} ${strings.sessionUnit}`;
   }
 }
 
@@ -656,8 +724,8 @@ export function refreshDevlogLanguage() {
   offcanvasContainer.innerHTML = '';
   if (shown > 0) {
     renderSessionCards(galleryState.sessions.slice(0, shown));
-    updateSessionCount();
   }
+  updateSessionCount();
 }
 
 // ライトボックス画像クリックで閉じる
