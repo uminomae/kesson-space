@@ -167,7 +167,8 @@ export const gemParams = {
 
 // --- Xロゴパラメータ ---
 export const xLogoParams = {
-    meshScale:     0.6,
+    // DECISION: default x-logo scale is aligned with gem default so both appear visually balanced in x-logo scene.
+    meshScale:     0.3,
     glowStrength:  0.4,
     rimPower:      0.5,
     innerGlow:     0.1,

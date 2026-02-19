@@ -17,7 +17,8 @@ function finiteOr(value, fallback) {
 function applyStableXLogoCameraPose(xLogoCamera, sourceCamera) {
     const fallbackPos = sourceCamera?.position || { x: 0, y: 8, z: 24 };
     const posX = finiteOr(sceneParams?.camX, finiteOr(fallbackPos.x, 0));
-    const posY = finiteOr(sceneParams?.camY, finiteOr(fallbackPos.y, 8));
+    // DECISION: keep x-logo camera near x-logo height to avoid top-down perspective after main camera retune.
+    const posY = finiteOr(xLogoParams?.posY, finiteOr(sceneParams?.camY, finiteOr(fallbackPos.y, 8)));
     const rawPosZ = finiteOr(sceneParams?.camZ, finiteOr(fallbackPos.z, 24));
     // KEPT: x-logo camera is fixed-scene; avoid z=0 edge case that can push x-logo/gem out of stable framing.
     // DECISION: keep a minimum camera distance so issue-95's close main camera tuning does not make x-logo/gem oversized.
@@ -25,7 +26,7 @@ function applyStableXLogoCameraPose(xLogoCamera, sourceCamera) {
     const posZ = Math.sign(safePosZ || 1) * Math.max(Math.abs(safePosZ), 32);
 
     const targetX = finiteOr(sceneParams?.camTargetX, 0);
-    // DECISION: x-logo scene should not be looked down as steeply as main scene; prioritize xLogo's own y anchor.
+    // KEPT: targetY equals x-logo anchor so camera pitch stays near-horizontal for x-logo/gem framing.
     const targetY = finiteOr(xLogoParams?.posY, finiteOr(sceneParams?.camTargetY, 0));
     const targetZ = finiteOr(sceneParams?.camTargetZ, 0);
 
