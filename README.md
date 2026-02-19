@@ -289,6 +289,16 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 
 外部 blog サマリー（ARTICLES）も同様に `title_en` / `excerpt_en` を付与すると英語表示される。
 
+検証コマンド:
+
+```bash
+npm run devlog:validate
+```
+
+推奨画像生成フロー:
+- SVG-first で `assets/devlog/covers/` に保存
+- Gemini 2.5 Pro で `session-XXX-en.svg` を生成し `cover_by_lang.en` に紐付け
+
 ## Deep Link Presets
 
 Deep link URL presets are managed in:

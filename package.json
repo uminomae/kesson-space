@@ -3,7 +3,8 @@
   "type": "module",
   "description": "kesson-space dev scripts",
   "scripts": {
-    "deeplinks": "node scripts/print-deeplinks.mjs"
+    "deeplinks": "node scripts/print-deeplinks.mjs",
+    "devlog:validate": "node scripts/validate-devlog-i18n.mjs"
   },
   "devDependencies": {
     "puppeteer": "^24.37.3"
