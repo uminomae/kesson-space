@@ -1,27 +1,42 @@
-# kesson-space CI — pushごとに静的テストを自動実行
+# kesson-space CI — 静的テスト + HTTP 200 スモークチェック
 #
 # 検証内容:
 #   - config.js ↔ shader ↔ dev-panel の値整合性
 #   - i18n キー構造一致
 #   - 未使用ファイルの残存チェック
+#   - 静的配信で主要URLが HTTP 200 を返すか
 #
 # E2Eテスト（ブラウザ必須）は別途 Claude in Chrome で実行する。
 # 詳細: tests/e2e-test-design.md
 
-name: Static Tests
+name: Static Tests + HTTP Smoke
 
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
     paths:
       - 'src/**'
       - 'tests/**'
       - 'index.html'
+      - 'devlog.html'
+      - 'assets/**'
+      - '.github/workflows/test.yml'
   pull_request:
-    branches: [main]
+    branches: [dev, main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'index.html'
+      - 'devlog.html'
+      - 'assets/**'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  static-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,3 +47,51 @@ jobs:
 
       - name: Run config consistency tests
         run: node tests/config-consistency.test.js
+
+  smoke-200:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 3001 > /tmp/http-smoke.log 2>&1 &
+          echo $! > /tmp/http-smoke.pid
+
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:3001/ > /dev/null; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+
+          echo "Server did not start in time"
+          cat /tmp/http-smoke.log || true
+          exit 1
+
+      - name: Verify HTTP 200 responses
+        run: |
+          check_200() {
+            url="$1"
+            code="$(curl -sS -o /dev/null -w '%{http_code}' "$url")"
+            echo "$url -> $code"
+            if [ "$code" != "200" ]; then
+              echo "Expected 200 but got $code for $url"
+              exit 1
+            fi
+          }
+
+          check_200 "http://127.0.0.1:3001/"
+          check_200 "http://127.0.0.1:3001/index.html"
+          check_200 "http://127.0.0.1:3001/devlog.html"
+          check_200 "http://127.0.0.1:3001/assets/devlog/sessions.json"
+          check_200 "http://127.0.0.1:3001/favicon.ico"
+
+      - name: Stop static server
+        if: always()
+        run: |
+          if [ -f /tmp/http-smoke.pid ]; then
+            kill "$(cat /tmp/http-smoke.pid)" || true
+          fi
