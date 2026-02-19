@@ -62,9 +62,10 @@ export const sceneParams = {
     mixCycle: 2.0,
     styleCycle: 14.0,
     fogDensity: 0.0,
-    camX: -14,
+    // Issue #95: initial framing tune (closer camera for larger orb presence)
+    camX: -11,
     camY: 0,
-    camZ: 34,
+    camZ: 27,
     camTargetY: -1,
 };
 
@@ -133,8 +134,9 @@ export const distortionParams = {
     heatHaze:       0.024,
     heatHazeRadius: 0.5,
     heatHazeSpeed:  1.0,
-    dofStrength:    0.009,
-    dofFocusRadius: 0.32,
+    // Issue #95: stronger initial bokeh/readable depth separation
+    dofStrength:    0.012,
+    dofFocusRadius: 0.27,
 };
 
 // --- Gem四芒星パラメータ（dev panel export反映） ---
