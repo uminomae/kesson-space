@@ -46,7 +46,7 @@
   <script type="module" src="./src/main.js"></script>
 </head>
 <body>
-  <div id="canvas-container" aria-hidden="true"></div>
+  <div id="canvas-container"></div>
 
   <!-- Top menu bar (Bootstrap navbar) -->
   <header id="kesson-topbar" class="navbar navbar-expand-md navbar-dark" aria-label="Main menu">
@@ -161,20 +161,11 @@
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">
-          <button
-            type="button"
-            class="section-heading-link"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#articlesOffcanvas"
-            aria-controls="articlesOffcanvas"
-            aria-label="ARTICLES を開く">
-            ARTICLES
-          </button>
           <a
             href="#articles-section"
-            class="section-heading-jump-link"
-            aria-label="ARTICLES セクションへのリンク（Offcanvasは開かない）">
-            #
+            class="section-heading-link"
+            aria-label="ARTICLES セクションへジャンプ">
+            ARTICLES
           </a>
         </h2>
         <div id="articles-error" class="d-none"></div>

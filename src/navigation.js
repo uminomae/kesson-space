@@ -150,6 +150,8 @@ export function initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamer
     _xLogoGroup = xLogoGroup || null;
     _xLogoCamera = xLogoCamera || null;
 
+    // A11Y-GUARD: do NOT make renderer.domElement (canvas) tabbable here.
+    // Tab order is intentionally handled by DOM insertion order of nav labels + scroll-ui focus switching.
     injectViewerStyles();
     _navMeshes = createNavObjects(scene);
 

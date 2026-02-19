@@ -21,14 +21,14 @@ import { worldFromViewportHeight } from './responsive.js';
 // language updates, hover state, and label lifecycle with x-logo; splitting by this scene-local coupling is safer.
 // (Phase B-1 / 2026-02-19)
 
-const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.12;
-const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.28;
+const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.10;
+const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.24;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const XLOGO_MOBILE_BREAKPOINT = 900;
-const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.10;
-const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.14;
-const XLOGO_MOBILE_LEFT_GUTTER_PX = 40;
-const XLOGO_MOBILE_TOP_PERCENT = 0.30;
+const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.08;
+const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.12;
+const XLOGO_MOBILE_LEFT_GUTTER_PX = 36;
+const XLOGO_MOBILE_TOP_PERCENT = 0.26;
 const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
 const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
 
