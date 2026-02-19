@@ -1,35 +1,46 @@
 # infographic-generation スキル
 
 ## 目的
-devlogカバー画像（インフォグラフィック）をGemini経由で生成する
+devlog カバー画像を、英語運用に耐える形で生成・管理する。
+
+## 基本方針
+- **SVG-first**: まず SVG を正本として作る
+- 必要なら PNG/JPG を派生物として作る
+- JA/EN で画像テキストが異なる場合は `ja/en` を分離して管理する
+
+## 推奨出力
+- `assets/devlog/covers/session-NNN.svg`（日本語または言語非依存）
+- `assets/devlog/covers/session-NNN-en.svg`（英語）
 
 ## 入力
-- content/devlog/session-NNN.md の内容
+- `content/devlog/session-NNN.md`
+- `content/devlog/session-NNN.en.md`
+- `assets/devlog/sessions.json` の対象エントリ
 
-## 出力
-- assets/devlog/covers/session-NNN.jpg (16:9)
+## Gemini 2.5 Pro 利用フロー
+1. Gemini 2.5 Pro に JA/EN 本文を渡し、構成（タイムライン/要点）を抽出
+2. SVG マークアップ生成を依頼（背景・配色・文字サイズを指定）
+3. 出力SVGを `assets/devlog/covers/` に保存
+4. `sessions.json` の `cover_by_lang` に反映
 
-## プロンプトアーカイブ
-- content/devlog/prompts/ に保存
-- ファイル名: session-NNN-prompt.md
+## Gemini 2.5 Pro プロンプト要点
+- モデル: Gemini 2.5 Pro
+- 出力形式: **純粋な SVG コードのみ**（説明文なし）
+- 要件:
+  - 16:9 レイアウト
+  - ダークテーマ
+  - 可読性優先（モバイル幅でも潰れない）
+  - 英語版は英語テキストのみ
 
-## 書類管理
-- 重くなったら prompts/ は削除可
-- 生成履歴は Git で追跡
+## 運用ルール
+- 生成プロンプトは `content/devlog/prompts/session-NNN-prompt.md` に保存
+- 画像内テキストが日本語のみの場合、英語表示では `default.svg` フォールバックを許容
+- 英語運用を強化する場合は `session-NNN-en.svg` を必須化する
 
-## Gemini プロンプトテンプレート
-```
-以下の開発ログからインフォグラフィックを生成してください。
-
-要件:
-- アスペクト比: 16:9
-- スタイル: テック系、ダークテーマ
-- 含める要素: タイムライン、技術スタック、主要マイルストーン
-- 文字: 日本語、読みやすいフォント
-
-開発ログ内容:
-{session-NNN.md の内容}
-```
-
-## 呼び出し
-常駐PM (Claude Code) が devlog更新時に実行
+## 自動検証
+- `npm run devlog:covers:en`
+  - `cover_by_lang.en` 未設定時に `session-NNN-en.svg` を自動作成
+- `npm run devlog:validate`
+  - `content_by_lang` の存在
+  - `title_ja/title_en` や `date_range_ja/date_range_en` の欠落
+  - cover path の欠落（ENカバー未整備は warning）

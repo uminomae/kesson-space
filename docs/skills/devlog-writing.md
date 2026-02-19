@@ -1,51 +1,62 @@
 # devlog-writing スキル
 
 ## 目的
-kesson-space の開発ログ（devlog）を作成・更新する
+kesson-space の devlog を **JA/EN 両対応** で継続運用する。
 
 ## 文体ルール
-- **レポート調**（ビジネス用）
-- 簡潔・客観的・事実ベース
-- 小説調・物語調 NG
-- 主観的表現は最小限
+- レポート調（事実ベース）
+- 簡潔で再現可能な記述
+- 小説調・主観過多は避ける
 
-## 構成
+## 必須アウトプット
+1. `content/devlog/session-NNN.md`（日本語本文）
+2. `content/devlog/session-NNN.en.md`（英語本文）
+3. `assets/devlog/sessions.json` へのエントリ追加/更新
 
-### frontmatter
-```yaml
----
-id: session-NNN
-title_ja: "Part N: タイトル"
-title_en: "Part N: Title"
-date_range: "MM-DD 〜 MM-DD"
----
+## sessions.json 推奨構造
+```json
+{
+  "id": "session-XXX",
+  "title_ja": "Part X: ...",
+  "title_en": "Part X: ...",
+  "summary_ja": "日本語カード用の1行サマリー。",
+  "summary_en": "One-line English summary for devlog cards.",
+  "date_range_ja": "2026-02-19",
+  "date_range_en": "Feb 19, 2026",
+  "cover_by_lang": {
+    "ja": "./assets/devlog/covers/session-XXX.png",
+    "en": "./assets/devlog/covers/session-XXX-en.svg"
+  },
+  "content_by_lang": {
+    "ja": "./content/devlog/session-XXX.md",
+    "en": "./content/devlog/session-XXX.en.md"
+  }
+}
 ```
 
-### 本文構成
-1. **概要**: 期間中の主要な成果（1〜2文）
-2. **実施内容**: 具体的な作業項目（箇条書き可）
-3. **技術的決定**: 採用した技術・手法とその理由
-4. **課題と解決**: 発生した問題と対処法
+## フォールバック方針
+- `content_by_lang.en` 未整備時: `ja` 本文を表示
+- `title_en` / `date_range_en` 未整備時: `ja` を表示
+- `summary_ja` / `summary_en` 未整備時: 対応言語カードのサマリーは表示しない
+- `cover_en` / `cover_by_lang.en` 未整備時: `default.svg` を表示
 
-## 粒度
-- 1〜3日単位
-- 機能完成またはマイルストーン単位
+## 本文構成（JA/EN 共通）
+1. Overview / 概要
+2. Work Completed / 実施内容
+3. Technical Decisions / 技術的決定
+4. Risks or Next Steps / 課題と次アクション
 
-## 呼び出しタイミング（常駐PM判断）
-- 機能完成時
-- マイルストーン達成時
-- 3日経過時
+## 作業手順
+1. 日本語本文を先に作成（事実整理）
+2. 英語本文を作成（直訳ではなく意味一致）
+3. sessions.json の ja/en キーを更新
+4. カバー画像パスを ja/en で設定
+5. 初期 EN カバー自動生成（必要時）: `npm run devlog:covers:en`
+6. 検証を実行: `npm run devlog:validate`
+   - パス規約に揃える場合: `npm run devlog:covers:en -- --sync-paths`
+7. 表示確認: `devlog.html?id=session-XXX&lang=en`
 
-## 例（良い例）
-概要
-スクロール駆動のカメラ制御とモバイル対応を実装した。
-
-実施内容
-- OrbitControls廃止、スクロールベースのカメラY軸移動
-- タッチ操作: 縦スクロール=下降、横スワイプ=回転
-
-技術的決定
-モバイルUX優先、ページスクロール非阻害設計を採用。
-
-## 例（悪い例 - 小説調）
-Day 1 前半 — 基盤構築では、Three.jsコードの分離を起点にして...
+## 完了条件
+- JA/EN の本文パスが sessions.json と一致
+- `npm run devlog:validate` が error 0
+- 英語表示で日本語のみ要素が残らない（未翻訳カバーは default.svg で明示的フォールバック）

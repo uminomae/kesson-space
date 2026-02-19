@@ -17,18 +17,22 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'content/devlog/**'
       - 'index.html'
       - 'devlog.html'
       - 'assets/**'
+      - 'scripts/validate-devlog-i18n.mjs'
       - '.github/workflows/test.yml'
   pull_request:
     branches: [dev, main]
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'content/devlog/**'
       - 'index.html'
       - 'devlog.html'
       - 'assets/**'
+      - 'scripts/validate-devlog-i18n.mjs'
       - '.github/workflows/test.yml'
   workflow_dispatch:
 
@@ -47,6 +51,12 @@ jobs:
 
       - name: Run config consistency tests
         run: node tests/config-consistency.test.js
+
+      - name: Run devlog i18n validation
+        run: npm run devlog:validate
+
+      - name: Run devlog navigation tests
+        run: npm run test:devlog-nav
 
   smoke-200:
     runs-on: ubuntu-latest

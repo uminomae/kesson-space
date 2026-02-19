@@ -101,6 +101,19 @@ function getSessionDateRange(session, lang) {
   return getSessionText(session, 'date_range', lang) || session.id || '';
 }
 
+function getSessionSummary(session, lang) {
+  const normalizedLang = normalizeLang(lang);
+  const byLangKey = `summary_${normalizedLang}`;
+  if (typeof session?.[byLangKey] === 'string' && session[byLangKey].trim()) {
+    return session[byLangKey].trim();
+  }
+  const byLang = session?.summary_by_lang;
+  if (byLang && typeof byLang === 'object' && typeof byLang[normalizedLang] === 'string' && byLang[normalizedLang].trim()) {
+    return byLang[normalizedLang].trim();
+  }
+  return '';
+}
+
 function buildSessionHref(sessionId, lang) {
   const params = new URLSearchParams();
   params.set('id', sessionId);
@@ -314,15 +327,8 @@ function persistReturnState(source, sessionId) {
 
 function loadPendingReturnState() {
   const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
-  if (!intent) return null;
-
   const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
-
-  if (!state || !Number.isFinite(state.savedAt)) return null;
-  if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
-  if (!Number.isFinite(state.pageScrollY)) return null;
-  if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return null;
-
+  if (!isReturnStateEligible(intent, state)) return null;
   return state;
 }
 
@@ -348,6 +354,16 @@ function waitForArticlesReady(timeoutMs = 3000) {
     const timer = setTimeout(finish, timeoutMs);
     window.addEventListener(ARTICLES_READY_EVENT, onReady, { once: true });
   });
+}
+
+function isReturnStateEligible(intent, state, now = Date.now()) {
+  if (!intent || typeof intent !== 'object') return false;
+  if (!state || typeof state !== 'object') return false;
+  if (!Number.isFinite(state.savedAt)) return false;
+  if (!Number.isFinite(state.pageScrollY)) return false;
+  if ((now - state.savedAt) > DEVLOG_RETURN_TTL_MS) return false;
+  if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return false;
+  return true;
 }
 
 /**
@@ -451,6 +467,7 @@ function buildGallery() {
 function createCardElement(session, lang, source = 'main') {
   const sessionTitle = getSessionTitle(session, lang);
   const sessionDateRange = getSessionDateRange(session, lang);
+  const sessionSummary = getSessionSummary(session, lang);
   const sessionCover = resolveSessionCover(session, lang);
   const href = buildSessionHref(session.id, lang);
   const strings = getUiStrings(lang);
@@ -490,6 +507,12 @@ function createCardElement(session, lang, source = 'main') {
 
   cardBody.appendChild(title);
   cardBody.appendChild(date);
+  if (sessionSummary) {
+    const summary = document.createElement('p');
+    summary.className = 'card-text kesson-card-summary mb-0 mt-2';
+    summary.textContent = sessionSummary;
+    cardBody.appendChild(summary);
+  }
   if (normalizeLang(lang) === 'en' && !sessionCover.localized) {
     const coverNote = document.createElement('small');
     coverNote.className = 'kesson-card-cover-note d-block mt-2';
@@ -786,6 +809,20 @@ export function refreshDevlogLanguage() {
   }
   updateSessionCount();
 }
+
+export const __DEVLOG_TEST_API__ = Object.freeze({
+  DEVLOG_DEFAULT_COVER,
+  DEVLOG_RETURN_TTL_MS,
+  normalizeLang,
+  getSessionText,
+  getSessionTitle,
+  getSessionDateRange,
+  getSessionSummary,
+  buildSessionHref,
+  resolveSessionCover,
+  getSessionEndValue,
+  isReturnStateEligible,
+});
 
 // ライトボックス画像クリックで閉じる
 if (typeof window !== 'undefined') {

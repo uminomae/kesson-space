@@ -1,7 +1,7 @@
 # DEVLOG-SPEC — Devlog Gallery 仕様書
 
-**バージョン**: 1.1
-**更新日**: 2026-02-15
+**バージョン**: 1.2
+**更新日**: 2026-02-19
 
 ---
 
@@ -76,24 +76,35 @@ git履歴が残るため追跡可能。
 assets/devlog/
 ├── sessions.json           ← メタデータ索引
 └── covers/
-    ├── session-001.svg     ← カバー画像
-    └── session-002.svg
+    ├── session-001.png     ← カバー画像（ja or 共通）
+    ├── session-001-en.svg  ← 英語カバー（任意）
+    └── default.svg         ← ENフォールバック用中立カバー
 
 content/devlog/
 ├── session-001.md          ← 本文（日本語）
-└── session-002.md
+├── session-001.en.md       ← 本文（英語）
+├── session-002.md
+└── session-002.en.md
 ```
 
 命名規則: `session-{NNN}` で紐付け
+英語カバーは `session-{NNN}-en.svg` を推奨。
 
 ### 2.5 sessions.json スキーマ
 
 各セッション:
-- id, repo, start, end, duration_min
-- commit_count, files_changed, insertions, deletions
-- dominant_category, color, messages
-- intensity, texture_url
-- narrative: { ja: {...}, en: {...} }
+- id
+- title_ja, title_en
+- summary_ja, summary_en（カード用の短文要約）
+- date_range_ja, date_range_en
+- cover / cover_by_lang
+- content_by_lang: { ja, en }
+- end（並び替え用）
+
+EN表示時のフォールバック:
+- `content_by_lang.en` が無ければ `ja`
+- `summary_ja` / `summary_en` が無ければ対応言語のカード要約は非表示
+- `cover_en` / `cover_by_lang.en` が無ければ `default.svg`
 
 ### 2.6 カテゴリ分類
 
@@ -125,20 +136,30 @@ content/devlog/
 
 ---
 
-## 4. GitHub Actions
+## 4. CI / Automation
 
 ### トリガー
 
-- 週1回（日曜深夜）
-- 手動dispatch
+- `dev`, `main` への push / PR
+- 手動 dispatch
 
 ### 処理
 
-1. git log取得（前回エントリ以降）
-2. 判断フロー実行
-3. sessions.json更新
-4. content/devlog/*.md生成（テンプレートから）
-5. 自己ループ防止: `[skip ci]` or 専用botアカウント
+1. 既存の静的整合テスト（config consistency）
+2. `node scripts/validate-devlog-i18n.mjs`
+   - `sessions.json` の i18n 必須キー確認
+   - `summary_ja` / `summary_en` 欠落は warning
+   - `content_by_lang.ja/en` のファイル存在確認
+   - 英語カバー未整備は warning（運用判断）
+3. HTTP 200 smoke
+
+### 補足: 画像生成フロー
+
+- 生成手段は SVG-first を推奨
+- Gemini 2.5 Pro でカバーSVGを生成し、`cover_by_lang` に登録
+- 画像内テキストが言語依存の場合、`ja/en` を分離する
+- 初期 EN カバーは `npm run devlog:covers:en` で `session-XXX-en.svg` を自動生成可能
+- 既存 EN パスを規約名へ揃える場合: `npm run devlog:covers:en -- --sync-paths`
 
 ---
 

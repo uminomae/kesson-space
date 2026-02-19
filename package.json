@@ -3,7 +3,10 @@
   "type": "module",
   "description": "kesson-space dev scripts",
   "scripts": {
-    "deeplinks": "node scripts/print-deeplinks.mjs"
+    "deeplinks": "node scripts/print-deeplinks.mjs",
+    "devlog:covers:en": "node scripts/generate-devlog-en-covers.mjs",
+    "devlog:validate": "node scripts/validate-devlog-i18n.mjs",
+    "test:devlog-nav": "node tests/devlog-navigation.test.js && node tests/offcanvas-deeplink.test.js"
   },
   "devDependencies": {
     "puppeteer": "^24.37.3"
