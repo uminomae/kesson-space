@@ -8,7 +8,7 @@ import { createXLogoObjects } from '../nav-objects.js';
 import { CameraDofShader, DistortionShader } from '../shaders/distortion-pass.js';
 import { createFluidSystem } from '../shaders/fluid-field.js';
 import { createLiquidSystem } from '../shaders/liquid.js';
-import { liquidParams, sceneParams } from '../config.js';
+import { liquidParams, sceneParams, xLogoParams } from '../config.js';
 
 function finiteOr(value, fallback) {
     return Number.isFinite(value) ? value : fallback;
@@ -20,10 +20,13 @@ function applyStableXLogoCameraPose(xLogoCamera, sourceCamera) {
     const posY = finiteOr(sceneParams?.camY, finiteOr(fallbackPos.y, 8));
     const rawPosZ = finiteOr(sceneParams?.camZ, finiteOr(fallbackPos.z, 24));
     // KEPT: x-logo camera is fixed-scene; avoid z=0 edge case that can push x-logo/gem out of stable framing.
-    const posZ = Math.abs(rawPosZ) < 1e-3 ? 1 : rawPosZ;
+    // DECISION: keep a minimum camera distance so issue-95's close main camera tuning does not make x-logo/gem oversized.
+    const safePosZ = Math.abs(rawPosZ) < 1e-3 ? 1 : rawPosZ;
+    const posZ = Math.sign(safePosZ || 1) * Math.max(Math.abs(safePosZ), 32);
 
     const targetX = finiteOr(sceneParams?.camTargetX, 0);
-    const targetY = finiteOr(sceneParams?.camTargetY, 0);
+    // DECISION: x-logo scene should not be looked down as steeply as main scene; prioritize xLogo's own y anchor.
+    const targetY = finiteOr(xLogoParams?.posY, finiteOr(sceneParams?.camTargetY, 0));
     const targetZ = finiteOr(sceneParams?.camTargetZ, 0);
 
     xLogoCamera.position.set(posX, posY, posZ);

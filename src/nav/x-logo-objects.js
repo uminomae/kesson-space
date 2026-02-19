@@ -21,9 +21,14 @@ import { worldFromViewportHeight } from './responsive.js';
 // language updates, hover state, and label lifecycle with x-logo; splitting by this scene-local coupling is safer.
 // (Phase B-1 / 2026-02-19)
 
-const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;
-const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;
+const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.08;
+const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.22;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
+const XLOGO_MOBILE_BREAKPOINT = 900;
+const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.06;
+const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.10;
+const XLOGO_MOBILE_LEFT_GUTTER_PX = 32;
+const XLOGO_MOBILE_TOP_PERCENT = 0.24;
 const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
 const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
 
@@ -176,11 +181,28 @@ function createXLogoGroup() {
 }
 
 function getMobileXLogoViewportPercent() {
-    return XLOGO_TARGET_VIEWPORT_X_PERCENT;
+    if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth) || window.innerWidth <= 0) {
+        return XLOGO_TARGET_VIEWPORT_X_PERCENT;
+    }
+    const viewportWidth = Math.max(1, window.innerWidth);
+    const fromLeftPxPercent = XLOGO_MOBILE_LEFT_GUTTER_PX / viewportWidth;
+    const adaptiveByWidth = viewportWidth <= XLOGO_MOBILE_BREAKPOINT
+        ? Math.max(fromLeftPxPercent, XLOGO_TARGET_VIEWPORT_X_PERCENT)
+        : XLOGO_TARGET_VIEWPORT_X_PERCENT;
+    return THREE.MathUtils.clamp(
+        adaptiveByWidth,
+        XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT,
+        XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT
+    );
 }
 
 function getXLogoViewportTopPercent() {
-    return XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT;
+    if (typeof window === 'undefined' || !Number.isFinite(window.innerWidth)) {
+        return XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT;
+    }
+    return window.innerWidth <= XLOGO_MOBILE_BREAKPOINT
+        ? XLOGO_MOBILE_TOP_PERCENT
+        : XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT;
 }
 
 function estimateXLogoHalfWidthWorld() {
