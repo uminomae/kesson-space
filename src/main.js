@@ -9,13 +9,13 @@ import { createDevValueApplier } from './main/dev-apply.js';
 import { bootstrapMainScene } from './main/bootstrap.js';
 // DECISION: page-language stays under main/ because it is a startup-only concern tied to main.js orchestration.
 // Keeping the file adjacent to bootstrap/render-loop reduces cross-folder hops when editing entry flow. (Phase A-1 / 2026-02-19)
-import { applyPageLanguage } from './main/page-language.js';
+import { applyPageLanguage, initLanguageListeners } from './main/page-language.js';
 import { attachResizeHandler, createNavMeshFinder, startRenderLoop } from './main/render-loop.js';
 import { getOrbScreenData, refreshNavLanguage, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
 import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
 import { initTopbarConsole } from './topbar-console.js';
-import { detectLang, LANG_CHANGE_EVENT } from './i18n.js';
+import { detectLang } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
@@ -66,13 +66,11 @@ if (DEV_MODE) {
     });
 }
 
-window.addEventListener(LANG_CHANGE_EVENT, (event) => {
-    const nextLang = event.detail?.lang || detectLang();
-    applyPageLanguage(nextLang);
-    refreshGuideLang();
-    refreshNavLanguage();
-    refreshDevlogLanguage();
-    refreshArticlesLanguage();
+initLanguageListeners({
+    refreshGuideLang,
+    refreshNavLanguage,
+    refreshDevlogLanguage,
+    refreshArticlesLanguage,
 });
 
 const clock = new THREE.Clock();

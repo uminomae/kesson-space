@@ -1,4 +1,4 @@
-import { detectLang, t } from '../i18n.js';
+import { detectLang, LANG_CHANGE_EVENT, t } from '../i18n.js';
 
 // DECISION: page text rewrite is a pure DOM concern, so we isolate it from main.js orchestration.
 // This keeps main.js focused on scene/bootstrap flow and avoids mixing UI mutation with startup wiring.
@@ -30,4 +30,22 @@ export function applyPageLanguage(lang) {
     }
 
     document.documentElement.lang = resolvedLang;
+}
+
+// DECISION: language-change side effects live with page-language updates so one module owns "lang -> DOM refresh".
+// This removes listener sprawl from main.js while keeping the same event source and callback order. (Phase A-3 / 2026-02-19)
+export function initLanguageListeners({
+    refreshGuideLang = () => {},
+    refreshNavLanguage = () => {},
+    refreshDevlogLanguage = () => {},
+    refreshArticlesLanguage = () => {},
+} = {}) {
+    window.addEventListener(LANG_CHANGE_EVENT, (event) => {
+        const nextLang = event.detail?.lang || detectLang();
+        applyPageLanguage(nextLang);
+        refreshGuideLang();
+        refreshNavLanguage();
+        refreshDevlogLanguage();
+        refreshArticlesLanguage();
+    });
 }
