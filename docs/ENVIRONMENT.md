@@ -154,8 +154,8 @@ kesson-spaceでは `git worktree` を使い、エージェントごとに別デ�
 
 ```
 /Users/uminomae/dev/
-├── kesson-main/       ← main（本番・直接コミット非推奨）
-├── kesson-codex-app/  ← dev（目視確認ゲート・ステージング）
+├── kesson-space/      ← main（本番・直接コミット非推奨）
+├── kesson-codex-app/  ← feature/dev（目視確認ゲート・ステージング）
 ├── kesson-codex-1/    ← feature/codex-1（Codex App 実装用）
 ├── kesson-codex-2/    ← feature/codex-2（Codex App 実装用）
 └── kesson-codex-3/    ← feature/codex-3（Codex App 実装用）
@@ -164,14 +164,14 @@ kesson-spaceでは `git worktree` を使い、エージェントごとに別デ�
 ### 確認コマンド
 
 ```bash
-git -C /Users/uminomae/dev/kesson-main worktree list
+git -C /Users/uminomae/dev/kesson-space worktree list
 ```
 
 ### 新規ワークツリー作成
 
 ```bash
 cd /Users/uminomae/dev
-git -C kesson-main worktree add ../kesson-new -b feature/new-branch
+git -C kesson-space worktree add ../kesson-new -b feature/new-branch
 ```
 
 ### メリット
