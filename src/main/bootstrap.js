@@ -10,6 +10,28 @@ import { createFluidSystem } from '../shaders/fluid-field.js';
 import { createLiquidSystem } from '../shaders/liquid.js';
 import { liquidParams, sceneParams } from '../config.js';
 
+function finiteOr(value, fallback) {
+    return Number.isFinite(value) ? value : fallback;
+}
+
+function applyStableXLogoCameraPose(xLogoCamera, sourceCamera) {
+    const fallbackPos = sourceCamera?.position || { x: 0, y: 8, z: 24 };
+    const posX = finiteOr(sceneParams?.camX, finiteOr(fallbackPos.x, 0));
+    const posY = finiteOr(sceneParams?.camY, finiteOr(fallbackPos.y, 8));
+    const rawPosZ = finiteOr(sceneParams?.camZ, finiteOr(fallbackPos.z, 24));
+    // KEPT: x-logo camera is fixed-scene; avoid z=0 edge case that can push x-logo/gem out of stable framing.
+    const posZ = Math.abs(rawPosZ) < 1e-3 ? 1 : rawPosZ;
+
+    const targetX = finiteOr(sceneParams?.camTargetX, 0);
+    const targetY = finiteOr(sceneParams?.camTargetY, 0);
+    const targetZ = finiteOr(sceneParams?.camTargetZ, 0);
+
+    xLogoCamera.position.set(posX, posY, posZ);
+    xLogoCamera.lookAt(targetX, targetY, targetZ);
+    xLogoCamera.updateProjectionMatrix();
+    xLogoCamera.updateMatrixWorld(true);
+}
+
 export function bootstrapMainScene(container) {
     const { scene, camera, renderer } = createScene(container);
     renderer.autoClear = false;
@@ -18,10 +40,9 @@ export function bootstrapMainScene(container) {
     const xLogoCamera = camera.clone();
     // DECISION: xLogo camera is intentionally fixed-scene, so do not inherit portrait-only camZ=0 bootstrap value.
     // KEPT: render-loop still syncs optics only; transform remains fixed for x-logo composition consistency.
-    // (mobile portrait x-logo/gem disappearance fix / 2026-02-19)
-    xLogoCamera.position.set(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
-    xLogoCamera.lookAt(sceneParams.camTargetX, sceneParams.camTargetY, sceneParams.camTargetZ);
-    xLogoCamera.updateMatrixWorld(true);
+    // TODO(refactor): if we ever animate x-logo camera transform, replace fixed pose with a dedicated camera controller.
+    // (mobile portrait hardening / 2026-02-19)
+    applyStableXLogoCameraPose(xLogoCamera, camera);
     const xLogoGroup = createXLogoObjects(xLogoScene, xLogoCamera);
     const xLogoAmbient = new THREE.AmbientLight(0xffffff, 0.6);
     const xLogoKey = new THREE.DirectionalLight(0xffffff, 0.9);

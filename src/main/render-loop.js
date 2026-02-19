@@ -20,13 +20,22 @@ export function createNavMeshFinder(scene) {
 }
 
 export function attachResizeHandler({ camera, xLogoCamera, renderer, composer }) {
+    const getSafeViewport = () => {
+        const width = Number.isFinite(window.innerWidth) ? Math.max(1, window.innerWidth) : 1;
+        const height = Number.isFinite(window.innerHeight) ? Math.max(1, window.innerHeight) : 1;
+        return { width, height, aspect: width / height };
+    };
+
     function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
+        const { width, height, aspect } = getSafeViewport();
+        camera.aspect = aspect;
         camera.updateProjectionMatrix();
-        xLogoCamera.aspect = camera.aspect;
-        xLogoCamera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
+        if (xLogoCamera) {
+            xLogoCamera.aspect = aspect;
+            xLogoCamera.updateProjectionMatrix();
+        }
+        renderer.setSize(width, height);
+        composer.setSize(width, height);
     }
     window.addEventListener('resize', onResize);
     return onResize;
@@ -69,12 +78,26 @@ export function startRenderLoop({
 
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
+    const getViewportAspect = () => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return Number.isFinite(camera?.aspect) && camera.aspect > 0 ? camera.aspect : 1;
+        }
+        return width / height;
+    };
     const syncXLogoCameraOptics = (srcCamera, dstCamera) => {
         if (!srcCamera || !dstCamera || srcCamera === dstCamera) return;
+        if (!Number.isFinite(srcCamera.fov)) return;
+        const nextAspect = Number.isFinite(srcCamera.aspect) && srcCamera.aspect > 0
+            ? srcCamera.aspect
+            : getViewportAspect();
+        const nextNear = Number.isFinite(srcCamera.near) && srcCamera.near > 0 ? srcCamera.near : dstCamera.near;
+        const nextFar = Number.isFinite(srcCamera.far) && srcCamera.far > nextNear ? srcCamera.far : dstCamera.far;
         dstCamera.fov = srcCamera.fov;
-        dstCamera.aspect = srcCamera.aspect;
-        dstCamera.near = srcCamera.near;
-        dstCamera.far = srcCamera.far;
+        dstCamera.aspect = nextAspect;
+        dstCamera.near = nextNear;
+        dstCamera.far = nextFar;
         dstCamera.updateProjectionMatrix();
     };
 
@@ -109,7 +132,7 @@ export function startRenderLoop({
             distortionPass.uniforms.uFluidInfluence.value = fluidParams.influence;
             fluidSystem.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
             fluidSystem.uniforms.uMouseVelocity.value.set(mouse.velX, mouse.velY);
-            fluidSystem.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+            fluidSystem.uniforms.uAspect.value = getViewportAspect();
             fluidSystem.update();
             distortionPass.uniforms.tFluidField.value = fluidSystem.getTexture();
         } else {
@@ -153,10 +176,11 @@ export function startRenderLoop({
     // KEPT: label updates remain here (not in renderFrame) because they depend on finalized uniform/mouse state, not draw calls.
     // (Phase B-3 / 2026-02-19)
     function updatePostProcess(time, mouse, navs) {
-        distortionPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+        const aspect = getViewportAspect();
+        distortionPass.uniforms.uAspect.value = aspect;
         distortionPass.uniforms.uTime.value = time;
         distortionPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
-        dofPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+        dofPass.uniforms.uAspect.value = aspect;
         dofPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
 
         if (toggles.heatHaze) {
