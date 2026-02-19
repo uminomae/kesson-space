@@ -101,6 +101,21 @@ function getSessionDateRange(session, lang) {
   return getSessionText(session, 'date_range', lang) || session.id || '';
 }
 
+function getSessionSummary(session, lang) {
+  const normalizedLang = normalizeLang(lang);
+  if (normalizedLang === 'en') {
+    if (typeof session?.summary_en === 'string' && session.summary_en.trim()) {
+      return session.summary_en.trim();
+    }
+    const byLang = session?.summary_by_lang;
+    if (byLang && typeof byLang === 'object' && typeof byLang.en === 'string' && byLang.en.trim()) {
+      return byLang.en.trim();
+    }
+    return '';
+  }
+  return getSessionText(session, 'summary', normalizedLang);
+}
+
 function buildSessionHref(sessionId, lang) {
   const params = new URLSearchParams();
   params.set('id', sessionId);
@@ -454,6 +469,7 @@ function buildGallery() {
 function createCardElement(session, lang, source = 'main') {
   const sessionTitle = getSessionTitle(session, lang);
   const sessionDateRange = getSessionDateRange(session, lang);
+  const sessionSummary = getSessionSummary(session, lang);
   const sessionCover = resolveSessionCover(session, lang);
   const href = buildSessionHref(session.id, lang);
   const strings = getUiStrings(lang);
@@ -493,6 +509,12 @@ function createCardElement(session, lang, source = 'main') {
 
   cardBody.appendChild(title);
   cardBody.appendChild(date);
+  if (normalizeLang(lang) === 'en' && sessionSummary) {
+    const summary = document.createElement('p');
+    summary.className = 'card-text kesson-card-summary mb-0 mt-2';
+    summary.textContent = sessionSummary;
+    cardBody.appendChild(summary);
+  }
   if (normalizeLang(lang) === 'en' && !sessionCover.localized) {
     const coverNote = document.createElement('small');
     coverNote.className = 'kesson-card-cover-note d-block mt-2';
@@ -797,6 +819,7 @@ export const __DEVLOG_TEST_API__ = Object.freeze({
   getSessionText,
   getSessionTitle,
   getSessionDateRange,
+  getSessionSummary,
   buildSessionHref,
   resolveSessionCover,
   getSessionEndValue,

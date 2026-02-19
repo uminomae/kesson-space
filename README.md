@@ -269,6 +269,7 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
   "id": "session-XXX",
   "title_ja": "Part X: ...",
   "title_en": "Part X: ...",
+  "summary_en": "One-line English summary for devlog cards.",
   "date_range_ja": "2026-02-19",
   "date_range_en": "Feb 19, 2026",
   "cover_by_lang": {
@@ -285,6 +286,7 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 フォールバック方針:
 - `lang=en` で `*.en.md` が無い場合は `*.md` を表示
 - `title_en` / `date_range_en` が無い場合は `*_ja` を表示
+- `summary_en` があれば英語 devlog カードに表示（未設定時はサマリー非表示）
 - `cover_en` / `cover_by_lang.en` が無い場合は中立カバー (`default.svg`) を表示
 
 外部 blog サマリー（ARTICLES）も同様に `title_en` / `excerpt_en` を付与すると英語表示される。

@@ -666,6 +666,16 @@
       color: rgba(var(--color-heading), 0.5);
       font-size: 0.7rem;
     }
+    .kesson-card .kesson-card-summary {
+      color: rgba(var(--color-sub-text), 0.76);
+      font-size: 0.68rem;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
+    }
     .kesson-card .kesson-card-cover-note {
       color: rgba(150, 190, 245, 0.72);
       font-size: 0.62rem;

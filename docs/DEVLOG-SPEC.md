@@ -95,6 +95,7 @@ content/devlog/
 各セッション:
 - id
 - title_ja, title_en
+- summary_en（英語カード用の短文要約）
 - date_range_ja, date_range_en
 - cover / cover_by_lang
 - content_by_lang: { ja, en }
@@ -102,6 +103,7 @@ content/devlog/
 
 EN表示時のフォールバック:
 - `content_by_lang.en` が無ければ `ja`
+- `summary_en` が無ければカード要約は非表示
 - `cover_en` / `cover_by_lang.en` が無ければ `default.svg`
 
 ### 2.6 カテゴリ分類
@@ -146,6 +148,7 @@ EN表示時のフォールバック:
 1. 既存の静的整合テスト（config consistency）
 2. `node scripts/validate-devlog-i18n.mjs`
    - `sessions.json` の i18n 必須キー確認
+   - `summary_en` 欠落は warning
    - `content_by_lang.ja/en` のファイル存在確認
    - 英語カバー未整備は warning（運用判断）
 3. HTTP 200 smoke

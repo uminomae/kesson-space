@@ -78,6 +78,7 @@ function validateSession(session, index) {
 
   assertString(session, 'title_ja', sessionId, true);
   assertString(session, 'title_en', sessionId, true);
+  assertString(session, 'summary_en', sessionId, false);
   assertString(session, 'date_range_ja', sessionId, true);
   assertString(session, 'date_range_en', sessionId, true);
 
