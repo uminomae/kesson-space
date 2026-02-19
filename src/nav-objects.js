@@ -10,7 +10,6 @@ import {
     createGemGroupModel,
     rebuildGemState,
     updateGemGroupAnimation,
-    updateGemGroupPosition,
 } from './nav/gem.js';
 import {
     createNavLabelButton,
@@ -27,6 +26,8 @@ const TRI_R = 9;
 const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.05;      // 左から 5%
 const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.20;  // 上から 20%
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
+const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
+const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
 const ORB_HIT_BASE_SCALE = 4.0;
 const NAV_POSITIONS = [
     { position: [TRI_R * Math.sin(0),            -8, TRI_R * Math.cos(0)],            color: 0x6688cc },
@@ -55,6 +56,22 @@ function createGemGroup() {
     return createGemGroupModel(gemParams, (mesh) => {
         _gemMesh = mesh;
     });
+}
+
+function getGemDesktopLocalPosition() {
+    // 既存devパラメータ互換: 旧ワールド座標(10,2,15)との差分をオフセットとして扱う
+    return {
+        x: GEM_DESKTOP_ANCHOR.x + (gemParams.posX - GEM_LEGACY_BASE_POSITION.x),
+        y: GEM_DESKTOP_ANCHOR.y + (gemParams.posY - GEM_LEGACY_BASE_POSITION.y),
+        z: GEM_DESKTOP_ANCHOR.z + (gemParams.posZ - GEM_LEGACY_BASE_POSITION.z),
+    };
+}
+
+function applyGemDesktopPosition(group) {
+    if (!group) return;
+    const local = getGemDesktopLocalPosition();
+    group.userData.baseY = local.y;
+    group.position.set(local.x, local.y, local.z);
 }
 
 function getResponsiveOrbHitScale() {
@@ -291,7 +308,7 @@ export function rebuildGem() {
 
 // --- devPanelからの位置更新 ---
 export function updateGemPosition() {
-    updateGemGroupPosition({ gemGroup: _gemGroup, gemParams });
+    applyGemDesktopPosition(_gemGroup);
 }
 
 // ========================================
@@ -365,32 +382,7 @@ export function createNavObjects(scene) {
         _labelElements.push(createHtmlLabel(navItem.label, '', navItem.url, false, 'orb', index));
     });
 
-    // --- Gemini Gem（GLTF Group） ---
-    const gemData = strings.gem;
-    const gemGroup = createGemGroup();
-    const gemIndex = navMeshes.length;
-
-    gemGroup.userData.hitSprite.userData = {
-        type: 'nav',
-        url: gemData.url,
-        label: gemData.label,
-        isGem: true,
-        external: true,
-    };
-
-    Object.assign(gemGroup.userData, {
-        baseY: gemParams.posY,
-        index: gemIndex,
-        isGem: true,
-    });
-
-    scene.add(gemGroup);
-    navMeshes.push(gemGroup);
-    _gemGroup = gemGroup;
     _navMeshes = navMeshes;
-
-    // CHANGED: URLとexternal flagを渡す
-    _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true, 'gem');
 
     return navMeshes;
 }
@@ -400,8 +392,10 @@ export function createXLogoObjects(scene, camera = null) {
     const lang = detectLang();
     const strings = t(lang);
     const xData = strings.xLogo;
+    const gemData = strings.gem;
 
     const xGroup = createXLogoGroup();
+    const gemGroup = createGemGroup();
 
     xGroup.userData.hitSprite.userData = {
         type: 'nav',
@@ -413,10 +407,22 @@ export function createXLogoObjects(scene, camera = null) {
 
     Object.assign(xGroup.userData, { isXLogo: true });
     applyXLogoGroupPosition(xGroup, _xLogoCamera);
+    gemGroup.userData.hitSprite.userData = {
+        type: 'nav',
+        url: gemData.url,
+        label: gemData.label,
+        isGem: true,
+        external: true,
+    };
+    Object.assign(gemGroup.userData, { isGem: true });
+    applyGemDesktopPosition(gemGroup);
+    xGroup.add(gemGroup);
 
     scene.add(xGroup);
     _xLogoGroup = xGroup;
+    _gemGroup = gemGroup;
 
+    _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true, 'gem');
     _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true, 'xlogo');
 
     return xGroup;
@@ -500,17 +506,12 @@ export function updateNavObjects(navMeshes, time, camera) {
     const orbHitScale = getResponsiveOrbHitScale();
     navMeshes.forEach((obj) => {
         const data = obj.userData;
-
-        if (data.isGem) {
-            updateGemGroupAnimation(obj, time);
-        } else {
-            if (data.core) {
-                data.core.scale.set(orbHitScale, orbHitScale, orbHitScale);
-                data.baseScale = orbHitScale;
-            }
-            const floatOffset = Math.sin(time * 0.8 + data.index) * orbFloatAmplitude;
-            obj.position.y = data.baseY + floatOffset;
+        if (data.core) {
+            data.core.scale.set(orbHitScale, orbHitScale, orbHitScale);
+            data.baseScale = orbHitScale;
         }
+        const floatOffset = Math.sin(time * 0.8 + data.index) * orbFloatAmplitude;
+        obj.position.y = data.baseY + floatOffset;
     });
 }
 
@@ -533,6 +534,10 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     const submerged = getScrollProgress() > 0.3;
     _xLogoGroup.visible = toggles.navOrbs && !submerged;
     if (!_xLogoGroup.visible) return;
+
+    if (_gemGroup) {
+        updateGemGroupAnimation(_gemGroup, time);
+    }
 
     const rotTarget = data.xLogoRoot || data.xLogoMesh;
     if (rotTarget) {
@@ -589,7 +594,6 @@ export function updateNavLabels(navMeshes, camera) {
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
     const orbLabelYOffset = worldFromViewportHeight(LABEL_Y_OFFSET);
-    const gemLabelYOffset = worldFromViewportHeight(gemParams.labelYOffset);
 
     navMeshes.forEach((group, i) => {
         if (group.userData.isGem || group.userData.isXLogo) return;
@@ -613,28 +617,13 @@ export function updateNavLabels(navMeshes, camera) {
         });
     });
 
-    if (_gemLabelElement && _gemGroup) {
-        if (!visible || scrollFade <= 0) {
-            _gemLabelElement.classList.add('nav-label--hidden');
-            syncLabelFocusState(_gemLabelElement, false);
-            return;
-        }
-
-        _gemGroup.getWorldPosition(_labelWorldPos);
-        updateSingleLabel({
-            el: _gemLabelElement,
-            worldPos: _labelWorldPos,
-            yOffset: gemLabelYOffset,
-            camera,
-            scrollFade,
-        });
-    }
 }
 
 export function updateXLogoLabel(camera) {
     const visible = toggles.navOrbs;
     const scrollFade = Math.max(0, 1 - getScrollProgress() * 5);
     const xLogoLabelYOffset = worldFromViewportHeight(xLogoParams.labelYOffset);
+    const gemLabelYOffset = worldFromViewportHeight(gemParams.labelYOffset);
 
     if (_xLogoLabelElement && _xLogoGroup) {
         if (!visible || scrollFade <= 0) {
@@ -648,6 +637,23 @@ export function updateXLogoLabel(camera) {
             el: _xLogoLabelElement,
             worldPos: _labelWorldPos,
             yOffset: xLogoLabelYOffset,
+            camera,
+            scrollFade,
+        });
+    }
+
+    if (_gemLabelElement && _gemGroup) {
+        if (!visible || scrollFade <= 0) {
+            _gemLabelElement.classList.add('nav-label--hidden');
+            syncLabelFocusState(_gemLabelElement, false);
+            return;
+        }
+
+        _gemGroup.getWorldPosition(_labelWorldPos);
+        updateSingleLabel({
+            el: _gemLabelElement,
+            worldPos: _labelWorldPos,
+            yOffset: gemLabelYOffset,
             camera,
             scrollFade,
         });
