@@ -20,6 +20,8 @@ import { worldFromViewportHeight } from './responsive.js';
 // DECISION: x-logo and gem are grouped because gem is now parented under the x-logo group and shares
 // language updates, hover state, and label lifecycle with x-logo; splitting by this scene-local coupling is safer.
 // (Phase B-1 / 2026-02-19)
+// Issue #18 visual baseline (approved): x-logo / gem are operated as left-top fixed display.
+// Keep this left-top anchored presentation unless a later issue explicitly requests a different layout.
 
 const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.07;
 const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.18;
