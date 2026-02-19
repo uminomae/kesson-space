@@ -55,6 +55,9 @@ jobs:
       - name: Run devlog i18n validation
         run: npm run devlog:validate
 
+      - name: Run devlog navigation tests
+        run: npm run test:devlog-nav
+
   smoke-200:
     runs-on: ubuntu-latest
     timeout-minutes: 5

@@ -314,15 +314,8 @@ function persistReturnState(source, sessionId) {
 
 function loadPendingReturnState() {
   const intent = readSessionJson(DEVLOG_RETURN_INTENT_KEY);
-  if (!intent) return null;
-
   const state = readSessionJson(DEVLOG_RETURN_STATE_KEY);
-
-  if (!state || !Number.isFinite(state.savedAt)) return null;
-  if ((Date.now() - state.savedAt) > DEVLOG_RETURN_TTL_MS) return null;
-  if (!Number.isFinite(state.pageScrollY)) return null;
-  if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return null;
-
+  if (!isReturnStateEligible(intent, state)) return null;
   return state;
 }
 
@@ -348,6 +341,16 @@ function waitForArticlesReady(timeoutMs = 3000) {
     const timer = setTimeout(finish, timeoutMs);
     window.addEventListener(ARTICLES_READY_EVENT, onReady, { once: true });
   });
+}
+
+function isReturnStateEligible(intent, state, now = Date.now()) {
+  if (!intent || typeof intent !== 'object') return false;
+  if (!state || typeof state !== 'object') return false;
+  if (!Number.isFinite(state.savedAt)) return false;
+  if (!Number.isFinite(state.pageScrollY)) return false;
+  if ((now - state.savedAt) > DEVLOG_RETURN_TTL_MS) return false;
+  if (intent.sessionId && state.sessionId && intent.sessionId !== state.sessionId) return false;
+  return true;
 }
 
 /**
@@ -786,6 +789,19 @@ export function refreshDevlogLanguage() {
   }
   updateSessionCount();
 }
+
+export const __DEVLOG_TEST_API__ = Object.freeze({
+  DEVLOG_DEFAULT_COVER,
+  DEVLOG_RETURN_TTL_MS,
+  normalizeLang,
+  getSessionText,
+  getSessionTitle,
+  getSessionDateRange,
+  buildSessionHref,
+  resolveSessionCover,
+  getSessionEndValue,
+  isReturnStateEligible,
+});
 
 // ライトボックス画像クリックで閉じる
 if (typeof window !== 'undefined') {

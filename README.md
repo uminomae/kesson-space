@@ -294,6 +294,7 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 ```bash
 npm run devlog:covers:en
 npm run devlog:validate
+npm run test:devlog-nav
 ```
 
 推奨画像生成フロー:
