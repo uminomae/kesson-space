@@ -27,6 +27,18 @@ function onPointerDown(event) {
     _pointerDownPos = { x: event.clientX, y: event.clientY };
 }
 
+function getHitDataFromObject(hitObj) {
+    let current = hitObj;
+    while (current) {
+        const data = current.userData;
+        if (data && data.url) return data;
+        const hitSpriteData = data && data.hitSprite && data.hitSprite.userData;
+        if (hitSpriteData && hitSpriteData.url) return hitSpriteData;
+        current = current.parent || null;
+    }
+    return null;
+}
+
 function onPointerUp(event) {
     if (isViewerOpen() || !_pointerDownPos) return;
 
@@ -57,8 +69,7 @@ function onPointerUp(event) {
         _raycaster.setFromCamera(_mouse, _xLogoCamera);
         const xHits = _raycaster.intersectObjects([_xLogoGroup], true);
         if (xHits.length > 0) {
-            const hitObj = xHits[0].object;
-            hitData = hitObj.userData && hitObj.userData.url ? hitObj.userData : (hitObj.parent ? hitObj.parent.userData.hitSprite?.userData : null);
+            hitData = getHitDataFromObject(xHits[0].object);
         }
     }
 
@@ -112,7 +123,9 @@ function onPointerMove(event) {
         const xHits = _raycaster.intersectObjects([_xLogoGroup], true);
         if (xHits.length > 0) {
             isHovering = true;
-            isXLogoHit = true;
+            const xHitData = getHitDataFromObject(xHits[0].object);
+            isGemHit = !!(xHitData && xHitData.isGem);
+            isXLogoHit = !!(xHitData && xHitData.isXLogo);
         }
     }
 
@@ -122,7 +135,7 @@ function onPointerMove(event) {
     if (intersects.length > 0) {
         isHovering = true;
         const hitObj = intersects[0].object;
-        isGemHit = hitObj.userData.isGem || (hitObj.parent && hitObj.parent.userData.isGem);
+        isGemHit = isGemHit || hitObj.userData.isGem || (hitObj.parent && hitObj.parent.userData.isGem);
     }
 
     _renderer.domElement.style.cursor = isHovering ? 'pointer' : 'default';
