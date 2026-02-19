@@ -19,17 +19,20 @@ const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
 const DEVLOG_RETURN_TTL_MS = 30 * 60 * 1000;
 const ARTICLES_READY_EVENT = 'kesson:articles-ready';
 const TOPBAR_DEVLOG_TRIGGER_ID = 'topbar-devlog-btn';
+const DEVLOG_DEFAULT_COVER = './assets/devlog/covers/default.svg';
 const SUPPORTED_LANGS = new Set(['ja', 'en']);
 const DEVLOG_UI_STRINGS = {
   ja: {
     openLabel: 'Devlogを開く',
     loading: '読み込み中...',
     sessionUnit: 'セッション',
+    coverFallbackNote: 'カバー画像の英語版は準備中です',
   },
   en: {
     openLabel: 'Open devlog session',
     loading: 'Loading...',
     sessionUnit: 'sessions',
+    coverFallbackNote: 'English cover image pending',
   },
 };
 
@@ -103,6 +106,55 @@ function buildSessionHref(sessionId, lang) {
   params.set('id', sessionId);
   if (normalizeLang(lang) === 'en') params.set('lang', 'en');
   return `./devlog.html?${params.toString()}`;
+}
+
+function readSessionCoverValue(session, lang) {
+  if (!session || typeof session !== 'object') return '';
+  const normalizedLang = normalizeLang(lang);
+  const fallbackLang = normalizedLang === 'en' ? 'ja' : 'en';
+
+  const byLang = session.cover_by_lang;
+  if (byLang && typeof byLang === 'object') {
+    if (typeof byLang[normalizedLang] === 'string' && byLang[normalizedLang].trim()) return byLang[normalizedLang];
+    if (typeof byLang[fallbackLang] === 'string' && byLang[fallbackLang].trim()) return byLang[fallbackLang];
+  }
+
+  const key = `cover_${normalizedLang}`;
+  if (typeof session[key] === 'string' && session[key].trim()) return session[key];
+
+  const fallbackKey = `cover_${fallbackLang}`;
+  if (typeof session[fallbackKey] === 'string' && session[fallbackKey].trim()) return session[fallbackKey];
+
+  if (typeof session.cover === 'string' && session.cover.trim()) return session.cover;
+  return '';
+}
+
+function resolveSessionCover(session, lang) {
+  const normalizedLang = normalizeLang(lang);
+
+  if (normalizedLang === 'en') {
+    const explicitEnCover = (() => {
+      if (typeof session?.cover_en === 'string' && session.cover_en.trim()) return session.cover_en;
+      const byLang = session?.cover_by_lang;
+      if (byLang && typeof byLang === 'object' && typeof byLang.en === 'string' && byLang.en.trim()) {
+        return byLang.en;
+      }
+      return '';
+    })();
+
+    if (explicitEnCover) {
+      return { src: explicitEnCover, localized: true };
+    }
+
+    return { src: DEVLOG_DEFAULT_COVER, localized: false };
+  }
+
+  const localizedCover = readSessionCoverValue(session, normalizedLang);
+  if (localizedCover) {
+    return { src: localizedCover, localized: true };
+  }
+
+  return { src: DEVLOG_DEFAULT_COVER, localized: false };
 }
 
 
@@ -399,6 +451,7 @@ function buildGallery() {
 function createCardElement(session, lang, source = 'main') {
   const sessionTitle = getSessionTitle(session, lang);
   const sessionDateRange = getSessionDateRange(session, lang);
+  const sessionCover = resolveSessionCover(session, lang);
   const href = buildSessionHref(session.id, lang);
   const strings = getUiStrings(lang);
 
@@ -418,11 +471,11 @@ function createCardElement(session, lang, source = 'main') {
 
   const img = document.createElement('img');
   img.className = 'card-img-top';
-  img.src = session.cover;
+  img.src = sessionCover.src;
   img.alt = sessionTitle;
   img.onerror = () => {
     img.onerror = null;
-    img.src = './assets/devlog/covers/default.svg';
+    img.src = DEVLOG_DEFAULT_COVER;
   };
 
   const cardBody = document.createElement('div');
@@ -437,6 +490,12 @@ function createCardElement(session, lang, source = 'main') {
 
   cardBody.appendChild(title);
   cardBody.appendChild(date);
+  if (normalizeLang(lang) === 'en' && !sessionCover.localized) {
+    const coverNote = document.createElement('small');
+    coverNote.className = 'kesson-card-cover-note d-block mt-2';
+    coverNote.textContent = strings.coverFallbackNote;
+    cardBody.appendChild(coverNote);
+  }
   card.appendChild(img);
   card.appendChild(cardBody);
   link.appendChild(card);
