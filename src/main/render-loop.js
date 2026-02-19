@@ -78,11 +78,9 @@ export function startRenderLoop({
         dstCamera.updateProjectionMatrix();
     };
 
-    function animate() {
-        requestAnimationFrame(animate);
-        statsBegin();
-        const time = clock.getElapsedTime();
-
+    // DECISION: breath/light/scroll are grouped because they share the same breathVal source and must stay in lockstep.
+    // (Phase B-3 / 2026-02-19)
+    function updateBreathAndScroll(time) {
         const breathVal = breathValue(time, breathConfig.period);
         // xLogoシーンのライトをメインの呼吸に同期（暗部を強く、明部は1.3まで）
         const breathDim = breathIntensity(breathVal);
@@ -90,18 +88,23 @@ export function startRenderLoop({
         if (xLogoKey) xLogoKey.intensity = 0.9 * breathDim;
         const scrollProg = getScrollProgress();
         updateScrollUI(scrollProg, breathVal);
+        return breathVal;
+    }
 
-        const mouse = updateMouseSmoothing();
-
+    // DECISION: controls/scene/navigation/x-logo updates remain in one phase to preserve camera-optics sync ordering.
+    // KEPT: this stays separate from effects so post-process uniforms always see the post-update scene state. (Phase B-3 / 2026-02-19)
+    function updateScenePhase(time, breathVal) {
         updateControls(time, breathVal);
         // xLogo は別シーン。カメラ位置/回転は固定し、光学パラメータのみ同期する。
         syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
         updateXLogo(time, xLogoCamera);
+    }
 
-        const navs = findNavMeshes();
-
+    // DECISION: fluid/liquid/orb refraction are grouped as effect feeds into distortion uniforms before post-process pass.
+    // (Phase B-3 / 2026-02-19)
+    function updateEffects(time, mouse, navs) {
         if (toggles.fluidField) {
             distortionPass.uniforms.uFluidInfluence.value = fluidParams.influence;
             fluidSystem.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
@@ -144,7 +147,12 @@ export function startRenderLoop({
                 distortionPass.uniforms.uOrbStrengths.value[i] = 0.0;
             }
         }
+    }
 
+    // DECISION: all post uniforms and label projection updates stay together so per-frame screen-space values are coherent.
+    // KEPT: label updates remain here (not in renderFrame) because they depend on finalized uniform/mouse state, not draw calls.
+    // (Phase B-3 / 2026-02-19)
+    function updatePostProcess(time, mouse, navs) {
         distortionPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
         distortionPass.uniforms.uTime.value = time;
         distortionPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
@@ -167,7 +175,11 @@ export function startRenderLoop({
 
         updateNavLabels(navs, camera);
         updateXLogoLabel(xLogoCamera);
+    }
 
+    // DECISION: render stays as a dedicated terminal phase because post-process toggle decides final draw path.
+    // (Phase B-3 / 2026-02-19)
+    function renderFrame() {
         renderer.clear();
         if (toggles.postProcess) {
             composer.render();
@@ -176,6 +188,22 @@ export function startRenderLoop({
             renderer.clearDepth();
             renderer.render(xLogoScene, xLogoCamera);
         }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        statsBegin();
+        const time = clock.getElapsedTime();
+
+        const breathVal = updateBreathAndScroll(time);
+        const mouse = updateMouseSmoothing();
+        updateScenePhase(time, breathVal);
+
+        const navs = findNavMeshes();
+        updateEffects(time, mouse, navs);
+        updatePostProcess(time, mouse, navs);
+        renderFrame();
+
         statsEnd();
     }
 
