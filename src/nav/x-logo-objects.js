@@ -34,6 +34,10 @@ const XLOGO_MOBILE_TOP_PERCENT = 0.20;
 const XLOGO_FOLLOW_LAG_SECONDS = 0.3;
 const XLOGO_FOLLOW_MIN_DELTA_SECONDS = 1 / 240;
 const XLOGO_FOLLOW_MAX_DELTA_SECONDS = 0.2;
+const XLOGO_SOLVER_EPSILON = 1e-6;
+const XLOGO_VIEWPORT_MIN_VISIBLE_PERCENT = 0.04;
+const XLOGO_VIEWPORT_MAX_VISIBLE_PERCENT = 0.45;
+const XLOGO_VIEWPORT_REPROJECTION_TOLERANCE = 1e-4;
 const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
 const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
 
@@ -217,16 +221,38 @@ function getXLogoViewportTopPercent() {
         : XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT;
 }
 
-function estimateXLogoHalfWidthWorld() {
+function estimateXLogoHalfExtentWorld() {
     return Math.max(0.08, xLogoParams.meshScale * 0.55);
 }
 
-function estimateXLogoHalfHeightWorld() {
-    return Math.max(0.08, xLogoParams.meshScale * 0.55);
+function getXLogoFallbackPosX() {
+    return -Math.max(1, Math.abs(xLogoParams.posX));
+}
+
+function getVisibleViewportPercentRange(halfNdc) {
+    const halfPercent = Math.abs(halfNdc) * 0.5;
+    const minVisiblePercent = THREE.MathUtils.clamp(
+        halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT,
+        XLOGO_VIEWPORT_MIN_VISIBLE_PERCENT,
+        XLOGO_VIEWPORT_MAX_VISIBLE_PERCENT
+    );
+    return {
+        minVisiblePercent,
+        maxVisiblePercent: 1 - minVisiblePercent,
+    };
+}
+
+function clampXLogoDeltaSeconds(deltaSeconds) {
+    if (!Number.isFinite(deltaSeconds)) return 1 / 60;
+    return THREE.MathUtils.clamp(
+        deltaSeconds,
+        XLOGO_FOLLOW_MIN_DELTA_SECONDS,
+        XLOGO_FOLLOW_MAX_DELTA_SECONDS
+    );
 }
 
 function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercent) {
-    if (!camera) return -Math.max(1, Math.abs(xLogoParams.posX));
+    if (!camera) return getXLogoFallbackPosX();
     const targetNdcX = THREE.MathUtils.clamp((viewportPercent * 2) - 1, -0.95, 0.95);
     camera.updateMatrixWorld(true);
     _xLogoSolveMatrix.copy(camera.projectionMatrix).multiply(camera.matrixWorldInverse);
@@ -237,12 +263,12 @@ function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercen
     const b = (e[4] * worldY) + (e[8] * worldZ) + e[12];
     const d = (e[7] * worldY) + (e[11] * worldZ) + e[15];
     const denom = (targetNdcX * c) - a;
-    if (!Number.isFinite(denom) || Math.abs(denom) < 1e-6) {
-        return -Math.max(1, Math.abs(xLogoParams.posX));
+    if (!Number.isFinite(denom) || Math.abs(denom) < XLOGO_SOLVER_EPSILON) {
+        return getXLogoFallbackPosX();
     }
 
     const solved = (b - (targetNdcX * d)) / denom;
-    return Number.isFinite(solved) ? solved : -Math.max(1, Math.abs(xLogoParams.posX));
+    return Number.isFinite(solved) ? solved : getXLogoFallbackPosX();
 }
 
 function solveXLogoPosYForViewportTopPercent(camera, worldX, worldZ, viewportTopPercent) {
@@ -258,7 +284,7 @@ function solveXLogoPosYForViewportTopPercent(camera, worldX, worldZ, viewportTop
     const b = (e[1] * worldX) + (e[9] * worldZ) + e[13];
     const d = (e[3] * worldX) + (e[11] * worldZ) + e[15];
     const denom = (targetNdcY * c) - a;
-    if (!Number.isFinite(denom) || Math.abs(denom) < 1e-6) {
+    if (!Number.isFinite(denom) || Math.abs(denom) < XLOGO_SOLVER_EPSILON) {
         return xLogoParams.posY;
     }
 
@@ -269,7 +295,7 @@ function solveXLogoPosYForViewportTopPercent(camera, worldX, worldZ, viewportTop
 function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.posY) {
     if (!camera || typeof camera.updateMatrixWorld !== 'function') {
         return {
-            posX: -Math.max(1, Math.abs(xLogoParams.posX)),
+            posX: getXLogoFallbackPosX(),
             posY: worldY,
             posZ: xLogoParams.posZ,
         };
@@ -277,22 +303,25 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
 
     camera.updateMatrixWorld(true);
     _xLogoSolveVecA.set(xLogoParams.posX, worldY, xLogoParams.posZ).project(camera);
-    const halfWorld = estimateXLogoHalfWidthWorld();
+    const halfWorld = estimateXLogoHalfExtentWorld();
     _xLogoSolveVecB.set(xLogoParams.posX + halfWorld, worldY, xLogoParams.posZ).project(camera);
     const halfNdc = Math.abs(_xLogoSolveVecB.x - _xLogoSolveVecA.x);
-    const halfPercent = halfNdc * 0.5;
+    const xBounds = getVisibleViewportPercentRange(halfNdc);
+    const targetXPercent = THREE.MathUtils.clamp(
+        getMobileXLogoViewportPercent(),
+        xBounds.minVisiblePercent,
+        xBounds.maxVisiblePercent
+    );
 
-    const minVisiblePercent = THREE.MathUtils.clamp(halfPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
-    const maxVisiblePercent = 1 - minVisiblePercent;
-    const targetXPercent = THREE.MathUtils.clamp(getMobileXLogoViewportPercent(), minVisiblePercent, maxVisiblePercent);
-
-    const halfHeightWorld = estimateXLogoHalfHeightWorld();
+    const halfHeightWorld = estimateXLogoHalfExtentWorld();
     _xLogoSolveVecB.set(xLogoParams.posX, worldY + halfHeightWorld, xLogoParams.posZ).project(camera);
     const halfNdcY = Math.abs(_xLogoSolveVecB.y - _xLogoSolveVecA.y);
-    const halfTopPercent = halfNdcY * 0.5;
-    const minVisibleTopPercent = THREE.MathUtils.clamp(halfTopPercent + XLOGO_VIEWPORT_EDGE_PADDING_PERCENT, 0.04, 0.45);
-    const maxVisibleTopPercent = 1 - minVisibleTopPercent;
-    const targetYTopPercent = THREE.MathUtils.clamp(getXLogoViewportTopPercent(), minVisibleTopPercent, maxVisibleTopPercent);
+    const yBounds = getVisibleViewportPercentRange(halfNdcY);
+    const targetYTopPercent = THREE.MathUtils.clamp(
+        getXLogoViewportTopPercent(),
+        yBounds.minVisiblePercent,
+        yBounds.maxVisiblePercent
+    );
 
     let solvedY = solveXLogoPosYForViewportTopPercent(camera, xLogoParams.posX, xLogoParams.posZ, targetYTopPercent);
     let solvedX = solveXLogoPosXForViewportPercent(camera, solvedY, xLogoParams.posZ, targetXPercent);
@@ -304,10 +333,18 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
     _xLogoSolveVecC.set(solvedX, solvedY, xLogoParams.posZ).project(camera);
     const solvedXPercent = (_xLogoSolveVecC.x + 1) * 0.5;
     const solvedYTopPercent = (1 - _xLogoSolveVecC.y) * 0.5;
-    const clampedSolvedXPercent = THREE.MathUtils.clamp(solvedXPercent, minVisiblePercent, maxVisiblePercent);
-    const clampedSolvedYTopPercent = THREE.MathUtils.clamp(solvedYTopPercent, minVisibleTopPercent, maxVisibleTopPercent);
-    const needsClampX = Math.abs(clampedSolvedXPercent - solvedXPercent) > 1e-4;
-    const needsClampY = Math.abs(clampedSolvedYTopPercent - solvedYTopPercent) > 1e-4;
+    const clampedSolvedXPercent = THREE.MathUtils.clamp(
+        solvedXPercent,
+        xBounds.minVisiblePercent,
+        xBounds.maxVisiblePercent
+    );
+    const clampedSolvedYTopPercent = THREE.MathUtils.clamp(
+        solvedYTopPercent,
+        yBounds.minVisiblePercent,
+        yBounds.maxVisiblePercent
+    );
+    const needsClampX = Math.abs(clampedSolvedXPercent - solvedXPercent) > XLOGO_VIEWPORT_REPROJECTION_TOLERANCE;
+    const needsClampY = Math.abs(clampedSolvedYTopPercent - solvedYTopPercent) > XLOGO_VIEWPORT_REPROJECTION_TOLERANCE;
 
     if (needsClampY) {
         solvedY = solveXLogoPosYForViewportTopPercent(camera, solvedX, xLogoParams.posZ, clampedSolvedYTopPercent);
@@ -327,13 +364,18 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
 }
 
 function getXLogoFollowLerpFactor(deltaSeconds) {
-    const clampedDelta = THREE.MathUtils.clamp(
-        deltaSeconds,
-        XLOGO_FOLLOW_MIN_DELTA_SECONDS,
-        XLOGO_FOLLOW_MAX_DELTA_SECONDS
-    );
+    const clampedDelta = clampXLogoDeltaSeconds(deltaSeconds);
     const lagSeconds = Math.max(0.01, XLOGO_FOLLOW_LAG_SECONDS);
     return 1 - Math.exp(-clampedDelta / lagSeconds);
+}
+
+function getXLogoDeltaSeconds(time) {
+    const prevTime = _xLogoLastUpdateTime;
+    _xLogoLastUpdateTime = time;
+    if (!Number.isFinite(prevTime) || !Number.isFinite(time)) {
+        return 1 / 60;
+    }
+    return clampXLogoDeltaSeconds(time - prevTime);
 }
 
 function applyXLogoGroupPosition(group, camera = _xLogoCamera, options = {}) {
@@ -466,12 +508,7 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
 
-    const prevTime = _xLogoLastUpdateTime;
-    _xLogoLastUpdateTime = time;
-    const deltaSeconds = Number.isFinite(prevTime) && Number.isFinite(time)
-        ? THREE.MathUtils.clamp(time - prevTime, XLOGO_FOLLOW_MIN_DELTA_SECONDS, XLOGO_FOLLOW_MAX_DELTA_SECONDS)
-        : 1 / 60;
-
+    const deltaSeconds = getXLogoDeltaSeconds(time);
     applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, { deltaSeconds });
 
     const xLogoFloatAmplitude = worldFromViewportHeight(0.30);
