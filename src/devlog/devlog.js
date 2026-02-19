@@ -103,17 +103,15 @@ function getSessionDateRange(session, lang) {
 
 function getSessionSummary(session, lang) {
   const normalizedLang = normalizeLang(lang);
-  if (normalizedLang === 'en') {
-    if (typeof session?.summary_en === 'string' && session.summary_en.trim()) {
-      return session.summary_en.trim();
-    }
-    const byLang = session?.summary_by_lang;
-    if (byLang && typeof byLang === 'object' && typeof byLang.en === 'string' && byLang.en.trim()) {
-      return byLang.en.trim();
-    }
-    return '';
+  const byLangKey = `summary_${normalizedLang}`;
+  if (typeof session?.[byLangKey] === 'string' && session[byLangKey].trim()) {
+    return session[byLangKey].trim();
   }
-  return getSessionText(session, 'summary', normalizedLang);
+  const byLang = session?.summary_by_lang;
+  if (byLang && typeof byLang === 'object' && typeof byLang[normalizedLang] === 'string' && byLang[normalizedLang].trim()) {
+    return byLang[normalizedLang].trim();
+  }
+  return '';
 }
 
 function buildSessionHref(sessionId, lang) {
@@ -509,7 +507,7 @@ function createCardElement(session, lang, source = 'main') {
 
   cardBody.appendChild(title);
   cardBody.appendChild(date);
-  if (normalizeLang(lang) === 'en' && sessionSummary) {
+  if (sessionSummary) {
     const summary = document.createElement('p');
     summary.className = 'card-text kesson-card-summary mb-0 mt-2';
     summary.textContent = sessionSummary;

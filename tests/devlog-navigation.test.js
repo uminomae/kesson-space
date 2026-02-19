@@ -50,6 +50,7 @@ const textSession = {
   id: 'session-001',
   title_ja: '基盤構築',
   title_en: 'Foundation',
+  summary_ja: 'シェーダと多言語対応を含む基盤構築。',
   summary_en: 'Foundational implementation with shaders and bilingual support.',
   date_range: '2026-02-10',
 };
@@ -62,9 +63,14 @@ assert(
   getSessionSummary(textSession, 'en') === 'Foundational implementation with shaders and bilingual support.',
   'getSessionSummary(en) returns summary_en'
 );
+assert(
+  getSessionSummary(textSession, 'ja') === 'シェーダと多言語対応を含む基盤構築。',
+  'getSessionSummary(ja) returns summary_ja'
+);
 
 const noSummarySession = { id: 'session-099', title_en: 'No Summary' };
 assert(getSessionSummary(noSummarySession, 'en') === '', 'getSessionSummary(en) returns empty when summary_en is missing');
+assert(getSessionSummary(noSummarySession, 'ja') === '', 'getSessionSummary(ja) returns empty when summary_ja is missing');
 
 const objectBackedTextSession = {
   id: 'session-002',

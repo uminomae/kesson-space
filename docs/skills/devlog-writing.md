@@ -19,6 +19,7 @@ kesson-space の devlog を **JA/EN 両対応** で継続運用する。
   "id": "session-XXX",
   "title_ja": "Part X: ...",
   "title_en": "Part X: ...",
+  "summary_ja": "日本語カード用の1行サマリー。",
   "summary_en": "One-line English summary for devlog cards.",
   "date_range_ja": "2026-02-19",
   "date_range_en": "Feb 19, 2026",
@@ -36,7 +37,7 @@ kesson-space の devlog を **JA/EN 両対応** で継続運用する。
 ## フォールバック方針
 - `content_by_lang.en` 未整備時: `ja` 本文を表示
 - `title_en` / `date_range_en` 未整備時: `ja` を表示
-- `summary_en` 未整備時: 英語カードのサマリーは表示しない
+- `summary_ja` / `summary_en` 未整備時: 対応言語カードのサマリーは表示しない
 - `cover_en` / `cover_by_lang.en` 未整備時: `default.svg` を表示
 
 ## 本文構成（JA/EN 共通）
