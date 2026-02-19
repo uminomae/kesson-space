@@ -38,6 +38,8 @@ devlog カバー画像を、英語運用に耐える形で生成・管理する�
 - 英語運用を強化する場合は `session-NNN-en.svg` を必須化する
 
 ## 自動検証
+- `npm run devlog:covers:en`
+  - `cover_by_lang.en` 未設定時に `session-NNN-en.svg` を自動作成
 - `npm run devlog:validate`
   - `content_by_lang` の存在
   - `title_ja/title_en` や `date_range_ja/date_range_en` の欠落

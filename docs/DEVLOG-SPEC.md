@@ -155,6 +155,8 @@ EN表示時のフォールバック:
 - 生成手段は SVG-first を推奨
 - Gemini 2.5 Pro でカバーSVGを生成し、`cover_by_lang` に登録
 - 画像内テキストが言語依存の場合、`ja/en` を分離する
+- 初期 EN カバーは `npm run devlog:covers:en` で `session-XXX-en.svg` を自動生成可能
+- 既存 EN パスを規約名へ揃える場合: `npm run devlog:covers:en -- --sync-paths`
 
 ---
 

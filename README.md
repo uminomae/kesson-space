@@ -292,12 +292,15 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 検証コマンド:
 
 ```bash
+npm run devlog:covers:en
 npm run devlog:validate
 ```
 
 推奨画像生成フロー:
 - SVG-first で `assets/devlog/covers/` に保存
 - Gemini 2.5 Pro で `session-XXX-en.svg` を生成し `cover_by_lang.en` に紐付け
+- 初期プレースホルダーを自動生成する場合は `npm run devlog:covers:en`
+- 既存 `cover_by_lang.en` を `session-XXX-en.svg` に正規化する場合は `npm run devlog:covers:en -- --sync-paths`
 
 ## Deep Link Presets
 

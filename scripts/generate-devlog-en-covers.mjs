@@ -1,0 +1,173 @@
+#!/usr/bin/env node
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT = path.resolve(__dirname, '..');
+const SESSIONS_PATH = path.join(ROOT, 'assets', 'devlog', 'sessions.json');
+const COVERS_DIR = path.join(ROOT, 'assets', 'devlog', 'covers');
+
+const args = process.argv.slice(2);
+const force = args.includes('--force');
+const syncPaths = args.includes('--sync-paths');
+
+function escapeXml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function sessionNumber(sessionId, index) {
+  const m = /session-(\d+)/i.exec(sessionId || '');
+  if (m) return Number(m[1]);
+  return index + 1;
+}
+
+function normalizeRepoPath(value) {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  return trimmed.replace(/^\.\//, '');
+}
+
+function createSvg({ id, title, date, number }) {
+  const safeTitle = escapeXml(title || id);
+  const safeDate = escapeXml(date || '');
+  const part = String(number).padStart(2, '0');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">${safeTitle}</title>
+  <desc id="desc">English placeholder cover for ${escapeXml(id)}</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050913"/>
+      <stop offset="55%" stop-color="#0a1630"/>
+      <stop offset="100%" stop-color="#101f3f"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="20%" cy="25%" r="45%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="82%" cy="76%" r="40%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glowA)"/>
+  <rect width="1600" height="900" fill="url(#glowB)"/>
+
+  <g filter="url(#soft)" opacity="0.7">
+    <circle cx="290" cy="220" r="140" fill="#3b82f6"/>
+    <circle cx="1330" cy="710" r="160" fill="#22d3ee"/>
+  </g>
+
+  <rect x="88" y="88" width="1424" height="724" rx="24" fill="rgba(5, 10, 20, 0.56)" stroke="rgba(124, 169, 255, 0.35)" stroke-width="2"/>
+
+  <text x="128" y="172" font-size="46" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#7dd3fc" opacity="0.92">Part ${part}</text>
+  <text x="128" y="248" font-size="70" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#e5efff" font-weight="600">${safeTitle}</text>
+  <text x="128" y="302" font-size="30" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#a8bfdf" opacity="0.9">${safeDate}</text>
+
+  <rect x="128" y="350" width="1344" height="2" fill="rgba(141, 184, 255, 0.35)"/>
+
+  <text x="128" y="440" font-size="32" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#dbe8ff" opacity="0.95">English Devlog Cover</text>
+  <text x="128" y="492" font-size="24" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#b7c8e8" opacity="0.9">Replace this placeholder with Gemini 2.5 Pro generated SVG when available.</text>
+  <text x="128" y="538" font-size="24" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#b7c8e8" opacity="0.9">Keep this file path and update artwork only for stable linking.</text>
+
+  <text x="128" y="760" font-size="20" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" fill="#8ca5cd" opacity="0.8">kesson-space / devlog / ${escapeXml(id)} / en-cover</text>
+</svg>
+`;
+}
+
+function main() {
+  if (!fs.existsSync(SESSIONS_PATH)) {
+    throw new Error(`sessions file not found: ${SESSIONS_PATH}`);
+  }
+  if (!fs.existsSync(COVERS_DIR)) {
+    fs.mkdirSync(COVERS_DIR, { recursive: true });
+  }
+
+  const sessionsRaw = fs.readFileSync(SESSIONS_PATH, 'utf8');
+  const sessions = JSON.parse(sessionsRaw);
+  if (!Array.isArray(sessions)) {
+    throw new Error('sessions.json must be an array');
+  }
+
+  let generated = 0;
+  let updated = 0;
+  let changed = false;
+
+  sessions.forEach((session, index) => {
+    const id = String(session.id || `session-${String(index + 1).padStart(3, '0')}`);
+    const number = sessionNumber(id, index);
+    const expectedEnCoverRel = `./assets/devlog/covers/${id}-en.svg`;
+    let metadataUpdates = 0;
+
+    if (!session.cover_by_lang || typeof session.cover_by_lang !== 'object') {
+      session.cover_by_lang = {};
+      metadataUpdates += 1;
+    }
+
+    const legacyCover = typeof session.cover === 'string' && session.cover.trim() ? session.cover.trim() : '';
+    if (!session.cover_by_lang.ja && legacyCover) {
+      session.cover_by_lang.ja = legacyCover;
+      metadataUpdates += 1;
+    }
+
+    if (!session.cover_by_lang.en || syncPaths) {
+      if (session.cover_by_lang.en !== expectedEnCoverRel) {
+        session.cover_by_lang.en = expectedEnCoverRel;
+        metadataUpdates += 1;
+      }
+    }
+
+    if (metadataUpdates > 0) {
+      updated += metadataUpdates;
+      changed = true;
+    }
+
+    const enCoverRel = String(session.cover_by_lang.en || expectedEnCoverRel);
+    const enCoverAbs = path.join(ROOT, normalizeRepoPath(enCoverRel));
+    if (!fs.existsSync(path.dirname(enCoverAbs))) {
+      fs.mkdirSync(path.dirname(enCoverAbs), { recursive: true });
+    }
+
+    const shouldWrite = force || !fs.existsSync(enCoverAbs);
+    if (shouldWrite) {
+      const title = session.title_en || session.title_ja || id;
+      const date = session.date_range_en || session.date_range_ja || session.date_range || '';
+      const svg = createSvg({ id, title, date, number });
+      fs.writeFileSync(enCoverAbs, svg, 'utf8');
+      generated += 1;
+    }
+  });
+
+  if (changed) {
+    fs.writeFileSync(SESSIONS_PATH, `${JSON.stringify(sessions, null, 2)}\n`, 'utf8');
+  }
+
+  console.log(`Generated/updated English covers: ${generated}`);
+  console.log(`sessions.json metadata updates: ${updated}`);
+  if (syncPaths) {
+    console.log('Mode: sync-paths enabled (cover_by_lang.en normalized to session-XXX-en.svg)');
+  }
+  console.log('Done');
+}
+
+try {
+  main();
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}

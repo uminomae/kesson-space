@@ -11,6 +11,10 @@
     "content_by_lang": {
       "ja": "./content/devlog/session-005.md",
       "en": "./content/devlog/session-005.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-005.png",
+      "en": "./assets/devlog/covers/session-005-en.svg"
     }
   },
   {
@@ -25,6 +29,10 @@
     "content_by_lang": {
       "ja": "./content/devlog/session-004.md",
       "en": "./content/devlog/session-004.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-004.png",
+      "en": "./assets/devlog/covers/session-004-en.svg"
     }
   },
   {
@@ -39,6 +47,10 @@
     "content_by_lang": {
       "ja": "./content/devlog/session-003.md",
       "en": "./content/devlog/session-003.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-003.png",
+      "en": "./assets/devlog/covers/session-003-en.svg"
     }
   },
   {
@@ -53,6 +65,10 @@
     "content_by_lang": {
       "ja": "./content/devlog/session-002.md",
       "en": "./content/devlog/session-002.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-002.png",
+      "en": "./assets/devlog/covers/session-002-en.svg"
     }
   },
   {
@@ -67,6 +83,10 @@
     "content_by_lang": {
       "ja": "./content/devlog/session-001.md",
       "en": "./content/devlog/session-001.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-001.jpg",
+      "en": "./assets/devlog/covers/session-001-en.svg"
     }
   }
 ]

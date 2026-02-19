@@ -48,8 +48,10 @@ kesson-space の devlog を **JA/EN 両対応** で継続運用する。
 2. 英語本文を作成（直訳ではなく意味一致）
 3. sessions.json の ja/en キーを更新
 4. カバー画像パスを ja/en で設定
-5. 検証を実行: `npm run devlog:validate`
-6. 表示確認: `devlog.html?id=session-XXX&lang=en`
+5. 初期 EN カバー自動生成（必要時）: `npm run devlog:covers:en`
+6. 検証を実行: `npm run devlog:validate`
+   - パス規約に揃える場合: `npm run devlog:covers:en -- --sync-paths`
+7. 表示確認: `devlog.html?id=session-XXX&lang=en`
 
 ## 完了条件
 - JA/EN の本文パスが sessions.json と一致
