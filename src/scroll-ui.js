@@ -1,5 +1,5 @@
 // scroll-ui.js — スクロール連動のHTML UI制御
-// overlay, credit, lang-toggle, control-guide, scroll hints, surface button の表示/非表示を一元管理
+// overlay, control-guide, scroll hints, surface button の表示/非表示を一元管理
 
 import { toggles, breathConfig } from './config.js';
 import { detectLang } from './i18n.js';
@@ -127,10 +127,8 @@ export function updateScrollUI(scrollProg, breathVal) {
         _controlGuide.style.opacity = topFade;
     }
 
-    // --- 言語トグル: credit と同じタイミングでフェードアウト ---
-    if (_langToggle) {
-        // lang-toggle.js が初期 opacity を CSS で 0.4 相当に設定しているため、
-        // scrollFade をそのまま掛け算する（0.4 * topFade が実効値）
+    // --- 言語トグル: Topbar外に配置されている場合のみフェードアウト ---
+    if (_langToggle && !_langToggle.closest('#kesson-topbar')) {
         _langToggle.style.opacity = topFade;
         _langToggle.style.pointerEvents = topFade > 0.05 ? 'auto' : 'none';
     }
