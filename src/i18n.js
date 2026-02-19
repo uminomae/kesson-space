@@ -15,7 +15,7 @@ const STRINGS = {
             '予測のズレを、抱き続ける',
         ],
         credit: 'AIとの協働で探索中',
-        creditSignature: 'Project Designer — pjdhiro',
+        creditSignature: 'Project Designer: pjdhiro',
         nav: [
             { label: '一般向け', url: PDF_BASE + 'kesson-general.pdf' },
             { label: '設計者向け', url: PDF_BASE + 'kesson-designer.pdf' },
@@ -39,7 +39,7 @@ const STRINGS = {
             'Embrace the drift between prediction and reality',
         ],
         credit: 'Exploring with AI collaboration',
-        creditSignature: 'Project Designer \u2014 pjdhiro',
+        creditSignature: 'Project Designer: pjdhiro',
         nav: [
             { label: 'General', url: PDF_BASE + 'kesson-general-en.pdf' },
             { label: 'For Designers', url: PDF_BASE + 'kesson-designer-en.pdf' },
