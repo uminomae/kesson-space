@@ -666,6 +666,11 @@
       color: rgba(var(--color-heading), 0.5);
       font-size: 0.7rem;
     }
+    .kesson-card .kesson-card-cover-note {
+      color: rgba(150, 190, 245, 0.72);
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+    }
 
     /* 無限スクロールローディング */
     #offcanvas-loading {

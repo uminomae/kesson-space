@@ -85,6 +85,14 @@
       border-radius: 6px;
       box-shadow: 0 10px 28px rgba(10, 14, 26, 0.6);
     }
+    .devlog-cover-note {
+      display: block;
+      margin-top: -8px;
+      margin-bottom: 14px;
+      color: rgba(150, 190, 245, 0.82);
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
     .devlog-meta {
       font-size: 0.85rem;
       color: rgba(180, 200, 230, 0.6);
@@ -193,6 +201,7 @@
         <div class="devlog-meta mb-2" id="devlog-meta"></div>
         <h1 class="h3 text-light mb-3" id="devlog-title">Loading...</h1>
         <img id="devlog-cover" class="devlog-cover mb-4 d-none" alt="Session cover">
+        <small id="devlog-cover-note" class="devlog-cover-note d-none"></small>
       </div>
 
       <div id="devlog-error" class="devlog-error d-none"></div>
@@ -230,6 +239,7 @@
 
     const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
     const SCROLL_RESTORATION_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
+    const DEVLOG_DEFAULT_COVER = './assets/devlog/covers/default.svg';
     const SUPPORTED_LANGS = new Set(['ja', 'en']);
     const UI = {
       ja: {
@@ -239,6 +249,7 @@
         sessionIdMissing: 'セッションIDが見つかりません。',
         sessionNotFound: '指定されたセッションが見つかりません。',
         sessionLoadFailed: 'セッションデータの読み込みに失敗しました。',
+        coverFallbackNote: 'カバー画像の英語版は準備中です',
       },
       en: {
         backToIndex: '← Back to list',
@@ -247,6 +258,7 @@
         sessionIdMissing: 'Session id was not found.',
         sessionNotFound: 'The requested session was not found.',
         sessionLoadFailed: 'Failed to load session data.',
+        coverFallbackNote: 'English cover image pending',
       },
     };
 
@@ -258,6 +270,7 @@
     const titleEl = document.getElementById('devlog-title');
     const metaEl = document.getElementById('devlog-meta');
     const coverEl = document.getElementById('devlog-cover');
+    const coverNoteEl = document.getElementById('devlog-cover-note');
     const contentEl = document.getElementById('devlog-content');
     const errorEl = document.getElementById('devlog-error');
     const backLinkEl = document.querySelector('.back-link');
@@ -295,6 +308,31 @@
 
     function getSessionDateRange(session) {
       return pickLocalized(session, 'date_range') || session.id;
+    }
+
+    function resolveSessionCover(session) {
+      if (lang === 'en') {
+        const byLang = session.cover_by_lang;
+        const explicitEn = (
+          (typeof session.cover_en === 'string' && session.cover_en.trim() && session.cover_en)
+          || (byLang && typeof byLang === 'object' && typeof byLang.en === 'string' && byLang.en.trim() && byLang.en)
+          || ''
+        );
+        if (explicitEn) {
+          return { src: explicitEn, localized: true };
+        }
+        return { src: DEVLOG_DEFAULT_COVER, localized: false };
+      }
+
+      const byLang = session.cover_by_lang;
+      const jaCover = (
+        (byLang && typeof byLang === 'object' && typeof byLang.ja === 'string' && byLang.ja.trim() && byLang.ja)
+        || (typeof session.cover_ja === 'string' && session.cover_ja.trim() && session.cover_ja)
+        || (typeof session.cover === 'string' && session.cover.trim() && session.cover)
+        || ''
+      );
+      if (jaCover) return { src: jaCover, localized: true };
+      return { src: DEVLOG_DEFAULT_COVER, localized: false };
     }
 
     function getSessionContentCandidates(session) {
@@ -387,12 +425,13 @@
         if (metaEl) metaEl.textContent = getSessionDateRange(session);
         document.title = `${sessionTitle} - ${t().devlogLabel}`;
 
-        if (session.cover && coverEl) {
-          coverEl.src = session.cover;
+        const resolvedCover = resolveSessionCover(session);
+        if (coverEl) {
+          coverEl.src = resolvedCover.src;
           coverEl.classList.remove('d-none');
           coverEl.onerror = () => {
             coverEl.onerror = null;
-            coverEl.src = './assets/devlog/covers/default.svg';
+            coverEl.src = DEVLOG_DEFAULT_COVER;
           };
           coverEl.addEventListener('click', () => {
             const lightboxImg = document.getElementById('lightbox-image');
@@ -404,6 +443,15 @@
               lightboxModal.show();
             }
           });
+        }
+        if (coverNoteEl) {
+          if (lang === 'en' && !resolvedCover.localized) {
+            coverNoteEl.textContent = t().coverFallbackNote;
+            coverNoteEl.classList.remove('d-none');
+          } else {
+            coverNoteEl.textContent = '';
+            coverNoteEl.classList.add('d-none');
+          }
         }
 
         const rawContent = await loadSessionContent(session);
