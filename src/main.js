@@ -9,7 +9,9 @@ import { createDevValueApplier } from './main/dev-apply.js';
 import { bootstrapMainScene } from './main/bootstrap.js';
 import { attachResizeHandler, createNavMeshFinder, startRenderLoop } from './main/render-loop.js';
 import { getOrbScreenData, refreshNavLanguage, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
+import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
+import { initTopbarConsole } from './topbar-console.js';
 import { detectLang, LANG_CHANGE_EVENT, t } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
@@ -49,6 +51,7 @@ function applyPageLanguage(lang) {
 
 applyPageLanguage(detectLang());
 initLangToggle();
+initTopbarConsole();
 
 const container = document.getElementById('canvas-container');
 const {
@@ -89,19 +92,12 @@ if (DEV_MODE) {
     });
 }
 
-let refreshDevlogLanguage = null;
-import('./devlog/devlog.js').then((mod) => {
-    refreshDevlogLanguage = mod.refreshDevlogLanguage || null;
-});
-
 window.addEventListener(LANG_CHANGE_EVENT, (event) => {
     const nextLang = event.detail?.lang || detectLang();
     applyPageLanguage(nextLang);
     refreshGuideLang();
     refreshNavLanguage();
-    if (typeof refreshDevlogLanguage === 'function') {
-        refreshDevlogLanguage();
-    }
+    refreshDevlogLanguage();
 });
 
 const clock = new THREE.Clock();
