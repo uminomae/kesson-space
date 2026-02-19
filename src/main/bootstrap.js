@@ -8,7 +8,7 @@ import { createXLogoObjects } from '../nav-objects.js';
 import { CameraDofShader, DistortionShader } from '../shaders/distortion-pass.js';
 import { createFluidSystem } from '../shaders/fluid-field.js';
 import { createLiquidSystem } from '../shaders/liquid.js';
-import { liquidParams } from '../config.js';
+import { liquidParams, sceneParams } from '../config.js';
 
 export function bootstrapMainScene(container) {
     const { scene, camera, renderer } = createScene(container);
@@ -16,6 +16,12 @@ export function bootstrapMainScene(container) {
 
     const xLogoScene = new THREE.Scene();
     const xLogoCamera = camera.clone();
+    // DECISION: xLogo camera is intentionally fixed-scene, so do not inherit portrait-only camZ=0 bootstrap value.
+    // KEPT: render-loop still syncs optics only; transform remains fixed for x-logo composition consistency.
+    // (mobile portrait x-logo/gem disappearance fix / 2026-02-19)
+    xLogoCamera.position.set(sceneParams.camX, sceneParams.camY, sceneParams.camZ);
+    xLogoCamera.lookAt(sceneParams.camTargetX, sceneParams.camTargetY, sceneParams.camTargetZ);
+    xLogoCamera.updateMatrixWorld(true);
     const xLogoGroup = createXLogoObjects(xLogoScene, xLogoCamera);
     const xLogoAmbient = new THREE.AmbientLight(0xffffff, 0.6);
     const xLogoKey = new THREE.DirectionalLight(0xffffff, 0.9);
