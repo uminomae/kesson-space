@@ -21,14 +21,17 @@ import { worldFromViewportHeight } from './responsive.js';
 // language updates, hover state, and label lifecycle with x-logo; splitting by this scene-local coupling is safer.
 // (Phase B-1 / 2026-02-19)
 
-const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.10;
-const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.24;
+const XLOGO_TARGET_VIEWPORT_X_PERCENT = 0.07;
+const XLOGO_TARGET_VIEWPORT_Y_TOP_PERCENT = 0.18;
 const XLOGO_VIEWPORT_EDGE_PADDING_PERCENT = 0.02;
 const XLOGO_MOBILE_BREAKPOINT = 900;
-const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.08;
-const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.12;
+const XLOGO_MOBILE_MIN_VIEWPORT_X_PERCENT = 0.06;
+const XLOGO_MOBILE_MAX_VIEWPORT_X_PERCENT = 0.10;
 const XLOGO_MOBILE_LEFT_GUTTER_PX = 36;
-const XLOGO_MOBILE_TOP_PERCENT = 0.26;
+const XLOGO_MOBILE_TOP_PERCENT = 0.20;
+const XLOGO_FOLLOW_LAG_SECONDS = 0.3;
+const XLOGO_FOLLOW_MIN_DELTA_SECONDS = 1 / 240;
+const XLOGO_FOLLOW_MAX_DELTA_SECONDS = 0.2;
 const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
 const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
 
@@ -42,6 +45,7 @@ let _xLogoRoot = null;
 let _xLogoMaterials = [];
 let _xLogoHover = false;
 let _xLogoCamera = null;
+let _xLogoLastUpdateTime = null;
 
 const _xLogoSolveVecA = new THREE.Vector3();
 const _xLogoSolveVecB = new THREE.Vector3();
@@ -71,16 +75,16 @@ function applyGemDesktopPosition(group) {
 }
 
 function getXLogoMaterialConfig() {
-    const emissiveIntensity = Math.max(0.0, xLogoParams.glowStrength) * 0.7 + 0.25;
+    const emissiveIntensity = Math.max(0.0, xLogoParams.glowStrength) * 0.45 + 0.12;
     const metalness = Math.min(0.9, Math.max(0.1, xLogoParams.rimPower / 10.0));
-    const roughness = Math.min(0.8, Math.max(0.08, 1.0 - xLogoParams.innerGlow * 0.18));
+    const roughness = Math.min(0.88, Math.max(0.2, 1.0 - xLogoParams.innerGlow * 0.12));
     return { emissiveIntensity, metalness, roughness };
 }
 
 function applyXLogoMaterial(mesh) {
     const { emissiveIntensity, metalness, roughness } = getXLogoMaterialConfig();
-    const baseColor = new THREE.Color(0.85, 0.9, 1.0);
-    const emissiveColor = new THREE.Color(0.6, 0.7, 1.0);
+    const baseColor = new THREE.Color(0.72, 0.77, 0.86);
+    const emissiveColor = new THREE.Color(0.22, 0.28, 0.45);
 
     let mat = mesh.material;
     if (!mat || !mat.isMeshStandardMaterial) {
@@ -174,8 +178,14 @@ function createXLogoGroup() {
         }
     );
 
-    group.userData = { hitSprite, xLogoMesh: null, xLogoRoot: null, xLogoBaseRotY: 0 };
-    applyXLogoGroupPosition(group);
+    group.userData = {
+        hitSprite,
+        xLogoMesh: null,
+        xLogoRoot: null,
+        xLogoBaseRotY: 0,
+        followInitialized: false,
+    };
+    applyXLogoGroupPosition(group, _xLogoCamera, { immediate: true });
 
     return group;
 }
@@ -314,12 +324,33 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
     };
 }
 
-function applyXLogoGroupPosition(group, camera = _xLogoCamera) {
+function getXLogoFollowLerpFactor(deltaSeconds) {
+    const clampedDelta = THREE.MathUtils.clamp(
+        deltaSeconds,
+        XLOGO_FOLLOW_MIN_DELTA_SECONDS,
+        XLOGO_FOLLOW_MAX_DELTA_SECONDS
+    );
+    const lagSeconds = Math.max(0.01, XLOGO_FOLLOW_LAG_SECONDS);
+    return 1 - Math.exp(-clampedDelta / lagSeconds);
+}
+
+function applyXLogoGroupPosition(group, camera = _xLogoCamera, options = {}) {
     if (!group) return;
+    const { immediate = false, deltaSeconds = 1 / 60 } = options;
     const worldY = xLogoParams.posY;
     const { posX, posY, posZ } = getResponsiveXLogoPosition(camera, worldY);
     group.userData.baseY = xLogoParams.posY;
-    group.position.set(posX, posY, posZ);
+
+    if (immediate || !group.userData.followInitialized) {
+        group.position.set(posX, posY, posZ);
+        group.userData.followInitialized = true;
+        return;
+    }
+
+    const followLerp = getXLogoFollowLerpFactor(deltaSeconds);
+    group.position.x = THREE.MathUtils.lerp(group.position.x, posX, followLerp);
+    group.position.y = THREE.MathUtils.lerp(group.position.y, posY, followLerp);
+    group.position.z = THREE.MathUtils.lerp(group.position.z, posZ, followLerp);
 }
 
 function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex) {
@@ -367,7 +398,7 @@ export function createXLogoObjects(scene, camera = null) {
     };
 
     Object.assign(xGroup.userData, { isXLogo: true });
-    applyXLogoGroupPosition(xGroup, _xLogoCamera);
+    applyXLogoGroupPosition(xGroup, _xLogoCamera, { immediate: true });
 
     gemGroup.userData.hitSprite.userData = {
         type: 'nav',
@@ -383,6 +414,7 @@ export function createXLogoObjects(scene, camera = null) {
     scene.add(xGroup);
     _xLogoGroup = xGroup;
     _gemGroup = gemGroup;
+    _xLogoLastUpdateTime = null;
 
     _gemLabelElement = createHtmlLabel(gemData.label, 'nav-label--gem', gemData.url, true, 'gem');
     _xLogoLabelElement = createHtmlLabel(xData.label, 'nav-label--x', xData.url, true, 'xlogo');
@@ -432,7 +464,13 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
 
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
+    const prevTime = _xLogoLastUpdateTime;
+    _xLogoLastUpdateTime = time;
+    const deltaSeconds = Number.isFinite(prevTime) && Number.isFinite(time)
+        ? THREE.MathUtils.clamp(time - prevTime, XLOGO_FOLLOW_MIN_DELTA_SECONDS, XLOGO_FOLLOW_MAX_DELTA_SECONDS)
+        : 1 / 60;
+
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, { deltaSeconds });
 
     const xLogoFloatAmplitude = worldFromViewportHeight(0.30);
     const floatY = Math.sin(time * 0.6) * xLogoFloatAmplitude;
@@ -563,7 +601,8 @@ export function rebuildXLogo() {
 export function updateXLogoPosition(camera = _xLogoCamera) {
     _xLogoCamera = camera || _xLogoCamera;
     if (!_xLogoGroup) return;
-    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera);
+    _xLogoLastUpdateTime = null;
+    applyXLogoGroupPosition(_xLogoGroup, _xLogoCamera, { immediate: true });
 }
 
 export function getXLogoGroup() {
