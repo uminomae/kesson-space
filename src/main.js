@@ -35,24 +35,22 @@ const {
     camera,
     renderer,
     composer,
-    distortionPass,
-    dofPass,
-    fluidSystem,
-    liquidSystem,
-    liquidTarget,
-    xLogoScene,
-    xLogoCamera,
-    xLogoGroup,
-    xLogoAmbient,
-    xLogoKey,
+    passes,
+    effects,
+    xLogo,
 } = bootstrapMainScene(container);
 
 initControls(camera, container, renderer);
-initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamera });
+initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
 
 const findNavMeshes = createNavMeshFinder(scene);
-const applyDevValue = createDevValueApplier({ distortionPass, dofPass, fluidSystem, liquidSystem });
+const applyDevValue = createDevValueApplier({
+    distortionPass: passes.distortionPass,
+    dofPass: passes.dofPass,
+    fluidSystem: effects.fluidSystem,
+    liquidSystem: effects.liquidSystem,
+});
 
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
@@ -78,21 +76,17 @@ window.addEventListener(LANG_CHANGE_EVENT, (event) => {
 });
 
 const clock = new THREE.Clock();
-attachResizeHandler({ camera, xLogoCamera, renderer, composer });
+attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
 
 startRenderLoop({
     clock,
     camera,
-    xLogoCamera,
     scene,
-    xLogoScene,
     renderer,
     composer,
-    distortionPass,
-    dofPass,
-    fluidSystem,
-    liquidSystem,
-    liquidTarget,
+    passes,
+    effects,
+    xLogo,
     findNavMeshes,
     updateMouseSmoothing,
     updateControls,
@@ -107,6 +101,4 @@ startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
-    xLogoAmbient,
-    xLogoKey,
 });

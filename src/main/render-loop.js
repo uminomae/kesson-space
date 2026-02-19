@@ -35,16 +35,12 @@ export function attachResizeHandler({ camera, xLogoCamera, renderer, composer })
 export function startRenderLoop({
     clock,
     camera,
-    xLogoCamera,
     scene,
-    xLogoScene,
     renderer,
     composer,
-    distortionPass,
-    dofPass,
-    fluidSystem,
-    liquidSystem,
-    liquidTarget,
+    passes,
+    effects,
+    xLogo,
     findNavMeshes,
     updateMouseSmoothing,
     updateControls,
@@ -59,9 +55,18 @@ export function startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
-    xLogoAmbient,
-    xLogoKey,
 }) {
+    // DECISION: destructure grouped inputs once at the boundary so animate() keeps flat local names.
+    // This avoids repetitive dot access in the hot path while preserving the grouped external API. (Phase A-2 / 2026-02-19)
+    const { distortionPass, dofPass } = passes;
+    const { fluidSystem, liquidSystem, liquidTarget } = effects;
+    const {
+        camera: xLogoCamera,
+        scene: xLogoScene,
+        ambient: xLogoAmbient,
+        key: xLogoKey,
+    } = xLogo;
+
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
     const syncXLogoCameraOptics = (srcCamera, dstCamera) => {

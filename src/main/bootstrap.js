@@ -47,20 +47,29 @@ export function bootstrapMainScene(container) {
     const dofPass = new ShaderPass(CameraDofShader);
     composer.addPass(dofPass);
 
+    // DECISION: keep scene/camera/renderer/composer flat because they are cross-cutting core dependencies.
+    // passes/effects/xLogo are grouped since their usage is local to render-loop and dev-control touchpoints.
+    // (Phase A-2 / 2026-02-19)
     return {
         scene,
         camera,
         renderer,
         composer,
-        distortionPass,
-        dofPass,
-        fluidSystem,
-        liquidSystem,
-        liquidTarget,
-        xLogoScene,
-        xLogoCamera,
-        xLogoGroup,
-        xLogoAmbient,
-        xLogoKey,
+        passes: {
+            distortionPass,
+            dofPass,
+        },
+        effects: {
+            fluidSystem,
+            liquidSystem,
+            liquidTarget,
+        },
+        xLogo: {
+            scene: xLogoScene,
+            camera: xLogoCamera,
+            group: xLogoGroup,
+            ambient: xLogoAmbient,
+            key: xLogoKey,
+        },
     };
 }
