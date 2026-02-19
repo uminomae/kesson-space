@@ -8,7 +8,35 @@ import { createXLogoObjects } from '../nav-objects.js';
 import { CameraDofShader, DistortionShader } from '../shaders/distortion-pass.js';
 import { createFluidSystem } from '../shaders/fluid-field.js';
 import { createLiquidSystem } from '../shaders/liquid.js';
-import { liquidParams } from '../config.js';
+import { liquidParams, sceneParams, xLogoParams } from '../config.js';
+
+function finiteOr(value, fallback) {
+    return Number.isFinite(value) ? value : fallback;
+}
+
+function applyStableXLogoCameraPose(xLogoCamera, sourceCamera) {
+    const fallbackPos = sourceCamera?.position || { x: 0, y: 8, z: 24 };
+    const posX = finiteOr(sceneParams?.camX, finiteOr(fallbackPos.x, 0));
+    const sceneCamY = finiteOr(sceneParams?.camY, finiteOr(fallbackPos.y, 8));
+    const xLogoAnchorY = finiteOr(xLogoParams?.posY, sceneCamY);
+    // DECISION: keep camera close to x-logo height, but not fully locked to it, to reduce top-down feel while keeping depth cues.
+    const posY = sceneCamY + (xLogoAnchorY - sceneCamY) * 0.8;
+    const rawPosZ = finiteOr(sceneParams?.camZ, finiteOr(fallbackPos.z, 24));
+    // KEPT: x-logo camera is fixed-scene; avoid z=0 edge case that can push x-logo/gem out of stable framing.
+    // DECISION: keep a minimum camera distance so issue-95's close main camera tuning does not make x-logo/gem oversized.
+    const safePosZ = Math.abs(rawPosZ) < 1e-3 ? 1 : rawPosZ;
+    const posZ = Math.sign(safePosZ || 1) * Math.max(Math.abs(safePosZ), 32);
+
+    const targetX = finiteOr(sceneParams?.camTargetX, 0);
+    // KEPT: targetY equals x-logo anchor so camera pitch stays near-horizontal for x-logo/gem framing.
+    const targetY = finiteOr(xLogoAnchorY, finiteOr(sceneParams?.camTargetY, 0));
+    const targetZ = finiteOr(sceneParams?.camTargetZ, 0);
+
+    xLogoCamera.position.set(posX, posY, posZ);
+    xLogoCamera.lookAt(targetX, targetY, targetZ);
+    xLogoCamera.updateProjectionMatrix();
+    xLogoCamera.updateMatrixWorld(true);
+}
 
 export function bootstrapMainScene(container) {
     const { scene, camera, renderer } = createScene(container);
@@ -16,6 +44,11 @@ export function bootstrapMainScene(container) {
 
     const xLogoScene = new THREE.Scene();
     const xLogoCamera = camera.clone();
+    // DECISION: xLogo camera is intentionally fixed-scene, so do not inherit portrait-only camZ=0 bootstrap value.
+    // KEPT: render-loop still syncs optics only; transform remains fixed for x-logo composition consistency.
+    // TODO(refactor): if we ever animate x-logo camera transform, replace fixed pose with a dedicated camera controller.
+    // (mobile portrait hardening / 2026-02-19)
+    applyStableXLogoCameraPose(xLogoCamera, camera);
     const xLogoGroup = createXLogoObjects(xLogoScene, xLogoCamera);
     const xLogoAmbient = new THREE.AmbientLight(0xffffff, 0.6);
     const xLogoKey = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -47,20 +80,29 @@ export function bootstrapMainScene(container) {
     const dofPass = new ShaderPass(CameraDofShader);
     composer.addPass(dofPass);
 
+    // DECISION: keep scene/camera/renderer/composer flat because they are cross-cutting core dependencies.
+    // passes/effects/xLogo are grouped since their usage is local to render-loop and dev-control touchpoints.
+    // (Phase A-2 / 2026-02-19)
     return {
         scene,
         camera,
         renderer,
         composer,
-        distortionPass,
-        dofPass,
-        fluidSystem,
-        liquidSystem,
-        liquidTarget,
-        xLogoScene,
-        xLogoCamera,
-        xLogoGroup,
-        xLogoAmbient,
-        xLogoKey,
+        passes: {
+            distortionPass,
+            dofPass,
+        },
+        effects: {
+            fluidSystem,
+            liquidSystem,
+            liquidTarget,
+        },
+        xLogo: {
+            scene: xLogoScene,
+            camera: xLogoCamera,
+            group: xLogoGroup,
+            ambient: xLogoAmbient,
+            key: xLogoKey,
+        },
     };
 }
