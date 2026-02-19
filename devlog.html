@@ -230,6 +230,13 @@
   <script type="module">
     import { marked } from 'marked';
     import DOMPurify from 'dompurify';
+    import {
+      DEVLOG_DEFAULT_COVER,
+      normalizeLang,
+      getSessionTitle,
+      getSessionDateRange,
+      resolveSessionCover,
+    } from './src/devlog/session-helpers.js';
 
     marked.setOptions({
       breaks: true,
@@ -239,8 +246,6 @@
 
     const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
     const SCROLL_RESTORATION_ONCE_KEY = 'kesson.scroll-restoration-once.v1';
-    const DEVLOG_DEFAULT_COVER = './assets/devlog/covers/default.svg';
-    const SUPPORTED_LANGS = new Set(['ja', 'en']);
     const UI = {
       ja: {
         backToIndex: '← 一覧に戻る',
@@ -277,62 +282,8 @@
 
     document.documentElement.lang = lang;
 
-    function normalizeLang(nextLang) {
-      return SUPPORTED_LANGS.has(nextLang) ? nextLang : 'ja';
-    }
-
     function t() {
       return UI[lang];
-    }
-
-    function pickLocalized(session, key) {
-      const fallbackLang = lang === 'en' ? 'ja' : 'en';
-      const byLangKey = `${key}_${lang}`;
-      const fallbackByLangKey = `${key}_${fallbackLang}`;
-
-      if (typeof session[byLangKey] === 'string' && session[byLangKey].trim()) return session[byLangKey];
-      if (typeof session[fallbackByLangKey] === 'string' && session[fallbackByLangKey].trim()) return session[fallbackByLangKey];
-
-      const value = session[key];
-      if (typeof value === 'string' && value.trim()) return value;
-      if (value && typeof value === 'object') {
-        if (typeof value[lang] === 'string' && value[lang].trim()) return value[lang];
-        if (typeof value[fallbackLang] === 'string' && value[fallbackLang].trim()) return value[fallbackLang];
-      }
-      return '';
-    }
-
-    function getSessionTitle(session) {
-      return pickLocalized(session, 'title') || session.id;
-    }
-
-    function getSessionDateRange(session) {
-      return pickLocalized(session, 'date_range') || session.id;
-    }
-
-    function resolveSessionCover(session) {
-      if (lang === 'en') {
-        const byLang = session.cover_by_lang;
-        const explicitEn = (
-          (typeof session.cover_en === 'string' && session.cover_en.trim() && session.cover_en)
-          || (byLang && typeof byLang === 'object' && typeof byLang.en === 'string' && byLang.en.trim() && byLang.en)
-          || ''
-        );
-        if (explicitEn) {
-          return { src: explicitEn, localized: true };
-        }
-        return { src: DEVLOG_DEFAULT_COVER, localized: false };
-      }
-
-      const byLang = session.cover_by_lang;
-      const jaCover = (
-        (byLang && typeof byLang === 'object' && typeof byLang.ja === 'string' && byLang.ja.trim() && byLang.ja)
-        || (typeof session.cover_ja === 'string' && session.cover_ja.trim() && session.cover_ja)
-        || (typeof session.cover === 'string' && session.cover.trim() && session.cover)
-        || ''
-      );
-      if (jaCover) return { src: jaCover, localized: true };
-      return { src: DEVLOG_DEFAULT_COVER, localized: false };
     }
 
     function getSessionContentCandidates(session) {
@@ -420,12 +371,12 @@
           return;
         }
 
-        const sessionTitle = getSessionTitle(session);
+        const sessionTitle = getSessionTitle(session, lang);
         if (titleEl) titleEl.textContent = sessionTitle;
-        if (metaEl) metaEl.textContent = getSessionDateRange(session);
+        if (metaEl) metaEl.textContent = getSessionDateRange(session, lang);
         document.title = `${sessionTitle} - ${t().devlogLabel}`;
 
-        const resolvedCover = resolveSessionCover(session);
+        const resolvedCover = resolveSessionCover(session, lang);
         if (coverEl) {
           coverEl.src = resolvedCover.src;
           coverEl.classList.remove('d-none');
