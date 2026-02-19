@@ -62,10 +62,13 @@ export const sceneParams = {
     mixCycle: 2.0,
     styleCycle: 14.0,
     fogDensity: 0.0,
-    camX: -14,
-    camY: 0,
-    camZ: 34,
-    camTargetY: -1,
+    // Issue #95: initial framing tune (closer camera for larger orb presence)
+    camX: -1,
+    camY: 12,
+    camZ: 24,
+    camTargetX: 0,
+    camTargetY: 0,
+    camTargetZ: 0,
 };
 
 // --- 流体フィールドパラメータ ---
@@ -133,8 +136,17 @@ export const distortionParams = {
     heatHaze:       0.024,
     heatHazeRadius: 0.5,
     heatHazeSpeed:  1.0,
-    dofStrength:    0.009,
-    dofFocusRadius: 0.32,
+    // Issue #95: dev-tuned default
+    dofStrength:    0.0395,
+    dofFocusRadius: 0.5,
+};
+
+// --- ナビオーブ配置 ---
+export const navOrbParams = {
+    centerX: 0,
+    centerY: 2,
+    centerZ: 0,
+    radius: 12,
 };
 
 // --- Gem四芒星パラメータ（dev panel export反映） ---

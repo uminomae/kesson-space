@@ -1,5 +1,6 @@
 import {
   breathConfig,
+  navOrbParams,
   sceneParams,
   vortexParams,
   distortionParams,
@@ -161,8 +162,18 @@ export const DEV_SECTIONS = [
             heatHaze:      { label: '熱波の強さ',    min: 0.0, max: 0.06, step: 0.001, default: distortionParams.heatHaze },
             heatHazeRadius:{ label: '熱波半径',      min: 0.05, max: 0.8, step: 0.01, default: distortionParams.heatHazeRadius },
             heatHazeSpeed: { label: '熱波速度',      min: 0.5, max: 10.0, step: 0.5, default: distortionParams.heatHazeSpeed },
-            dofStrength:   { label: 'DOFボケ強度',   min: 0.0, max: 0.02, step: 0.0005, default: distortionParams.dofStrength },
-            dofFocusRadius:{ label: 'DOFフォーカス半径', min: 0.05, max: 0.6, step: 0.01, default: distortionParams.dofFocusRadius },
+            dofStrength:   { label: 'DOFボケ強度',   min: 0.0, max: 0.04, step: 0.0005, default: distortionParams.dofStrength },
+            dofFocusRadius:{ label: 'DOF深度(フォーカス半径)', min: 0.05, max: 1.0, step: 0.01, default: distortionParams.dofFocusRadius },
+        }
+    },
+    {
+        id: 'orbLayout',
+        title: 'ナビオーブ配置',
+        params: {
+            orbCenterX:    { label: '球中心 X',      min: -30, max: 30, step: 0.5, default: navOrbParams.centerX },
+            orbCenterY:    { label: '球中心 Y',      min: -25, max: 20, step: 0.5, default: navOrbParams.centerY },
+            orbCenterZ:    { label: '球中心 Z',      min: -30, max: 30, step: 0.5, default: navOrbParams.centerZ },
+            orbRadius:     { label: '球配置 半径',   min: 1, max: 20, step: 0.5, default: navOrbParams.radius },
         }
     },
     {
@@ -180,7 +191,9 @@ export const DEV_SECTIONS = [
             camX:          { label: 'カメラ X',      min: -50, max: 50, step: 1, default: sceneParams.camX },
             camY:          { label: 'カメラ Y',      min: -20, max: 80, step: 1, default: sceneParams.camY },
             camZ:          { label: 'カメラ Z',      min: -20, max: 60, step: 1, default: sceneParams.camZ },
-            camTargetY:    { label: '注視点 Y',      min: -30, max: 10, step: 1, default: sceneParams.camTargetY },
+            camTargetX:    { label: '注視点 X',      min: -30, max: 30, step: 0.5, default: sceneParams.camTargetX },
+            camTargetY:    { label: '注視点 Y',      min: -30, max: 30, step: 0.5, default: sceneParams.camTargetY },
+            camTargetZ:    { label: '注視点 Z',      min: -30, max: 30, step: 0.5, default: sceneParams.camTargetZ },
             fogDensity:    { label: 'フォグ濃度',    min: 0.0, max: 0.06, step: 0.002, default: sceneParams.fogDensity },
             autoRotateSpd: { label: '自動回転速度',   min: 0.0, max: 1.0, step: 0.05, default: 1.0 },
         }
