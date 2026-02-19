@@ -23,7 +23,7 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
 | **main** | `/Users/uminomae/dev/kesson-space` | main | 本番（直接コミット非推奨） |
-| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | feature/dev | 目視確認ゲート・ステージング |
+| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | dev | 目視確認ゲート・ステージング |
 | Codex App 1 | `/Users/uminomae/dev/kesson-codex-1` | feature/codex-1 | Codex App 実装用 |
 | Codex App 2 | `/Users/uminomae/dev/kesson-codex-2` | feature/codex-2 | Codex App 実装用 |
 | Codex App 3 | `/Users/uminomae/dev/kesson-codex-3` | feature/codex-3 | Codex App 実装用 |

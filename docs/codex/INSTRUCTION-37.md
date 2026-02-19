@@ -8,7 +8,7 @@
 https://github.com/uminomae/kesson-space/issues/37
 
 ## 作業ブランチ
-- ベース: `feature/dev`
+- ベース: `dev`
 - 作業: `feature/kesson-codex-app-sanitize37`
 
 ## 概要
@@ -87,7 +87,7 @@ contentEl.innerHTML = rawContent ? DOMPurify.sanitize(marked.parse(rawContent)) 
 
 ## 禁止事項
 - main ブランチへの直接 push 禁止
-- feature/dev への直接マージ禁止
+- dev への直接マージ禁止
 - 対象外ファイルの変更禁止
 - npm / package.json への依存追加禁止（CDN importmap のみ）
 - 既存の `escapeHtml()` 関数の削除禁止（他箇所で使用中）
