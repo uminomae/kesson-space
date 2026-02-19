@@ -40,6 +40,7 @@ let _xLogoCamera = null;
 
 const _xLogoSolveVecA = new THREE.Vector3();
 const _xLogoSolveVecB = new THREE.Vector3();
+const _xLogoSolveVecC = new THREE.Vector3();
 const _xLogoSolveMatrix = new THREE.Matrix4();
 const _labelWorldPos = new THREE.Vector3();
 
@@ -262,6 +263,27 @@ function getResponsiveXLogoPosition(camera = _xLogoCamera, worldY = xLogoParams.
     let solvedY = solveXLogoPosYForViewportTopPercent(camera, xLogoParams.posX, xLogoParams.posZ, targetYTopPercent);
     let solvedX = solveXLogoPosXForViewportPercent(camera, solvedY, xLogoParams.posZ, targetXPercent);
     solvedY = solveXLogoPosYForViewportTopPercent(camera, solvedX, xLogoParams.posZ, targetYTopPercent);
+
+    // DECISION: restore a second-pass viewport clamp after solving.
+    // KEPT: solver can drift on very narrow portrait aspect, so we re-project and clamp once more to keep x-logo/gem visible.
+    // (mobile portrait clamp restore / 2026-02-19)
+    _xLogoSolveVecC.set(solvedX, solvedY, xLogoParams.posZ).project(camera);
+    const solvedXPercent = (_xLogoSolveVecC.x + 1) * 0.5;
+    const solvedYTopPercent = (1 - _xLogoSolveVecC.y) * 0.5;
+    const clampedSolvedXPercent = THREE.MathUtils.clamp(solvedXPercent, minVisiblePercent, maxVisiblePercent);
+    const clampedSolvedYTopPercent = THREE.MathUtils.clamp(solvedYTopPercent, minVisibleTopPercent, maxVisibleTopPercent);
+    const needsClampX = Math.abs(clampedSolvedXPercent - solvedXPercent) > 1e-4;
+    const needsClampY = Math.abs(clampedSolvedYTopPercent - solvedYTopPercent) > 1e-4;
+
+    if (needsClampY) {
+        solvedY = solveXLogoPosYForViewportTopPercent(camera, solvedX, xLogoParams.posZ, clampedSolvedYTopPercent);
+    }
+    if (needsClampX) {
+        solvedX = solveXLogoPosXForViewportPercent(camera, solvedY, xLogoParams.posZ, clampedSolvedXPercent);
+    }
+    if (needsClampY || needsClampX) {
+        solvedY = solveXLogoPosYForViewportTopPercent(camera, solvedX, xLogoParams.posZ, clampedSolvedYTopPercent);
+    }
 
     return {
         posX: Number.isFinite(solvedX) ? solvedX : xLogoParams.posX,
