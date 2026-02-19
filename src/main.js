@@ -24,10 +24,10 @@ initMouseTracking();
 function applyPageLanguage(lang) {
     const strings = t(lang);
 
-    const titleH1 = document.getElementById('title-h1');
-    const titleSub = document.getElementById('title-sub');
-    if (titleH1) titleH1.textContent = strings.title;
-    if (titleSub) titleSub.textContent = strings.subtitle;
+    const topbarMainTitle = document.getElementById('topbar-main-title');
+    if (topbarMainTitle) topbarMainTitle.textContent = strings.title;
+    const topbarSubtitle = document.getElementById('topbar-subtitle');
+    if (topbarSubtitle) topbarSubtitle.textContent = strings.subtitle;
 
     const creditCollab = document.getElementById('credit-collab');
     if (creditCollab) creditCollab.textContent = strings.credit;

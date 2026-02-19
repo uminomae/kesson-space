@@ -1,5 +1,5 @@
-// lang-toggle.js — 言語切替トグルUI（右上、世界観に溶け込む控えめなテキスト）
-// ISS-001: aria-label 追加
+// lang-toggle.js — 言語切替トグルUI
+// Topbar内の #lang-toggle ボタンを利用
 
 import { detectLang, LANG_CHANGE_EVENT, t, switchLang } from './i18n.js';
 
@@ -14,51 +14,21 @@ function applyToggleText(btn, lang) {
 
 export function initLangToggle() {
     const lang = detectLang();
+    const btn = document.getElementById('lang-toggle');
+    if (!(btn instanceof HTMLButtonElement)) return;
 
-    // --- スタイル注入 ---
-    const style = document.createElement('style');
-    style.textContent = `
-        #lang-toggle {
-            position: fixed;
-            top: calc(var(--kesson-topbar-height) + 0.55rem);
-            right: 3%;
-            z-index: 50;
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.4);
-            font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
-            font-size: clamp(0.5rem, 2.5vmin, 0.85rem);
-            letter-spacing: clamp(0.08em, 0.4vmin, 0.15em);
-            cursor: pointer;
-            padding: 6px 0;
-            transition: color 0.5s ease, text-shadow 0.5s ease, opacity 0.3s ease;
-            text-shadow: 0 0 12px rgba(100, 150, 255, 0.0);
-        }
-        #lang-toggle:hover {
-            color: rgba(255, 255, 255, 0.55);
-            text-shadow: 0 0 20px rgba(100, 150, 255, 0.2);
-        }
-        #lang-toggle:focus {
-            outline: 2px solid rgba(100, 150, 255, 0.8);
-            outline-offset: 4px;
-        }
-    `;
-    document.head.appendChild(style);
+    applyToggleText(btn, lang);
 
-    // --- ボタン生成 ---
-    const existing = document.getElementById('lang-toggle');
-    if (existing instanceof HTMLButtonElement) {
-        applyToggleText(existing, lang);
-        return;
+    if (btn.dataset.kessonLangToggleBound !== '1') {
+        btn.dataset.kessonLangToggleBound = '1';
+        btn.addEventListener('click', switchLang);
     }
 
-    const btn = document.createElement('button');
-    btn.id = 'lang-toggle';
-    applyToggleText(btn, lang);
-    btn.addEventListener('click', switchLang);
-    window.addEventListener(LANG_CHANGE_EVENT, (event) => {
-        const nextLang = event.detail?.lang || detectLang();
-        applyToggleText(btn, nextLang);
-    });
-    document.body.appendChild(btn);
+    if (btn.dataset.kessonLangChangeBound !== '1') {
+        btn.dataset.kessonLangChangeBound = '1';
+        window.addEventListener(LANG_CHANGE_EVENT, (event) => {
+            const nextLang = event.detail?.lang || detectLang();
+            applyToggleText(btn, nextLang);
+        });
+    }
 }

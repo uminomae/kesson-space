@@ -71,16 +71,61 @@
     #kesson-topbar .container-fluid {
       min-height: var(--kesson-topbar-height);
     }
-    #kesson-topbar .topbar-brand {
+    #kesson-topbar .topbar-brand-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 0.52rem;
+      min-width: 0;
+      max-width: calc(100% - 3rem);
+      white-space: nowrap;
+      overflow: hidden;
+      padding: 0.24rem 0;
+    }
+    #kesson-topbar .topbar-main-title {
       color: rgba(228, 238, 255, 0.92);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
-      font-size: clamp(0.7rem, 1.8vmin, 0.82rem);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+      font-size: clamp(0.96rem, 1.85vw, 1.38rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      text-transform: none;
+      margin: 0;
+      padding: 0;
+      text-decoration: none;
+      flex: 0 0 auto;
     }
-    #kesson-topbar .topbar-brand:hover,
-    #kesson-topbar .topbar-brand:focus-visible {
+    #kesson-topbar .topbar-main-title:hover,
+    #kesson-topbar .topbar-main-title:focus-visible {
       color: rgba(242, 248, 255, 1);
+    }
+    #kesson-topbar .topbar-subtitle {
+      font-size: clamp(0.72rem, 1.05vw, 0.86rem);
+      color: rgba(205, 220, 244, 0.76);
+      letter-spacing: 0.1em;
+      line-height: 1;
+      text-transform: none;
+      flex: 0 0 auto;
+      pointer-events: none;
+    }
+    #kesson-topbar .topbar-subtitle::before,
+    #kesson-topbar .topbar-meta::before {
+      content: '·';
+      color: rgba(170, 192, 228, 0.42);
+      margin-right: 0.45rem;
+    }
+    #kesson-topbar .topbar-meta {
+      display: block;
+      flex: 0 0 auto;
+      padding: 0;
+      font-size: clamp(0.62rem, 0.88vw, 0.7rem);
+      line-height: 1;
+      letter-spacing: 0.05em;
+      color: rgba(186, 204, 234, 0.72);
+      font-family: 'Georgia', "Noto Serif JP", serif;
+      pointer-events: none;
+    }
+    #kesson-topbar .topbar-meta--author {
+      font-size: 0.68rem;
+      color: rgba(184, 203, 234, 0.74);
     }
     #kesson-topbar .topbar-link {
       color: rgba(205, 220, 244, 0.78);
@@ -103,6 +148,27 @@
       line-height: inherit;
       width: 100%;
       text-align: left;
+    }
+    #kesson-topbar .topbar-lang-btn {
+      color: rgba(218, 232, 255, 0.9);
+      border: 1px solid rgba(130, 170, 240, 0.25);
+      background: rgba(70, 102, 160, 0.16);
+    }
+    #kesson-topbar .topbar-collab-item {
+      margin-left: 0.45rem;
+      padding-left: 0.55rem;
+      border-left: 1px solid rgba(130, 170, 240, 0.2);
+    }
+    #kesson-topbar .topbar-collab-note {
+      display: inline-block;
+      font-family: 'Georgia', "Noto Serif JP", serif;
+      font-size: clamp(0.58rem, 0.82vw, 0.66rem);
+      line-height: 1;
+      letter-spacing: 0.06em;
+      color: rgba(165, 214, 255, 0.74);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
     }
     #kesson-topbar .topbar-toggler {
       border-color: rgba(145, 178, 242, 0.55);
@@ -132,6 +198,38 @@
       #kesson-topbar .topbar-link-btn {
         width: auto;
         text-align: center;
+      }
+      #kesson-topbar .topbar-lang-item {
+        margin-left: 0.35rem;
+      }
+    }
+    @media (max-width: 991.98px) {
+      #kesson-topbar .topbar-meta--author {
+        display: none;
+      }
+      #kesson-topbar .topbar-subtitle {
+        font-size: 0.66rem;
+      }
+      #kesson-topbar .topbar-collab-item {
+        margin-left: 0.3rem;
+        padding-left: 0.45rem;
+      }
+    }
+    @media (max-width: 767.98px) {
+      #kesson-topbar .topbar-subtitle {
+        display: none;
+      }
+      #kesson-topbar .topbar-main-title {
+        font-size: 0.86rem;
+      }
+      #kesson-topbar .topbar-collab-item {
+        margin-left: 0;
+        padding: 0.28rem 0.76rem 0 0.76rem;
+        border-left: 0;
+      }
+      #kesson-topbar .topbar-collab-note {
+        font-size: 0.62rem;
+        letter-spacing: 0.05em;
       }
     }
 
@@ -188,34 +286,7 @@
     }
 
     /* ============================
-       左上: クレジット
-       ============================ */
-    #credit {
-      position: fixed;
-      top: calc(var(--kesson-topbar-height) + 0.8rem);
-      left: 3%;
-      z-index: 10;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    #credit .credit-line {
-      font-size: clamp(0.45rem, 2.0vmin, 0.7rem);
-      color: rgba(var(--color-sub-text), 0.45);
-      font-family: 'Georgia', 'Noto Serif JP', serif;
-      letter-spacing: 0.05em;
-      line-height: 1.7;
-      text-shadow: 0 0 8px rgba(60, 100, 180, 0.2);
-    }
-    #credit .credit-signature {
-      font-size: clamp(0.4rem, 1.8vmin, 0.65rem);
-      color: rgba(150, 175, 210, 0.35);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.08em;
-      margin-top: 2px;
-    }
-    
-    /* ============================
-       左下: オーバーレイ（タイトル）
+       左下: オーバーレイ（taglines）
        ============================ */
     #overlay {
       position: fixed;
