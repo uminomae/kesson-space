@@ -20,7 +20,7 @@ export function initLangToggle() {
     style.textContent = `
         #lang-toggle {
             position: fixed;
-            top: 3%;
+            top: calc(var(--kesson-topbar-height) + 0.55rem);
             right: 3%;
             z-index: 50;
             background: none;

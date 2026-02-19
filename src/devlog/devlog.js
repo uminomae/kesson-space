@@ -18,6 +18,7 @@ const DEVLOG_RETURN_STATE_KEY = 'kesson.devlog.return-state.v1';
 const DEVLOG_RETURN_INTENT_KEY = 'kesson.devlog.return-intent.v1';
 const DEVLOG_RETURN_TTL_MS = 30 * 60 * 1000;
 const ARTICLES_READY_EVENT = 'kesson:articles-ready';
+const TOPBAR_DEVLOG_TRIGGER_ID = 'topbar-devlog-btn';
 
 let sessions = [];
 let isInitialized = false;
@@ -37,6 +38,8 @@ let galleryState = {
 };
 let hasAutoOpenedDevlogOffcanvas = false;
 let hasAppliedDevlogDeepLink = false;
+let hasBoundTopbarTrigger = false;
+let topbarOpenPending = false;
 
 
 function getSessionEndValue(session) {
@@ -251,22 +254,6 @@ export function initDevlogGallery(containerId = 'devlog-gallery-container') {
   console.log('[devlog] Gallery initialized');
 }
 
-/**
- * 個別セッションの.mdファイルを読み込み
- */
-async function loadSessionContent(sessionId) {
-  try {
-    const res = await fetch(`./content/devlog/${sessionId}.md`);
-    if (!res.ok) return null;
-    const raw = await res.text();
-    const match = raw.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
-    return match ? match[1].trim() : raw.trim();
-  } catch (e) {
-    console.warn(`[devlog] Failed to load ${sessionId}.md:`, e);
-    return null;
-  }
-}
-
 async function loadSessions() {
   try {
     const res = await fetch(SESSIONS_URL);
@@ -274,10 +261,11 @@ async function loadSessions() {
     sessions = await res.json();
 
     sessions.sort((a, b) => getSessionEndValue(b) - getSessionEndValue(a));
-
-    await Promise.all(sessions.map(async (session) => {
-      session.log_content = await loadSessionContent(session.id);
-    }));
+    sessions.forEach((session) => {
+      if (!Object.prototype.hasOwnProperty.call(session, 'log_content')) {
+        session.log_content = null;
+      }
+    });
   } catch (e) {
     console.warn('sessions.json not found, using demo data:', e.message);
     sessions = generateDemoData();
@@ -286,8 +274,8 @@ async function loadSessions() {
   galleryState.sessions = sessions;
   console.log('[devlog] Loaded', sessions.length, 'sessions');
   buildGallery();
-  await waitForImages(containerEl);
   markDevlogReady();
+  waitForImages(containerEl);
 }
 
 function generateDemoData() {
@@ -441,6 +429,41 @@ function openOffcanvas({ restoreState = null } = {}) {
   }
 
   galleryState.offcanvas.show();
+}
+
+function bindTopbarDevlogTrigger() {
+  if (hasBoundTopbarTrigger) return;
+
+  const trigger = document.getElementById(TOPBAR_DEVLOG_TRIGGER_ID);
+  if (!(trigger instanceof HTMLButtonElement)) return;
+  hasBoundTopbarTrigger = true;
+
+  const prewarm = () => {
+    if (!isInitialized) {
+      initDevlogGallery();
+    }
+  };
+
+  trigger.addEventListener('pointerenter', prewarm, { once: true });
+  trigger.addEventListener('focus', prewarm, { once: true });
+  trigger.addEventListener('click', (event) => {
+    event.preventDefault();
+    prewarm();
+
+    if (devlogReadyResolved) {
+      openOffcanvas();
+      return;
+    }
+
+    if (topbarOpenPending) return;
+    topbarOpenPending = true;
+    trigger.setAttribute('aria-busy', 'true');
+    devlogReadyPromise.then(() => {
+      topbarOpenPending = false;
+      trigger.removeAttribute('aria-busy');
+      openOffcanvas();
+    });
+  });
 }
 
 function waitForTwoAnimationFrames() {
@@ -700,6 +723,12 @@ function runPendingReturnFlow(pendingState) {
 
 // Auto-initialize and return restoration bootstrap
 if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindTopbarDevlogTrigger, { once: true });
+  } else {
+    bindTopbarDevlogTrigger();
+  }
+
   const urlHasIntent = hasDeepLinkIntent();
   const requestedScrollTarget = getRequestedScrollTarget();
   const wantsDevlogIntent = shouldOpenOffcanvas('devlog')
