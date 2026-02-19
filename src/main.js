@@ -16,6 +16,7 @@ import { detectLang, LANG_CHANGE_EVENT, t } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
+import { refreshArticlesLanguage } from './pages/articles-section.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
@@ -98,6 +99,7 @@ window.addEventListener(LANG_CHANGE_EVENT, (event) => {
     refreshGuideLang();
     refreshNavLanguage();
     refreshDevlogLanguage();
+    refreshArticlesLanguage();
 });
 
 const clock = new THREE.Clock();
