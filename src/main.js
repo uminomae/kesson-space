@@ -7,12 +7,15 @@ import { initControls, updateControls, getScrollProgress } from './controls.js';
 import { initNavigation, updateNavigation } from './navigation.js';
 import { createDevValueApplier } from './main/dev-apply.js';
 import { bootstrapMainScene } from './main/bootstrap.js';
+// DECISION: page-language stays under main/ because it is a startup-only concern tied to main.js orchestration.
+// Keeping the file adjacent to bootstrap/render-loop reduces cross-folder hops when editing entry flow. (Phase A-1 / 2026-02-19)
+import { applyPageLanguage, initLanguageListeners } from './main/page-language.js';
 import { attachResizeHandler, createNavMeshFinder, startRenderLoop } from './main/render-loop.js';
 import { getOrbScreenData, refreshNavLanguage, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
 import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
 import { initTopbarConsole } from './topbar-console.js';
-import { detectLang, LANG_CHANGE_EVENT, t } from './i18n.js';
+import { detectLang } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
@@ -21,34 +24,6 @@ import { refreshArticlesLanguage } from './pages/articles-section.js';
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
 initMouseTracking();
-
-function applyPageLanguage(lang) {
-    const strings = t(lang);
-
-    const topbarMainTitle = document.getElementById('topbar-main-title');
-    if (topbarMainTitle) topbarMainTitle.textContent = strings.title;
-    const topbarSubtitle = document.getElementById('topbar-subtitle');
-    if (topbarSubtitle) topbarSubtitle.textContent = strings.subtitle;
-
-    const creditCollab = document.getElementById('credit-collab');
-    if (creditCollab) creditCollab.textContent = strings.credit;
-    const creditSig = document.getElementById('credit-signature');
-    if (creditSig) creditSig.textContent = strings.creditSignature;
-
-    const taglineContainer = document.getElementById('taglines');
-    if (taglineContainer && strings.taglines) {
-        taglineContainer.innerHTML = '';
-        const isEn = lang === 'en';
-        strings.taglines.forEach((text) => {
-            const p = document.createElement('p');
-            p.className = isEn ? 'tagline-en' : 'tagline';
-            p.textContent = text;
-            taglineContainer.appendChild(p);
-        });
-    }
-
-    document.documentElement.lang = lang;
-}
 
 applyPageLanguage(detectLang());
 initLangToggle();
@@ -60,24 +35,22 @@ const {
     camera,
     renderer,
     composer,
-    distortionPass,
-    dofPass,
-    fluidSystem,
-    liquidSystem,
-    liquidTarget,
-    xLogoScene,
-    xLogoCamera,
-    xLogoGroup,
-    xLogoAmbient,
-    xLogoKey,
+    passes,
+    effects,
+    xLogo,
 } = bootstrapMainScene(container);
 
 initControls(camera, container, renderer);
-initNavigation({ scene, camera, renderer, xLogoGroup, xLogoCamera });
+initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
 
 const findNavMeshes = createNavMeshFinder(scene);
-const applyDevValue = createDevValueApplier({ distortionPass, dofPass, fluidSystem, liquidSystem });
+const applyDevValue = createDevValueApplier({
+    distortionPass: passes.distortionPass,
+    dofPass: passes.dofPass,
+    fluidSystem: effects.fluidSystem,
+    liquidSystem: effects.liquidSystem,
+});
 
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
@@ -93,31 +66,25 @@ if (DEV_MODE) {
     });
 }
 
-window.addEventListener(LANG_CHANGE_EVENT, (event) => {
-    const nextLang = event.detail?.lang || detectLang();
-    applyPageLanguage(nextLang);
-    refreshGuideLang();
-    refreshNavLanguage();
-    refreshDevlogLanguage();
-    refreshArticlesLanguage();
+initLanguageListeners({
+    refreshGuideLang,
+    refreshNavLanguage,
+    refreshDevlogLanguage,
+    refreshArticlesLanguage,
 });
 
 const clock = new THREE.Clock();
-attachResizeHandler({ camera, xLogoCamera, renderer, composer });
+attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
 
 startRenderLoop({
     clock,
     camera,
-    xLogoCamera,
     scene,
-    xLogoScene,
     renderer,
     composer,
-    distortionPass,
-    dofPass,
-    fluidSystem,
-    liquidSystem,
-    liquidTarget,
+    passes,
+    effects,
+    xLogo,
     findNavMeshes,
     updateMouseSmoothing,
     updateControls,
@@ -132,6 +99,4 @@ startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
-    xLogoAmbient,
-    xLogoKey,
 });

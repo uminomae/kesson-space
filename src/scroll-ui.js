@@ -101,6 +101,37 @@ function isNearBottom() {
     return (docHeight - scrollBottom) < nearBottomThresholdPx;
 }
 
+function syncSectionFocusability(sectionEl, shouldEnable) {
+    if (!sectionEl) return;
+
+    // A11Y-GUARD: this project intentionally controls Tab targets manually.
+    // We persist previous tabindex in data-kesson-prev-tabindex and restore it later,
+    // because cards are enabled/disabled as focus targets by scroll position.
+    const focusables = sectionEl.querySelectorAll('a[href], button:not([disabled]), [tabindex]');
+    focusables.forEach((el) => {
+        if (!(el instanceof HTMLElement)) return;
+
+        if (shouldEnable) {
+            const prev = el.dataset.kessonPrevTabindex;
+            if (prev === undefined) return;
+            if (prev === '__none__') {
+                el.removeAttribute('tabindex');
+            } else {
+                el.setAttribute('tabindex', prev);
+            }
+            delete el.dataset.kessonPrevTabindex;
+            return;
+        }
+
+        if (el.dataset.kessonPrevTabindex === undefined) {
+            el.dataset.kessonPrevTabindex = el.hasAttribute('tabindex')
+                ? (el.getAttribute('tabindex') || '__none__')
+                : '__none__';
+        }
+        el.setAttribute('tabindex', '-1');
+    });
+}
+
 /**
  * 毎フレーム呼び出し: スクロール進捗に応じてUI更新
  * @param {number} scrollProg - スクロール進捗 (0~1)
@@ -157,45 +188,33 @@ export function updateScrollUI(scrollProg, breathVal) {
         const showSurface = scrollProg > 0.8;
         _surfaceBtn.style.opacity = showSurface ? '1' : '0';
         _surfaceBtn.style.pointerEvents = showSurface ? 'auto' : 'none';
+        if (showSurface) {
+            _surfaceBtn.setAttribute('aria-hidden', 'false');
+            if (_surfaceBtn.tabIndex !== 0) _surfaceBtn.tabIndex = 0;
+        } else {
+            if (document.activeElement === _surfaceBtn) _surfaceBtn.blur();
+            _surfaceBtn.setAttribute('aria-hidden', 'true');
+            if (_surfaceBtn.tabIndex !== -1) _surfaceBtn.tabIndex = -1;
+        }
     }
 
     // --- Devlogタイトル: セクション内でのみ表示 ---
     updateDevlogHeaderVisibility(scrollProg);
-    updateArticlesFocusability(scrollProg);
+    updateCardFocusabilityByScroll();
 }
 
-function updateArticlesFocusability(scrollProg) {
-    if (!_articlesSection) return;
+function updateCardFocusabilityByScroll() {
+    // A11Y-GUARD: custom accessibility rule (easy to break during refactor).
+    // Tab target policy:
+    // - top area (scrollY near 0): upper UI + 3D nav labels only (cards are removed from Tab order)
+    // - after scrolling: article/devlog cards become tabbable
+    // Do not replace with static tabindex, otherwise top-of-page keyboard flow regresses.
+    const atTopThresholdPx = pxFromViewportHeight(20, { minScale: 0.7, maxScale: 1.4 });
+    const isTopOnlyMode = window.scrollY < atTopThresholdPx;
+    const enableCardFocus = !isTopOnlyMode;
 
-    const rect = _articlesSection.getBoundingClientRect();
-    const windowH = window.innerHeight || document.documentElement.clientHeight;
-    const isNearViewport = rect.top <= windowH * 0.9;
-    const shouldEnable = scrollProg > 0.22 || isNearViewport;
-
-    const focusables = _articlesSection.querySelectorAll('a[href], button:not([disabled]), [tabindex]');
-
-    focusables.forEach((el) => {
-        if (!(el instanceof HTMLElement)) return;
-
-        if (shouldEnable) {
-            const prev = el.dataset.kessonPrevTabindex;
-            if (prev === undefined) return;
-            if (prev === '__none__') {
-                el.removeAttribute('tabindex');
-            } else {
-                el.setAttribute('tabindex', prev);
-            }
-            delete el.dataset.kessonPrevTabindex;
-            return;
-        }
-
-        if (el.dataset.kessonPrevTabindex === undefined) {
-            el.dataset.kessonPrevTabindex = el.hasAttribute('tabindex')
-                ? (el.getAttribute('tabindex') || '__none__')
-                : '__none__';
-        }
-        el.setAttribute('tabindex', '-1');
-    });
+    syncSectionFocusability(_articlesSection, enableCardFocus);
+    syncSectionFocusability(_devlogSection, enableCardFocus);
 }
 
 function updateDevlogHeaderVisibility(scrollProg) {

@@ -1,6 +1,19 @@
 import { getRawMouse } from '../mouse-state.js';
 import { pxFromViewportHeight } from './responsive.js';
 
+function insertNavLabelNearTop(btn) {
+    // A11Y-GUARD: this is a custom Tab-order implementation.
+    // Nav labels are absolutely positioned but inserted near the top in DOM order so
+    // forward Tab can reach them without making the entire canvas focusable.
+    // If this insertion point changes, keyboard navigation order will regress.
+    const overlay = document.getElementById('overlay');
+    if (overlay && overlay.parentNode === document.body) {
+        document.body.insertBefore(btn, overlay);
+        return;
+    }
+    document.body.appendChild(btn);
+}
+
 export function createNavLabelButton({
     text,
     extraClass,
@@ -72,7 +85,7 @@ export function createNavLabelButton({
         }
     });
 
-    document.body.appendChild(btn);
+    insertNavLabelNearTop(btn);
     return btn;
 }
 
@@ -92,7 +105,8 @@ export function updateLabelPosition({ el, worldPos, yOffset, camera, scrollFade 
         } else {
             el.classList.add('nav-label--hidden');
         }
-        syncLabelFocusState(el, canKeyboardFocus);
+        // A11Y-GUARD: off-screen labels must leave Tab order unless they are already focused.
+        syncLabelFocusState(el, canKeyboardFocus && isFocused);
         return;
     }
 
@@ -123,6 +137,8 @@ export function updateLabelPosition({ el, worldPos, yOffset, camera, scrollFade 
 }
 
 export function syncLabelFocusState(el, isFocusable) {
+    // A11Y-GUARD: nav labels are dynamic (3D projection), so focusability is synced every frame.
+    // Keep tabindex + aria-hidden in lockstep to avoid "visible but not tabbable" / "hidden but tabbable" states.
     if (isFocusable) {
         if (el.tabIndex !== 0) el.tabIndex = 0;
         el.setAttribute('aria-hidden', 'false');

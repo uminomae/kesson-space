@@ -20,13 +20,22 @@ export function createNavMeshFinder(scene) {
 }
 
 export function attachResizeHandler({ camera, xLogoCamera, renderer, composer }) {
+    const getSafeViewport = () => {
+        const width = Number.isFinite(window.innerWidth) ? Math.max(1, window.innerWidth) : 1;
+        const height = Number.isFinite(window.innerHeight) ? Math.max(1, window.innerHeight) : 1;
+        return { width, height, aspect: width / height };
+    };
+
     function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
+        const { width, height, aspect } = getSafeViewport();
+        camera.aspect = aspect;
         camera.updateProjectionMatrix();
-        xLogoCamera.aspect = camera.aspect;
-        xLogoCamera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
+        if (xLogoCamera) {
+            xLogoCamera.aspect = aspect;
+            xLogoCamera.updateProjectionMatrix();
+        }
+        renderer.setSize(width, height);
+        composer.setSize(width, height);
     }
     window.addEventListener('resize', onResize);
     return onResize;
@@ -35,16 +44,12 @@ export function attachResizeHandler({ camera, xLogoCamera, renderer, composer })
 export function startRenderLoop({
     clock,
     camera,
-    xLogoCamera,
     scene,
-    xLogoScene,
     renderer,
     composer,
-    distortionPass,
-    dofPass,
-    fluidSystem,
-    liquidSystem,
-    liquidTarget,
+    passes,
+    effects,
+    xLogo,
     findNavMeshes,
     updateMouseSmoothing,
     updateControls,
@@ -59,25 +64,46 @@ export function startRenderLoop({
     toggles,
     breathConfig,
     liquidParams,
-    xLogoAmbient,
-    xLogoKey,
 }) {
+    // DECISION: destructure grouped inputs once at the boundary so animate() keeps flat local names.
+    // This avoids repetitive dot access in the hot path while preserving the grouped external API. (Phase A-2 / 2026-02-19)
+    const { distortionPass, dofPass } = passes;
+    const { fluidSystem, liquidSystem, liquidTarget } = effects;
+    const {
+        camera: xLogoCamera,
+        scene: xLogoScene,
+        ambient: xLogoAmbient,
+        key: xLogoKey,
+    } = xLogo;
+
     const liquidMousePos = new THREE.Vector2();
     const liquidMouseVel = new THREE.Vector2();
+    const getViewportAspect = () => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return Number.isFinite(camera?.aspect) && camera.aspect > 0 ? camera.aspect : 1;
+        }
+        return width / height;
+    };
     const syncXLogoCameraOptics = (srcCamera, dstCamera) => {
         if (!srcCamera || !dstCamera || srcCamera === dstCamera) return;
+        if (!Number.isFinite(srcCamera.fov)) return;
+        const nextAspect = Number.isFinite(srcCamera.aspect) && srcCamera.aspect > 0
+            ? srcCamera.aspect
+            : getViewportAspect();
+        const nextNear = Number.isFinite(srcCamera.near) && srcCamera.near > 0 ? srcCamera.near : dstCamera.near;
+        const nextFar = Number.isFinite(srcCamera.far) && srcCamera.far > nextNear ? srcCamera.far : dstCamera.far;
         dstCamera.fov = srcCamera.fov;
-        dstCamera.aspect = srcCamera.aspect;
-        dstCamera.near = srcCamera.near;
-        dstCamera.far = srcCamera.far;
+        dstCamera.aspect = nextAspect;
+        dstCamera.near = nextNear;
+        dstCamera.far = nextFar;
         dstCamera.updateProjectionMatrix();
     };
 
-    function animate() {
-        requestAnimationFrame(animate);
-        statsBegin();
-        const time = clock.getElapsedTime();
-
+    // DECISION: breath/light/scroll are grouped because they share the same breathVal source and must stay in lockstep.
+    // (Phase B-3 / 2026-02-19)
+    function updateBreathAndScroll(time) {
         const breathVal = breathValue(time, breathConfig.period);
         // xLogoシーンのライトをメインの呼吸に同期（暗部を強く、明部は1.3まで）
         const breathDim = breathIntensity(breathVal);
@@ -85,23 +111,28 @@ export function startRenderLoop({
         if (xLogoKey) xLogoKey.intensity = 0.9 * breathDim;
         const scrollProg = getScrollProgress();
         updateScrollUI(scrollProg, breathVal);
+        return breathVal;
+    }
 
-        const mouse = updateMouseSmoothing();
-
+    // DECISION: controls/scene/navigation/x-logo updates remain in one phase to preserve camera-optics sync ordering.
+    // KEPT: this stays separate from effects so post-process uniforms always see the post-update scene state. (Phase B-3 / 2026-02-19)
+    function updateScenePhase(time, breathVal) {
         updateControls(time, breathVal);
         // xLogo は別シーン。カメラ位置/回転は固定し、光学パラメータのみ同期する。
         syncXLogoCameraOptics(camera, xLogoCamera);
         updateScene(time);
         updateNavigation(time);
         updateXLogo(time, xLogoCamera);
+    }
 
-        const navs = findNavMeshes();
-
+    // DECISION: fluid/liquid/orb refraction are grouped as effect feeds into distortion uniforms before post-process pass.
+    // (Phase B-3 / 2026-02-19)
+    function updateEffects(time, mouse, navs) {
         if (toggles.fluidField) {
             distortionPass.uniforms.uFluidInfluence.value = fluidParams.influence;
             fluidSystem.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
             fluidSystem.uniforms.uMouseVelocity.value.set(mouse.velX, mouse.velY);
-            fluidSystem.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+            fluidSystem.uniforms.uAspect.value = getViewportAspect();
             fluidSystem.update();
             distortionPass.uniforms.tFluidField.value = fluidSystem.getTexture();
         } else {
@@ -139,11 +170,17 @@ export function startRenderLoop({
                 distortionPass.uniforms.uOrbStrengths.value[i] = 0.0;
             }
         }
+    }
 
-        distortionPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+    // DECISION: all post uniforms and label projection updates stay together so per-frame screen-space values are coherent.
+    // KEPT: label updates remain here (not in renderFrame) because they depend on finalized uniform/mouse state, not draw calls.
+    // (Phase B-3 / 2026-02-19)
+    function updatePostProcess(time, mouse, navs) {
+        const aspect = getViewportAspect();
+        distortionPass.uniforms.uAspect.value = aspect;
         distortionPass.uniforms.uTime.value = time;
         distortionPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
-        dofPass.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
+        dofPass.uniforms.uAspect.value = aspect;
         dofPass.uniforms.uMouse.value.set(mouse.smoothX, mouse.smoothY);
 
         if (toggles.heatHaze) {
@@ -162,7 +199,11 @@ export function startRenderLoop({
 
         updateNavLabels(navs, camera);
         updateXLogoLabel(xLogoCamera);
+    }
 
+    // DECISION: render stays as a dedicated terminal phase because post-process toggle decides final draw path.
+    // (Phase B-3 / 2026-02-19)
+    function renderFrame() {
         renderer.clear();
         if (toggles.postProcess) {
             composer.render();
@@ -171,6 +212,22 @@ export function startRenderLoop({
             renderer.clearDepth();
             renderer.render(xLogoScene, xLogoCamera);
         }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        statsBegin();
+        const time = clock.getElapsedTime();
+
+        const breathVal = updateBreathAndScroll(time);
+        const mouse = updateMouseSmoothing();
+        updateScenePhase(time, breathVal);
+
+        const navs = findNavMeshes();
+        updateEffects(time, mouse, navs);
+        updatePostProcess(time, mouse, navs);
+        renderFrame();
+
         statsEnd();
     }
 

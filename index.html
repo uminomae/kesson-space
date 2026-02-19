@@ -9,6 +9,8 @@
     gtag('js', new Date());
     gtag('config', 'G-X5WQCB3JYT');
   </script>
+  <!-- KEEP INLINE: scroll-coordinator must run before heavy module imports in main.js
+       to set history.scrollRestoration='manual' early enough to prevent scroll flash -->
   <script type="module">
     import { initScrollCoordinator } from './src/scroll-coordinator.js';
     initScrollCoordinator();
@@ -27,9 +29,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
 
-  <!-- DISABLED: modulepreload — import mapとの競合問題で一時無効化 (Issue #4) -->
-
-  
   <script type="importmap">
     {
       "imports": {
@@ -47,7 +46,7 @@
   <script type="module" src="./src/main.js"></script>
 </head>
 <body>
-  <div id="canvas-container" aria-hidden="true"></div>
+  <div id="canvas-container"></div>
 
   <!-- Top menu bar (Bootstrap navbar) -->
   <header id="kesson-topbar" class="navbar navbar-expand-md navbar-dark" aria-label="Main menu">
@@ -110,7 +109,7 @@
     </div>
   </header>
   
-  <div id="overlay">
+  <div id="overlay" role="presentation">
     <div id="taglines"></div>
   </div>
 
@@ -158,25 +157,15 @@
   <div id="articles-spacer"></div>
 
   <!-- Articles Section -->
-  <!-- CHANGED(2026-02-16): inline style → CSS class (T-018) -->
   <section id="articles-section">
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">
-          <button
-            type="button"
-            class="section-heading-link"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#articlesOffcanvas"
-            aria-controls="articlesOffcanvas"
-            aria-label="ARTICLES を開く">
-            ARTICLES
-          </button>
           <a
             href="#articles-section"
-            class="section-heading-jump-link"
-            aria-label="ARTICLES セクションへのリンク（Offcanvasは開かない）">
-            #
+            class="section-heading-link"
+            aria-label="ARTICLES セクションへジャンプ">
+            ARTICLES
           </a>
         </h2>
         <div id="articles-error" class="d-none"></div>
@@ -187,7 +176,6 @@
 
   <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
   <section id="devlog-gallery-section">
-    <!-- CHANGED(2026-02-16): inline style → CSS class (T-018) -->
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">DEVLOG</h2>
@@ -276,7 +264,6 @@
     </div>
   </div>
 
-  <!-- CHANGED: aria-label 追加 -->
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
 
   <script type="module" src="./src/pages/e2e-auto-run.js"></script>

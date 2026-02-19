@@ -278,6 +278,9 @@
       color: rgba(220, 225, 240, 0.85);
       text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
       font-weight: bold;
+      font-size: clamp(0.58rem, 3.2vmin, 1.28rem);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
     }
     .nav-label--x:hover,
     .nav-label--x:focus-visible,
@@ -803,10 +806,17 @@
       padding: 0;
       margin: 0;
       color: inherit;
+      text-decoration: none;
       font: inherit;
       letter-spacing: inherit;
       text-transform: inherit;
       cursor: pointer;
+    }
+
+    .section-heading-link:visited,
+    .section-heading-link:hover,
+    .section-heading-link:active {
+      text-decoration: none;
     }
 
     .section-heading-link:hover {
@@ -814,26 +824,6 @@
     }
 
     .section-heading-link:focus-visible {
-      outline: 1px solid rgba(150, 190, 255, 0.7);
-      outline-offset: 4px;
-    }
-
-    .section-heading-jump-link {
-      margin-left: 0.6em;
-      color: rgba(var(--color-sub-text), 0.45);
-      text-decoration: none;
-      font: inherit;
-      letter-spacing: inherit;
-      text-transform: none;
-      vertical-align: baseline;
-    }
-
-    .section-heading-jump-link:hover {
-      color: rgba(200, 220, 250, 0.72);
-      text-decoration: underline;
-    }
-
-    .section-heading-jump-link:focus-visible {
       outline: 1px solid rgba(150, 190, 255, 0.7);
       outline-offset: 4px;
     }
