@@ -108,7 +108,7 @@ export function updateGemGroupPosition({ gemGroup, gemParams }) {
     gemGroup.position.set(gemParams.posX, gemParams.posY, gemParams.posZ);
 }
 
-export function updateGemGroupAnimation(group, time) {
+export function updateGemGroupAnimation(group, time, options = {}) {
     const data = group.userData;
     const gemFloatAmplitude = worldFromViewportHeight(0.4);
     group.position.y = data.baseY + Math.sin(time * 0.6 + 2.0) * gemFloatAmplitude;
@@ -116,7 +116,9 @@ export function updateGemGroupAnimation(group, time) {
     const mesh = data.gemMesh;
     if (!mesh) return;
 
+    const swingRotationY = Number.isFinite(options.swingRotationY) ? options.swingRotationY : 0;
     mesh.rotation.x = Math.PI / 2 + Math.sin(time * 0.3) * 0.1;
+    mesh.rotation.y = swingRotationY;
     mesh.rotation.z = time * 0.25;
 
     const u = mesh.material.uniforms;
