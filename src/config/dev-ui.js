@@ -42,6 +42,9 @@ export const DEV_SECTIONS = [
             htmlMaxBlur:     { label: 'HTMLぼかし(px)', min: 0.0, max: 8.0, step: 0.5, default: breathConfig.htmlMaxBlur, target: 'breath' },
             htmlMinScale:    { label: 'HTML最小スケール', min: 0.8, max: 1.0, step: 0.01, default: breathConfig.htmlMinScale, target: 'breath' },
             fovAmplitude:    { label: 'FOV振幅(deg)',   min: 0.0, max: 5.0, step: 0.1, default: breathConfig.fovAmplitude, target: 'breath' },
+            fovPulseAmplitude:{ label: 'FOVズーム脈動',  min: 0.0, max: 2.0, step: 0.05, default: breathConfig.fovPulseAmplitude, target: 'breath' },
+            fovPulseSpeed:   { label: 'ズーム脈動速度',  min: 0.05, max: 1.0, step: 0.01, default: breathConfig.fovPulseSpeed, target: 'breath' },
+            fovPulseSharpness:{ label: 'ズーム脈動鋭さ', min: 1.0, max: 12.0, step: 0.5, default: breathConfig.fovPulseSharpness, target: 'breath' },
         }
     },
     {

@@ -32,6 +32,9 @@ export const breathConfig = {
     htmlMinScale: 0.95,
     fovBase: 60,
     fovAmplitude: 1.0,
+    fovPulseAmplitude: 0.0,
+    fovPulseSpeed: 0.28,
+    fovPulseSharpness: 8.0,
 };
 
 // --- 背景色定数 ---

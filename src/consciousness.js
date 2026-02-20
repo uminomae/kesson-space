@@ -92,10 +92,16 @@ toggles.autoRotate = false;
 // Reframe camera for subjective "inner field" composition.
 sceneParams.camX = 0;
 sceneParams.camY = 4;
-sceneParams.camZ = 18;
+sceneParams.camZ = 24;
 sceneParams.camTargetX = 0;
 sceneParams.camTargetY = -2.6;
 sceneParams.camTargetZ = 0;
+
+// Keep a distant baseline with a gentler breathing zoom, plus occasional pulse zoom-ins.
+breathConfig.fovAmplitude = 0.18;
+breathConfig.fovPulseAmplitude = 0.38;
+breathConfig.fovPulseSpeed = 0.28;
+breathConfig.fovPulseSharpness = 8.0;
 
 initMouseTracking();
 

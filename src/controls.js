@@ -269,11 +269,20 @@ export function updateControls(time, breathVal = 0.5) {
 
     // --- FOV呼吸 ---
     const fovBase = getAdjustedFovBase();
+    let nextFov = fovBase;
     if (toggles.fovBreath) {
-        _camera.fov = fovBase + (breathVal * 2 - 1) * breathConfig.fovAmplitude;
-    } else {
-        _camera.fov = fovBase;
+        nextFov += (breathVal * 2 - 1) * breathConfig.fovAmplitude;
     }
+    const pulseAmp = Math.max(0, breathConfig.fovPulseAmplitude || 0);
+    if (pulseAmp > 0) {
+        const pulseSpeed = Math.max(0.05, breathConfig.fovPulseSpeed || 0.28);
+        const pulseSharpness = Math.max(1.0, breathConfig.fovPulseSharpness || 8.0);
+        const pulseCarrier = Math.max(0, Math.sin(time * pulseSpeed));
+        const pulse = Math.pow(pulseCarrier, pulseSharpness);
+        // Narrowing FOV momentarily creates a subtle "occasional zoom-in".
+        nextFov -= pulseAmp * pulse;
+    }
+    _camera.fov = Math.max(10, Math.min(CAMERA_MAX_FOV, nextFov));
     _camera.updateProjectionMatrix();
 
     // --- 軌道計算 ---
