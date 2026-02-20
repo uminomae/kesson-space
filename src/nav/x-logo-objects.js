@@ -40,6 +40,15 @@ const XLOGO_VIEWPORT_MAX_VISIBLE_PERCENT = 0.45;
 const XLOGO_VIEWPORT_REPROJECTION_TOLERANCE = 1e-4;
 const GEM_DESKTOP_ANCHOR = Object.freeze({ x: 0.0, y: -3.4, z: 0.2 });
 const GEM_LEGACY_BASE_POSITION = Object.freeze({ x: 10, y: 2, z: 15 });
+const SWING_HALF_RANGE_RADIANS = Math.PI / 2;
+const SWING_PERIOD_SECONDS = 24;
+const SWING_ANGULAR_SPEED = (Math.PI * 2) / SWING_PERIOD_SECONDS;
+const GEM_SWING_PHASE_OFFSET = Math.PI * 0.65;
+const GEM_SWING_PHASE_JITTER = Math.PI * 0.08;
+const _xLogoSwingPhase = Math.random() * Math.PI * 2;
+const _gemSwingPhase = _xLogoSwingPhase
+    + GEM_SWING_PHASE_OFFSET
+    + ((Math.random() * 2) - 1) * GEM_SWING_PHASE_JITTER;
 
 let _gemLabelElement = null;
 let _gemGroup = null;
@@ -249,6 +258,11 @@ function clampXLogoDeltaSeconds(deltaSeconds) {
         XLOGO_FOLLOW_MIN_DELTA_SECONDS,
         XLOGO_FOLLOW_MAX_DELTA_SECONDS
     );
+}
+
+function getSwingRotationY(time, phase) {
+    if (!Number.isFinite(time)) return 0;
+    return Math.sin((time * SWING_ANGULAR_SPEED) + phase) * SWING_HALF_RANGE_RADIANS;
 }
 
 function solveXLogoPosXForViewportPercent(camera, worldY, worldZ, viewportPercent) {
@@ -525,13 +539,15 @@ export function updateXLogo(time, camera = _xLogoCamera) {
     if (!_xLogoGroup.visible) return;
 
     if (_gemGroup) {
-        updateGemGroupAnimation(_gemGroup, time);
+        updateGemGroupAnimation(_gemGroup, time, {
+            swingRotationY: getSwingRotationY(time, _gemSwingPhase),
+        });
     }
 
     const rotTarget = data.xLogoRoot || data.xLogoMesh;
     if (rotTarget) {
         const baseRotY = data.xLogoBaseRotY || 0;
-        rotTarget.rotation.y = baseRotY + Math.sin(time * 0.2) * 0.15;
+        rotTarget.rotation.y = baseRotY + getSwingRotationY(time, _xLogoSwingPhase);
     }
 
     const hoverBoost = _xLogoHover ? 1.25 : 1.0;
