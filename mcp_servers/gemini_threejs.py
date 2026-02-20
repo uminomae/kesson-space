@@ -40,11 +40,11 @@ mcp = FastMCP("Gemini-ThreeJS-Assistant")
 AVAILABLE_MODELS = {
     # Flash系（高速・低コスト）
     "flash": "gemini-2.0-flash",
-    "flash-lite": "gemini-2.0-flash-lite",
+    "flash-lite": "gemini-2.0-flash-lite-001",
     # Pro系（高品質）
-    "pro": "gemini-2.5-pro-preview-05-06",
+    "pro": "gemini-2.5-pro",
     # Gemini 3
-    "3-flash": "gemini-3.0-flash",
+    "3-flash": "gemini-3-flash-preview",
     "3-pro": "gemini-3-pro-preview",
     "3.1-pro": "gemini-3.1-pro-preview",
 }
@@ -53,12 +53,15 @@ AVAILABLE_MODELS = {
 MODEL_COSTS = {
     "flash": 0.07,
     "flash-lite": 0.02,
-    "pro": 5.0,
-    "3-flash": 0.07,
+    "pro": 0.7,
+    "3-flash": 0.12,
+    "3-pro": 1.5,
+    "3.1-pro": 2.0,
 }
 
 DEFAULT_MODEL = "flash"
 MONTHLY_BUDGET = 1000  # 円
+REQUEST_TIMEOUT_SECONDS = int(os.getenv("GEMINI_REQUEST_TIMEOUT", "120"))
 
 # 使用量記録ファイル
 USAGE_FILE = Path(__file__).parent.parent / ".gemini_usage.json"
@@ -225,7 +228,10 @@ def generate_threejs_code(
     
     try:
         gemini = genai.GenerativeModel(model_name)
-        response = gemini.generate_content(prompt)
+        response = gemini.generate_content(
+            prompt,
+            request_options={"timeout": REQUEST_TIMEOUT_SECONDS},
+        )
         
         # 使用量を記録
         record_usage(model_key, "generate_threejs_code")
@@ -273,7 +279,10 @@ def generate_shader(
     
     try:
         gemini = genai.GenerativeModel(model_name)
-        response = gemini.generate_content(prompt)
+        response = gemini.generate_content(
+            prompt,
+            request_options={"timeout": REQUEST_TIMEOUT_SECONDS},
+        )
         
         # 使用量を記録
         record_usage(model_key, "generate_shader")
@@ -321,7 +330,10 @@ def review_threejs_code(
     
     try:
         gemini = genai.GenerativeModel(model_name)
-        response = gemini.generate_content(prompt)
+        response = gemini.generate_content(
+            prompt,
+            request_options={"timeout": REQUEST_TIMEOUT_SECONDS},
+        )
         
         # 使用量を記録
         record_usage(model_key, "review_threejs_code")
@@ -369,7 +381,10 @@ Claudeのコード:
     
     try:
         gemini = genai.GenerativeModel(model_name)
-        response = gemini.generate_content(prompt)
+        response = gemini.generate_content(
+            prompt,
+            request_options={"timeout": REQUEST_TIMEOUT_SECONDS},
+        )
         
         # 使用量を記録
         record_usage(model_key, "compare_implementations")
