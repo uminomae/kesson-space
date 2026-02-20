@@ -188,9 +188,6 @@ export function updateScene(time) {
     }
 
     if (_consciousArrowBundle) {
-        _consciousArrowBundle.visible = toggles.kessonLights;
-        if (_consciousArrowBundle.visible) {
-            updateConsciousArrowBundle(_consciousArrowBundle, time);
-        }
+        updateConsciousArrowBundle(_consciousArrowBundle, time);
     }
 }

@@ -1,23 +1,23 @@
 import * as THREE from 'three';
 
 const ARROW_COUNT = 24;
-const BUNDLE_RADIUS_MIN = 0.22;
-const BUNDLE_RADIUS_MAX = 1.06;
-const BUNDLE_DEPTH = 1.55;
-const SHAFT_LENGTH = 1.62;
-const SHAFT_RADIUS = 0.013;
-const HEAD_LENGTH = 0.34;
-const HEAD_RADIUS = 0.056;
+const BUNDLE_RADIUS_MIN = 0.35;
+const BUNDLE_RADIUS_MAX = 1.7;
+const BUNDLE_DEPTH = 2.7;
+const SHAFT_LENGTH = 2.6;
+const SHAFT_RADIUS = 0.028;
+const HEAD_LENGTH = 0.62;
+const HEAD_RADIUS = 0.12;
 
-const BASE_POS_X = -2.8;
-const BASE_POS_Y = 3.35;
-const BASE_POS_Z = -9.4;
-const BASE_ROT_X = 0.06;
-const BASE_ROT_Y = 0.23;
-const BASE_SCALE = 1.0;
-const SHAFT_BASE_OPACITY = 0.34;
-const HEAD_BASE_OPACITY = 0.66;
-const FOCAL_Z = 4.8;
+const BASE_POS_X = -6.2;
+const BASE_POS_Y = 5.8;
+const BASE_POS_Z = 5.5;
+const BASE_ROT_X = 0.1;
+const BASE_ROT_Y = 0.16;
+const BASE_SCALE = 1.75;
+const SHAFT_BASE_OPACITY = 0.56;
+const HEAD_BASE_OPACITY = 0.92;
+const FOCAL_Z = 8.2;
 
 const _dummy = new THREE.Object3D();
 const _euler = new THREE.Euler();
@@ -52,6 +52,7 @@ export function createConsciousArrowBundle() {
         transparent: true,
         opacity: SHAFT_BASE_OPACITY,
         blending: THREE.AdditiveBlending,
+        depthTest: false,
         depthWrite: false,
         side: THREE.DoubleSide,
     });
@@ -60,6 +61,7 @@ export function createConsciousArrowBundle() {
         transparent: true,
         opacity: HEAD_BASE_OPACITY,
         blending: THREE.AdditiveBlending,
+        depthTest: false,
         depthWrite: false,
         side: THREE.DoubleSide,
     });
@@ -68,8 +70,8 @@ export function createConsciousArrowBundle() {
     const heads = new THREE.InstancedMesh(headGeometry, headMaterial, ARROW_COUNT);
     shafts.name = 'conscious-arrow-bundle-shafts';
     heads.name = 'conscious-arrow-bundle-heads';
-    shafts.renderOrder = 1;
-    heads.renderOrder = 1;
+    shafts.renderOrder = 12;
+    heads.renderOrder = 13;
 
     const basePos = new Float32Array(ARROW_COUNT * 3);
     const baseQuat = new Float32Array(ARROW_COUNT * 4);
