@@ -16,7 +16,7 @@ Claudeは**Three.js/GLSLの実装コードを書かない**。以下に留める
 
 ## タスク分解の手順
 
-1. **スコープ確認**: TODO.md or ユーザー指示からタスクを特定
+1. **スコープ確認**: GitHub Issues or ユーザー指示からタスクを特定
 2. **分解判定**: Claude単独で完結するか、外部エージェントが必要か
    - config変更、HTML/CSS、ドキュメント → Claude直接
    - シェーダー、Three.jsメッシュ → Gemini
@@ -31,7 +31,7 @@ Claudeは**Three.js/GLSLの実装コードを書かない**。以下に留める
 - [ ] devパネルにスライダーを追加したか（必要な場合）
 - [ ] main.jsのapplyDevValueに反映したか
 - [ ] テスト通過: `node tests/config-consistency.test.js`
-- [ ] CURRENT.mdに作業記録を更新したか
+- [ ] Issueコメント（Start/Interim/Completion）を更新したか
 
 ## 禁止
 

@@ -1,215 +1,27 @@
-# エージェント協調ルール (kesson-space)
+# agent-orchestration.md — Deprecated
 
-**バージョン**: 1.0
-**更新日**: 2026-02-15
+## Status
 
----
+This file is deprecated and retained only as a historical note.
+Do not treat it as a normative management document.
 
-## 1. エージェント階層
+## Active Governance Sources
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  DT (Claude Desktop)                                    │
-│  • 戦略決定・最終判断権                                 │
-│  • 専門エージェント選定                                 │
-│  • 日本語文章作成（レポート調）                         │
-│  常駐: 📋プロセス, 🩺ヘルス, 🗂️プロジェクト管理          │
-├─────────────────────────────────────────────────────────┤
-│  Claude Code                                            │
-│  • 監督・タスク管理・マージ                             │
-│  • Codexへの指示出し                                    │
-│  常駐: 📋プロセス, 🩺ヘルス, 🔧品質, 🗂️プロジェクト管理   │
-├─────────────────────────────────────────────────────────┤
-│  Codex (OpenAI) x2                                      │
-│  • コーディング実行（並列可）                           │
-│  • 日本語文章作成NG                                     │
-│  常駐: なし（指示に従うのみ）                            │
-├─────────────────────────────────────────────────────────┤
-│  Gemini MCP                                             │
-│  • Three.js/GLSLシェーダー専門                          │
-│  • 呼び出し: DT/Claude Codeから明示的に                  │
-└─────────────────────────────────────────────────────────┘
-```
+1. `AGENTS.md`
+2. `README.md`
+3. `docs/README.md`
+4. `docs/AGENT-RULES.md`
+5. `docs/WORKFLOW.md`
+6. `skills/project-management-agent.md`
 
----
+## Current Governance Model
 
-## 2. 常駐エージェント
+- Management must be LLM-agnostic: Claude/Codex/Gemini all follow the same governance.
+- Codex-specific instructions are supplemental and must not create a separate management system.
+- Issue-Centric workflow is mandatory across all agents.
+- Quality gates, branch flow, and visual-check gate must follow the active sources listed above.
 
-### 2.1 🗂️ プロジェクト管理ガード
+## Migration Note
 
-**役割**: ルールとの整合性を常時チェック。コンテキストを維持。
-
-| # | 監視項目 | 判定基準 | 違反時アクション |
-|---|---------|---------|----------------|
-| PM-1 | スコープ整合性 | タスクがkesson-space範囲内か（理論はkesson-thinking側） | 警告、適切なリポジトリへ誘導 |
-| PM-2 | 監督構造遵守 | DT→Claude Code→Codexの階層を飛ばしていないか | 階層を経由するよう提案 |
-| PM-3 | 品質ルール整合 | Bootstrap使用、レポート調、シェーダー=Gemini等 | ルール参照を提示 |
-| PM-4 | TODO正本原則 | タスクがTODO.mdに記録されているか | 採番して追加 |
-| PM-5 | ブランチ整合性 | 作業が適切なワークツリーで行われているか | 正しいブランチを提示 |
-| PM-6 | コンテキスト保持 | 現在の状態（セッション番号、アクティブタスク）を把握 | CURRENT.md参照を促す |
-
-**コンテキスト確認項目**（セッション開始時）:
-- 現在のセッション番号
-- アクティブブランチと未マージ状態
-- P0/P1タスクの有無
-- 前セッションの引き継ぎ事項
-
-### 2.2 📋 プロセスガード
-
-**役割**: セッションライフサイクルの監視。
-
-| # | 監視項目 | 発動タイミング |
-|---|---------|---------------|
-| PG-1 | セッション開始手順 | セッション冒頭 |
-| PG-2 | CURRENT.md更新 | タスク完了時 |
-| PG-3 | TODO.md更新 | タスク完了時 |
-| PG-4 | セッション終了手順 | セッション終了時 |
-
-### 2.3 🩺 セッションヘルスガード
-
-**役割**: コンテキスト負荷の監視。
-
-| # | 監視項目 | 閾値 | アクション |
-|---|---------|------|----------|
-| SH-1 | シェーダー全文読み込み | 2ファイル超 | 分割提案 |
-| SH-2 | マルチファイル分析 | 5ファイル超 | 中間確認 |
-| SH-3 | Gemini出力 | 長大な場合 | diff抽出のみ |
-| SH-4 | 複合タスク | 4エージェント以上 | 別セッション分割 |
-
-**警告フォーマット**: `⚠️SH-N: [理由]。分割を提案します。`
-
-### 2.4 🔧 品質ガード
-
-**役割**: コード品質とスタイルの監視。
-
-| # | 監視項目 | ルール |
-|---|---------|-------|
-| QG-1 | CSS | Bootstrapを使用。カスタムCSSは最小限 |
-| QG-2 | 日本語文章 | レポート調。小説調NG |
-| QG-3 | シェーダー | Gemini MCP経由で実装 |
-| QG-4 | ES Modules | import文の整合性 |
-| QG-5 | アクセシビリティ | aria-label、キーボード操作 |
-
----
-
-## 3. 専門エージェント（条件付き呼び出し）
-
-| エージェント | 専門 | 呼び出し条件 | 呼び出し元 |
-|-------------|------|-------------|-----------|
-| 🎨 Gemini MCP | Three.js/GLSL | シェーダー実装・修正 | DT, Claude Code |
-| 📱 モバイルUX | タッチ操作、レスポンシブ | UI/UX変更時 | Claude Code |
-| 🔬 パフォーマンス | FPS、メモリ、LCP | 最適化タスク | DT |
-| 🌐 i18n | 多言語対応 | テキスト追加・変更 | Claude Code |
-| 📝 devlog執筆 | 日本語レポート調 | devlogコンテンツ作成 | DT |
-| 🔍 コードレビュー | 論理チェック、バグ検出 | PR前、複雑な変更 | Claude Code |
-
----
-
-## 4. タスク別呼び出しルール
-
-| タスク種別 | 担当経路 | 常駐 | 専門 |
-|-----------|---------|------|------|
-| セッション開始 | DT | 📋🗂️ | — |
-| バグ修正（軽微） | Claude Code → Codex | 🔧🩺🗂️ | — |
-| バグ修正（複雑） | DT → Claude Code → Codex | 📋🩺🔧🗂️ | 🔍 |
-| シェーダー実装 | DT → Gemini MCP | 🩺🗂️ | 🎨 |
-| UI/UX改善 | Claude Code → Codex | 🔧🗂️ | 📱 |
-| devlog執筆 | DT | 📋🗂️ | 📝 |
-| 多言語追加 | Claude Code → Codex | 🔧🗂️ | 🌐 |
-| パフォーマンス | DT → Claude Code | 🩺🗂️ | 🔬 |
-| セッション終了 | DT | 📋🗂️ | — |
-| マージ | Claude Code | 🗂️ | — |
-
----
-
-## 5. コンテキスト管理
-
-### 5.1 必須コンテキスト（常時把握）
-
-```yaml
-session:
-  number: "#26"
-  started: "2026-02-15"
-  
-workspace:
-  active_branch: "main"
-  pending_merges: []
-  
-tasks:
-  p0: ["T-035"]
-  p1: []
-  active: null
-  
-rules:
-  css: "Bootstrap優先"
-  japanese: "レポート調"
-  shader: "Gemini MCP"
-```
-
-### 5.2 コンテキスト更新タイミング
-
-| イベント | 更新内容 |
-|---------|---------|
-| セッション開始 | session番号、pending_merges確認 |
-| タスク着手 | tasks.active設定 |
-| タスク完了 | TODO.md移動、tasks.active解除 |
-| ブランチ操作 | workspace更新 |
-| セッション終了 | CURRENT.md更新 |
-
----
-
-## 6. ルール参照マップ
-
-| 判断が必要な場面 | 参照先 |
-|----------------|-------|
-| スコープ判断 | README.md §プロジェクト概要 |
-| 監督構造 | README.md §監督構造 |
-| セッション手順 | WORKFLOW.md |
-| 品質ルール | README.md §品質ルール, 本スキル §2.4 |
-| タスク管理 | TODO.md, CURRENT.md |
-| シェーダー作業 | AGENT-RULES.md §セッションヘルス |
-
----
-
-## 7. 違反検出時の対応
-
-### 7.1 軽微な違反
-
-```
-🗂️PM: [PM-3] Bootstrap未使用のCSSを検出。
-→ 修正提案: `btn-close` クラスを使用してください。
-```
-
-### 7.2 構造的な違反
-
-```
-🗂️PM: [PM-2] 監督構造違反を検出。
-→ DT→Claude Code→Codexの経路を経由してください。
-→ 現在の指示をClaude Code向けに再構成しますか？
-```
-
-### 7.3 スコープ外タスク
-
-```
-🗂️PM: [PM-1] スコープ外タスクを検出。
-→ 理論的内容はkesson-driven-thinkingリポジトリで管理します。
-→ kesson-spaceは技術実装のみを担当します。
-```
-
----
-
-## 8. 運用方針
-
-**本スキルは随時気づくたびに追加・更新していく。**
-
-- 新しいルールやパターンを発見したら、該当セクションに追記
-- 閾値や判定基準は実運用を通じて調整
-- 更新履歴に変更内容を記録
-
----
-
-## 更新履歴
-
-| 日付 | バージョン | 内容 |
-|------|-----------|------|
-| 2026-02-15 | 1.0 | 初版作成。kesson-driven-thinking quality-management.md を参考に設計 |
+Legacy references to `CURRENT.md` / `TODO.md` in previous revisions are obsolete.
+Always use Issue comments and PR metadata for progress and completion tracking.

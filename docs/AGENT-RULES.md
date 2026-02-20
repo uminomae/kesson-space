@@ -1,7 +1,7 @@
 # AGENT-RULES.md — マルチエージェント運用ルール
 
-**バージョン**: 1.5
-**更新日**: 2026-02-15
+**バージョン**: 1.7
+**更新日**: 2026-02-20
 
 ---
 
@@ -24,20 +24,21 @@ Claude内部で**常時自動稼働**するエージェント。明示的な呼�
 
 **自動実行内容**:
 1. タスク分類（実装/修正/コンテンツ/レビュー/シェーダー）
-2. 委譲先判断（Claude Code / OpenAI Codex / Gemini MCP / Claude直接）
+2. 委譲先判断（Codex / Gemini MCP / Claude Code / Claude直接）
 3. 指示書テンプレート選択・生成
 4. ワークツリー割り当て
+5. 自律判断レベル適用（自動判断 / 要確認 / 停止）
 
 **委譲先判断マトリクス**:
 
 | タスク種別 | 委譲先 |
 |------------|--------|
 | シェーダー/GLSL | Gemini MCP |
-| 複数ファイル+設計判断 | Claude Code |
+| 複数ファイル+設計判断 | OpenAI Codex（必要時Claude Code） |
 | 単純実装・定型作業 | OpenAI Codex |
 | 1ファイル・即時必要 | Claude直接（例外） |
 
-詳細: `skills/project-management-agent.md`
+詳細: `skills/project-management-agent.md`（Autonomy Charter / State Machine）
 
 ---
 
@@ -66,7 +67,7 @@ Claude内部で**常時自動稼働**するエージェント。明示的な呼�
 | **関数の中身（実装）** | **Gemini** or **Claude Code** or **Codex** | Claudeは実装を書かない |
 | **指示書作成** | **Claude**（📋エージェント経由） | 自動生成 |
 
-> **原則**: ユーザーが明示した時のみ外部エージェントを使用。自動呼び出しはしない。
+> **原則**: 外部エージェント利用は `skills/project-management-agent.md` の自律判断ルールに従う。ユーザーの明示指示がある場合はそれを最優先する。
 
 ---
 
@@ -109,7 +110,7 @@ tree -I 'node_modules|.git|dist|__pycache__|uv.lock' --dirsfirst -L 3
 | `skills/shader-impl.md` | Gemini | Visual Direction、GLSL作法、出力ルール |
 | `skills/review-gates.md` | GPT | レビュー観点、品質ゲート、評価基準 |
 | `skills/orchestrator.md` | Claude | 分解・委譲・統合の手順 |
-| `skills/session-workflow.md` | Claude | セッション管理ワークフロー |
+| `skills/session-workflow.md` | Claude | セッション管理ワークフロー（deprecated: 参照のみ） |
 | `skills/project-management-agent.md` | Claude | 委譲判断・指示書生成 |
 | `skills/devlog-generation.md` | Claude/Codex | devlog生成ワークフロー |
 
@@ -210,7 +211,7 @@ kesson-space/
 │   ├── shader-impl.md             ← Gemini用: Visual Direction、GLSL作法
 │   ├── review-gates.md            ← GPT用: レビュー観点
 │   ├── orchestrator.md            ← Claude用: 分解・委譲手順
-│   ├── session-workflow.md        ← Claude用: セッション管理
+│   ├── session-workflow.md        ← Claude用: セッション管理（deprecated）
 │   ├── project-management-agent.md ← Claude用: 委譲判断・指示書生成
 │   ├── devlog-generation.md       ← devlog生成ワークフロー
 │   └── LEARNINGS.md               ← 運用の教訓（手動更新）
@@ -241,9 +242,9 @@ PROMPT-STRUCTURE.md = **Gemini向けの具体的テンプレート**（引き続
 
 | Tier | ファイル | 参照タイミング |
 |------|---------|---------------|
-| 1 | README.md, CURRENT.md, TODO.md | セッション開始時に必ず |
+| 1 | README.md, AGENTS.md, docs/README.md | セッション開始時に必ず |
 | 2 | WORKFLOW.md, AGENT-RULES.md, ARCHITECTURE.md, ENVIRONMENT.md, TESTING.md, CONCEPT.md | タスクに応じて |
-| 3 | prompts/*, issues/* | Gemini作業時・過去の設計参照時のみ |
+| 3 | docs/prompts/*, docs/issues/* | 必要時のみ |
 
 ### 🔎PKガードの監視項目（常駐）
 
@@ -261,15 +262,16 @@ PKガードはClaudeが**常時内部的に実行する**常駐ガード。
 
 | ファイル | Tier | PKに必要 |
 |---------|------|---------|
+| README.md | 1 | ✅ 必須 |
+| AGENTS.md | 1 | ✅ 必須 |
 | docs/README.md | 1 | ✅ 必須 |
-| docs/CURRENT.md | 1 | ✅ 必須 |
-| docs/TODO.md | 1 | ✅ 必須 |
+| GitHub Issues | 1 | ✅ 必須（正本） |
 | docs/WORKFLOW.md | 2 | ✅ 推奨 |
 | docs/CONCEPT.md | 2 | ✅ 推奨 |
 | docs/ARCHITECTURE.md | 2 | ⚠️ 技術作業時のみ |
 | docs/AGENT-RULES.md | 2 | ⚠️ エージェント作業時のみ |
-| docs/prompts/* | 3 | ❌ PKから外す |
-| docs/issues/* | 3 | ❌ PKから外す |
+| docs/prompts/* | 3 | ⚠️ 指示書参照時のみ |
+| docs/issues/* | 3 | ⚠️ 過去判断参照時のみ |
 
 ---
 
@@ -295,7 +297,7 @@ kesson-spaceではシェーダーファイル（GLSL 200行超）やGemini MCP�
 | パターン | 具体例 | 予防策 |
 |---------|--------|--------|
 | シェーダー全文ループ | vortex.js読み込み→修正→再読み込み | 1回目でdiff管理に移行 |
-| 修正済み確認の連鎖 | dev-panel→main.js→scroll-ui→config | CURRENT.mdで先に確認 |
+| 修正済み確認の連鎖 | dev-panel→main.js→scroll-ui→config | IssueコメントとPR差分を先に確認 |
 | Gemini出力の蓄積 | 生成コード200行×3回 | 最新版のみ保持 |
 | 4エージェント分析+実装 | 分析で大量出力→そのまま実装 | 別セッションに分割 |
 
@@ -339,6 +341,8 @@ kesson-spaceではシェーダーファイル（GLSL 200行超）やGemini MCP�
 | v1.3 | ドキュメント階層再構成に伴い、PKガード・セッションヘルス詳細を本ファイルに統合 |
 | v1.4 | 📋プロジェクト管理エージェント追加、委譲先にClaude Code/Codex追加 |
 | v1.5 | 🔍探索モード追加（§10）— 並列エージェント呼び出しパターン標準化 |
+| v1.6 | Issue-Centric整合。CURRENT/TODO依存を削除し自律判断チャーターを反映 |
+| v1.7 | 自律委譲方針をPMルールブックに統合。deprecatedスキルの扱いを明記 |
 
 ---
 

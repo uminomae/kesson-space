@@ -1,7 +1,7 @@
 # WORKFLOW.md — セッション運用
 
-**バージョン**: 2.2
-**更新日**: 2026-02-17
+**バージョン**: 2.3
+**更新日**: 2026-02-20
 
 ---
 
@@ -34,31 +34,22 @@
 
 ### 必須チェックリスト
 
-- [ ] `docs/CURRENT.md` を更新（完了タスク、未完了、新規課題）
-- [ ] `docs/TODO.md` を更新（完了→移動、新規タスク→追加）
-- [ ] ブランチ確認：作業ブランチで作業した場合、mainにマージするか？
+- [ ] 作業Issueに Completion コメントを追記
+- [ ] ブランチ確認：実装ブランチが `dev` / `main` のどこまで反映済みか確認
+- [ ] `dev` 反映済みなら目視確認待ち状態を明示し、次タスクに進まない
+- [ ] 目視OK後、PR本文に `Closes #XX` を含めて `main` に統合
 - [ ] GitHubにプッシュ
 
-### CURRENT.md テンプレート
+### セッション終了コメント（Issue）
 
-```markdown
-# CURRENT - 進捗・引き継ぎ
-
-**最終更新**: YYYY-MM-DD
-**セッション**: #N タイトル
-
-## 現在の状態
-### 完了 / 進行中 / 未着手
-
-## 技術的メモ
-## 参照リンク
+```text
+✅ Session handoff
+- Issue: #XX
+- Branch: feature/issue-XX-...
+- Status: IN_PROGRESS | WAIT_VISUAL | DONE
+- Last commit: <sha>
+- Next action: <one line>
 ```
-
-### セッション番号の採番
-
-- 新しいセッションごとに `#N` をインクリメント
-- 日付が変わったら新セッション
-- 長時間空いたら新セッション
 
 ---
 
@@ -74,7 +65,7 @@ PKを直接編集・削除しない。すべての変更はGitHubに対して行
 ### DTアプリの場合
 
 ```
-Claude → GitHub APIで直接コミット → 完了
+Claude → feature/dev ブランチへコミット（main直接禁止） → 完了
 ```
 
 ### ウェブ版の場合（DT App Code）
@@ -86,7 +77,7 @@ DT App Code: 「docs/prompts/NEXT-TASK.md を読んで実行して」
                         ↓
 DT App Code: 実装 → GitHub API でコミット → push
                         ↓
-Chat: diff 確認 → 承認 → main マージ → TODO 更新
+Chat: diff 確認 → dev 反映 → 目視確認 → PR（Closes #XX）→ main マージ
 ```
 
 詳細は [§3a. DT App Code 運用フロー](#3a-dt-app-code-運用フロー) を参照。
@@ -108,8 +99,10 @@ CLI はフォールバック先として維持する。
 | 2. 実装指示 | ユーザー → DT App Code | 「docs/prompts/NEXT-TASK.md を読んで実行して」 |
 | 3. 実装 & push | DT App Code | GitHub API でコミット（自動push） |
 | 4. diff確認 | Chat | `git log` / `git diff` で変更確認 |
-| 5. 承認 & マージ | ユーザー → Chat | main にマージ、TODO 更新 |
-| 6. 指示書アーカイブ | Chat | `docs/prompts/done/` に移動 |
+| 5. dev反映 | Chat | 実装ブランチを `dev` にマージして目視確認待ち |
+| 6. 目視確認 | ユーザー | `OK/NG` を回答 |
+| 7. PR & main統合 | Chat | `Closes #XX` 付きPRを作成して `main` へ統合 |
+| 8. 指示書アーカイブ | Chat | `docs/prompts/done/` に移動 |
 
 ### 指示書ファイル規約
 
@@ -154,7 +147,7 @@ kesson-driven-thinking（理論の正本・Private）
 
 | 参照ファイル | 提供する情報 |
 |-------------|-------------|
-| `docs/CURRENT.md` | 進捗・未着手タスク・技術メモ |
+| `kesson-thinking/docs/CURRENT.md` | 理論側の進捗・未着手タスク・技術メモ |
 | `docs/CONCEPT.md` | 理論と視覚表現の対応表 |
 
 ### kesson-space → kesson-thinking
@@ -166,7 +159,7 @@ kesson-driven-thinking（理論の正本・Private）
 
 1. 判断を保留し、ユーザーに報告
 2. 「この判断はkesson-thinkingセッションで行うべきか？」を確認
-3. ここで決定するならCONCEPT.mdに反映。持ち帰るならCURRENT.mdに保留記録
+3. ここで決定するならCONCEPT.mdに反映。持ち帰るなら `kesson-thinking/docs/CURRENT.md` に保留記録
 
 ---
 
@@ -174,12 +167,13 @@ kesson-driven-thinking（理論の正本・Private）
 
 | ブランチ | 役割 | pushする人/ツール |
 |---------|------|------------------|
-| main | 正本。GitHub Pagesデプロイ対象 | DTアプリ（GitHub API） |
+| main | 正本。GitHub Pagesデプロイ対象 | PR経由で更新 |
+| dev | 目視確認用ステージング | 実装ブランチを統合 |
 | feature/* | 機能開発用 | 必要時に作成 |
 
-- DTアプリは通常mainに直接push
-- 大きな変更は feature/* で作業し、レビュー後にマージ
-- **セッション終了時に必ず確認**: 作業ブランチが残っていたら、mainにマージするかをユーザーに確認
+- `main` への直接コミットは禁止
+- 標準フローは `feature/* -> dev -> main`
+- `dev` に実装を取り込んだ後は、目視確認結果が出るまで次タスクに進まない
 
 Worktree運用については [ENVIRONMENT.md §4](./ENVIRONMENT.md) を参照。
 

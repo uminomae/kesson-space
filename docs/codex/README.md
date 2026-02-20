@@ -1,6 +1,8 @@
-# kesson-codex-app Document Hub
+# kesson-codex-app Document Hub (Legacy)
 
-Codex App ワークツリー向けの書類置き場。
+Codex App ワークツリー向けの書類置き場（主に過去Issueの履歴）。
+
+> 注意: このディレクトリには過去Issue向けの指示書も含まれる。現行のプロジェクト管理正本は `AGENTS.md` と `skills/project-management-agent.md`。
 
 ## Naming Convention
 
