@@ -1,5 +1,6 @@
 import {
   breathConfig,
+  consciousnessParams,
   sceneParams,
   gemParams,
   xLogoParams,
@@ -138,6 +139,10 @@ export const DEV_PARAM_REGISTRY = (() => {
 
             if (key in breathConfig) {
                 entry.apply.push({ kind: 'config', object: 'breathConfig', key });
+            }
+
+            if (key in consciousnessParams) {
+                entry.apply.push({ kind: 'config', object: 'consciousnessParams', key });
             }
 
             if (key in sceneParams) {

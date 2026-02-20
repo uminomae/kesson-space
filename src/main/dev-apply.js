@@ -1,6 +1,7 @@
 import { setAutoRotateSpeed, setCameraPosition, setCameraTarget } from '../controls.js';
 import { rebuildGem, rebuildXLogo, updateGemPosition, updateNavOrbPositions, updateXLogoPosition } from '../nav-objects.js';
 import {
+    consciousnessParams,
     DEV_PARAM_REGISTRY,
     breathConfig,
     gemParams,
@@ -62,6 +63,7 @@ export function createDevValueApplier({ distortionPass, dofPass, fluidSystem, li
         const configTargets = {
             toggles,
             breathConfig,
+            consciousnessParams,
             sceneParams,
             gemParams,
             xLogoParams,
