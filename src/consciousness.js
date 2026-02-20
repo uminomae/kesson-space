@@ -13,11 +13,16 @@ import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
 import { initTopbarConsole } from './topbar-console.js';
 import { detectLang, LANG_CHANGE_EVENT } from './i18n.js';
-import { breathConfig, liquidParams, sceneParams, toggles } from './config.js';
+import { breathConfig, consciousOverlayParams, liquidParams, sceneParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { getRawMouse, initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
 import { createSdfConsciousnessEntity, updateSdfConsciousnessEntity } from './consciousness/sdf-entity.js';
+import {
+    createConsciousGateRaysOverlay,
+    initConsciousGateRaysConsole,
+    updateConsciousGateRaysOverlay,
+} from './consciousness/gate-rays-overlay.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 
@@ -125,6 +130,10 @@ const {
 const consciousnessEntity = createSdfConsciousnessEntity(scene, camera, {
     enabled: toggles.sdfEntity,
 });
+const gateRaysOverlay = createConsciousGateRaysOverlay(scene, camera, {
+    params: consciousOverlayParams,
+});
+initConsciousGateRaysConsole(gateRaysOverlay);
 
 function updateSceneWithConsciousness(time) {
     updateBaseScene(time);
@@ -137,6 +146,10 @@ function updateSceneWithConsciousness(time) {
         mouse,
         camera,
         enabled: toggles.sdfEntity,
+    });
+    updateConsciousGateRaysOverlay(gateRaysOverlay, {
+        time,
+        camera,
     });
 }
 

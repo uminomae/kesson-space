@@ -107,6 +107,28 @@ export const consciousnessParams = {
     csGateB:          0.2,
 };
 
+// --- 意識オーバーレイ（ゲート + 黄金矢束） ---
+// Consciousness page でのみ利用。既存SDF背景に加算合成で重ねる。
+export const consciousOverlayParams = {
+    enabled: true,
+    gateOffsetX: -0.78,
+    gateOffsetY: 0.01,
+    gateCoreStrength: 0.011,
+    gateAuraStrength: 0.078,
+    gateHeight: 0.95,
+    gateStretch: 1.0,
+    gatePulse: 0.18,
+    rayBrightness: 1.32,
+    rayDensity: 1.0,
+    raySpeed: 8.8,
+    raySpread: 0.96,
+    rayTaper: 0.82,
+    rayAngle: -0.26,
+    fadeNear: 0.0,
+    fadeFar: 3.35,
+    globalOpacity: 0.84,
+};
+
 // --- 流体フィールドパラメータ ---
 export const fluidParams = {
     force:     1.0,

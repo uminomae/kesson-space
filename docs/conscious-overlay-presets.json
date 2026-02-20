@@ -1,0 +1,46 @@
+{
+  "default_issue103_overlay": {
+    "enabled": true,
+    "gateOffsetX": -0.78,
+    "gateOffsetY": 0.01,
+    "gateCoreStrength": 0.011,
+    "gateAuraStrength": 0.078,
+    "gateHeight": 0.95,
+    "gateStretch": 1.0,
+    "gatePulse": 0.18,
+    "rayBrightness": 1.32,
+    "rayDensity": 1.0,
+    "raySpeed": 8.8,
+    "raySpread": 0.96,
+    "rayTaper": 0.82,
+    "rayAngle": -0.26,
+    "fadeNear": 0.0,
+    "fadeFar": 3.35,
+    "globalOpacity": 0.84
+  },
+  "focused_gate": {
+    "gateCoreStrength": 0.018,
+    "gateAuraStrength": 0.11,
+    "gatePulse": 0.24,
+    "rayBrightness": 1.15,
+    "rayDensity": 0.86,
+    "globalOpacity": 0.9
+  },
+  "aggressive_rays": {
+    "rayBrightness": 1.92,
+    "rayDensity": 1.28,
+    "raySpeed": 11.2,
+    "raySpread": 1.08,
+    "rayTaper": 0.68,
+    "fadeFar": 3.9,
+    "globalOpacity": 0.94
+  },
+  "calm_meditative": {
+    "gatePulse": 0.1,
+    "rayBrightness": 0.98,
+    "rayDensity": 0.74,
+    "raySpeed": 6.4,
+    "raySpread": 0.8,
+    "globalOpacity": 0.72
+  }
+}
