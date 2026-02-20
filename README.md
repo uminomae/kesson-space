@@ -3,6 +3,7 @@
 > 欠損駆動思考の3D体験空間
 
 **⚠️ 本READMEはClaude DT（Claude.ai Desktop / Web チャット）用の運用ルールです。**
+**ただし運用体系そのものはLLM非依存であり、Codex向け記述は不足分の補足であって別体系ではありません。**
 他のエージェント（Claude Code CLI, OpenAI Codex, Gemini等）は [AGENTS.md §0](AGENTS.md) の読み替えガイドに従い、自環境に適用してください。全エージェント共通のルールは [AGENTS.md](AGENTS.md) の §3, §5, §6 を参照。
 
 ---

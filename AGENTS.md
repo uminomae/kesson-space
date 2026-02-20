@@ -5,6 +5,10 @@
 **Primary audience**: Claude DT (Claude.ai Desktop / Web chat).
 The rules, examples, and workflows below are written from the DT perspective.
 
+**Charter principle**: This governance is LLM-agnostic. It must work with any LLM agent; Codex-specific notes are supplemental adaptations only, not a separate management system.
+
+**Codex startup rule**: If Codex starts from this file, it must read `./README.md` first, then `./docs/README.md`, before any task action.
+
 **For other agents** (Claude Code CLI, OpenAI Codex App/CLI, Gemini MCP, etc.):
 Adapt the rules to your own environment. Specifically:
 
@@ -14,7 +18,7 @@ Adapt the rules to your own environment. Specifically:
 | Worktree paths (`/Users/uminomae/dev/...`) | Use your assigned worktree or working directory |
 | "目視確認ゲート" | This is the DT's responsibility. Implementation agents push and report; DT handles the gate |
 | "セッションキャッシュ" | DT-only. Other agents use Issue comments for state handoff |
-| `skills/project-management-agent.md` | DT-only skill. Other agents follow instructions received from DT |
+| `skills/project-management-agent.md` | Common governance rulebook. Apply it across LLMs and adapt only environment-specific command details |
 
 **Language policy**: Rules are written in mixed Japanese/English. Section headings and key terms are kept in English for cross-LLM readability. Examples may use Japanese.
 
@@ -53,26 +57,29 @@ Loading policy:
 
 ### 2.1 Naming Convention
 
-- Format: `kesson-{llm}-{app}-{suffix}`
-- Branch: `feature/{worktree-name}` or `feature/codex-N`
-- Example: worktree `kesson-codex-1` → branch `feature/codex-1`
+- Format: `kesson-{llm}-{app}{N}` (example: `kesson-codex-app1`)
+- Branch: task-oriented branch (`feature/*`, `codex/*`, etc.)
+- Always verify actual mapping with `git -C /Users/uminomae/dev/kesson-space worktree list`
 
 ### 2.2 Current Worktrees
 
 | ワークツリー | パス | ブランチ | 用途 |
 |---|---|---|---|
 | **main** | `/Users/uminomae/dev/kesson-space` | main | 本番（直接コミット非推奨） |
-| Codex App (staging) | `/Users/uminomae/dev/kesson-codex-app` | dev | 目視確認ゲート・ステージング |
-| Codex App 1 | `/Users/uminomae/dev/kesson-codex-1` | feature/codex-1 | Codex App 実装用 |
-| Codex App 2 | `/Users/uminomae/dev/kesson-codex-2` | feature/codex-2 | Codex App 実装用 |
-| Codex App 3 | `/Users/uminomae/dev/kesson-codex-3` | feature/codex-3 | Codex App 実装用 |
+| DT staging | `/Users/uminomae/dev/kesson-claude-dt-check` | dev（運用上の期待） | 目視確認ゲート・ステージング |
+| Codex App 1 | `/Users/uminomae/dev/kesson-codex-app1` | 変動（`feature/*` 等） | Codex App 実装用 |
+| Codex App 2 | `/Users/uminomae/dev/kesson-codex-app2` | 変動（`feature/*` 等） | Codex App 実装用 |
+| Codex App 3 | `/Users/uminomae/dev/kesson-codex-app3` | 変動（`feature/*` 等） | Codex App 実装用 |
+| Codex CLI 1 | `/Users/uminomae/dev/kesson-codex-cli1` | 変動（`feature/*` 等） | Codex CLI 実装用 |
+| Codex CLI 2 | `/Users/uminomae/dev/kesson-codex-cli2` | 変動（`feature/*` 等） | Codex CLI 実装用 |
+| Codex CLI 3 | `/Users/uminomae/dev/kesson-codex-cli3` | 変動（`feature/*` 等） | Codex CLI 実装用 |
 
 ### 2.3 Parallel Worktrees
 
 When working on multiple issues in parallel, each gets its own worktree:
 
 ```
-kesson-codex-N  →  feature/codex-N
+kesson-codex-appN / kesson-codex-cliN  →  task branch
 ```
 
 Each worktree reads its instruction from `docs/codex/INSTRUCTION-{issue#}.md` on the corresponding branch.
@@ -153,6 +160,14 @@ Note: Steps 1-2 are orchestrated by DT. Implementation agents complete their wor
 
 Issue comments serve as the shared communication channel across all agents (DT / Claude Code / Codex / Gemini). Regardless of environment differences, reading the Issue thread reveals current state.
 
+### 5.5 Autonomous Decision Boundary
+
+To maximize autonomous operation, apply the rulebook in `skills/project-management-agent.md`.
+
+- Auto-decide: issue prioritization, delegation target, branch naming, instruction path
+- Ask user first: `dev -> main` merge, scope expansion, dependency changes, label/priority changes
+- Stop and ask: conflicting rules, unexpected repository changes, ambiguous acceptance criteria
+
 ## 6. Completion Report (ALL agents)
 
 Report completion via **Issue comment (§5.2) and PR body**. No separate report file needed.
@@ -175,7 +190,7 @@ Codex App operation notes and instruction files:
 If guidance conflicts, follow this order:
 
 1. User's direct request
-2. This `AGENTS.md`
-3. `./README.md` (DT-specific operational rules)
+2. `./README.md`
+3. This `AGENTS.md`
 4. `./docs/README.md`
 5. Other repository docs

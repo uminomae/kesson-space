@@ -1,7 +1,7 @@
 # kesson-space ドキュメントハブ
 
-**バージョン**: 3.0
-**更新日**: 2026-02-17
+**バージョン**: 3.1
+**更新日**: 2026-02-20
 
 本ファイルはドキュメントの目次。詳細は各ファイルを参照。
 
@@ -75,7 +75,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 ## 監督構造・ワークツリー
 
 → [AGENT-RULES.md](./AGENT-RULES.md) §0〜§1 を参照
-→ [skills/project-management-agent.md](../skills/project-management-agent.md) §Step 3 を参照（ワークツリー正本）
+→ [skills/project-management-agent.md](../skills/project-management-agent.md) §2, §5 を参照（自律判断/ワークツリー運用）
 
 ---
 
@@ -105,6 +105,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 
 | 日付 | バージョン | 内容 |
 |------|-----------|------|
+| 2026-02-20 | 3.1 | LLM非依存ガバナンス整備、README優先・Issue-Centric整合・実在ワークツリー反映 |
 | 2026-02-13 | 1.0 | 初版作成。SCOPE.md・WORKFLOW.mdを統合 |
 | 2026-02-14 | 1.1-1.7 | テスト体制、TODO管理、セッションヘルス等追加 |
 | 2026-02-14 | 2.0 | ドキュメント階層再構成。詳細を専用ファイルに分離 |

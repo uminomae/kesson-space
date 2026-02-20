@@ -227,7 +227,7 @@ window.__e2e.perf()
 |---------|--------|------|
 | `tests/e2e-test-design.md` | kesson-space repo | 本設計書 |
 | `tests/e2e-runner.js` | kesson-space repo | ページ内注入用の自動チェックスクリプト |
-| テスト結果レポート | CURRENT.mdに記録 | PASS/FAIL集計 + スクリーンショット |
+| テスト結果レポート | Issueコメント or PR本文に記録 | PASS/FAIL集計 + スクリーンショット |
 
 ---
 

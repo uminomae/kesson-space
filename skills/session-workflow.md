@@ -1,211 +1,26 @@
-# session-workflow.md — Claude用: セッション管理ワークフロー
+# session-workflow.md — Deprecated
 
-## Role
-プロジェクト管理の一貫性を保つ。セッション開始から終了まで、TODO/CURRENTの状態を正確に維持する。
+## Status
 
----
+This file is deprecated and kept only for historical context.
+Do not use it as an active workflow source.
 
-## 🔴 最重要原則: 委譲優先・並列処理
+## Active Sources (use these instead)
 
-### 判断フロー
-```
-タスク受領
-    ↓
-┌─────────────────────────────────────────┐
-│ Q: Claude Code / Codex に委譲できるか？ │
-└─────────────────────────────────────────┘
-    ↓
-  YES → 指示書作成 → 委譲（並列実行可能）
-    ↓
-   NO → Claude直接実装（GitHub API経由）
-```
+1. `AGENTS.md` (project-wide mandatory rules)
+2. `README.md` (highest-priority operational context)
+3. `docs/README.md` (docs hub and reading order)
+4. `docs/WORKFLOW.md` (session lifecycle)
+5. `skills/project-management-agent.md` (autonomy charter and state machine)
 
-### 委譲のメリット
-- **並列処理**: 複数タスクを同時進行
-- **ワークツリー分離**: main を汚さずに作業
-- **品質**: 専門エージェントによる実装
+## Non-Negotiable Rules
 
-### ワークツリー構成
-| 委譲先 | 適用条件 | パス |
-|--------|----------|------|
-| main | 本番 | /Users/uminomae/Documents/GitHub/kesson-space |
-| Claude Code | 複数ファイル、設計判断 | /Users/uminomae/Documents/GitHub/kesson-claudeCode |
-| Codex | 単純実装、定型作業 | /Users/uminomae/Documents/GitHub/kesson-codex |
-| Gemini MCP | シェーダー/Three.js | Claude経由で呼び出し |
+- GitHub Issues are the single source of truth for task and progress management.
+- `docs/CURRENT.md` and `docs/TODO.md` are deprecated and must not be used for active tracking.
+- Branch flow is `feature/* -> dev -> main`; direct commits to `main` are prohibited.
+- After merge to `dev`, wait for visual confirmation before moving to the next task.
+- Record progress in Issue comments using Start / Interim / Completion updates.
 
-### 並列処理パターン
-```
-セッション中の並列実行例:
+## Migration Note
 
-[Claude Code] T-039b: カバー画像生成スクリプト
-[Claude Code] T-039c: session記事下書き
-[Codex]       T-039a: generate-sessions.py修正
-
-→ 各完了後 main にマージ
-```
-
----
-
-## Phase 1: セッション開始
-
-### 1.1 状態読み込み
-```
-必須: GitHub main から以下を取得
-- docs/TODO.md（タスク正本）
-- docs/CURRENT.md（セッション状態）
-- 直近コミット履歴（5〜10件）
-```
-
-### 1.2 状況報告
-ユーザーに以下を提示:
-- 現在のセッション番号
-- P0/P1タスクの有無
-- 直近の完了タスク
-- 未完了タスクのサマリー
-
-### 1.3 乖離チェック
-CURRENT.mdとコミット履歴に乖離がある場合:
-- ユーザーに報告
-- 必要に応じてCURRENT.md/TODO.mdを更新
-
----
-
-## Phase 2: タスク選択
-
-### 2.1 優先度順
-```
-P0（即対応） → P1（次に着手） → P2（急がない） → P3（アイデア）
-```
-
-### 2.2 ユーザー確認
-- タスクIDと内容を提示
-- 着手の承認を得る
-- 複数タスクの場合は順序を確認
-
----
-
-## Phase 3: タスク実行
-
-### 3.1 実行モード判定（委譲優先）
-
-**まず委譲を検討する。直接実装は最後の選択肢。**
-
-| 条件 | モード | 理由 |
-|------|--------|------|
-| 複数ファイル | Claude Code指示書 | 並列可能、品質担保 |
-| シェーダー/Three.js | Claude Code → Gemini | 専門性 |
-| 単純な定型作業 | Codex指示書 | 高速、並列可能 |
-| 1ファイル・即時必要 | Claude直接実装 | 例外的に許可 |
-
-### 3.2 Claude Code 指示書テンプレート
-```markdown
-## Claude Code 指示書: T-XXX
-
-### タスク概要
-[1行で概要]
-
-### ブランチ
-cd /Users/uminomae/Documents/GitHub/kesson-claudeCode
-git fetch origin
-git checkout feature/claude-code
-git pull origin main
-
-### 対象ファイル
-- path/to/file1.js
-- path/to/file2.js
-
-### 変更内容
-[具体的な変更指示]
-
-### コミット
-feat/fix/docs: T-XXX [簡潔な説明]
-
-### 完了条件
-- [ ] 条件1
-- [ ] 条件2
-```
-
-### 3.3 Codex 指示書テンプレート（定型作業向け）
-```markdown
-## Codex 指示書: T-XXX
-
-### 概要
-[1行]
-
-### ブランチ
-cd /Users/uminomae/Documents/GitHub/kesson-codex
-git fetch origin
-git checkout feature/codex-tasks
-git pull origin main
-
-### 入力
-[入力ファイル/データ]
-
-### 出力
-[期待する出力]
-
-### 手順
-1. [ステップ1]
-2. [ステップ2]
-
-### コミット
-type: T-XXX description
-```
-
-### 3.4 直接実装時のルール（例外的）
-- GitHub API経由でコミット
-- コミットメッセージ形式: `type: T-XXX description`
-- type: feat, fix, docs, refactor, test, ci
-
----
-
-## Phase 4: セッション終了
-
-### 4.1 必須アクション（Claudeの義務）
-```
-対話終了前に必ず実行:
-1. CURRENT.md更新
-   - セッション番号・日付
-   - 実施内容サマリー
-   - 未完了タスク更新
-2. TODO.md更新
-   - 完了タスク → 完了済みセクションに移動
-   - 新規発見タスク → 適切な優先度で追加
-3. コミット・プッシュ
-   - メッセージ: docs: session #XX end — update CURRENT/TODO
-```
-
-### 4.2 完了報告
-ユーザーに以下を提示:
-- 完了したタスク一覧
-- 残りのP0/P1タスク
-- 次回の推奨タスク
-
----
-
-## チェックリスト
-
-### セッション開始時
-- [ ] TODO.md/CURRENT.md読み込み済み
-- [ ] コミット履歴との整合性確認済み
-- [ ] ユーザーにタスク提案済み
-
-### タスク実行時
-- [ ] 委譲可能か検討した
-- [ ] 並列実行できるタスクを分離した
-- [ ] 指示書を作成した（委譲の場合）
-
-### セッション終了時
-- [ ] CURRENT.md更新済み
-- [ ] TODO.md更新済み
-- [ ] GitHub にプッシュ済み
-- [ ] ユーザーに完了報告済み
-
----
-
-## 禁止事項
-
-- **委譲検討をスキップして直接実装に飛ぶこと**
-- セッション終了時のCURRENT/TODO更新を省略すること
-- ユーザー未確認でのタスク着手
-- コミット履歴との乖離を放置すること
+Any instruction in older versions of this file that conflicts with the rules above is invalid.

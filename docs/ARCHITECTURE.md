@@ -1,7 +1,7 @@
 # ARCHITECTURE - 技術構成
 
-**バージョン**: 1.2
-**更新日**: 2026-02-15
+**バージョン**: 1.3
+**更新日**: 2026-02-20
 
 ---
 
@@ -76,8 +76,8 @@ kesson-space/
 │
 └── docs/
     ├── README.md             ← ドキュメントハブ（目次）
-    ├── CURRENT.md            ← 進捗・引き継ぎ
-    ├── TODO.md               ← タスクバックログ
+    ├── CURRENT.md            ← 廃止（Issue-Centric移行後の互換ファイル）
+    ├── TODO.md               ← 廃止（Issue-Centric移行後の互換ファイル）
     ├── WORKFLOW.md           ← セッション運用
     ├── AGENT-RULES.md        ← エージェント分業
     ├── ARCHITECTURE.md       ← 本ファイル（技術構成）

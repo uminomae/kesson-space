@@ -1,7 +1,7 @@
 # ENVIRONMENT.md — 開発環境・ツールチェーン
 
-**バージョン**: 1.2
-**更新日**: 2026-02-17
+**バージョン**: 1.3
+**更新日**: 2026-02-20
 
 ---
 
@@ -47,13 +47,13 @@ OpenAI Codex CLI ──────→ バックグラウンド並列作業
 
 ```
 # ファイル取得
-github:get_file_contents owner=uminomae repo=kesson-space path=docs/CURRENT.md
+github:get_file_contents owner=uminomae repo=kesson-space path=AGENTS.md
 
 # コミット履歴
 github:list_commits owner=uminomae repo=kesson-space perPage=5
 
 # 複数ファイル一括プッシュ
-github:push_files owner=uminomae repo=kesson-space branch=main ...
+github:push_files owner=uminomae repo=kesson-space branch=feature/issue-XX-... ...
 ```
 
 ### 制約
@@ -128,19 +128,19 @@ codex --version
 
 ```bash
 # 対話モード
-cd /Users/uminomae/dev/kesson-codex-1
+cd /Users/uminomae/dev/kesson-codex-app1
 codex
 
 # ワンショット実行
 codex "README.mdを読んでプロジェクト概要を説明して"
 
 # バックグラウンド実行（並列作業向け）
-codex "docs/TODO.mdを分析して優先度レポートを作成" &
+codex "AGENTS.md と docs/README.md を読み、Open Issuesの優先候補を提案して" &
 ```
 
 ### 並列作業のルール
 
-1. **Codex作業は専用ワークツリー `kesson-codex-1` ~ `kesson-codex-3` で行う**
+1. **Codex作業は専用ワークツリー `kesson-codex-app1` ~ `kesson-codex-app3` / `kesson-codex-cli1` ~ `kesson-codex-cli3` で行う**
 2. タスクはファイル単位で分離（衝突回避）
 3. mainへのマージは人間が判断
 
@@ -155,10 +155,13 @@ kesson-spaceでは `git worktree` を使い、エージェントごとに別デ�
 ```
 /Users/uminomae/dev/
 ├── kesson-space/      ← main（本番・直接コミット非推奨）
-├── kesson-codex-app/  ← dev（目視確認ゲート・ステージング）
-├── kesson-codex-1/    ← feature/codex-1（Codex App 実装用）
-├── kesson-codex-2/    ← feature/codex-2（Codex App 実装用）
-└── kesson-codex-3/    ← feature/codex-3（Codex App 実装用）
+├── kesson-claude-dt-check/ ← dev（目視確認ゲート・ステージング）
+├── kesson-codex-app1/  ← Codex App 実装用
+├── kesson-codex-app2/  ← Codex App 実装用
+├── kesson-codex-app3/  ← Codex App 実装用
+├── kesson-codex-cli1/  ← Codex CLI 実装用
+├── kesson-codex-cli2/  ← Codex CLI 実装用
+└── kesson-codex-cli3/  ← Codex CLI 実装用
 ```
 
 ### 確認コマンド
@@ -186,8 +189,8 @@ git -C kesson-space worktree add ../kesson-new -b feature/new-branch
 Worktree構成の場合、別ディレクトリでチェックアウト済みのブランチには切り替えられない。
 
 ```
-$ git checkout feature/codex-1
-fatal: 'feature/codex-1' is already checked out at '/Users/uminomae/dev/kesson-codex-1'
+$ git checkout feature/example-branch
+fatal: 'feature/example-branch' is already checked out at '/Users/uminomae/dev/kesson-codex-app1'
 ```
 
 → 該当ディレクトリに移動して作業する。
