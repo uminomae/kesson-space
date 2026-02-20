@@ -1,5 +1,6 @@
 import {
   breathConfig,
+  consciousnessParams,
   navOrbParams,
   sceneParams,
   vortexParams,
@@ -27,6 +28,7 @@ export const DEV_TOGGLES = [
     { key: 'dof',           label: '被写界深度' },
     { key: 'orbRefraction', label: 'オーブ屈折' },
     { key: 'vortex',        label: '渦' },
+    { key: 'sdfEntity',     label: '意識SDF' },
 ];
 
 export const DEV_SECTIONS = [
@@ -40,6 +42,9 @@ export const DEV_SECTIONS = [
             htmlMaxBlur:     { label: 'HTMLぼかし(px)', min: 0.0, max: 8.0, step: 0.5, default: breathConfig.htmlMaxBlur, target: 'breath' },
             htmlMinScale:    { label: 'HTML最小スケール', min: 0.8, max: 1.0, step: 0.01, default: breathConfig.htmlMinScale, target: 'breath' },
             fovAmplitude:    { label: 'FOV振幅(deg)',   min: 0.0, max: 5.0, step: 0.1, default: breathConfig.fovAmplitude, target: 'breath' },
+            fovPulseAmplitude:{ label: 'FOVズーム脈動',  min: 0.0, max: 2.0, step: 0.05, default: breathConfig.fovPulseAmplitude, target: 'breath' },
+            fovPulseSpeed:   { label: 'ズーム脈動速度',  min: 0.05, max: 1.0, step: 0.01, default: breathConfig.fovPulseSpeed, target: 'breath' },
+            fovPulseSharpness:{ label: 'ズーム脈動鋭さ', min: 1.0, max: 12.0, step: 0.5, default: breathConfig.fovPulseSharpness, target: 'breath' },
         }
     },
     {
@@ -54,6 +59,42 @@ export const DEV_SECTIONS = [
             tintR:         { label: '色調 R',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintR },
             tintG:         { label: '色調 G',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintG },
             tintB:         { label: '色調 B',        min: 0.0, max: 2.0, step: 0.05, default: sceneParams.tintB },
+        }
+    },
+    {
+        id: 'consciousnessSdf',
+        title: '意識SDF（保存用）',
+        params: {
+            csFlowSpeed:      { label: '流速',            min: 0.1,  max: 2.2,  step: 0.01,  default: consciousnessParams.csFlowSpeed },
+            csFreqLow:        { label: '周波数 低',        min: 0.5,  max: 4.5,  step: 0.05,  default: consciousnessParams.csFreqLow },
+            csFreqHigh:       { label: '周波数 高',        min: 1.0,  max: 7.0,  step: 0.05,  default: consciousnessParams.csFreqHigh },
+            csThicknessLow:   { label: '膜厚 始点',        min: 0.04, max: 0.4,  step: 0.005, default: consciousnessParams.csThicknessLow },
+            csThicknessHigh:  { label: '膜厚 終点',        min: 0.02, max: 0.2,  step: 0.005, default: consciousnessParams.csThicknessHigh },
+            csEnvelopeRadius: { label: '束半径',           min: 0.6,  max: 2.5,  step: 0.02,  default: consciousnessParams.csEnvelopeRadius },
+            csDensityGain:    { label: '発光密度',         min: 0.01, max: 0.2,  step: 0.002, default: consciousnessParams.csDensityGain },
+            csStepNear:       { label: '近距離ステップ',    min: 0.02, max: 0.12, step: 0.002, default: consciousnessParams.csStepNear },
+            csStepFar:        { label: '遠距離ステップ',    min: 0.06, max: 0.3,  step: 0.005, default: consciousnessParams.csStepFar },
+            csGateTint:       { label: 'ゲート干渉色',      min: 0.0,  max: 1.0,  step: 0.01,  default: consciousnessParams.csGateTint },
+            csVignette:       { label: '周辺減光',         min: 0.0,  max: 0.6,  step: 0.01,  default: consciousnessParams.csVignette },
+            csMouseParallax:  { label: 'マウス視差',       min: 0.0,  max: 0.2,  step: 0.005, default: consciousnessParams.csMouseParallax },
+        }
+    },
+    {
+        id: 'consciousnessColor',
+        title: '意識SDF 色・光',
+        params: {
+            csLightBoost: { label: '光量ブースト', min: 0.2, max: 3.0, step: 0.05, default: consciousnessParams.csLightBoost },
+            csPreGamma:   { label: 'トーン硬さ',   min: 0.6, max: 2.2, step: 0.02, default: consciousnessParams.csPreGamma },
+            csExposure:   { label: '露光',         min: 0.4, max: 3.0, step: 0.05, default: consciousnessParams.csExposure },
+            csCoolR:      { label: '始点色 R',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csCoolR },
+            csCoolG:      { label: '始点色 G',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csCoolG },
+            csCoolB:      { label: '始点色 B',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csCoolB },
+            csWarmR:      { label: '終点色 R',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csWarmR },
+            csWarmG:      { label: '終点色 G',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csWarmG },
+            csWarmB:      { label: '終点色 B',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csWarmB },
+            csGateR:      { label: '干渉色 R',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csGateR },
+            csGateG:      { label: '干渉色 G',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csGateG },
+            csGateB:      { label: '干渉色 B',     min: 0.0, max: 1.5, step: 0.02, default: consciousnessParams.csGateB },
         }
     },
     {

@@ -1,0 +1,68 @@
+@import './main.css';
+
+:root {
+    --consciousness-ink: #d7efff;
+    --consciousness-aura: #5ec8ff;
+    --consciousness-deep: #040711;
+}
+
+body {
+    background:
+        radial-gradient(90vw 70vh at 18% 20%, rgba(94, 200, 255, 0.18), transparent 62%),
+        radial-gradient(75vw 65vh at 82% 16%, rgba(116, 160, 255, 0.16), transparent 58%),
+        radial-gradient(65vw 80vh at 50% 105%, rgba(34, 96, 180, 0.22), transparent 64%),
+        var(--consciousness-deep);
+}
+
+#kesson-topbar {
+    border-bottom: 1px solid rgba(94, 200, 255, 0.25);
+    background: linear-gradient(180deg, rgba(3, 11, 24, 0.85), rgba(3, 11, 24, 0.46));
+}
+
+.topbar-main-title,
+.topbar-subtitle,
+#credit-collab,
+#credit-signature {
+    color: var(--consciousness-ink);
+}
+
+.topbar-link:hover,
+.topbar-link:focus-visible,
+.section-heading,
+.section-heading-link,
+#devlog-gallery-header h2 {
+    color: #9ed9ff;
+}
+
+#taglines {
+    color: rgba(211, 238, 255, 0.92);
+    text-shadow: 0 0 14px rgba(94, 200, 255, 0.35);
+}
+
+#tech-footer {
+    border-top: 1px solid rgba(94, 200, 255, 0.25);
+    background: linear-gradient(180deg, rgba(6, 18, 33, 0.55), rgba(6, 18, 33, 0.2));
+}
+
+.offcanvas-kesson {
+    background: linear-gradient(180deg, rgba(4, 12, 24, 0.98), rgba(7, 16, 31, 0.95));
+}
+
+.kesson-card,
+.articles-card {
+    border-color: rgba(94, 200, 255, 0.34);
+    box-shadow: 0 10px 24px rgba(5, 24, 47, 0.36);
+}
+
+.btn-read-more,
+.articles-filter-btn {
+    border-color: rgba(94, 200, 255, 0.42);
+}
+
+.btn-read-more:hover,
+.btn-read-more:focus-visible,
+.articles-filter-btn:hover,
+.articles-filter-btn:focus-visible,
+.articles-filter-btn.is-active {
+    background: rgba(94, 200, 255, 0.14);
+}

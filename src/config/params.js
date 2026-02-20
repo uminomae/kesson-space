@@ -20,6 +20,7 @@ export const toggles = {
     dof: true,
     orbRefraction: true,
     vortex: false,  // デフォルトOFF（手動でONにする）
+    sdfEntity: false,
 };
 
 // --- 呼吸設定（HTML + FOV 同期）---
@@ -31,6 +32,9 @@ export const breathConfig = {
     htmlMinScale: 0.95,
     fovBase: 60,
     fovAmplitude: 1.0,
+    fovPulseAmplitude: 0.0,
+    fovPulseSpeed: 0.28,
+    fovPulseSharpness: 8.0,
 };
 
 // --- 背景色定数 ---
@@ -69,6 +73,38 @@ export const sceneParams = {
     camTargetX: 0,
     camTargetY: 0,
     camTargetZ: 0,
+};
+
+// --- 意識SDFパラメータ（consciousness.html専用） ---
+// Dev panelから調整し、1つの実装バリエーションとして保持する。
+export const consciousnessParams = {
+    // Geometry / flow defaults (from latest accepted dev-panel export)
+    csFlowSpeed:      0.21,
+    csFreqLow:        2.5,
+    csFreqHigh:       1.0,
+    csThicknessLow:   0.095,
+    csThicknessHigh:  0.17,
+    csEnvelopeRadius: 2.44,
+    csDensityGain:    0.2,
+    csStepNear:       0.084,
+    csStepFar:        0.215,
+    csGateTint:       0.88,
+    csVignette:       0.01,
+    csMouseParallax:  0.0,
+    // Light / tone
+    csLightBoost:     1.55,
+    csPreGamma:       2.04,
+    csExposure:       2.45,
+    // Palette
+    csCoolR:          0.12,
+    csCoolG:          0.2,
+    csCoolB:          0.68,
+    csWarmR:          1.0,
+    csWarmG:          0.96,
+    csWarmB:          0.96,
+    csGateR:          1.3,
+    csGateG:          0.9,
+    csGateB:          0.2,
 };
 
 // --- 流体フィールドパラメータ ---

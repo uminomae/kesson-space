@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-X5WQCB3JYT');
+  </script>
+  <!-- KEEP INLINE: scroll-coordinator must run before heavy module imports in consciousness.js
+       to set history.scrollRestoration='manual' early enough to prevent scroll flash -->
+  <script type="module">
+    import { initScrollCoordinator } from './src/scroll-coordinator.js';
+    initScrollCoordinator();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>意識の構造 - Consciousness Structure</title>
+  <link rel="icon" href="./favicon.ico">
+
+  <!-- Bootstrap CSS (for devlog offcanvas + lightbox) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles/consciousness.css">
+
+  <!-- FIX: Google Fonts — Noto Serif JP (高品質明朝体) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three@0.160.0/build/three.module.js",
+        "three/addons/": "./vendor/three@0.160.0/examples/jsm/",
+        "marked": "https://cdn.jsdelivr.net/npm/marked@15.0.7/lib/marked.esm.js",
+        "dompurify": "https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.es.mjs"
+      }
+    }
+  </script>
+
+  <!-- PERF: module scripts are deferred by default — placing after import map
+       lets the browser start fetching the module graph earlier than end-of-body,
+       without reintroducing the modulepreload/import-map ordering conflict (Issue #4) -->
+  <script type="module" src="./src/consciousness.js"></script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <!-- Top menu bar (Bootstrap navbar) -->
+  <header id="kesson-topbar" class="navbar navbar-expand-md navbar-dark" aria-label="Main menu">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="topbar-brand-wrap">
+        <a id="topbar-main-title"
+           class="navbar-brand topbar-main-title"
+           href="https://uminomae.github.io/pjdhiro/thinking-kesson/"
+           target="_blank"
+           rel="noopener">
+          意識の構造
+        </a>
+        <span id="topbar-subtitle" class="topbar-subtitle">Consciousness Prototype</span>
+        <span class="topbar-meta topbar-meta--author" id="credit-signature">Project Designer: pjdhiro</span>
+      </div>
+      <button class="navbar-toggler topbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#kessonTopbarNav"
+              aria-controls="kessonTopbarNav"
+              aria-expanded="false"
+              aria-label="Toggle menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="kessonTopbarNav">
+        <ul class="navbar-nav align-items-md-center gap-md-1">
+          <li class="nav-item">
+            <a class="nav-link topbar-link" href="#">HOME</a>
+          </li>
+          <li class="nav-item">
+            <button type="button"
+                    class="nav-link topbar-link topbar-link-btn"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#articlesOffcanvas"
+                    aria-controls="articlesOffcanvas">
+              ARTICLES
+            </button>
+          </li>
+          <li class="nav-item">
+            <button type="button"
+                    id="topbar-devlog-btn"
+                    class="nav-link topbar-link topbar-link-btn"
+                    aria-controls="devlogOffcanvas">
+              DEVLOG
+            </button>
+          </li>
+          <li class="nav-item topbar-lang-item">
+            <button type="button"
+                    id="lang-toggle"
+                    class="nav-link topbar-link topbar-link-btn topbar-lang-btn"
+                    aria-label="言語を英語に切り替え">
+              English
+            </button>
+          </li>
+          <li class="nav-item topbar-collab-item">
+            <span id="credit-collab" class="topbar-collab-note">Raymarching SDFで探索中</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+  <div id="overlay" role="presentation">
+    <div id="taglines"></div>
+  </div>
+
+  <!-- 右上: 操作ガイド -->
+  <div id="control-guide">
+    <!-- デスクトップ版 -->
+    <div class="guide-row guide-desktop">
+      <span class="guide-key" data-ja="ドラッグ" data-en="drag">drag</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="回転" data-en="rotate">rotate</span>
+    </div>
+    <div class="guide-row guide-desktop">
+      <span class="guide-key">Ctrl + wheel</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="ズーム" data-en="zoom">zoom</span>
+    </div>
+    <!-- モバイル版 -->
+    <div class="guide-row guide-touch">
+      <span class="guide-key" data-ja="横スワイプ" data-en="swipe">swipe</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="回転" data-en="rotate">rotate</span>
+    </div>
+    <div class="guide-row guide-touch">
+      <span class="guide-key" data-ja="ピンチ" data-en="pinch">pinch</span>
+      <span class="guide-sep">—</span>
+      <span class="guide-action" data-ja="ズーム" data-en="zoom">zoom</span>
+    </div>
+  </div>
+
+  <!-- スクロール案内（下部） -->
+  <div id="scroll-hint">
+    <span>scroll</span>
+    <div class="arrow">▾</div>
+  </div>
+
+  <!-- スクロール案内（上部） -->
+  <div id="scroll-hint-top">
+    <div class="arrow">▴</div>
+    <span>scroll</span>
+  </div>
+
+  <!-- 潜水スペーサー（カメラ下降のスクロール余白） -->
+  <div id="hero-spacer"></div>
+  <!-- Articles出現タイミング調整スペーサー -->
+  <div id="articles-spacer"></div>
+
+  <!-- Articles Section -->
+  <section id="articles-section">
+    <div class="section-content-wrap">
+      <div class="container">
+        <h2 class="section-heading">
+          <a
+            href="#articles-section"
+            class="section-heading-link"
+            aria-label="ARTICLES セクションへジャンプ">
+            ARTICLES
+          </a>
+        </h2>
+        <div id="articles-error" class="d-none"></div>
+        <div id="articles-grid" class="row g-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
+  <section id="devlog-gallery-section">
+    <div class="section-content-wrap">
+      <div class="container">
+        <h2 class="section-heading">DEVLOG</h2>
+      </div>
+    </div>
+    <div id="devlog-gallery-container"></div>
+    <div id="devlog-gallery-header">
+      <h2>TRACES</h2>
+    </div>
+  </section>
+
+  <!-- Tech Stack Footer -->
+  <footer id="tech-footer">
+    <div class="tech-footer-line">Consciousness Prototype Page</div>
+    <div class="tech-footer-line">Vanilla JS · ES Modules</div>
+    <div class="tech-footer-line">Three.js · Raymarching SDF</div>
+  </footer>
+
+  <!-- Bootstrap Offcanvas（右からスライドイン） -->
+  <div class="offcanvas offcanvas-end offcanvas-kesson"
+       tabindex="-1"
+       id="devlogOffcanvas"
+       data-bs-backdrop="true">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <button type="button" class="btn btn-link text-light p-0 me-2 d-none"
+              id="offcanvas-back-btn" aria-label="一覧に戻る">
+        ←
+      </button>
+      <div>
+        <h5 class="text-light mb-0 offcanvas-title-spaced">DEVLOG</h5>
+        <small class="text-muted" id="offcanvas-session-count"></small>
+      </div>
+      <button type="button" class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      <!-- 一覧ビュー -->
+      <div id="offcanvas-list-view">
+        <div id="offcanvas-gallery"></div>
+      </div>
+      <!-- 詳細ビュー（初期非表示） -->
+      <div id="offcanvas-detail-view" class="d-none">
+        <div class="p-3">
+          <div id="detail-cover" class="mb-3">
+            <img id="detail-cover-img" class="img-fluid rounded cursor-pointer" alt="Session cover">
+          </div>
+          <h5 id="detail-title" class="text-light mb-1"></h5>
+          <small id="detail-date" class="text-muted d-block mb-3"></small>
+          <div id="detail-content" class="session-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Articles Offcanvas -->
+  <div class="offcanvas offcanvas-end offcanvas-kesson"
+       tabindex="-1"
+       id="articlesOffcanvas"
+       data-bs-backdrop="true">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <div>
+        <h5 class="text-light mb-0 offcanvas-title-spaced">ARTICLES</h5>
+        <small class="text-muted" id="offcanvas-articles-count"></small>
+      </div>
+      <button type="button" class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-3">
+      <div id="articles-filter-group" class="articles-filter-group mb-3" role="group" aria-label="Filter articles by type">
+        <button type="button" class="articles-filter-btn is-active" data-type="all" aria-pressed="true">All</button>
+        <button type="button" class="articles-filter-btn" data-type="page" aria-pressed="false">Page</button>
+        <button type="button" class="articles-filter-btn" data-type="post" aria-pressed="false">Post</button>
+      </div>
+      <div id="offcanvas-articles-grid" class="row g-3"></div>
+    </div>
+  </div>
+
+  <!-- Image Lightbox Modal -->
+  <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center">
+          <img id="lightbox-image" class="img-fluid" alt="Enlarged cover">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
+
+  <script type="module" src="./src/pages/e2e-auto-run.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
