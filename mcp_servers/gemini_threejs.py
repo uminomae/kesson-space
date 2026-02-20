@@ -45,6 +45,8 @@ AVAILABLE_MODELS = {
     "pro": "gemini-2.5-pro-preview-05-06",
     # Gemini 3
     "3-flash": "gemini-3.0-flash",
+    "3-pro": "gemini-3-pro-preview",
+    "3.1-pro": "gemini-3.1-pro-preview",
 }
 
 # モデルごとの推定コスト（円/回）
