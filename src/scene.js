@@ -12,6 +12,7 @@ import { createBackgroundMaterial, createBackgroundMesh } from './shaders/backgr
 import { createWaterMaterial, createWaterMesh } from './shaders/water.js';
 import { createKessonMaterial, createKessonMeshes } from './shaders/kesson.js';
 import { createVortexMaterial, createVortexMesh } from './shaders/vortex.js';
+import { createConsciousArrowBundle, updateConsciousArrowBundle } from './consciousness/conscious-arrow-bundle.js';
 
 export { sceneParams } from './config.js';
 
@@ -24,6 +25,7 @@ let _bgMesh;
 let _scene;
 let _vortexMaterial;
 let _vortexMesh;
+let _consciousArrowBundle;
 
 // GC削減: フォグ色を事前確保（毎フレーム new しない）
 const _fogColor = new THREE.Color();
@@ -80,6 +82,9 @@ export function createScene(container) {
     _vortexMaterial = createVortexMaterial();
     _vortexMesh = createVortexMesh(_vortexMaterial);
     scene.add(_vortexMesh);
+
+    _consciousArrowBundle = createConsciousArrowBundle();
+    scene.add(_consciousArrowBundle);
 
     return { scene, camera, renderer, kessonMeshes: _kessonMeshes };
 }
@@ -180,5 +185,9 @@ export function updateScene(time) {
         vu.uArmCount.value = vortexParams.armCount;
         _vortexMesh.position.set(vortexParams.posX, vortexParams.posY, vortexParams.posZ);
         _vortexMesh.scale.set(vortexParams.size, vortexParams.size, 1);
+    }
+
+    if (_consciousArrowBundle) {
+        updateConsciousArrowBundle(_consciousArrowBundle, time);
     }
 }
