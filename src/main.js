@@ -45,11 +45,9 @@ initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
 
-let sdfEntity = null;
-if (toggles.sdfEntity) {
-    sdfEntity = createSdfEntity();
-    scene.add(sdfEntity.mesh);
-}
+const sdfEntity = createSdfEntity();
+sdfEntity.mesh.visible = Boolean(toggles.sdfEntity);
+scene.add(sdfEntity.mesh);
 
 const findNavMeshes = createNavMeshFinder(scene);
 const applyDevValue = createDevValueApplier({

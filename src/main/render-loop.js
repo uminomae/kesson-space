@@ -125,9 +125,12 @@ export function startRenderLoop({
         updateScene(time);
         updateNavigation(time);
 
-        if (toggles.sdfEntity && sdfEntity) {
-            sdfEntity.mesh.lookAt(camera.position);
-            updateSdfEntity(sdfEntity.material, time, breathVal, mouse);
+        if (sdfEntity) {
+            sdfEntity.mesh.visible = Boolean(toggles.sdfEntity);
+            if (sdfEntity.mesh.visible) {
+                sdfEntity.mesh.lookAt(camera.position);
+                updateSdfEntity(sdfEntity.material, time, breathVal, mouse);
+            }
         }
 
         updateXLogo(time, xLogoCamera);

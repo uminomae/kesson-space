@@ -19,7 +19,7 @@ export const toggles = {
     heatHaze: false,
     dof: true,
     orbRefraction: true,
-    sdfEntity: true,  // Raymarching SDF 意識体
+    sdfEntity: false,  // Raymarching SDF 意識体
     vortex: false,  // デフォルトOFF（手動でONにする）
 };
 
