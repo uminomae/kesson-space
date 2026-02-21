@@ -19,13 +19,21 @@
 ## ルーチンコマンド
 
 ```bash
+# セッション開始ルーチン（sync + Issue通知）
+./scripts/articles-en-routine.sh
+
 # 差分確認のみ（書き込みなし）
-npm run articles:en:check
+./scripts/articles-en-routine.sh check
 
 # 新規/更新記事をローカルJSONへ同期
-npm run articles:en:sync
+./scripts/articles-en-routine.sh sync
+```
 
-# セッション開始ルーチン（sync + Issue通知）
+npm経由の互換コマンド:
+
+```bash
+npm run articles:en:check
+npm run articles:en:sync
 npm run articles:en:routine
 ```
 
@@ -43,7 +51,7 @@ npm run articles:en:routine
 新しい対話を開始したら、実装着手前に以下を実行する。
 
 ```bash
-npm run articles:en:routine
+./scripts/articles-en-routine.sh
 ```
 
 運用:

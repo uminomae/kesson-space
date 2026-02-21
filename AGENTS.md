@@ -34,7 +34,7 @@ At the start of every new conversation in this repository:
 1. Read `./README.md`
 2. Read `./docs/README.md`
 3. Use these two files as the primary context before taking action
-4. Run `npm run articles:en:routine` (non-blocking) and confirm whether new/pending EN article items exist
+4. Run the shared startup routine defined in `./README.md` (Session Start / Step 2.5)
 
 ### 1.1 Claude Docs Reference Rule (Memory-Aware)
 

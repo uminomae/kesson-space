@@ -170,6 +170,22 @@ DTの役割は以下に限定する:
 → [GitHub Issues](https://github.com/uminomae/kesson-space/issues) の open 一覧を確認
 → P0/P1 ラベルの Issue を優先把握
 
+### Step 2.5: ARTICLES英語化ルーチン（全LLM共通）
+
+対話開始時に以下を実行する（non-blocking）。
+
+```bash
+./scripts/articles-en-routine.sh
+```
+
+（npm経由でも可: `npm run articles:en:routine`）
+
+意図:
+- `pjdhiro` API と `assets/articles/articles.json` の差分検知
+- ローカル記事JSONの同期（必要時のみ）
+- 英語未整備キューの可視化
+- API差分がある場合のみ Issue `#107` へ通知
+
 ### Step 3: ワークツリー確認
 
 DTが見ているディレクトリは？

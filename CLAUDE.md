@@ -68,7 +68,7 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 1. GitHub Issues（open）を確認して現在の状態を把握
 2. `pwd` でワークツリーを確認（§2テーブルと照合）
 3. `git status && git log --oneline -5` で作業環境を確認
-4. `npm run articles:en:routine` を実行し、ARTICLES の新規/英語未整備を確認（non-blocking）
+4. `README.md` のセッション開始ルーチン（Step 2.5）を実行（ARTICLES英語化チェック）
 5. ユーザーに状態レポートを報告:
    - 現在のワークツリー・ブランチ
    - 直近のコミット
