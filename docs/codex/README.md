@@ -43,3 +43,4 @@ Issue単位の実装指示書を `INSTRUCTION-{issue#}.md` として配置する
 - No direct commit/merge to `main`
 - Commit message format: Conventional Commits (`fix`, `feat`, `refactor`, `docs`, `test`)
 - Task management: GitHub Issues are the source of truth
+- Session-start routine (Codex/Claude common): run `npm run articles:en:routine`

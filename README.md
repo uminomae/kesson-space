@@ -293,6 +293,10 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 
 外部 blog サマリー（ARTICLES）も同様に `title_en` / `excerpt_en` を付与すると英語表示される。
 
+ARTICLES の英語化半自動運用（差分検知・同期・Issue通知）は以下を参照:
+
+- `docs/articles/articles-en-semi-auto.md`
+
 検証コマンド:
 
 ```bash
