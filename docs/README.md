@@ -20,6 +20,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 ## セッション開始
 
 → **[ルートREADME.md](../README.md) を参照**
+（共通起動ルーチン `ARTICLES英語化 Step 2.5` を含む）
 
 ---
 
@@ -54,6 +55,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 | [ENVIRONMENT.md](./ENVIRONMENT.md) | 開発環境（MCP / Codex / Worktree） |
 | [TESTING.md](./TESTING.md) | テスト体制（CI / E2E） |
 | [CONCEPT.md](./CONCEPT.md) | 理論↔視覚の対応 |
+| [articles/articles-en-semi-auto.md](./articles/articles-en-semi-auto.md) | ARTICLES英語化の半自動運用（差分検知・同期・Issue通知） |
 
 ### スキル（skills/）
 

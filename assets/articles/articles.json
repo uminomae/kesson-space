@@ -1,6 +1,29 @@
 [
   {
     "type": "post",
+    "title": "セッション進捗レポート: フリーズ復旧と変換層の再構築",
+    "title_ja": "セッション進捗レポート: フリーズ復旧と変換層の再構築",
+    "title_en": "Session Progress Report: Freeze Recovery and Rebuilding the Transform Layer",
+    "url": "https://uminomae.github.io/pjdhiro/20260219-session-report/",
+    "date": "2026-02-19T13:00:00+09:00",
+    "excerpt": "セッションフリーズからの復旧、フリーズ対策ルールの策定、変換層のファイル整理、reader-rules-blog v2.0 への改訂。2セッション分の作業報告。",
+    "excerpt_ja": "セッションフリーズからの復旧、フリーズ対策ルールの策定、変換層のファイル整理、reader-rules-blog v2.0 への改訂。2セッション分の作業報告。",
+    "excerpt_en": "A two-session report covering recovery from a session freeze, new freeze-prevention rules, transform-layer file cleanup, and the reader-rules-blog v2.0 revision.",
+    "tags": [
+      "プロジェクト管理",
+      "AI協働",
+      "欠損駆動思考",
+      "Claude",
+      "フリーズ対策",
+      "transform層"
+    ],
+    "categories": [
+      "Project-Design"
+    ],
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0219/teaser.png"
+  },
+  {
+    "type": "post",
     "title": "Claude 2日目 50h時点：創造と意識モデル",
     "title_ja": "Claude 2日目 50h時点：創造と意識モデル",
     "title_en": "Claude Day 2 at 50h: Creativity and Consciousness Model",
@@ -9,8 +32,14 @@
     "excerpt": "成果物 以下、claude.aiによる２日目の作業の報告です 作業レポート: Day2 夜間セッション以降 期間: 2025-02-01 22:00 〜 2025-02-02 作成日: 2025-02-02 概要 Phase 3完成から Phase 6統合文書ドラフト完成まで。 Day2 Session2（2/1 22時〜） 主要決定 # 決定事項 理由 12 3層→4層モデルへ移行 F-O...",
     "excerpt_ja": "成果物 以下、claude.aiによる２日目の作業の報告です 作業レポート: Day2 夜間セッション以降 期間: 2025-02-01 22:00 〜 2025-02-02 作成日: 2025-02-02 概要 Phase 3完成から Phase 6統合文書ドラフト完成まで。 Day2 Session2（2/1 22時〜） 主要決定 # 決定事項 理由 12 3層→4層モデルへ移行 F-O...",
     "excerpt_en": "Day-2 progress report from claude.ai. This entry summarizes the path from a completed Phase 3 to a Phase 6 integrated draft, including major decisions from the overnight Session 2 and the shift from a 3-layer to a 4-layer model.",
-    "tags": ["欠損駆動思考", "claude"],
-    "categories": ["Project", "AI"],
+    "tags": [
+      "欠損駆動思考",
+      "claude"
+    ],
+    "categories": [
+      "Project",
+      "AI"
+    ],
     "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0202/ss.png"
   },
   {
@@ -23,8 +52,17 @@
     "excerpt": "9月と12月に別種類の不安を感じた。12月はおせっかい。天岩戸の終わりか。自己位置が5cm前に出た。主権が戻った。",
     "excerpt_ja": "9月と12月に別種類の不安を感じた。12月はおせっかい。天岩戸の終わりか。自己位置が5cm前に出た。主権が戻った。",
     "excerpt_en": "A reflective log comparing two kinds of anxiety in September and December, and tracing a shift in self-positioning and the recovery of personal agency.",
-    "tags": ["ログ", "欠損駆動思考", "主権", "誤差", "AI"],
-    "categories": ["Log", "Psychology"],
+    "tags": [
+      "ログ",
+      "欠損駆動思考",
+      "主権",
+      "誤差",
+      "AI"
+    ],
+    "categories": [
+      "Log",
+      "Psychology"
+    ],
     "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0202/skill.jpg"
   },
   {
@@ -37,8 +75,17 @@
     "excerpt": "Bion、Klein、Meltzer、Bowlbyの精神分析・発達心理学理論を4層モデルで統合。「素朴体験論」としての方法論を確立し、~31,000トークンのPhase 4を完成。",
     "excerpt_ja": "Bion、Klein、Meltzer、Bowlbyの精神分析・発達心理学理論を4層モデルで統合。「素朴体験論」としての方法論を確立し、~31,000トークンのPhase 4を完成。",
     "excerpt_en": "Integrated psychoanalytic and developmental theories (Bion, Klein, Meltzer, Bowlby) into a four-layer model, established a practical methodology, and completed a ~31k-token Phase 4.",
-    "tags": ["欠損駆動思考", "Bion", "Klein", "Meltzer", "Bowlby"],
-    "categories": ["Project", "Theory"],
+    "tags": [
+      "欠損駆動思考",
+      "Bion",
+      "Klein",
+      "Meltzer",
+      "Bowlby"
+    ],
+    "categories": [
+      "Project",
+      "Theory"
+    ],
     "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-2/0201/ssUsage.png"
   },
   {
@@ -51,8 +98,17 @@
     "excerpt": "アニメ『チ。―地球の運動について―』の視聴を通じて得た着想を、「思考支援フレームワーク」へと落とし込むプロセスを整理したものです。",
     "excerpt_ja": "アニメ『チ。―地球の運動について―』の視聴を通じて得た着想を、「思考支援フレームワーク」へと落とし込むプロセスを整理したものです。",
     "excerpt_en": "Organizes the process of converting insights from the anime 'Orb: On the Movements of the Earth' into a practical framework for thinking support.",
-    "tags": ["ビオン", "ウィニコット", "クライン", "ドナルドメルツァー", "美"],
-    "categories": ["AI", "デザイン思考"],
+    "tags": [
+      "ビオン",
+      "ウィニコット",
+      "クライン",
+      "ドナルドメルツァー",
+      "美"
+    ],
+    "categories": [
+      "AI",
+      "デザイン思考"
+    ],
     "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-1/img.jpg"
   },
   {
@@ -66,7 +122,9 @@
     "excerpt_ja": "(作成中) 関連ポスト 【美駆動思考支援の探索：OpenAI Prismを使用してみた】 参考 【デザイン思考 - Wikipedia】",
     "excerpt_en": "(Draft) A concept page for Bi-Driven Thinking, with links to related posts and references.",
     "tags": [],
-    "categories": ["デザイン思考"],
+    "categories": [
+      "デザイン思考"
+    ],
     "teaser": "https://uminomae.github.io/pjdhiro//assets/images/blog/2026-1/img.jpg"
   },
   {
@@ -80,7 +138,10 @@
     "excerpt_ja": "デザイン思考：私の場合：欠けを探す旅\"",
     "excerpt_en": "A core page introducing Kesson-Driven Thinking as a design practice that starts from what is missing.",
     "tags": [],
-    "categories": ["Love駆動開発", "デザイン思考"],
+    "categories": [
+      "Love駆動開発",
+      "デザイン思考"
+    ],
     "teaser": "https://uminomae.github.io/pjdhiro/assets/images/pages/pd/thinking/spec.jpg"
   }
 ]
