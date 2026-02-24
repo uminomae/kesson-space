@@ -1436,3 +1436,8 @@
       letter-spacing: 0.06em;
       line-height: 1.8;
     }
+    #footer-signature {
+      margin-top: 0.28rem;
+      color: rgba(178, 198, 228, 0.44);
+      letter-spacing: 0.08em;
+    }

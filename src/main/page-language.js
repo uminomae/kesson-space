@@ -14,7 +14,7 @@ export function applyPageLanguage(lang) {
 
     const creditCollab = document.getElementById('credit-collab');
     if (creditCollab) creditCollab.textContent = strings.credit;
-    const creditSig = document.getElementById('credit-signature');
+    const creditSig = document.getElementById('footer-signature');
     if (creditSig) creditSig.textContent = strings.creditSignature;
 
     const taglineContainer = document.getElementById('taglines');
