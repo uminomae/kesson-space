@@ -14,6 +14,7 @@ import { attachResizeHandler, createNavMeshFinder, startRenderLoop } from './mai
 import { getOrbScreenData, refreshNavLanguage, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
 import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
+import { initMobileNavAutoCollapse } from './main/mobile-nav.js';
 import { initTopbarConsole } from './topbar-console.js';
 import { detectLang } from './i18n.js';
 import { breathConfig, liquidParams, toggles } from './config.js';
@@ -28,6 +29,7 @@ initMouseTracking();
 
 applyPageLanguage(detectLang());
 initLangToggle();
+initMobileNavAutoCollapse();
 initTopbarConsole();
 
 const container = document.getElementById('canvas-container');
