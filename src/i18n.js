@@ -16,6 +16,8 @@ const STRINGS = {
         ],
         credit: 'AIとの協働で探索中',
         creditSignature: 'Project Designer: pjdhiro',
+        rightCreationLinkLabel: '創造とは',
+        rightCreationLinkAria: 'creation-spaceへ移動',
         nav: [
             { label: '一般向け', url: PDF_BASE + 'kesson-general.pdf' },
             { label: '設計者向け', url: PDF_BASE + 'kesson-designer.pdf' },
@@ -40,6 +42,8 @@ const STRINGS = {
         ],
         credit: 'Exploring with AI collaboration',
         creditSignature: 'Project Designer: pjdhiro',
+        rightCreationLinkLabel: 'Creation',
+        rightCreationLinkAria: 'Go to creation-space',
         nav: [
             { label: 'General', url: PDF_BASE + 'kesson-general-en.pdf' },
             { label: 'For Designers', url: PDF_BASE + 'kesson-designer-en.pdf' },
