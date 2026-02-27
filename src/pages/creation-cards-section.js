@@ -8,6 +8,9 @@ const UI_STRINGS = {
         noImage: 'NO IMAGE',
         local: 'ローカル',
         external: '外部',
+        comingSoon: 'COMING SOON',
+        comingSoonMeta: '公開準備中',
+        comingSoonThumb: 'COMING SOON',
         loadingFailed: 'カードデータの読み込みに失敗しました。',
     },
     en: {
@@ -15,6 +18,9 @@ const UI_STRINGS = {
         noImage: 'NO IMAGE',
         local: 'Local',
         external: 'External',
+        comingSoon: 'COMING SOON',
+        comingSoonMeta: 'In preparation',
+        comingSoonThumb: 'COMING SOON',
         loadingFailed: 'Failed to load card data.',
     },
 };
@@ -86,15 +92,20 @@ function fallbackDescription(url, lang) {
 }
 
 function normalizeCard(id, item, basePath) {
+    const isComingSoon = item?.status === 'coming_soon' || item?.comingSoon === true;
     const url = resolveUrl(basePath, item?.path);
-    if (!url) return null;
+    if (!url && !isComingSoon) return null;
 
     const thumbnail = resolveUrl(basePath, item?.thumbnail);
     let isExternal = true;
-    try {
-        isExternal = new URL(url).origin !== window.location.origin;
-    } catch {
+    if (!url) {
         isExternal = true;
+    } else {
+        try {
+            isExternal = new URL(url).origin !== window.location.origin;
+        } catch {
+            isExternal = true;
+        }
     }
 
     return {
@@ -102,6 +113,7 @@ function normalizeCard(id, item, basePath) {
         url,
         thumbnail,
         isExternal,
+        isComingSoon,
         raw: item,
     };
 }
@@ -114,18 +126,24 @@ function applyThumbnailFallback(thumbWrap, label) {
 function createCard(item, lang) {
     const ui = getUi(lang);
     const titleText = getLocalizedText(item.raw, 'label', lang) || item.id;
-    const descriptionText = getLocalizedText(item.raw, 'description', lang) || fallbackDescription(item.url, lang);
+    const descriptionText = getLocalizedText(item.raw, 'description', lang) || fallbackDescription(item.url || '', lang);
 
     const col = document.createElement('div');
     col.className = 'col-12 col-md-6 col-lg-4';
 
-    const link = document.createElement('a');
-    link.className = 'card kesson-card creation-link-card h-100 text-decoration-none';
-    link.href = item.url;
-    link.setAttribute('aria-label', `${titleText} (${ui.open})`);
-    if (item.isExternal) {
-        link.target = '_blank';
-        link.rel = 'noopener';
+    const card = document.createElement(item.isComingSoon ? 'div' : 'a');
+    card.className = 'card kesson-card creation-link-card h-100 text-decoration-none';
+    if (item.isComingSoon) {
+        card.classList.add('is-coming-soon');
+        card.setAttribute('role', 'article');
+        card.setAttribute('aria-label', `${titleText} (${ui.comingSoon})`);
+    } else {
+        card.href = item.url;
+        card.setAttribute('aria-label', `${titleText} (${ui.open})`);
+        if (item.isExternal) {
+            card.target = '_blank';
+            card.rel = 'noopener';
+        }
     }
 
     const thumbWrap = document.createElement('div');
@@ -143,7 +161,7 @@ function createCard(item, lang) {
         }, { once: true });
         thumbWrap.appendChild(thumbImg);
     } else {
-        applyThumbnailFallback(thumbWrap, ui.noImage);
+        applyThumbnailFallback(thumbWrap, item.isComingSoon ? ui.comingSoonThumb : ui.noImage);
     }
 
     const body = document.createElement('div');
@@ -159,18 +177,18 @@ function createCard(item, lang) {
 
     const cta = document.createElement('span');
     cta.className = 'btn-read-more mt-auto align-self-start';
-    cta.textContent = ui.open;
+    cta.textContent = item.isComingSoon ? ui.comingSoon : ui.open;
 
     const meta = document.createElement('small');
-    meta.textContent = item.isExternal ? ui.external : ui.local;
+    meta.textContent = item.isComingSoon ? ui.comingSoonMeta : (item.isExternal ? ui.external : ui.local);
 
     body.appendChild(title);
     body.appendChild(desc);
     body.appendChild(cta);
     body.appendChild(meta);
-    link.appendChild(thumbWrap);
-    link.appendChild(body);
-    col.appendChild(link);
+    card.appendChild(thumbWrap);
+    card.appendChild(body);
+    col.appendChild(card);
     return col;
 }
 

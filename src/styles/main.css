@@ -9,11 +9,11 @@
       overflow-x: hidden;
       overflow-y: auto;
       background: var(--color-bg-body);
-      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      font-family: var(--kesson-font-serif-display);
     }
 
     :root {
-      /* === カラーパレット（RGB値のみ） === */
+      /* === Color tokens === */
       --color-accent: 100, 150, 255;
       --color-sub-text: 180, 200, 230;
       --color-highlight: 220, 230, 245;
@@ -21,8 +21,75 @@
       --color-heading: 255, 255, 255;
       --color-bg-body: #050508;
 
+      /* === Typography tokens === */
+      --kesson-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      --kesson-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
+      --kesson-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      --kesson-font-size-ui-xs: clamp(0.4rem, 1.8vmin, 0.65rem);
+      --kesson-font-size-ui-sm: clamp(0.5rem, 2.2vmin, 0.7rem);
+      --kesson-font-size-ui-arrow: clamp(0.7rem, 3.5vmin, 1.2rem);
+      --kesson-letter-ui-tight: 0.03em;
+      --kesson-letter-ui-normal: 0.06em;
+      --kesson-letter-ui-wide: 0.1em;
+      --kesson-letter-ui-heading: 0.15em;
+
+      /* === Motion/shape tokens === */
+      --kesson-radius-sm: 2px;
+      --kesson-radius-md: 3px;
+      --kesson-radius-lg: 4px;
+      --kesson-transition-standard: 0.3s ease;
+      --kesson-transition-snappy: 0.2s ease;
+
+      /* === Component surface tokens === */
       --kesson-focus-ring: rgba(var(--color-accent), 0.86);
       --kesson-focus-ring-soft: rgba(var(--color-accent), 0.8);
+      --kesson-ui-label-color: rgba(var(--color-sub-text), 0.3);
+      --kesson-ui-arrow-color: rgba(var(--color-sub-text), 0.25);
+      --kesson-ui-label-hover-color: rgba(var(--color-sub-text), 0.6);
+      --kesson-action-bg: rgba(var(--color-accent), 0.1);
+      --kesson-action-border: rgba(var(--color-accent), 0.2);
+      --kesson-action-text: rgba(var(--color-sub-text), 0.5);
+      --kesson-action-bg-hover: rgba(var(--color-accent), 0.2);
+      --kesson-action-text-hover: rgba(var(--color-highlight), 0.7);
+      --kesson-card-border: rgba(var(--color-accent), 0.1);
+      --kesson-card-border-strong: rgba(var(--color-accent), 0.28);
+      --kesson-card-shadow-soft: 0 4px 12px rgba(var(--color-accent), 0.15);
+      --kesson-card-shadow-rich: 0 8px 24px rgba(0, 0, 0, 0.38), 0 0 12px rgba(var(--color-accent), 0.15);
+      --kesson-error-color: #f87171;
+      --kesson-error-size: 0.8rem;
+      --kesson-scrollbar-thumb: #1e293b;
+
+      /* === Viewer/offcanvas tokens === */
+      --kesson-offcanvas-text: #94a3b8;
+      --kesson-offcanvas-heading: #e2e8f0;
+      --kesson-offcanvas-link: #f59e0b;
+      --kesson-viewer-overlay-closed: rgba(5, 10, 20, 0);
+      --kesson-viewer-overlay-open: rgba(5, 10, 20, 0.5);
+      --kesson-viewer-glass-bg: rgba(12, 18, 30, 0.88);
+      --kesson-viewer-glass-border: rgba(var(--color-accent), 0.06);
+
+      /* === Markdown tokens === */
+      --kesson-md-provenance: rgba(140, 160, 200, 0.4);
+      --kesson-md-h1: rgba(240, 245, 255, 0.92);
+      --kesson-md-h1-strong: rgba(240, 245, 255, 0.95);
+      --kesson-md-h2: rgba(230, 240, 255, 0.88);
+      --kesson-md-h3: rgba(220, 230, 250, 0.85);
+      --kesson-md-h4: rgba(210, 225, 245, 0.8);
+      --kesson-md-link: rgba(var(--color-link), 0.85);
+      --kesson-md-link-hover: rgba(160, 195, 255, 1);
+      --kesson-md-quote: rgba(200, 215, 240, 0.7);
+      --kesson-md-inline-code: rgba(180, 210, 255, 0.85);
+      --kesson-md-inline-code-bg: rgba(60, 90, 150, 0.12);
+      --kesson-md-table-head-bg: rgba(40, 60, 100, 0.2);
+      --kesson-md-table-head-text: rgba(220, 230, 250, 0.9);
+      --kesson-md-table-cell-text: rgba(200, 215, 240, 0.75);
+
+      /* === Dev panel tokens === */
+      --kesson-dev-toggle-bg: rgba(20, 30, 50, 0.7);
+      --kesson-dev-toggle-bg-hover: rgba(30, 45, 70, 0.82);
+      --kesson-dev-toggle-border: rgba(var(--color-accent), 0.15);
+
+      /* === Layout tokens === */
       --kesson-section-content-padding: 1rem 1.5rem 0;
       --kesson-section-grid-margin-top: 1.5rem;
       --kesson-card-bg: rgba(20, 25, 40, 0.9);
@@ -83,7 +150,7 @@
     }
     #kesson-topbar .topbar-main-title {
       color: rgba(228, 238, 255, 0.92);
-      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      font-family: var(--kesson-font-serif-display);
       font-size: clamp(0.96rem, 1.85vw, 1.38rem);
       letter-spacing: 0.04em;
       line-height: 1;
@@ -120,7 +187,7 @@
       line-height: 1;
       letter-spacing: 0.05em;
       color: rgba(186, 204, 234, 0.72);
-      font-family: 'Georgia', "Noto Serif JP", serif;
+      font-family: var(--kesson-font-serif-ui);
       pointer-events: none;
     }
     #kesson-topbar .topbar-meta--author {
@@ -129,7 +196,7 @@
     }
     #kesson-topbar .topbar-link {
       color: rgba(205, 220, 244, 0.78);
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-family: var(--kesson-font-mono-ui);
       font-size: 0.68rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -161,7 +228,7 @@
     }
     #kesson-topbar .topbar-collab-note {
       display: inline-block;
-      font-family: 'Georgia', "Noto Serif JP", serif;
+      font-family: var(--kesson-font-serif-ui);
       font-size: clamp(0.58rem, 0.82vw, 0.66rem);
       line-height: 1;
       letter-spacing: 0.06em;
@@ -328,7 +395,7 @@
 
     .subtitle {
       color: rgba(var(--color-heading), 0.85);
-      font-family: 'Georgia', "Noto Serif JP", serif;
+      font-family: var(--kesson-font-serif-ui);
       font-size: clamp(0.6rem, 3.5vmin, 1.3rem);
       letter-spacing: clamp(0.1em, 0.8vmin, 0.3em);
       line-height: 1.5;
@@ -357,7 +424,7 @@
     .tagline-en {
       font-size: clamp(0.4rem, 2.0vmin, 0.75rem);
       color: rgba(var(--color-heading), 0.55);
-      font-family: 'Georgia', serif;
+      font-family: var(--kesson-font-serif-ui);
       letter-spacing: 0.03em;
       line-height: 1.6;
       text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
@@ -371,14 +438,14 @@
       letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
       line-height: 1.3;
       margin-bottom: 0.4rem;
-      font-family: 'Georgia', serif;
+      font-family: var(--kesson-font-serif-ui);
     }
 
     html[lang="en"] .subtitle {
       font-size: clamp(0.5rem, 3.0vmin, 1.1rem);
       letter-spacing: clamp(0.06em, 0.3vmin, 0.1em);
       line-height: 1.3;
-      font-family: 'Georgia', serif;
+      font-family: var(--kesson-font-serif-ui);
     }
 
     html[lang="en"] #taglines {
@@ -437,16 +504,7 @@
       animation: scrollHintPulse 3s ease-in-out infinite;
     }
     #scroll-hint span {
-      display: block;
-      font-size: clamp(0.4rem, 1.8vmin, 0.65rem);
-      color: rgba(var(--color-sub-text), 0.3);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.1em;
       margin-bottom: 4px;
-    }
-    #scroll-hint .arrow {
-      font-size: clamp(0.7rem, 3.5vmin, 1.2rem);
-      color: rgba(var(--color-sub-text), 0.25);
     }
     @keyframes scrollHintPulse {
       0%, 100% { transform: translateX(-50%) translateY(0); }
@@ -473,25 +531,29 @@
       pointer-events: auto;
       animation: scrollHintTopPulse 3s ease-in-out infinite;
     }
-    #scroll-hint-top .arrow {
-      font-size: clamp(0.7rem, 3.5vmin, 1.2rem);
-      color: rgba(var(--color-sub-text), 0.25);
-    }
     #scroll-hint-top span {
-      display: block;
-      font-size: clamp(0.4rem, 1.8vmin, 0.65rem);
-      color: rgba(var(--color-sub-text), 0.3);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.1em;
       margin-top: 4px;
-    }
-    #scroll-hint-top:hover span,
-    #scroll-hint-top:hover .arrow {
-      color: rgba(var(--color-sub-text), 0.6);
     }
     @keyframes scrollHintTopPulse {
       0%, 100% { transform: translateX(-50%) translateY(0); }
       50% { transform: translateX(-50%) translateY(-4px); }
+    }
+
+    /* Lightweight directional UI (scroll hints + side backlink) */
+    #scroll-hint span,
+    #scroll-hint-top span,
+    #right-creation-link-label {
+      display: block;
+      font-size: var(--kesson-font-size-ui-xs);
+      color: var(--kesson-ui-label-color);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: var(--kesson-letter-ui-wide);
+    }
+    #scroll-hint .arrow,
+    #scroll-hint-top .arrow,
+    #right-creation-link .arrow {
+      font-size: var(--kesson-font-size-ui-arrow);
+      color: var(--kesson-ui-arrow-color);
     }
 
     /* --- 右中央 creation-space リンク（creation-space左導線のミラー） --- */
@@ -505,26 +567,19 @@
       align-items: center;
       gap: 4px;
       text-decoration: none;
-      transition: opacity 0.3s ease;
+      transition: opacity var(--kesson-transition-standard);
     }
     #right-creation-link-label {
-      display: block;
-      font-size: clamp(0.4rem, 1.8vmin, 0.65rem);
-      color: rgba(var(--color-sub-text), 0.3);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.1em;
       white-space: nowrap;
     }
-    #right-creation-link .arrow {
-      font-size: clamp(0.7rem, 3.5vmin, 1.2rem);
-      color: rgba(var(--color-sub-text), 0.25);
-      line-height: 1;
-    }
+    #right-creation-link .arrow { line-height: 1; }
+    #scroll-hint-top:hover span,
+    #scroll-hint-top:hover .arrow,
     #right-creation-link:hover #right-creation-link-label,
     #right-creation-link:hover .arrow,
     #right-creation-link:focus-visible #right-creation-link-label,
     #right-creation-link:focus-visible .arrow {
-      color: rgba(var(--color-sub-text), 0.6);
+      color: var(--kesson-ui-label-hover-color);
     }
     #right-creation-link:focus-visible {
       outline: 2px solid var(--kesson-focus-ring-soft);
@@ -553,8 +608,8 @@
     #control-guide .guide-key {
       font-size: clamp(0.35rem, 1.6vmin, 0.55rem);
       color: rgba(var(--color-sub-text), 0.35);
-      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
-      letter-spacing: 0.03em;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: var(--kesson-letter-ui-tight);
       white-space: nowrap;
     }
     #control-guide .guide-sep {
@@ -564,8 +619,8 @@
     #control-guide .guide-action {
       font-size: clamp(0.35rem, 1.6vmin, 0.55rem);
       color: rgba(var(--color-sub-text), 0.3);
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.06em;
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: var(--kesson-letter-ui-normal);
       white-space: nowrap;
     }
     /* タッチデバイス用: デスクトップ版を隠す */
@@ -580,8 +635,6 @@
        Devlog Gallery (3D cards) — 透明背景
        ============================ */
     #devlog-gallery-section {
-      position: relative;
-      z-index: 5;
       width: 100%;
       background: transparent;
       padding-bottom: 2rem;
@@ -609,36 +662,47 @@
     #devlog-gallery-header.is-visible {
       opacity: 1;
     }
-    #devlog-gallery-header h2 {
+    #devlog-gallery-header h2,
+    .section-heading {
       font-size: 0.75rem;
       font-weight: 400;
-      color: rgba(var(--color-sub-text), 0.5);
-      letter-spacing: 0.15em;
+      color: var(--kesson-action-text);
+      letter-spacing: var(--kesson-letter-ui-heading);
       text-transform: uppercase;
       margin: 0;
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-family: var(--kesson-font-mono-ui);
+    }
+
+    /* Action controls */
+    .btn-read-more,
+    .articles-filter-btn,
+    #surface-btn {
+      background: var(--kesson-action-bg);
+      border: 1px solid var(--kesson-action-border);
+      color: var(--kesson-action-text);
+      font-family: var(--kesson-font-serif-ui);
+      cursor: pointer;
+      border-radius: var(--kesson-radius-sm);
+    }
+    .btn-read-more:hover,
+    .articles-filter-btn:hover,
+    #surface-btn:hover {
+      background: var(--kesson-action-bg-hover);
+      color: var(--kesson-action-text-hover);
+    }
+    .btn-read-more:focus-visible,
+    .articles-filter-btn:focus-visible,
+    #surface-btn:focus-visible {
+      outline: 2px solid var(--kesson-focus-ring-soft);
+      outline-offset: 4px;
     }
 
     /* Read Moreボタン */
     .btn-read-more {
-      background: rgba(var(--color-accent), 0.1);
-      border: 1px solid rgba(var(--color-accent), 0.2);
-      color: rgba(var(--color-sub-text), 0.5);
-      font-family: 'Georgia', serif;
-      font-size: clamp(0.5rem, 2.2vmin, 0.7rem);
-      letter-spacing: 0.1em;
+      font-size: var(--kesson-font-size-ui-sm);
+      letter-spacing: var(--kesson-letter-ui-wide);
       padding: 10px 24px;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background 0.3s ease, color 0.3s ease;
-    }
-    .btn-read-more:hover {
-      background: rgba(var(--color-accent), 0.2);
-      color: rgba(var(--color-highlight), 0.7);
-    }
-    .btn-read-more:focus {
-      outline: 2px solid rgba(var(--color-accent), 0.8);
-      outline-offset: 4px;
+      transition: background var(--kesson-transition-standard), color var(--kesson-transition-standard);
     }
 
     /* Articles filter buttons (offcanvas) */
@@ -648,25 +712,14 @@
       gap: 8px;
     }
     .articles-filter-btn {
-      background: rgba(var(--color-accent), 0.1);
-      border: 1px solid rgba(var(--color-accent), 0.2);
-      color: rgba(var(--color-sub-text), 0.5);
-      font-family: 'Georgia', serif;
       font-size: clamp(0.5rem, 2.1vmin, 0.66rem);
       letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 7px 14px;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-    .articles-filter-btn:hover {
-      background: rgba(var(--color-accent), 0.2);
-      color: rgba(var(--color-highlight), 0.7);
-    }
-    .articles-filter-btn:focus {
-      outline: 2px solid var(--kesson-focus-ring-soft);
-      outline-offset: 3px;
+      transition:
+        background var(--kesson-transition-standard),
+        color var(--kesson-transition-standard),
+        border-color var(--kesson-transition-standard);
     }
     .articles-filter-btn.is-active {
       background: rgba(var(--color-accent), 0.25);
@@ -675,17 +728,31 @@
     }
 
     /* === 共通カード === */
-    .card.kesson-card {
+    .card.kesson-card,
+    .creation-link-card {
       --bs-card-bg: var(--kesson-card-bg);
+      border: 1px solid var(--kesson-card-border);
+      transition:
+        transform var(--kesson-transition-snappy),
+        box-shadow var(--kesson-transition-snappy),
+        border-color var(--kesson-transition-snappy);
+    }
+    .card.kesson-card {
       background-color: var(--bs-card-bg);
       background-image: none;
-      border: 1px solid rgba(var(--color-accent), 0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
       cursor: pointer;
     }
-    .card.kesson-card:hover {
+    .card.kesson-card:hover,
+    .creation-link-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(var(--color-accent), 0.15);
+    }
+    .card.kesson-card:hover {
+      box-shadow: var(--kesson-card-shadow-soft);
+    }
+    .card.kesson-card:focus-visible,
+    .creation-link-card:focus-visible {
+      outline: 2px solid var(--kesson-focus-ring-soft);
+      outline-offset: 4px;
     }
     .card.kesson-card .card-body {
       background-color: transparent;
@@ -735,39 +802,28 @@
       bottom: 24px;
       right: 24px;
       z-index: 20;
-      background: rgba(var(--color-accent), 0.1);
-      border: 1px solid rgba(var(--color-accent), 0.2);
-      color: rgba(var(--color-sub-text), 0.5);
-      font-family: 'Georgia', serif;
       font-size: clamp(0.45rem, 2.0vmin, 0.7rem);
-      letter-spacing: 0.1em;
+      letter-spacing: var(--kesson-letter-ui-wide);
       padding: 10px 18px;
-      cursor: pointer;
-      border-radius: 2px;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.6s ease, background 0.3s ease;
-    }
-    #surface-btn:hover {
-      background: rgba(var(--color-accent), 0.2);
-      color: rgba(var(--color-highlight), 0.7);
-    }
-    #surface-btn:focus {
-      outline: 2px solid var(--kesson-focus-ring-soft);
-      outline-offset: 4px;
+      transition:
+        opacity 0.6s ease,
+        background var(--kesson-transition-standard),
+        color var(--kesson-transition-standard);
     }
 
     /* ============================
        Offcanvas 詳細ビュー
        ============================ */
     .session-content {
-      color: #94a3b8;
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      color: var(--kesson-offcanvas-text);
+      font-family: var(--kesson-font-mono-ui);
     }
     .session-content h1,
     .session-content h2,
     .session-content h3 {
-      color: #e2e8f0;
+      color: var(--kesson-offcanvas-heading);
       margin-top: 1.5em;
       margin-bottom: 0.5em;
     }
@@ -777,15 +833,15 @@
     .session-content p {
       font-size: 0.85rem;
       line-height: 1.8;
-      color: #94a3b8;
+      color: var(--kesson-offcanvas-text);
       margin-bottom: 1em;
-      font-family: "Noto Serif JP", "Yu Mincho", serif;
+      font-family: var(--kesson-font-serif-display);
     }
     .session-content ul,
     .session-content ol {
       font-size: 0.85rem;
       line-height: 1.8;
-      color: #94a3b8;
+      color: var(--kesson-offcanvas-text);
       padding-left: 1.5em;
     }
     .session-content code {
@@ -801,25 +857,28 @@
       overflow-x: auto;
     }
     .session-content a {
-      color: #f59e0b;
+      color: var(--kesson-offcanvas-link);
     }
     .offcanvas-body::-webkit-scrollbar { width: 6px; }
     .offcanvas-body::-webkit-scrollbar-track { background: transparent; }
-    .offcanvas-body::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    .offcanvas-body::-webkit-scrollbar-thumb {
+      background: var(--kesson-scrollbar-thumb);
+      border-radius: var(--kesson-radius-md);
+    }
 
     /* ============================
        T-018: Extracted from index.html inline styles
        CHANGED(2026-02-16)
        ============================ */
 
-    /* Articles section container */
-    #articles-section {
+    /* Section containers */
+    #articles-section,
+    #creation-cards-section,
+    #devlog-gallery-section {
       position: relative;
       z-index: 5;
     }
     #creation-cards-section {
-      position: relative;
-      z-index: 5;
       padding-bottom: 2.2rem;
     }
     #creation-cards-grid {
@@ -831,17 +890,6 @@
       position: relative;
       z-index: 20;
       padding: var(--kesson-section-content-padding);
-    }
-
-    /* Section heading — monospace, all-caps (ARTICLES / DEVLOG) */
-    .section-heading {
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: rgba(var(--color-sub-text), 0.5);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      margin: 0;
     }
 
     .section-heading-link {
@@ -873,30 +921,34 @@
       outline-offset: 4px;
     }
 
-    /* Articles error message */
-    #articles-error {
-      color: #f87171;
-      font-size: 0.8rem;
-    }
+    #articles-error,
     #creation-cards-error {
-      color: #f87171;
-      font-size: 0.8rem;
+      color: var(--kesson-error-color);
+      font-size: var(--kesson-error-size);
     }
 
     .creation-link-card {
-      --bs-card-bg: var(--kesson-card-bg);
-      border: 1px solid rgba(var(--color-accent), 0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       overflow: hidden;
     }
     .creation-link-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38), 0 0 12px rgba(var(--color-accent), 0.15);
-      border-color: rgba(var(--color-accent), 0.28);
+      box-shadow: var(--kesson-card-shadow-rich);
+      border-color: var(--kesson-card-border-strong);
     }
-    .creation-link-card:focus-visible {
-      outline: 2px solid var(--kesson-focus-ring-soft);
-      outline-offset: 4px;
+    .creation-link-card.is-coming-soon {
+      cursor: default;
+      border-style: dashed;
+    }
+    .creation-link-card.is-coming-soon:hover {
+      transform: none;
+      box-shadow: var(--kesson-card-shadow-soft);
+      border-color: var(--kesson-card-border);
+    }
+    .creation-link-card.is-coming-soon .btn-read-more {
+      border-style: dashed;
+      pointer-events: none;
+    }
+    .creation-link-card.is-coming-soon small {
+      color: rgba(var(--color-sub-text), 0.42);
     }
     .creation-card-thumb {
       aspect-ratio: 16 / 9;
@@ -920,11 +972,11 @@
       font-size: 0.6rem;
       letter-spacing: 0.2em;
       color: rgba(var(--color-sub-text), 0.24);
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-family: var(--kesson-font-mono-ui);
     }
     .creation-link-card .card-title {
       color: rgba(var(--color-highlight), 0.92);
-      font-family: "Noto Serif JP", "Yu Mincho", serif;
+      font-family: var(--kesson-font-serif-display);
       letter-spacing: 0.04em;
     }
     .creation-link-card .card-text {
@@ -975,7 +1027,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(5, 10, 20, 0.0);
+      background: var(--kesson-viewer-overlay-closed);
       transition: background 0.5s ease;
       cursor: pointer;
     }
@@ -983,7 +1035,7 @@
       display: flex;
     }
     #kesson-viewer.open {
-      background: rgba(5, 10, 20, 0.5);
+      background: var(--kesson-viewer-overlay-open);
     }
 
     .viewer-glass {
@@ -993,11 +1045,11 @@
       height: 85vh;
       cursor: default;
       overflow: hidden;
-      background: rgba(12, 18, 30, 0.88);
+      background: var(--kesson-viewer-glass-bg);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(var(--color-accent), 0.06);
-      border-radius: 3px;
+      border: 1px solid var(--kesson-viewer-glass-border);
+      border-radius: var(--kesson-radius-md);
       box-shadow:
         0 0 60px rgba(0, 0, 0, 0.4),
         0 0 120px rgba(30, 60, 120, 0.1),
@@ -1025,7 +1077,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.3s;
+      transition: color var(--kesson-transition-standard);
       z-index: 10;
     }
     .viewer-close:hover {
@@ -1042,7 +1094,7 @@
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 3px;
+      border-radius: var(--kesson-radius-md);
     }
     .viewer-content--x {
       display: flex;
@@ -1093,7 +1145,7 @@
     /* provenance (generator info) */
     .md-provenance {
       font-size: 0.68rem;
-      color: rgba(140, 160, 200, 0.4);
+      color: var(--kesson-md-provenance);
       margin-bottom: 1.5rem;
       letter-spacing: 0.03em;
     }
@@ -1103,7 +1155,7 @@
     }
     .md-body h1 {
       font-size: 1.2rem;
-      color: rgba(240, 245, 255, 0.92);
+      color: var(--kesson-md-h1);
       margin: 2rem 0 0.8rem;
       line-height: 1.4;
       letter-spacing: normal;
@@ -1113,24 +1165,24 @@
     }
     .md-body h1:first-child {
       font-size: 1.3rem;
-      color: rgba(240, 245, 255, 0.95);
+      color: var(--kesson-md-h1-strong);
       margin-top: 0;
       margin-bottom: 1.2rem;
     }
     .md-body h2 {
       font-size: 1.05rem;
-      color: rgba(230, 240, 255, 0.88);
+      color: var(--kesson-md-h2);
       margin: 1.8rem 0 0.7rem;
       line-height: 1.4;
     }
     .md-body h3 {
       font-size: 0.95rem;
-      color: rgba(220, 230, 250, 0.85);
+      color: var(--kesson-md-h3);
       margin: 1.4rem 0 0.5rem;
     }
     .md-body h4 {
       font-size: 0.9rem;
-      color: rgba(210, 225, 245, 0.8);
+      color: var(--kesson-md-h4);
       margin: 1.2rem 0 0.4rem;
     }
     .md-body hr {
@@ -1142,30 +1194,30 @@
       border-left: 2px solid rgba(var(--color-accent), 0.15);
       padding-left: 1em;
       margin: 1em 0;
-      color: rgba(200, 215, 240, 0.7);
+      color: var(--kesson-md-quote);
       font-style: italic;
     }
     .md-body a {
-      color: rgba(var(--color-link), 0.85);
+      color: var(--kesson-md-link);
       text-decoration: underline;
       text-underline-offset: 2px;
     }
     .md-body a:hover {
-      color: rgba(160, 195, 255, 1);
+      color: var(--kesson-md-link-hover);
     }
     .md-body strong {
       color: rgba(240, 245, 255, 0.95);
       font-weight: 600;
     }
     .md-body em {
-      color: rgba(200, 215, 240, 0.8);
+      color: var(--kesson-md-quote);
     }
 
     /* --- code blocks (marked.js output) --- */
     .md-body pre {
       background: rgba(8, 12, 24, 0.6);
       border: 1px solid rgba(var(--color-accent), 0.08);
-      border-radius: 3px;
+      border-radius: var(--kesson-radius-md);
       padding: 1em 1.2em;
       margin: 1.2em 0;
       overflow-x: auto;
@@ -1173,7 +1225,7 @@
       line-height: 1.5;
     }
     .md-body pre code {
-      font-family: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', monospace;
+      font-family: var(--kesson-font-mono-ui);
       font-size: 0.82rem;
       color: rgba(var(--color-sub-text), 0.8);
       background: none;
@@ -1183,12 +1235,12 @@
       white-space: pre;
     }
     .md-body code {
-      font-family: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', monospace;
+      font-family: var(--kesson-font-mono-ui);
       font-size: 0.85em;
-      color: rgba(180, 210, 255, 0.85);
-      background: rgba(60, 90, 150, 0.12);
+      color: var(--kesson-md-inline-code);
+      background: var(--kesson-md-inline-code-bg);
       padding: 0.15em 0.4em;
-      border-radius: 2px;
+      border-radius: var(--kesson-radius-sm);
     }
 
     /* --- lists (marked.js output) --- */
@@ -1222,19 +1274,19 @@
       text-align: left;
     }
     .md-body th {
-      background: rgba(40, 60, 100, 0.2);
-      color: rgba(220, 230, 250, 0.9);
+      background: var(--kesson-md-table-head-bg);
+      color: var(--kesson-md-table-head-text);
       font-weight: 500;
     }
     .md-body td {
-      color: rgba(200, 215, 240, 0.75);
+      color: var(--kesson-md-table-cell-text);
     }
 
     /* --- images --- */
     .md-body img {
       max-width: 100%;
       height: auto;
-      border-radius: 2px;
+      border-radius: var(--kesson-radius-sm);
       margin: 1em 0;
     }
 
@@ -1251,10 +1303,10 @@
       font-size: 0.78rem;
       color: rgba(160, 185, 240, 0.7);
       border: 1px solid rgba(var(--color-accent), 0.12);
-      border-radius: 2px;
+      border-radius: var(--kesson-radius-sm);
       text-decoration: none;
       letter-spacing: 0.05em;
-      transition: all 0.3s;
+      transition: all var(--kesson-transition-standard);
     }
     .md-pdf-link:hover {
       color: rgba(200, 220, 255, 0.9);
@@ -1286,7 +1338,7 @@
       .viewer-glass {
         width: 96vw;
         height: 90vh;
-        border-radius: 2px;
+        border-radius: var(--kesson-radius-sm);
       }
       .md-article {
         padding: 2rem 1.2rem 2.5rem;
@@ -1312,29 +1364,44 @@
        CHANGED(2026-02-16)
        ============================ */
 
-    #dev-toggle {
+    #dev-toggle,
+    #dev-links-toggle {
       position: fixed;
-      top: 50%;
       right: 0;
       transform: translateY(-50%);
       z-index: 1001;
-      background: rgba(20, 30, 50, 0.7);
+      background: var(--kesson-dev-toggle-bg);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(var(--color-accent), 0.15);
+      border: 1px solid var(--kesson-dev-toggle-border);
       border-right: none;
-      border-radius: 4px 0 0 4px;
-      color: rgba(180, 200, 255, 0.6);
-      font-size: 0.65rem;
-      font-family: monospace;
+      border-radius: var(--kesson-radius-lg) 0 0 var(--kesson-radius-lg);
+      font-family: var(--kesson-font-mono-ui);
       padding: 8px 5px;
       cursor: pointer;
       writing-mode: vertical-rl;
+      transition: all var(--kesson-transition-standard);
+    }
+    #dev-toggle {
+      top: 50%;
+      color: rgba(180, 200, 255, 0.6);
+      font-size: 0.65rem;
       letter-spacing: 0.15em;
-      transition: all 0.3s ease;
+    }
+    #dev-links-toggle {
+      top: calc(50% + 95px);
+      color: rgba(180, 200, 255, 0.75);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+    }
+    #dev-toggle:hover,
+    #dev-links-toggle:hover {
+      background: var(--kesson-dev-toggle-bg-hover);
     }
     #dev-toggle:hover {
       color: rgba(200, 220, 255, 0.9);
-      background: rgba(30, 45, 70, 0.8);
+    }
+    #dev-links-toggle:hover {
+      color: rgba(210, 225, 255, 0.95);
     }
     #dev-toggle.open { right: 300px; }
 
@@ -1353,12 +1420,15 @@
     }
     #dev-panel.open { right: 0; }
     #dev-panel::-webkit-scrollbar { width: 4px; }
-    #dev-panel::-webkit-scrollbar-thumb { background: rgba(var(--color-accent), 0.2); border-radius: 2px; }
+    #dev-panel::-webkit-scrollbar-thumb {
+      background: rgba(var(--color-accent), 0.2);
+      border-radius: var(--kesson-radius-sm);
+    }
 
     #dev-panel .accordion-button {
       padding: 0.5rem 0.75rem;
       font-size: 0.72rem;
-      font-family: monospace;
+      font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.05em;
       background: rgba(20, 28, 40, 0.9);
       color: rgba(140, 170, 220, 0.8);
@@ -1385,31 +1455,6 @@
     /* ============================
        Dev Links Hub (?dev)
        ============================ */
-    #dev-links-toggle {
-      position: fixed;
-      top: calc(50% + 95px);
-      right: 0;
-      transform: translateY(-50%);
-      z-index: 1001;
-      background: rgba(20, 30, 50, 0.7);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(var(--color-accent), 0.15);
-      border-right: none;
-      border-radius: 4px 0 0 4px;
-      color: rgba(180, 200, 255, 0.75);
-      font-size: 0.62rem;
-      font-family: monospace;
-      padding: 8px 5px;
-      cursor: pointer;
-      writing-mode: vertical-rl;
-      letter-spacing: 0.1em;
-      transition: all 0.3s ease;
-    }
-    #dev-links-toggle:hover {
-      color: rgba(210, 225, 255, 0.95);
-      background: rgba(30, 45, 70, 0.84);
-    }
-
     .offcanvas-links {
       --bs-offcanvas-width: min(520px, 92vw);
       width: min(520px, 92vw);
@@ -1436,7 +1481,7 @@
     .dev-links-key {
       font-size: 0.66rem;
       color: rgba(170, 190, 220, 0.7);
-      font-family: monospace;
+      font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.05em;
     }
     .dev-links-url {
@@ -1466,7 +1511,7 @@
     }
     #dev-panel .form-check-label {
       font-size: 0.68rem;
-      font-family: monospace;
+      font-family: var(--kesson-font-mono-ui);
       color: rgba(var(--color-sub-text), 0.7);
       order: -1;
       padding-left: 0;
@@ -1482,7 +1527,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 0.65rem;
-      font-family: monospace;
+      font-family: var(--kesson-font-mono-ui);
       color: rgba(var(--color-sub-text), 0.6);
       margin-bottom: 0.15rem;
     }
@@ -1508,7 +1553,7 @@
 
     /* Dev panel header text */
     .dev-panel-header-text {
-      font-family: monospace;
+      font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.1em;
     }
 
@@ -1530,7 +1575,7 @@
     .tech-footer-line {
       font-size: clamp(0.35rem, 1.5vmin, 0.55rem);
       color: rgba(150, 175, 210, 0.25);
-      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.06em;
       line-height: 1.8;
     }

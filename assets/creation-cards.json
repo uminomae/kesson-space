@@ -1,20 +1,26 @@
 {
   "basePath": "https://uminomae.github.io/creation-space/demos/",
   "presets": {
-    "consciousness-prototype": {
-      "label_ja": "意識の構造プロトタイプ",
-      "label_en": "Consciousness Prototype",
-      "description_ja": "SDFレイマーチングと光の表現を探索するプロトタイプ。",
-      "description_en": "Prototype exploring SDF raymarching and light expression.",
-      "path": "consciousness-prototype/index.html",
-      "thumbnail": "consciousness-prototype/thumb.jpg"
+    "creation-card-01": {
+      "status": "coming_soon",
+      "label_ja": "CREATION CARD 01",
+      "label_en": "CREATION CARD 01",
+      "description_ja": "現在制作中です。近日公開予定です。",
+      "description_en": "Currently in production. Coming soon."
     },
-    "gravity-spheres": {
-      "label_ja": "重力の球体",
-      "label_en": "Gravity Spheres",
-      "description_ja": "マウスカーソルに引き寄せられる粒子シミュレーション。",
-      "description_en": "Particle simulation attracted to the mouse cursor.",
-      "path": "gravity-spheres/index.html"
+    "creation-card-02": {
+      "status": "coming_soon",
+      "label_ja": "CREATION CARD 02",
+      "label_en": "CREATION CARD 02",
+      "description_ja": "次の体験を準備中です。少しお待ちください。",
+      "description_en": "Preparing the next experience. Please stay tuned."
+    },
+    "creation-card-03": {
+      "status": "coming_soon",
+      "label_ja": "CREATION CARD 03",
+      "label_en": "CREATION CARD 03",
+      "description_ja": "公開まで、もうしばらくお待ちください。",
+      "description_en": "Please wait a little longer until release."
     }
   }
 }

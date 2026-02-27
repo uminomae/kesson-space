@@ -14,6 +14,7 @@ let _langToggle;
 let _scrollHintBottom;
 let _scrollHintTop;
 let _surfaceBtn;
+let _rightCreationLink;
 let _devlogHeader;
 let _devlogSection;
 let _articlesSection;
@@ -34,6 +35,7 @@ export function initScrollUI() {
     _scrollHintBottom = document.getElementById('scroll-hint');
     _scrollHintTop = document.getElementById('scroll-hint-top');
     _surfaceBtn = document.getElementById('surface-btn');
+    _rightCreationLink = document.getElementById('right-creation-link');
     _devlogHeader = document.getElementById('devlog-gallery-header');
     _devlogSection = document.getElementById('devlog-gallery-section');
     _articlesSection = document.getElementById('articles-section');
@@ -162,6 +164,20 @@ export function updateScrollUI(scrollProg, breathVal) {
     if (_langToggle && !_langToggle.closest('#kesson-topbar')) {
         _langToggle.style.opacity = topFade;
         _langToggle.style.pointerEvents = topFade > 0.05 ? 'auto' : 'none';
+    }
+
+    // --- 右リンク: 既存トップUIと同タイミングでフェードアウト ---
+    if (_rightCreationLink) {
+        const showRightLink = topFade > 0.05;
+        _rightCreationLink.style.opacity = String(topFade);
+        _rightCreationLink.style.pointerEvents = showRightLink ? 'auto' : 'none';
+        _rightCreationLink.setAttribute('aria-hidden', showRightLink ? 'false' : 'true');
+        if (showRightLink) {
+            if (_rightCreationLink.tabIndex === -1) _rightCreationLink.removeAttribute('tabindex');
+        } else {
+            if (document.activeElement === _rightCreationLink) _rightCreationLink.blur();
+            _rightCreationLink.tabIndex = -1;
+        }
     }
 
     // --- 下部 scroll hint: 最下部で非表示 ---
