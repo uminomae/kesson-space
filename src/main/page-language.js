@@ -16,6 +16,14 @@ export function applyPageLanguage(lang) {
     if (creditCollab) creditCollab.textContent = strings.credit;
     const creditSig = document.getElementById('footer-signature');
     if (creditSig) creditSig.textContent = strings.creditSignature;
+    const rightCreationLinkLabel = document.getElementById('right-creation-link-label');
+    if (rightCreationLinkLabel && strings.rightCreationLinkLabel) {
+        rightCreationLinkLabel.textContent = strings.rightCreationLinkLabel;
+    }
+    const rightCreationLink = document.getElementById('right-creation-link');
+    if (rightCreationLink && strings.rightCreationLinkAria) {
+        rightCreationLink.setAttribute('aria-label', strings.rightCreationLinkAria);
+    }
 
     const taglineContainer = document.getElementById('taglines');
     if (taglineContainer && strings.taglines) {

@@ -494,6 +494,43 @@
       50% { transform: translateX(-50%) translateY(-4px); }
     }
 
+    /* --- 右中央 creation-space リンク（creation-space左導線のミラー） --- */
+    #right-creation-link {
+      position: fixed;
+      top: 50%;
+      right: 16px;
+      transform: translateY(-50%);
+      z-index: 15;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      transition: opacity 0.3s ease;
+    }
+    #right-creation-link-label {
+      display: block;
+      font-size: clamp(0.4rem, 1.8vmin, 0.65rem);
+      color: rgba(var(--color-sub-text), 0.3);
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    #right-creation-link .arrow {
+      font-size: clamp(0.7rem, 3.5vmin, 1.2rem);
+      color: rgba(var(--color-sub-text), 0.25);
+      line-height: 1;
+    }
+    #right-creation-link:hover #right-creation-link-label,
+    #right-creation-link:hover .arrow,
+    #right-creation-link:focus-visible #right-creation-link-label,
+    #right-creation-link:focus-visible .arrow {
+      color: rgba(var(--color-sub-text), 0.6);
+    }
+    #right-creation-link:focus-visible {
+      outline: 2px solid var(--kesson-focus-ring-soft);
+      outline-offset: 4px;
+    }
+
     /* ============================
        操作ガイド（右上、言語トグルの下）
        ============================ */
