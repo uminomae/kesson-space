@@ -1,0 +1,20 @@
+{
+  "basePath": "https://uminomae.github.io/creation-space/demos/",
+  "presets": {
+    "consciousness-prototype": {
+      "label_ja": "意識の構造プロトタイプ",
+      "label_en": "Consciousness Prototype",
+      "description_ja": "SDFレイマーチングと光の表現を探索するプロトタイプ。",
+      "description_en": "Prototype exploring SDF raymarching and light expression.",
+      "path": "consciousness-prototype/index.html",
+      "thumbnail": "consciousness-prototype/thumb.jpg"
+    },
+    "gravity-spheres": {
+      "label_ja": "重力の球体",
+      "label_en": "Gravity Spheres",
+      "description_ja": "マウスカーソルに引き寄せられる粒子シミュレーション。",
+      "description_en": "Particle simulation attracted to the mouse cursor.",
+      "path": "gravity-spheres/index.html"
+    }
+  }
+}

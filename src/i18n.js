@@ -16,6 +16,7 @@ const STRINGS = {
         ],
         credit: 'AIとの協働で探索中',
         creditSignature: 'Project Designer: pjdhiro',
+        creationCardsHeading: 'CREATION CARDS',
         rightCreationLinkLabel: '創造とは',
         rightCreationLinkAria: 'creation-spaceへ移動',
         nav: [
@@ -42,6 +43,7 @@ const STRINGS = {
         ],
         credit: 'Exploring with AI collaboration',
         creditSignature: 'Project Designer: pjdhiro',
+        creationCardsHeading: 'CREATION CARDS',
         rightCreationLinkLabel: 'Creation',
         rightCreationLinkAria: 'Go to creation-space',
         nav: [

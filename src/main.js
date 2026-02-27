@@ -21,6 +21,7 @@ import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
+import { refreshCreationCardsLanguage } from './pages/creation-cards-section.js';
 import { createSdfEntity } from './sdf-entity.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
@@ -78,6 +79,7 @@ initLanguageListeners({
     refreshNavLanguage,
     refreshDevlogLanguage,
     refreshArticlesLanguage,
+    refreshCreationCardsLanguage,
 });
 
 const clock = new THREE.Clock();
