@@ -148,6 +148,7 @@
   </div>
 
   <!-- creation-space導線（右中央固定） -->
+  <!-- creation-space導線（右中央固定） -->
   <a id="right-creation-link" href="/creation-space/" aria-label="creation-spaceへ移動">
     <span id="right-creation-link-label">創造とは</span>
     <div class="arrow">▾</div>
@@ -266,6 +267,23 @@
         <button type="button" class="articles-filter-btn" data-type="post" aria-pressed="false">Post</button>
       </div>
       <div id="offcanvas-articles-grid" class="row g-3"></div>
+    </div>
+  </div>
+
+  <!-- Three.js Offcanvas -->
+  <div class="offcanvas offcanvas-end offcanvas-kesson"
+       tabindex="-1"
+       id="creationOffcanvas"
+       data-bs-backdrop="true">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <div>
+        <h5 class="text-light mb-0 offcanvas-title-spaced text-uppercase">Three.js</h5>
+      </div>
+      <button type="button" class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-3">
+      <div id="offcanvas-creation-grid" class="row g-3"></div>
     </div>
   </div>
 

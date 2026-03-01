@@ -586,14 +586,6 @@
     #right-creation-link:hover .arrow {
       color: var(--kesson-ui-label-hover-color);
     }
-    #scroll-hint-top:hover span,
-    #scroll-hint-top:hover .arrow,
-    #right-creation-link:hover #right-creation-link-label,
-    #right-creation-link:hover .arrow,
-    #right-creation-link:focus-visible #right-creation-link-label,
-    #right-creation-link:focus-visible .arrow {
-      color: var(--kesson-ui-label-hover-color);
-    }
     #right-creation-link:focus-visible {
       outline: 2px solid var(--kesson-focus-ring-soft);
       outline-offset: 4px;
