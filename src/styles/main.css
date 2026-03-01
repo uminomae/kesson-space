@@ -952,10 +952,6 @@
       box-shadow: var(--kesson-card-shadow-soft);
       border-color: var(--kesson-card-border);
     }
-    .creation-link-card.is-coming-soon .btn-read-more {
-      border-style: dashed;
-      pointer-events: none;
-    }
     .creation-link-card.is-coming-soon small {
       color: rgba(var(--color-sub-text), 0.42);
     }

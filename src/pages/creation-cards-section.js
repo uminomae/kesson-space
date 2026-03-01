@@ -179,18 +179,22 @@ function createCard(item, lang) {
     desc.className = 'card-text mb-3 flex-grow-1';
     desc.textContent = descriptionText;
 
-    if (item.isComingSoon) {
-        const meta = document.createElement('small');
+    const meta = item.isComingSoon ? document.createElement('small') : null;
+    if (meta) {
         meta.textContent = ui.comingSoonMeta;
-        body.appendChild(meta);
     }
 
     body.appendChild(title);
     body.appendChild(desc);
+    if (meta) body.appendChild(meta);
     card.appendChild(thumbWrap);
     card.appendChild(body);
     col.appendChild(card);
     return col;
+}
+
+function canOpenCreationOffcanvas() {
+    return Boolean(cardsState.offcanvasGrid && document.getElementById('creationOffcanvas'));
 }
 
 function createReadMoreButton(totalCount, visibleCount, lang) {
@@ -201,6 +205,7 @@ function createReadMoreButton(totalCount, visibleCount, lang) {
 
     const btn = document.createElement('button');
     btn.className = 'btn-read-more';
+    btn.type = 'button';
     btn.setAttribute('data-bs-toggle', 'offcanvas');
     btn.setAttribute('data-bs-target', '#creationOffcanvas');
     btn.setAttribute('aria-controls', 'creationOffcanvas');
@@ -226,7 +231,7 @@ function renderMainCards(lang = getCurrentLang()) {
     const existingReadMore = cardsState.grid.parentNode.querySelector('[data-role="creation-readmore-wrap"]');
     if (existingReadMore) existingReadMore.remove();
 
-    if (cardsState.cards.length > INITIAL_DISPLAY) {
+    if (cardsState.cards.length > INITIAL_DISPLAY && canOpenCreationOffcanvas()) {
         const readMoreButton = createReadMoreButton(cardsState.cards.length, initialItems.length, lang);
         cardsState.grid.parentNode.insertBefore(readMoreButton, cardsState.grid.nextSibling);
     }
