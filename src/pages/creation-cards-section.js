@@ -140,10 +140,9 @@ function createCard(item, lang) {
     } else {
         card.href = item.url;
         card.setAttribute('aria-label', `${titleText} (${ui.open})`);
-        if (item.isExternal) {
-            card.target = '_blank';
-            card.rel = 'noopener';
-        }
+        // Always open in new tab as per user request
+        card.target = '_blank';
+        card.rel = 'noopener';
     }
 
     const thumbWrap = document.createElement('div');
@@ -175,17 +174,15 @@ function createCard(item, lang) {
     desc.className = 'card-text mb-3 flex-grow-1';
     desc.textContent = descriptionText;
 
-    const cta = document.createElement('span');
-    cta.className = 'btn-read-more mt-auto align-self-start';
-    cta.textContent = item.isComingSoon ? ui.comingSoon : ui.open;
+    // CTA button removed as per user request
 
-    const meta = document.createElement('small');
-    meta.textContent = item.isComingSoon ? ui.comingSoonMeta : (item.isExternal ? ui.external : ui.local);
+    // Meta label removed as per user request
+    // const meta = document.createElement('small');
+    // meta.textContent = item.isComingSoon ? ui.comingSoonMeta : (item.isExternal ? ui.external : ui.local);
 
     body.appendChild(title);
     body.appendChild(desc);
-    body.appendChild(cta);
-    body.appendChild(meta);
+    // body.appendChild(meta); // Removed
     card.appendChild(thumbWrap);
     card.appendChild(body);
     col.appendChild(card);
