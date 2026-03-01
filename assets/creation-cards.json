@@ -1,12 +1,14 @@
 {
-  "basePath": "https://uminomae.github.io/creation-space/demos/",
+  "basePath": "./",
   "presets": {
     "creation-card-01": {
-      "status": "coming_soon",
-      "label_ja": "CREATION CARD 01",
-      "label_en": "CREATION CARD 01",
-      "description_ja": "現在制作中です。近日公開予定です。",
-      "description_en": "Currently in production. Coming soon."
+      "status": "published",
+      "path": "./creation/consciousness-structure.html",
+      "thumbnail": "./assets/images/consciousness-structure-static.jpg",
+      "label_ja": "意識の構造",
+      "label_en": "Consciousness Structure",
+      "description_ja": "SDFレイマーチングによる意識場のプロトタイプ。観測と欠損のあいだに立ち上がる輪郭を探索します。",
+      "description_en": "A prototype of consciousness field using SDF raymarching. Exploring the contours that rise between observation and deficiency."
     },
     "creation-card-02": {
       "status": "coming_soon",

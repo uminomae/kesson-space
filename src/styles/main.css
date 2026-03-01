@@ -932,6 +932,9 @@
 
     .creation-link-card {
       overflow: hidden;
+      background-color: rgba(15, 20, 35, 0.75) !important;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
     .creation-link-card:hover {
       box-shadow: var(--kesson-card-shadow-rich);
