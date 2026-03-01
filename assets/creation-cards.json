@@ -3,6 +3,7 @@
   "presets": {
     "creation-card-01": {
       "status": "published",
+      "date": "2026-02-21",
       "path": "./threejs/01consciousness.html",
       "thumbnail": "./assets/images/consciousness-structure-static.jpg",
       "label_ja": "01 意識の構造",
