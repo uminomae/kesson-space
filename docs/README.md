@@ -63,6 +63,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 |----------|------|
 | [project-management-agent.md](../skills/project-management-agent.md) | タスク委譲判断、ワークツリー構成（正本） |
 | [devlog-generation.md](../skills/devlog-generation.md) | devlog生成ワークフロー |
+| [threejs-card-registration.md](../skills/threejs-card-registration.md) | THREE.JSカードの画像・リンク登録と 01*.html 準拠ルール |
 | [orchestrator.md](../skills/orchestrator.md) | エージェント協調 |
 
 ### その他
