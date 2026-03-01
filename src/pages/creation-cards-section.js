@@ -97,6 +97,47 @@ function fallbackDescription(url, lang) {
     return normalizeLang(lang) === 'ja' ? 'リンク先ページ' : 'Linked page';
 }
 
+function parseCardDateMs(item) {
+    if (!item || typeof item !== 'object') return Number.NEGATIVE_INFINITY;
+
+    const keys = [
+        'date',
+        'publishedAt',
+        'published_at',
+        'updatedAt',
+        'updated_at',
+        'releaseDate',
+        'release_date',
+        'createdAt',
+        'created_at',
+    ];
+
+    for (const key of keys) {
+        const raw = item[key];
+        if (typeof raw === 'string' && raw.trim()) {
+            const ms = Date.parse(raw);
+            if (Number.isFinite(ms)) return ms;
+            continue;
+        }
+        if (typeof raw === 'number' && Number.isFinite(raw)) {
+            return raw < 1e12 ? raw * 1000 : raw;
+        }
+    }
+
+    return Number.NEGATIVE_INFINITY;
+}
+
+function parseCardOrderNumber(id, item) {
+    if (typeof item?.order === 'number' && Number.isFinite(item.order)) {
+        return item.order;
+    }
+
+    const match = /(\d+)(?!.*\d)/.exec(String(id));
+    if (!match) return Number.NEGATIVE_INFINITY;
+
+    return Number.parseInt(match[1], 10);
+}
+
 function normalizeCard(id, item, basePath) {
     const isComingSoon = item?.status === 'coming_soon' || item?.comingSoon === true;
     const url = resolveUrl(basePath, item?.path);
@@ -120,6 +161,8 @@ function normalizeCard(id, item, basePath) {
         thumbnail,
         isExternal,
         isComingSoon,
+        dateMs: parseCardDateMs(item),
+        orderNumber: parseCardOrderNumber(id, item),
         raw: item,
     };
 }
@@ -264,10 +307,15 @@ async function fetchCards() {
     const basePath = typeof data?.basePath === 'string' ? data.basePath : './';
     const presets = data?.presets && typeof data.presets === 'object' ? data.presets : {};
 
-    return Object.entries(presets)
+    const cards = Object.entries(presets)
         .map(([id, item]) => normalizeCard(id, item, basePath))
-        .filter(Boolean)
-        .sort((a, b) => a.id.localeCompare(b.id));
+        .filter(Boolean);
+
+    return cards.sort((a, b) => {
+        if (a.dateMs !== b.dateMs) return b.dateMs - a.dateMs;
+        if (a.orderNumber !== b.orderNumber) return b.orderNumber - a.orderNumber;
+        return b.id.localeCompare(a.id, undefined, { numeric: true, sensitivity: 'base' });
+    });
 }
 
 async function initCreationCardsSection() {
