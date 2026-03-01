@@ -27,6 +27,7 @@ DT（Claude.ai Desktop）から指示書を受けて実装するか、ユーザ�
 | Codex App 1 | `/Users/uminomae/dev/kesson-codex-1` | feature/codex-1 | Codex App 実装用 |
 | Codex App 2 | `/Users/uminomae/dev/kesson-codex-2` | feature/codex-2 | Codex App 実装用 |
 | Codex App 3 | `/Users/uminomae/dev/kesson-codex-3` | feature/codex-3 | Codex App 実装用 |
+| **Gemini Space** | `/Users/uminomae/dev/kesson-space-gemini-1` | `gemini-dev` | Gemini CLI 実装・実験の正本 |
 
 ### ワークツリールール
 
