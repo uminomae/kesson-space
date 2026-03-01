@@ -563,25 +563,27 @@
       right: 16px;
       transform: translateY(-50%);
       z-index: 15;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      text-align: center;
       text-decoration: none;
       transition: opacity var(--kesson-transition-standard);
     }
-    #right-creation-link-label {
-      white-space: nowrap;
+    #right-creation-link span {
+      display: block;
+      font-size: var(--kesson-font-size-ui-xs);
+      color: var(--kesson-ui-label-color);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: var(--kesson-letter-ui-wide);
+      margin-bottom: 4px;
     }
     #right-creation-link .arrow {
-      line-height: 1;
-      transform: none;
+      font-size: var(--kesson-font-size-ui-arrow);
+      color: var(--kesson-ui-arrow-color);
+      display: inline-block;
+      transform: rotate(-90deg); /* 右向き */
+      margin-top: 0;
     }
-    #scroll-hint-top:hover span,
-    #scroll-hint-top:hover .arrow,
-    #right-creation-link:hover #right-creation-link-label,
-    #right-creation-link:hover .arrow,
-    #right-creation-link:focus-visible #right-creation-link-label,
-    #right-creation-link:focus-visible .arrow {
+    #right-creation-link:hover span,
+    #right-creation-link:hover .arrow {
       color: var(--kesson-ui-label-hover-color);
     }
     #right-creation-link:focus-visible {
@@ -730,7 +732,8 @@
       color: rgba(var(--color-highlight), 0.85);
     }
 
-    /* === 共通カード === */
+    /* === 共通カード (ARTICLES / CREATION CARDS 共通スタイル) === 
+       カードのスタイル（透過度、ぼかし等）はサイト全体で統一すること */
     .card.kesson-card,
     .creation-link-card {
       --bs-card-bg: var(--kesson-card-bg);
@@ -932,9 +935,9 @@
 
     .creation-link-card {
       overflow: hidden;
-      background-color: rgba(15, 20, 35, 0.75) !important;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background-color: rgba(20, 25, 40, 0.9) !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     .creation-link-card:hover {
       box-shadow: var(--kesson-card-shadow-rich);

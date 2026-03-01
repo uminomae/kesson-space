@@ -3,26 +3,33 @@
   "presets": {
     "creation-card-01": {
       "status": "published",
-      "path": "./creation/consciousness-structure.html",
+      "path": "./threejs/01consciousness.html",
       "thumbnail": "./assets/images/consciousness-structure-static.jpg",
-      "label_ja": "意識の構造",
-      "label_en": "Consciousness Structure",
+      "label_ja": "01 意識の構造",
+      "label_en": "01 Consciousness Structure",
       "description_ja": "SDFレイマーチングによる意識場のプロトタイプ。観測と欠損のあいだに立ち上がる輪郭を探索します。",
       "description_en": "A prototype of consciousness field using SDF raymarching. Exploring the contours that rise between observation and deficiency."
     },
     "creation-card-02": {
       "status": "coming_soon",
-      "label_ja": "CREATION CARD 02",
-      "label_en": "CREATION CARD 02",
-      "description_ja": "次の体験を準備中です。少しお待ちください。",
-      "description_en": "Preparing the next experience. Please stay tuned."
+      "label_ja": "02 Three.js prototype",
+      "label_en": "02 Three.js prototype",
+      "description_ja": "新しいThree.jsプロトタイプを準備中です。近日公開予定。",
+      "description_en": "Preparing a new Three.js prototype. Coming soon."
     },
     "creation-card-03": {
       "status": "coming_soon",
-      "label_ja": "CREATION CARD 03",
-      "label_en": "CREATION CARD 03",
-      "description_ja": "公開まで、もうしばらくお待ちください。",
-      "description_en": "Please wait a little longer until release."
+      "label_ja": "03 Three.js prototype",
+      "label_en": "03 Three.js prototype",
+      "description_ja": "新しいThree.jsプロトタイプを準備中です。近日公開予定。",
+      "description_en": "Preparing a new Three.js prototype. Coming soon."
+    },
+    "creation-card-04": {
+      "status": "coming_soon",
+      "label_ja": "04 Three.js prototype",
+      "label_en": "04 Three.js prototype",
+      "description_ja": "新しいThree.jsプロトタイプを準備中です。近日公開予定。",
+      "description_en": "Preparing a new Three.js prototype. Coming soon."
     }
   }
 }

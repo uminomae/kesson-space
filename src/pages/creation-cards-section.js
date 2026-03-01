@@ -1,10 +1,13 @@
 import { detectLang } from '../i18n.js';
 
 const DATA_URL = './assets/creation-cards.json';
+const INITIAL_DISPLAY = 3;
 
 const UI_STRINGS = {
     ja: {
         open: '▸ 開く',
+        readMore: '▸ 続きを見る',
+        viewAll: '▸ すべて表示',
         noImage: 'NO IMAGE',
         local: 'ローカル',
         external: '外部',
@@ -15,6 +18,8 @@ const UI_STRINGS = {
     },
     en: {
         open: '▸ Open',
+        readMore: '▸ Read More',
+        viewAll: '▸ View All',
         noImage: 'NO IMAGE',
         local: 'Local',
         external: 'External',
@@ -30,6 +35,7 @@ const cardsState = {
     initialized: false,
     grid: null,
     errorEl: null,
+    offcanvasGrid: null,
 };
 
 function normalizeLang(lang) {
@@ -140,10 +146,8 @@ function createCard(item, lang) {
     } else {
         card.href = item.url;
         card.setAttribute('aria-label', `${titleText} (${ui.open})`);
-        if (item.isExternal) {
-            card.target = '_blank';
-            card.rel = 'noopener';
-        }
+        card.target = '_blank';
+        card.rel = 'noopener';
     }
 
     const thumbWrap = document.createElement('div');
@@ -175,32 +179,65 @@ function createCard(item, lang) {
     desc.className = 'card-text mb-3 flex-grow-1';
     desc.textContent = descriptionText;
 
-    const cta = document.createElement('span');
-    cta.className = 'btn-read-more mt-auto align-self-start';
-    cta.textContent = item.isComingSoon ? ui.comingSoon : ui.open;
-
-    const meta = document.createElement('small');
-    meta.textContent = item.isComingSoon ? ui.comingSoonMeta : (item.isExternal ? ui.external : ui.local);
+    if (item.isComingSoon) {
+        const meta = document.createElement('small');
+        meta.textContent = ui.comingSoonMeta;
+        body.appendChild(meta);
+    }
 
     body.appendChild(title);
     body.appendChild(desc);
-    body.appendChild(cta);
-    body.appendChild(meta);
     card.appendChild(thumbWrap);
     card.appendChild(body);
     col.appendChild(card);
     return col;
 }
 
-function renderCards(lang = getCurrentLang()) {
+function createReadMoreButton(totalCount, visibleCount, lang) {
+    const ui = getUi(lang);
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'text-center mt-3';
+    btnContainer.dataset.role = 'creation-readmore-wrap';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-read-more';
+    btn.setAttribute('data-bs-toggle', 'offcanvas');
+    btn.setAttribute('data-bs-target', '#creationOffcanvas');
+    btn.setAttribute('aria-controls', 'creationOffcanvas');
+
+    const remaining = totalCount - visibleCount;
+    btn.textContent = remaining > 0
+        ? `${ui.readMore} (${remaining})`
+        : `${ui.viewAll} (${totalCount})`;
+
+    btnContainer.appendChild(btn);
+    return btnContainer;
+}
+
+function renderMainCards(lang = getCurrentLang()) {
     if (!cardsState.grid) return;
 
     cardsState.grid.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    cardsState.cards.forEach((item) => {
-        frag.appendChild(createCard(item, lang));
+    const initialItems = cardsState.cards.slice(0, INITIAL_DISPLAY);
+    initialItems.forEach((item) => {
+        cardsState.grid.appendChild(createCard(item, lang));
     });
-    cardsState.grid.appendChild(frag);
+
+    const existingReadMore = cardsState.grid.parentNode.querySelector('[data-role="creation-readmore-wrap"]');
+    if (existingReadMore) existingReadMore.remove();
+
+    if (cardsState.cards.length > INITIAL_DISPLAY) {
+        const readMoreButton = createReadMoreButton(cardsState.cards.length, initialItems.length, lang);
+        cardsState.grid.parentNode.insertBefore(readMoreButton, cardsState.grid.nextSibling);
+    }
+}
+
+function renderOffcanvasCards(lang = getCurrentLang()) {
+    if (!cardsState.offcanvasGrid) return;
+    cardsState.offcanvasGrid.innerHTML = '';
+    cardsState.cards.forEach((item) => {
+        cardsState.offcanvasGrid.appendChild(createCard(item, lang));
+    });
 }
 
 function setError(message = '') {
@@ -231,12 +268,14 @@ async function fetchCards() {
 async function initCreationCardsSection() {
     cardsState.grid = document.getElementById('creation-cards-grid');
     cardsState.errorEl = document.getElementById('creation-cards-error');
+    cardsState.offcanvasGrid = document.getElementById('offcanvas-creation-grid');
     if (!cardsState.grid) return;
 
     try {
         cardsState.cards = await fetchCards();
         setError('');
-        renderCards();
+        renderMainCards();
+        renderOffcanvasCards();
         cardsState.initialized = true;
     } catch (error) {
         cardsState.cards = [];
@@ -253,7 +292,8 @@ export function refreshCreationCardsLanguage() {
         return;
     }
     if (!cardsState.initialized) return;
-    renderCards(lang);
+    renderMainCards(lang);
+    renderOffcanvasCards(lang);
 }
 
 if (document.readyState === 'loading') {
