@@ -67,6 +67,8 @@
       height: 100vh;
       z-index: 1;
       cursor: grab;
+      /* Mobile context: keep vertical swipe for page scroll; horizontal drag remains for camera control. */
+      touch-action: pan-y;
     }
     #interaction-layer:active {
       cursor: grabbing;
@@ -521,6 +523,12 @@
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.enableZoom = false;
+      controls.enablePan = false;
+      // Context: lock vertical orbit so mobile vertical drags are treated as page scroll instead of camera tilt.
+      controls.minPolarAngle = Math.PI / 2;
+      controls.maxPolarAngle = Math.PI / 2;
+      // OrbitControls sets touchAction='none' by default, so override to keep native vertical scrolling.
+      controls.domElement.style.touchAction = 'pan-y';
       controls.autoRotate = true;
       controls.autoRotateSpeed = 0.5;
 
