@@ -3,12 +3,12 @@
     "type": "post",
     "title": "AI協働：「すべてはファイル」をコンテキストに持ち込んだ論文——棄却と保持の間",
     "title_ja": "AI協働：「すべてはファイル」をコンテキストに持ち込んだ論文——棄却と保持の間",
-    "title_en": "",
+    "title_en": "AI Collaboration: A Paper Bringing \"Everything Is a File\" into Context — Between Rejection and Retention",
     "url": "https://uminomae.github.io/pjdhiro/20260302-everything-is-context/",
     "date": "2026-03-02T11:00:00+09:00",
     "excerpt": "arXiv論文「Everything is Context」を読んだ。Unixの「すべてはファイル」をLLMのコンテキスト管理に持ち込んだ提案。ほぼ同意。ただし一点、論文のパイプラインにない操作がある。",
     "excerpt_ja": "arXiv論文「Everything is Context」を読んだ。Unixの「すべてはファイル」をLLMのコンテキスト管理に持ち込んだ提案。ほぼ同意。ただし一点、論文のパイプラインにない操作がある。",
-    "excerpt_en": "",
+    "excerpt_en": "I read the arXiv paper \"Everything is Context.\" It proposes applying the Unix idea of \"everything is a file\" to LLM context management. I agree with most of it, but one operation is missing from the paper's pipeline.",
     "tags": [
       "コンテキストエンジニアリング"
     ],
@@ -17,7 +17,7 @@
       "欠損駆動思考",
       "AI協働"
     ],
-    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-3/0302/0302.png"
+    "teaser": "https://uminomae.github.io/pjdhiro/assets/images/blog/2026-03/0302/0302.png"
   },
   {
     "type": "post",
@@ -170,12 +170,12 @@
     "type": "page",
     "title": "対話：創造とは",
     "title_ja": "対話：創造とは",
-    "title_en": "",
+    "title_en": "Dialogue: What Is Creation?",
     "url": "https://uminomae.github.io/pjdhiro/dialogueCreation/",
     "date": "2025-12-18T00:00:00+09:00",
     "excerpt": "このページは進化中です。13年前の「渦」を束に変えてきました。",
     "excerpt_ja": "このページは進化中です。13年前の「渦」を束に変えてきました。",
-    "excerpt_en": "",
+    "excerpt_en": "This page is still evolving. I have been turning the \"vortex\" from 13 years ago into a bundle.",
     "tags": [],
     "categories": [
       "対話",
