@@ -199,15 +199,43 @@ export function isViewerOpen() {
 }
 
 /**
- * PDF URL (GitHub Pages) から raw.githubusercontent.com の draft.md URL を導出
+ * PDF URL から raw.githubusercontent.com の draft.md URL を導出
+ *
+ * Context:
+ * - PDFはブラウザ表示のため github.io を優先する。
+ * - md は Jekyll 影響を避けるため raw.githubusercontent.com を使う。
+ * - 新パス: assets/publications/kesson/pdf/guides/*.pdf
+ *   -> assets/publications/kesson/md/guides/*-draft.md
+ * - 旧パス: assets/pdf/*.pdf も後方互換で維持する。
  */
 function deriveDraftUrl(pdfUrl) {
-    const RAW_BASE = 'https://raw.githubusercontent.com/uminomae/pjdhiro/main/';
-    const match = pdfUrl.match(/github\.io\/pjdhiro\/(.+)\.pdf$/);
-    if (match) {
-        return RAW_BASE + match[1] + '-draft.md';
+    const RAW_BASE = 'https://raw.githubusercontent.com/uminomae/pjdhiro/main';
+    if (typeof pdfUrl !== 'string' || !pdfUrl.trim()) return '';
+
+    let rawPdfUrl = pdfUrl.trim();
+    try {
+        const parsed = new URL(rawPdfUrl);
+        if (parsed.hostname !== 'raw.githubusercontent.com' && parsed.hostname.endsWith('github.io')) {
+            const repoPath = parsed.pathname.startsWith('/pjdhiro/')
+                ? parsed.pathname.slice('/pjdhiro'.length)
+                : parsed.pathname;
+            rawPdfUrl = `${RAW_BASE}${repoPath}`;
+        }
+    } catch {
+        // keep original url
     }
-    return pdfUrl.replace(/\.pdf$/, '-draft.md');
+
+    if (/\/assets\/publications\/kesson\/pdf\/guides\/.+\.pdf(?:[?#].*)?$/i.test(rawPdfUrl)) {
+        return rawPdfUrl
+            .replace('/assets/publications/kesson/pdf/guides/', '/assets/publications/kesson/md/guides/')
+            .replace(/\.pdf(?:[?#].*)?$/i, '-draft.md');
+    }
+
+    if (/\/assets\/pdf\/.+\.pdf(?:[?#].*)?$/i.test(rawPdfUrl)) {
+        return rawPdfUrl.replace(/\.pdf(?:[?#].*)?$/i, '-draft.md');
+    }
+
+    return rawPdfUrl.replace(/\.pdf(?:[?#].*)?$/i, '-draft.md');
 }
 
 /**

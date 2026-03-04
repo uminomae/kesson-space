@@ -2,7 +2,7 @@
 
 import { armManualRestoration, lockScroll, requestScroll, unlockScroll } from './scroll-coordinator.js';
 
-const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/pdf/';
+const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/publications/kesson/pdf/guides/';
 export const LANG_CHANGE_EVENT = 'kesson:lang-change';
 
 const STRINGS = {
