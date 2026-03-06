@@ -2,7 +2,8 @@
 
 import { armManualRestoration, lockScroll, requestScroll, unlockScroll } from './scroll-coordinator.js';
 
-const PDF_BASE = 'https://uminomae.github.io/pjdhiro/assets/publications/kesson/pdf/guides/';
+const PDF_BASE_JA = 'https://uminomae.github.io/pjdhiro/assets/kesson/guides/ja/pdf/';
+const PDF_BASE_EN = 'https://uminomae.github.io/pjdhiro/assets/kesson/guides/en/pdf/';
 export const LANG_CHANGE_EVENT = 'kesson:lang-change';
 
 const STRINGS = {
@@ -20,9 +21,9 @@ const STRINGS = {
         rightCreationLinkLabel: '創造とは',
         rightCreationLinkAria: 'creation-spaceへ移動',
         nav: [
-            { label: '一般向け', url: PDF_BASE + 'kesson-general.pdf' },
-            { label: '設計者向け', url: PDF_BASE + 'kesson-designer.pdf' },
-            { label: '学術版', url: PDF_BASE + 'kesson-academic.pdf' },
+            { label: '一般向け', url: PDF_BASE_JA + 'kesson-general.pdf' },
+            { label: '設計者向け', url: PDF_BASE_JA + 'kesson-designer.pdf' },
+            { label: '学術版', url: PDF_BASE_JA + 'kesson-academic.pdf' },
         ],
         gem: {
             label: 'Gem',
@@ -47,9 +48,9 @@ const STRINGS = {
         rightCreationLinkLabel: 'Creation',
         rightCreationLinkAria: 'Go to creation-space',
         nav: [
-            { label: 'General', url: PDF_BASE + 'kesson-general-en.pdf' },
-            { label: 'For Designers', url: PDF_BASE + 'kesson-designer-en.pdf' },
-            { label: 'Academic', url: PDF_BASE + 'kesson-academic-en.pdf' },
+            { label: 'General', url: PDF_BASE_EN + 'kesson-general.pdf' },
+            { label: 'For Designers', url: PDF_BASE_EN + 'kesson-designer.pdf' },
+            { label: 'Academic', url: PDF_BASE_EN + 'kesson-academic.pdf' },
         ],
         gem: {
             label: 'Gem',
