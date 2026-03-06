@@ -4,6 +4,42 @@
 
 import DOMPurify from 'dompurify';
 
+// Jekyll (github.io) では .md を fetch すると HTML が返る。
+// draftUrl は raw.githubusercontent.com で渡すこと（i18n.js の DRAFT_BASE_JA/EN 参照）。
+// 万一 github.io URL が渡された場合のフォールバックも実装済み（creation-space 準拠）。
+const PJDHIRO_RAW_BASE = 'https://raw.githubusercontent.com/uminomae/pjdhiro/main';
+
+/**
+ * MD fetch の候補 URL 一覧を返す。
+ * primary が github.io の場合、raw.githubusercontent.com をフォールバック候補に追加。
+ * (creation-space reports.js の buildMarkdownFetchCandidates に準拠)
+ */
+function buildMarkdownFetchCandidates(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return [];
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return [];
+    const candidates = [trimmed];
+    if (!/\.md(?:$|[?#])/i.test(trimmed)) return candidates;
+    try {
+        const parsed = new URL(trimmed);
+        const pathParts = parsed.pathname.split('/').filter(Boolean);
+        const assetsIndex = pathParts.findIndex((p) => p === 'assets');
+        if (assetsIndex >= 0) {
+            const filePath = pathParts.slice(assetsIndex).join('/');
+            candidates.push(`${PJDHIRO_RAW_BASE}/${filePath}`);
+        }
+    } catch {
+        // primary のみ
+    }
+    return [...new Set(candidates)];
+}
+
+function looksLikeHtml(text) {
+    if (typeof text !== 'string') return false;
+    const sample = text.slice(0, 512).trimStart().toLowerCase();
+    return sample.startsWith('<!doctype html') || sample.startsWith('<html');
+}
+
 const VIEWER_STRINGS = {
     ja: {
         closeAria: '閉じる',
@@ -259,17 +295,25 @@ export async function openDraftViewer(draftUrl, label, sourceUrl = '') {
     `);
 
     try {
-        const [res, marked] = await Promise.all([
-            fetch(draftUrl),
-            getMarked(),
-        ]);
+        const marked = await getMarked();
+        const candidates = buildMarkdownFetchCandidates(draftUrl);
+        let raw = '';
+        let lastError = null;
 
-        if (!res.ok) throw new Error(`${res.status}`);
-        const raw = await res.text();
-
-        if (raw.trim().startsWith('<!') || raw.trim().startsWith('<html')) {
-            throw new Error('Got HTML instead of markdown');
+        for (const candidateUrl of candidates) {
+            try {
+                const res = await fetch(candidateUrl, { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const text = await res.text();
+                if (looksLikeHtml(text)) throw new Error('Got HTML instead of markdown');
+                raw = text;
+                break;
+            } catch (err) {
+                lastError = err;
+            }
         }
+
+        if (!raw) throw (lastError || new Error('No markdown source could be loaded'));
 
         const { meta, body } = parseFrontmatter(raw);
         const html = DOMPurify.sanitize(marked.parse(body));
