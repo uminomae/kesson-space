@@ -49,7 +49,7 @@ function getResponsiveOrbHitScale() {
     return interactionWorldFromViewportHeight(ORB_HIT_BASE_SCALE);
 }
 
-function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex) {
+function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex, { draftUrl, pdfUrl } = {}) {
     return createNavLabelButton({
         text,
         extraClass,
@@ -57,6 +57,8 @@ function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex) {
         isExternal,
         navType,
         navIndex,
+        draftUrl,
+        pdfUrl,
         onGemHover: setGemHover,
         onXLogoHover: setXLogoHover,
     });
@@ -108,7 +110,7 @@ export function createNavObjects(scene) {
         scene.add(group);
         navMeshes.push(group);
 
-        _labelElements.push(createHtmlLabel(navItem.label, '', navItem.url, false, 'orb', index));
+        _labelElements.push(createHtmlLabel(navItem.label, '', navItem.url, false, 'orb', index, { draftUrl: navItem.draftUrl, pdfUrl: navItem.pdfUrl }));
     });
 
     _navMeshes = navMeshes;

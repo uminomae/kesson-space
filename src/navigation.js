@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import { toggles } from './config.js';
-import { injectViewerStyles, isViewerOpen, openPdfViewer } from './viewer.js';
+import { injectViewerStyles, isViewerOpen, openDraftViewer } from './viewer.js';
 import { createNavObjects, updateNavObjects, setGemHover, setXLogoHover, isNavLabelFocused } from './nav-objects.js';
 import { getScrollProgress } from './controls.js';
 import { interactionPxFromViewportHeight } from './nav/responsive.js';
@@ -94,7 +94,7 @@ function onPointerUp(event) {
         if (hitData.external) {
             window.open(hitData.url, '_blank', 'noopener,noreferrer');
         } else {
-            openPdfViewer(hitData.url, hitData.label);
+            openDraftViewer(hitData.draftUrl || hitData.url, hitData.label, hitData.pdfUrl || hitData.url);
         }
     }
 }

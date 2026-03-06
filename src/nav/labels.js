@@ -21,6 +21,8 @@ export function createNavLabelButton({
     isExternal,
     navType,
     navIndex,
+    draftUrl,
+    pdfUrl,
     onGemHover,
     onXLogoHover,
 }) {
@@ -49,8 +51,8 @@ export function createNavLabelButton({
         if (isExternal) {
             window.open(url, '_blank', 'noopener,noreferrer');
         } else {
-            import('../viewer.js').then(({ openPdfViewer }) => {
-                openPdfViewer(url, text);
+            import('../viewer.js').then(({ openDraftViewer }) => {
+                openDraftViewer(draftUrl || url, text, pdfUrl || url);
             });
         }
     });
