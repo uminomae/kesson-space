@@ -24,7 +24,7 @@ const STRINGS = {
         rightCreationLinkLabel: '創造とは',
         rightCreationLinkAria: 'creation-spaceへ移動',
         nav: [
-            { label: '一般向け', url: PDF_BASE_JA + 'kesson-general.pdf', pdfUrl: PDF_BASE_JA + 'kesson-general.pdf', draftUrl: DRAFT_BASE_JA + 'kesson-general-draft.md' },
+            { label: '一般向け', url: PDF_BASE_JA + 'kesson-general.pdf', pdfUrl: PDF_BASE_JA + 'kesson-general.pdf', draftUrl: DRAFT_BASE_JA + 'kesson-general.md' },
             { label: '設計者向け', url: PDF_BASE_JA + 'kesson-designer.pdf', pdfUrl: PDF_BASE_JA + 'kesson-designer.pdf', draftUrl: DRAFT_BASE_JA + 'kesson-designer-draft.md' },
             { label: '学術版', url: PDF_BASE_JA + 'kesson-academic.pdf', pdfUrl: PDF_BASE_JA + 'kesson-academic.pdf', draftUrl: DRAFT_BASE_JA + 'kesson-academic-draft.md' },
         ],
