@@ -64,9 +64,9 @@ function createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex, {
     });
 }
 
-function replaceLabel(oldLabel, text, extraClass, url, isExternal, navType, navIndex) {
+function replaceLabel(oldLabel, text, extraClass, url, isExternal, navType, navIndex, { draftUrl, pdfUrl } = {}) {
     if (oldLabel instanceof HTMLElement) oldLabel.remove();
-    return createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex);
+    return createHtmlLabel(text, extraClass, url, isExternal, navType, navIndex, { draftUrl, pdfUrl });
 }
 
 export function createNavObjects(scene) {
@@ -92,6 +92,8 @@ export function createNavObjects(scene) {
         coreSprite.userData = {
             type: 'nav',
             url: navItem.url,
+            pdfUrl: navItem.pdfUrl || navItem.url,
+            draftUrl: navItem.draftUrl || '',
             label: navItem.label,
             baseY: navPosition[1],
             index,
@@ -133,6 +135,8 @@ export function refreshOrbLanguage() {
         const core = group.userData.core;
         if (core && core.userData) {
             core.userData.url = navItem.url;
+            core.userData.pdfUrl = navItem.pdfUrl || navItem.url;
+            core.userData.draftUrl = navItem.draftUrl || '';
             core.userData.label = navItem.label;
         }
 
@@ -143,7 +147,8 @@ export function refreshOrbLanguage() {
             navItem.url,
             false,
             'orb',
-            orbIndex
+            orbIndex,
+            { draftUrl: navItem.draftUrl, pdfUrl: navItem.pdfUrl }
         );
         orbIndex += 1;
     });
