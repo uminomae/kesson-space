@@ -1086,16 +1086,15 @@
     }
 
     .viewer-close {
-      position: absolute;
-      top: 10px;
-      right: 12px;
+      position: static;
       background: none;
       border: none;
-      color: rgba(var(--color-heading), 0.25);
-      font-size: 1.4rem;
+      color: rgba(var(--color-heading), 0.3);
+      font-size: 1.3rem;
       cursor: pointer;
       width: 32px;
       height: 32px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1103,7 +1102,7 @@
       z-index: 10;
     }
     .viewer-close:hover {
-      color: rgba(var(--color-heading), 0.6);
+      color: rgba(var(--color-heading), 0.7);
     }
 
     .viewer-content {
@@ -1111,6 +1110,7 @@
       height: 100%;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      flex: 1; /* header第一式で追加（重複しても問題なし） */
     }
     .viewer-content iframe {
       width: 100%;
@@ -1312,29 +1312,64 @@
       margin: 1em 0;
     }
 
-    /* PDF link */
-    .md-footer {
-      margin-top: 2.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(var(--color-accent), 0.06);
-      text-align: center;
+    /* ============================
+       Viewer header bar（右上: PDF + MD + 閉じる）
+       ============================ */
+    .viewer-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem 0.6rem 1.2rem;
+      border-bottom: 1px solid rgba(var(--color-accent), 0.08);
+      flex-shrink: 0;
     }
-    .md-pdf-link {
-      display: inline-block;
-      padding: 0.6em 1.5em;
-      font-size: 0.78rem;
-      color: rgba(160, 185, 240, 0.7);
-      border: 1px solid rgba(var(--color-accent), 0.12);
+    .viewer-header-links {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .viewer-header-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3em 0.85em;
+      font-size: 0.72rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.04em;
+      color: rgba(160, 185, 240, 0.75);
+      border: 1px solid rgba(var(--color-accent), 0.15);
       border-radius: var(--kesson-radius-sm);
       text-decoration: none;
-      letter-spacing: 0.05em;
       transition: all var(--kesson-transition-standard);
+      white-space: nowrap;
     }
-    .md-pdf-link:hover {
-      color: rgba(200, 220, 255, 0.9);
-      border-color: rgba(var(--color-accent), 0.25);
-      background: rgba(60, 90, 150, 0.1);
+    .viewer-header-link:hover {
+      color: rgba(210, 228, 255, 0.95);
+      border-color: rgba(var(--color-accent), 0.3);
+      background: rgba(60, 90, 150, 0.12);
     }
+    .viewer-header-link--md {
+      color: rgba(140, 170, 220, 0.6);
+      border-color: rgba(var(--color-accent), 0.08);
+      font-size: 0.67rem;
+    }
+    .viewer-header-link--md:hover {
+      color: rgba(180, 210, 255, 0.85);
+      border-color: rgba(var(--color-accent), 0.2);
+    }
+    /* viewer-glass をフレックス縦並びに変更 */
+    .viewer-glass {
+      display: flex !important;
+      flex-direction: column;
+    }
+    .viewer-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+    /* 旧 md-footer / md-pdf-link は非表示（念のため残す） */
+    .md-footer { display: none; }
+    .md-pdf-link { display: none; }
 
     /* loading */
     .md-loading {

@@ -138,7 +138,10 @@ function createViewer() {
     viewer.id = 'kesson-viewer';
     viewer.innerHTML = `
         <div class="viewer-glass">
-            <button class="viewer-close" aria-label="${escapeHtml(strings.closeAria)}">×</button>
+            <div class="viewer-header">
+                <div class="viewer-header-links"></div>
+                <button class="viewer-close" aria-label="${escapeHtml(strings.closeAria)}">×</button>
+            </div>
             <div class="viewer-content"></div>
         </div>
     `;
@@ -327,28 +330,19 @@ export async function openDraftViewer(draftUrl, label, sourceUrl = '') {
             ? `<div class="md-provenance">${provenanceParts.join(' · ')}</div>`
             : '';
 
-        const sourceLinkHtml = sourceUrl
-            ? `
-                <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener" class="md-pdf-link">
-                    ${escapeHtml(strings.openReference)} ↓
-                </a>
-            `
-            : '';
-
-        const draftLinkHtml = `
-            <a href="${escapeHtml(draftUrl)}" target="_blank" rel="noopener" class="md-pdf-link">
-                ${escapeHtml(strings.openDraft)} ↓
-            </a>
-        `;
+        // ヘッダーリンクを更新（右上に PDF + MD リンク）
+        const headerLinks = _viewer && _viewer.querySelector('.viewer-header-links');
+        if (headerLinks) {
+            headerLinks.innerHTML = [
+                sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener" class="viewer-header-link">${escapeHtml(strings.openReference)}</a>` : '',
+                `<a href="${escapeHtml(draftUrl)}" target="_blank" rel="noopener" class="viewer-header-link viewer-header-link--md">${escapeHtml(strings.openDraft)}</a>`,
+            ].join('');
+        }
 
         openViewer(`
             <div class="md-article">
                 ${provenanceHtml}
                 <div class="md-body">${html}</div>
-                <div class="md-footer">
-                    ${draftLinkHtml}
-                    ${sourceLinkHtml}
-                </div>
             </div>
         `);
     } catch (error) {
