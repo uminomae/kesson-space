@@ -225,6 +225,15 @@ function deriveDraftUrl(pdfUrl) {
         // keep original url
     }
 
+    // 新パス: assets/kesson/guides/{lang}/pdf/{name}.pdf
+    //        → assets/kesson/guides/{lang}/md/{name}-draft.md
+    if (/\/assets\/kesson\/guides\/[^/]+\/pdf\/.+\.pdf(?:[?#].*)?$/i.test(rawPdfUrl)) {
+        return rawPdfUrl
+            .replace(/\/pdf\//, '/md/')
+            .replace(/\.pdf(?:[?#].*)?$/i, '-draft.md');
+    }
+
+    // 旧パス（後方互換）: assets/publications/kesson/pdf/guides/
     if (/\/assets\/publications\/kesson\/pdf\/guides\/.+\.pdf(?:[?#].*)?$/i.test(rawPdfUrl)) {
         return rawPdfUrl
             .replace('/assets/publications/kesson/pdf/guides/', '/assets/publications/kesson/md/guides/')
