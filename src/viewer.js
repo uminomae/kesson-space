@@ -139,6 +139,7 @@ function createViewer() {
     viewer.innerHTML = `
         <div class="viewer-glass">
             <div class="viewer-header">
+                <span class="viewer-title"></span>
                 <div class="viewer-header-links"></div>
                 <button class="viewer-close" aria-label="${escapeHtml(strings.closeAria)}">×</button>
             </div>
@@ -329,6 +330,12 @@ export async function openDraftViewer(draftUrl, label, sourceUrl = '') {
         const provenanceHtml = provenanceParts.length
             ? `<div class="md-provenance">${provenanceParts.join(' · ')}</div>`
             : '';
+
+        // CHANGED(2026-03-06): #105 — modal タイトルを表示
+        const titleEl = _viewer && _viewer.querySelector('.viewer-title');
+        if (titleEl) {
+            titleEl.textContent = label || '';
+        }
 
         // ヘッダーリンクを更新（右上に PDF + MD リンク）
         const headerLinks = _viewer && _viewer.querySelector('.viewer-header-links');

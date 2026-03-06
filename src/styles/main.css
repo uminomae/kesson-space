@@ -1324,6 +1324,17 @@
       border-bottom: 1px solid rgba(var(--color-accent), 0.08);
       flex-shrink: 0;
     }
+    /* CHANGED(2026-03-06): #105 — modal タイトル */
+    .viewer-title {
+      flex: 1;
+      font-size: 0.82rem;
+      font-family: var(--kesson-font-mono-ui);
+      color: rgba(200, 220, 255, 0.85);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .viewer-header-links {
       display: flex;
       align-items: center;
