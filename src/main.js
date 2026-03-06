@@ -22,6 +22,7 @@ import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
 import { refreshCreationCardsLanguage } from './pages/creation-cards-section.js';
+import { initGuides, setGuidesLanguage } from './guides.js';
 import { createSdfEntity } from './sdf-entity.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
@@ -47,6 +48,7 @@ const {
 initControls(camera, container, renderer);
 initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
+initGuides({ lang: detectLang() });
 
 const sdfEntity = createSdfEntity();
 sdfEntity.mesh.visible = Boolean(toggles.sdfEntity);
@@ -80,6 +82,7 @@ initLanguageListeners({
     refreshDevlogLanguage,
     refreshArticlesLanguage,
     refreshCreationCardsLanguage,
+    refreshGuidesLanguage: () => setGuidesLanguage(detectLang()),
 });
 
 const clock = new THREE.Clock();

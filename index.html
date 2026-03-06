@@ -156,6 +156,36 @@
   <!-- Articles出現タイミング調整スペーサー -->
   <div id="articles-spacer"></div>
 
+  <!-- Guides Section -->
+  <section id="guides-section">
+    <div class="section-content-wrap">
+      <div class="container">
+        <h2 class="section-heading">GUIDES</h2>
+        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guides MD Modal -->
+  <div class="modal fade" id="guides-md-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title" id="guides-md-modal-title"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-body-secondary small mb-3" id="guides-md-meta"></p>
+          <div id="guides-md-content"></div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <a id="guides-md-open-pdf" href="#" target="_blank" rel="noopener" class="btn btn-outline-light btn-sm">PDF</a>
+          <button type="button" id="guides-md-close-btn" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Articles Section -->
   <section id="articles-section">
     <div class="section-content-wrap">
