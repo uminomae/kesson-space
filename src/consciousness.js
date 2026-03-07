@@ -13,6 +13,7 @@ import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
 import { initMobileNavAutoCollapse } from './main/mobile-nav.js';
 import { initTopbarConsole } from './topbar-console.js';
+import { initFontSizeCtrl } from './font-size-ctrl.js';
 import { detectLang, LANG_CHANGE_EVENT } from './i18n.js';
 import { breathConfig, liquidParams, sceneParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
@@ -112,6 +113,7 @@ applyConsciousnessCopy(initialLang);
 initLangToggle();
 initMobileNavAutoCollapse();
 initTopbarConsole();
+initFontSizeCtrl();
 
 const container = document.getElementById('canvas-container');
 const {

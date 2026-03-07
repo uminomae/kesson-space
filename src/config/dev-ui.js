@@ -11,6 +11,7 @@ import {
   liquidParams,
   toggles,
 } from './params.js';
+import { FONT_STEP_RANGE } from '../font-size-ctrl.js';
 
 export const DEV_TOGGLES = [
     { key: 'background',    label: '背景' },
@@ -32,6 +33,13 @@ export const DEV_TOGGLES = [
 ];
 
 export const DEV_SECTIONS = [
+    {
+        id: 'font',
+        title: 'Font',
+        params: {
+            fontStep: { label: '共有 step', min: FONT_STEP_RANGE.min, max: FONT_STEP_RANGE.max, step: 1, default: FONT_STEP_RANGE.defaultStep },
+        }
+    },
     {
         id: 'breath',
         title: '呼吸（同期）',

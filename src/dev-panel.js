@@ -3,6 +3,7 @@
 // CHANGED: Bootstrap CSS/JS を動的ロード（?dev時のみ読み込まれる）
 
 import { toggles, breathConfig, DEV_TOGGLES, DEV_SECTIONS } from './config.js';
+import { buildFontDefaultsCss, FONT_STEP_CHANGE_EVENT, getCurrentStep } from './font-size-ctrl.js';
 
 const BOOTSTRAP_CSS_URL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
 const BOOTSTRAP_JS_URL = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
@@ -55,6 +56,7 @@ function loadBootstrap() {
 let _isOpen = false;
 let _values = {};
 let _onChange = null;
+let _fontStepListenerBound = false;
 
 function formatValue(val, step) {
     const str = step.toString();
@@ -63,10 +65,64 @@ function formatValue(val, step) {
     return Number(val).toFixed(decimals);
 }
 
+function getParamConfig(key) {
+    for (const section of DEV_SECTIONS) {
+        if (Object.prototype.hasOwnProperty.call(section.params, key)) {
+            return section.params[key];
+        }
+    }
+    return null;
+}
+
+function syncSliderUI(key, value) {
+    _values[key] = value;
+
+    const slider = document.getElementById(`slider-${key}`);
+    const valEl = document.getElementById(`val-${key}`);
+    const param = getParamConfig(key);
+
+    if (slider) slider.value = String(value);
+    if (valEl && param) valEl.textContent = formatValue(value, param.step);
+}
+
+function copyTextWithFeedback({ buttonId, text, successText }) {
+    const result = document.getElementById('dev-export-result');
+    const button = document.getElementById(buttonId);
+    if (result) {
+        result.textContent = text;
+        result.style.display = 'block';
+    }
+
+    const reset = () => {
+        if (button) button.textContent = successText.initial;
+    };
+
+    if (button) button.textContent = successText.pending;
+
+    const clipboard = navigator.clipboard?.writeText?.(text);
+    if (clipboard && typeof clipboard.then === 'function') {
+        clipboard.then(() => {
+            if (button) button.textContent = successText.done;
+            setTimeout(reset, 2000);
+        }).catch(() => {
+            console.log(text);
+            if (button) button.textContent = successText.fallback;
+            setTimeout(reset, 2000);
+        });
+        return;
+    }
+
+    console.log(text);
+    if (button) button.textContent = successText.fallback;
+    setTimeout(reset, 2000);
+}
+
 function createPanel() {
     DEV_SECTIONS.forEach(section => {
         Object.keys(section.params).forEach(key => {
-            _values[key] = section.params[key].default;
+            _values[key] = key === 'fontStep'
+                ? getCurrentStep()
+                : section.params[key].default;
         });
     });
 
@@ -98,7 +154,8 @@ function createPanel() {
     html += '</div>';
     html += `
         <div class="p-2 border-top border-secondary-subtle">
-            <button class="btn btn-outline-secondary btn-sm w-100 dev-export-btn" id="dev-export-btn">値をコピー</button>
+            <button class="btn btn-outline-info btn-sm w-100 mb-2 dev-export-btn" id="dev-copy-defaults-btn">Copy defaults</button>
+            <button class="btn btn-outline-secondary btn-sm w-100 dev-export-btn" id="dev-export-btn">状態をコピー</button>
             <pre class="mt-2 p-2 bg-black rounded text-info-emphasis" id="dev-export-result"></pre>
         </div>
     `;
@@ -108,7 +165,9 @@ function createPanel() {
 
     bindToggleEvents();
     bindSliderEvents();
+    bindCopyDefaultsEvent();
     bindExportEvent();
+    bindFontStepSync();
 }
 
 function accordionItem(id, title, bodyHTML, show = false) {
@@ -142,14 +201,15 @@ function buildTogglesHTML() {
 function buildSlidersHTML(section) {
     return Object.keys(section.params).map(key => {
         const p = section.params[key];
+        const currentValue = _values[key];
         return `
             <div class="dev-slider-row">
                 <div class="dev-slider-header">
                     <span>${p.label}</span>
-                    <span class="dev-slider-val" id="val-${key}">${formatValue(p.default, p.step)}</span>
+                    <span class="dev-slider-val" id="val-${key}">${formatValue(currentValue, p.step)}</span>
                 </div>
                 <input type="range" class="form-range" id="slider-${key}"
-                    min="${p.min}" max="${p.max}" step="${p.step}" value="${p.default}">
+                    min="${p.min}" max="${p.max}" step="${p.step}" value="${currentValue}">
             </div>
         `;
     }).join('');
@@ -179,23 +239,51 @@ function bindSliderEvents() {
     });
 }
 
+function bindCopyDefaultsEvent() {
+    document.getElementById('dev-copy-defaults-btn').addEventListener('click', () => {
+        copyTextWithFeedback({
+            buttonId: 'dev-copy-defaults-btn',
+            text: buildFontDefaultsCss(),
+            successText: {
+                initial: 'Copy defaults',
+                pending: 'Copying...',
+                done: 'Copied',
+                fallback: 'Console output',
+            },
+        });
+    });
+}
+
 function bindExportEvent() {
     document.getElementById('dev-export-btn').addEventListener('click', () => {
-        const result = document.getElementById('dev-export-result');
         const exportData = {
             toggles: { ...toggles },
             breathConfig: { ...breathConfig },
-            sceneParams: { ..._values },
+            values: { ..._values },
         };
-        const text = JSON.stringify(exportData, null, 2);
-        result.textContent = text;
-        result.style.display = 'block';
-        navigator.clipboard?.writeText(text).then(() => {
-            const btn = document.getElementById('dev-export-btn');
-            btn.textContent = 'コピーしました';
-            setTimeout(() => { btn.textContent = '値をコピー'; }, 2000);
+        copyTextWithFeedback({
+            buttonId: 'dev-export-btn',
+            text: JSON.stringify(exportData, null, 2),
+            successText: {
+                initial: '状態をコピー',
+                pending: 'Copying...',
+                done: 'コピーしました',
+                fallback: 'Console output',
+            },
         });
     });
+}
+
+function bindFontStepSync() {
+    if (_fontStepListenerBound || typeof window === 'undefined') return;
+
+    window.addEventListener(FONT_STEP_CHANGE_EVENT, (event) => {
+        const nextStep = event.detail?.step;
+        if (typeof nextStep !== 'number') return;
+        syncSliderUI('fontStep', nextStep);
+    });
+
+    _fontStepListenerBound = true;
 }
 
 // CHANGED: Bootstrap読み込み完了を待ってからパネル生成

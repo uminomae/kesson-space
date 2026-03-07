@@ -72,17 +72,20 @@ const configIndexPath = resolve(CONFIG_DIR, 'index.js');
 const paramsPath = resolve(CONFIG_DIR, 'params.js');
 const devUiPath = resolve(CONFIG_DIR, 'dev-ui.js');
 const devRegistryPath = resolve(CONFIG_DIR, 'dev-registry.js');
+const fontSizeCtrlPath = resolve(SRC, 'font-size-ctrl.js');
 
 assert(existsSync(configEntryPath), 'src/config.js が存在する');
 assert(existsSync(configIndexPath), 'src/config/index.js が存在する');
 assert(existsSync(paramsPath), 'src/config/params.js が存在する');
 assert(existsSync(devUiPath), 'src/config/dev-ui.js が存在する');
 assert(existsSync(devRegistryPath), 'src/config/dev-registry.js が存在する');
+assert(existsSync(fontSizeCtrlPath), 'src/font-size-ctrl.js が存在する');
 
 const configEntrySrc = read(configEntryPath);
 const paramsSrc = read(paramsPath);
 const devUiSrc = read(devUiPath);
 const devRegistrySrc = read(devRegistryPath);
+const fontSizeCtrlSrc = read(fontSizeCtrlPath);
 
 assert(/export\s+\*\s+from\s+'\.\/config\/index\.js'/.test(configEntrySrc),
     'src/config.js が config/index.js を再エクスポートしている');
@@ -122,6 +125,19 @@ const configRefs = [
 for (const ref of configRefs) {
     assert(ref.pattern.test(devUiSrc), `dev-ui: ${ref.name}`);
 }
+
+section('2.5. font-size step / dev panel 連携');
+
+assert(/id:\s*'font'/.test(devUiSrc), 'dev-ui: Font セクションが存在する');
+assert(/fontStep:\s*\{[\s\S]*default:\s*FONT_STEP_RANGE\.defaultStep/.test(devUiSrc), 'dev-ui: fontStep が FONT_STEP_RANGE.defaultStep を参照する');
+assert(/key === 'fontStep'/.test(devRegistrySrc), 'dev-registry: fontStep エントリを構築する');
+assert(/kind:\s*'fontStep'/.test(devRegistrySrc), 'dev-registry: fontStep apply kind を持つ');
+assert(/export\s+function\s+getCurrentStep/.test(fontSizeCtrlSrc), 'font-size-ctrl: getCurrentStep を export している');
+assert(/export\s+function\s+setStep/.test(fontSizeCtrlSrc), 'font-size-ctrl: setStep を export している');
+assert(/'--ks-overlay-tagline':\s*0\.85/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline 基底値が 0.85');
+assert(/'--ks-overlay-tagline-en':\s*0\.78/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline en 基底値が 0.78');
+assert(/'--ks-topbar-link-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar link サイズを制御する');
+assert(/'--ks-topbar-note-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar collab note サイズを制御する');
 
 section('3. dev-registry / toggle 構造チェック');
 

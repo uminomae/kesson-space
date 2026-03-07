@@ -12,6 +12,7 @@ import {
     vortexParams,
     xLogoParams,
 } from '../config.js';
+import { setStep } from '../font-size-ctrl.js';
 
 function updateOverlay(key, val) {
     const overlay = document.getElementById('overlay');
@@ -124,6 +125,9 @@ export function createDevValueApplier({ distortionPass, dofPass, fluidSystem, li
                     break;
                 case 'overlay':
                     updateOverlay(key, value);
+                    break;
+                case 'fontStep':
+                    setStep(value);
                     break;
                 case 'liquidUniform':
                     applyLiquidUniform(liquidSystem, action.key, value);
