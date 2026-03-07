@@ -27,6 +27,23 @@ import { initGuides, setGuidesLanguage } from './guides.js';
 import { createSdfEntity } from './sdf-entity.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
+const devApplierRef = {
+    // Keep dev font controls usable even when WebGL bootstrap fails.
+    current: createDevValueApplier({
+        distortionPass: null,
+        dofPass: null,
+        fluidSystem: null,
+        liquidSystem: null,
+    }),
+};
+
+function applyDevValue(key, value) {
+    try {
+        devApplierRef.current(key, value);
+    } catch (error) {
+        console.warn(`[dev-panel] Failed to apply "${key}"`, error);
+    }
+}
 
 initMouseTracking();
 
@@ -35,34 +52,8 @@ initLangToggle();
 initMobileNavAutoCollapse();
 initTopbarConsole();
 initFontSizeCtrl();
-
-const container = document.getElementById('canvas-container');
-const {
-    scene,
-    camera,
-    renderer,
-    composer,
-    passes,
-    effects,
-    xLogo,
-} = bootstrapMainScene(container);
-
-initControls(camera, container, renderer);
-initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
 initGuides({ lang: detectLang() });
-
-const sdfEntity = createSdfEntity();
-sdfEntity.mesh.visible = Boolean(toggles.sdfEntity);
-scene.add(sdfEntity.mesh);
-
-const findNavMeshes = createNavMeshFinder(scene);
-const applyDevValue = createDevValueApplier({
-    distortionPass: passes.distortionPass,
-    dofPass: passes.dofPass,
-    fluidSystem: effects.fluidSystem,
-    liquidSystem: effects.liquidSystem,
-});
 
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
@@ -70,11 +61,6 @@ if (DEV_MODE) {
     });
     import('./dev-links-panel.js').then(({ initDevLinksPanel }) => {
         initDevLinksPanel();
-    });
-    import('./dev-stats.js').then(({ initDevStats }) => {
-        initDevStats().catch((err) => {
-            console.warn('[dev-stats] init failed:', err.message);
-        });
     });
 }
 
@@ -87,31 +73,69 @@ initLanguageListeners({
     refreshGuidesLanguage: () => setGuidesLanguage(detectLang()),
 });
 
-const clock = new THREE.Clock();
-attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
+try {
+    const container = document.getElementById('canvas-container');
+    const {
+        scene,
+        camera,
+        renderer,
+        composer,
+        passes,
+        effects,
+        xLogo,
+    } = bootstrapMainScene(container);
 
-startRenderLoop({
-    clock,
-    camera,
-    scene,
-    renderer,
-    composer,
-    passes,
-    effects,
-    xLogo,
-    findNavMeshes,
-    updateMouseSmoothing,
-    updateControls,
-    updateScene,
-    updateNavigation,
-    updateXLogo,
-    updateScrollUI,
-    getScrollProgress,
-    updateNavLabels,
-    updateXLogoLabel,
-    getOrbScreenData,
-    toggles,
-    breathConfig,
-    liquidParams,
-    sdfEntity,
-});
+    initControls(camera, container, renderer);
+    initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
+
+    const sdfEntity = createSdfEntity();
+    sdfEntity.mesh.visible = Boolean(toggles.sdfEntity);
+    scene.add(sdfEntity.mesh);
+
+    const findNavMeshes = createNavMeshFinder(scene);
+    devApplierRef.current = createDevValueApplier({
+        distortionPass: passes.distortionPass,
+        dofPass: passes.dofPass,
+        fluidSystem: effects.fluidSystem,
+        liquidSystem: effects.liquidSystem,
+    });
+
+    if (DEV_MODE) {
+        import('./dev-stats.js').then(({ initDevStats }) => {
+            initDevStats().catch((err) => {
+                console.warn('[dev-stats] init failed:', err.message);
+            });
+        });
+    }
+
+    const clock = new THREE.Clock();
+    attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
+
+    startRenderLoop({
+        clock,
+        camera,
+        scene,
+        renderer,
+        composer,
+        passes,
+        effects,
+        xLogo,
+        findNavMeshes,
+        updateMouseSmoothing,
+        updateControls,
+        updateScene,
+        updateNavigation,
+        updateXLogo,
+        updateScrollUI,
+        getScrollProgress,
+        updateNavLabels,
+        updateXLogoLabel,
+        getOrbScreenData,
+        toggles,
+        breathConfig,
+        liquidParams,
+        sdfEntity,
+    });
+} catch (error) {
+    console.warn('[main] Scene bootstrap failed; continuing without WebGL scene.', error);
+}

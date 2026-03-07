@@ -86,6 +86,8 @@ const paramsSrc = read(paramsPath);
 const devUiSrc = read(devUiPath);
 const devRegistrySrc = read(devRegistryPath);
 const fontSizeCtrlSrc = read(fontSizeCtrlPath);
+const mainEntrySrc = read(resolve(SRC, 'main.js'));
+const consciousnessEntrySrc = read(resolve(SRC, 'consciousness.js'));
 
 assert(/export\s+\*\s+from\s+'\.\/config\/index\.js'/.test(configEntrySrc),
     'src/config.js が config/index.js を再エクスポートしている');
@@ -138,6 +140,26 @@ assert(/'--ks-overlay-tagline':\s*0\.85/.test(fontSizeCtrlSrc), 'font-size-ctrl:
 assert(/'--ks-overlay-tagline-en':\s*0\.78/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline en 基底値が 0.78');
 assert(/'--ks-topbar-link-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar link サイズを制御する');
 assert(/'--ks-topbar-note-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar collab note サイズを制御する');
+
+section('2.6. dev bootstrap fallback');
+
+assert(/import\('\.\/dev-panel\.js'\)/.test(mainEntrySrc), 'main.js: dev-panel を動的 import する');
+assert(/import\('\.\/dev-links-panel\.js'\)/.test(mainEntrySrc), 'main.js: dev-links-panel を動的 import する');
+assert(mainEntrySrc.indexOf("import('./dev-panel.js')") < mainEntrySrc.indexOf('bootstrapMainScene(container)'),
+    'main.js: dev panel 初期化が bootstrapMainScene より前にある');
+assert(/try\s*\{[\s\S]*bootstrapMainScene\(container\)[\s\S]*\}\s*catch\s*\(error\)/.test(mainEntrySrc),
+    'main.js: scene bootstrap を try/catch で保護する');
+assert(/Scene bootstrap failed; continuing without WebGL scene\./.test(mainEntrySrc),
+    'main.js: WebGL 失敗時の継続ログを持つ');
+
+assert(/import\('\.\/dev-panel\.js'\)/.test(consciousnessEntrySrc), 'consciousness.js: dev-panel を動的 import する');
+assert(/import\('\.\/dev-links-panel\.js'\)/.test(consciousnessEntrySrc), 'consciousness.js: dev-links-panel を動的 import する');
+assert(consciousnessEntrySrc.indexOf("import('./dev-panel.js')") < consciousnessEntrySrc.indexOf('bootstrapMainScene(container)'),
+    'consciousness.js: dev panel 初期化が bootstrapMainScene より前にある');
+assert(/try\s*\{[\s\S]*bootstrapMainScene\(container\)[\s\S]*\}\s*catch\s*\(error\)/.test(consciousnessEntrySrc),
+    'consciousness.js: scene bootstrap を try/catch で保護する');
+assert(/Scene bootstrap failed; continuing without WebGL scene\./.test(consciousnessEntrySrc),
+    'consciousness.js: WebGL 失敗時の継続ログを持つ');
 
 section('3. dev-registry / toggle 構造チェック');
 

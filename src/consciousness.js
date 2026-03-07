@@ -22,6 +22,22 @@ import { refreshArticlesLanguage } from './pages/articles-section.js';
 import { createSdfConsciousnessEntity, updateSdfConsciousnessEntity } from './consciousness/sdf-entity.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
+const devApplierRef = {
+    current: createDevValueApplier({
+        distortionPass: null,
+        dofPass: null,
+        fluidSystem: null,
+        liquidSystem: null,
+    }),
+};
+
+function applyDevValue(key, value) {
+    try {
+        devApplierRef.current(key, value);
+    } catch (error) {
+        console.warn(`[dev-panel] Failed to apply "${key}"`, error);
+    }
+}
 
 const CONSCIOUSNESS_COPY = {
     ja: {
@@ -114,47 +130,7 @@ initLangToggle();
 initMobileNavAutoCollapse();
 initTopbarConsole();
 initFontSizeCtrl();
-
-const container = document.getElementById('canvas-container');
-const {
-    scene,
-    camera,
-    renderer,
-    composer,
-    passes,
-    effects,
-    xLogo,
-} = bootstrapMainScene(container);
-
-const consciousnessEntity = createSdfConsciousnessEntity(scene, camera, {
-    enabled: toggles.sdfEntity,
-});
-
-function updateSceneWithConsciousness(time) {
-    updateBaseScene(time);
-
-    const breath = breathValue(time, breathConfig.period);
-    const mouse = getRawMouse();
-    updateSdfConsciousnessEntity(consciousnessEntity, {
-        time,
-        breath,
-        mouse,
-        camera,
-        enabled: toggles.sdfEntity,
-    });
-}
-
-initControls(camera, container, renderer);
-initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
 initScrollUI();
-
-const findNavMeshes = createNavMeshFinder(scene);
-const applyDevValue = createDevValueApplier({
-    distortionPass: passes.distortionPass,
-    dofPass: passes.dofPass,
-    fluidSystem: effects.fluidSystem,
-    liquidSystem: effects.liquidSystem,
-});
 
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
@@ -162,11 +138,6 @@ if (DEV_MODE) {
     });
     import('./dev-links-panel.js').then(({ initDevLinksPanel }) => {
         initDevLinksPanel();
-    });
-    import('./dev-stats.js').then(({ initDevStats }) => {
-        initDevStats().catch((err) => {
-            console.warn('[dev-stats] init failed:', err.message);
-        });
     });
 }
 
@@ -182,30 +153,82 @@ window.addEventListener(LANG_CHANGE_EVENT, (event) => {
     applyConsciousnessCopy(nextLang);
 });
 
-const clock = new THREE.Clock();
-attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
+try {
+    const container = document.getElementById('canvas-container');
+    const {
+        scene,
+        camera,
+        renderer,
+        composer,
+        passes,
+        effects,
+        xLogo,
+    } = bootstrapMainScene(container);
 
-startRenderLoop({
-    clock,
-    camera,
-    scene,
-    renderer,
-    composer,
-    passes,
-    effects,
-    xLogo,
-    findNavMeshes,
-    updateMouseSmoothing,
-    updateControls,
-    updateScene: updateSceneWithConsciousness,
-    updateNavigation,
-    updateXLogo,
-    updateScrollUI,
-    getScrollProgress,
-    updateNavLabels,
-    updateXLogoLabel,
-    getOrbScreenData,
-    toggles,
-    breathConfig,
-    liquidParams,
-});
+    const consciousnessEntity = createSdfConsciousnessEntity(scene, camera, {
+        enabled: toggles.sdfEntity,
+    });
+
+    function updateSceneWithConsciousness(time) {
+        updateBaseScene(time);
+
+        const breath = breathValue(time, breathConfig.period);
+        const mouse = getRawMouse();
+        updateSdfConsciousnessEntity(consciousnessEntity, {
+            time,
+            breath,
+            mouse,
+            camera,
+            enabled: toggles.sdfEntity,
+        });
+    }
+
+    initControls(camera, container, renderer);
+    initNavigation({ scene, camera, renderer, xLogoGroup: xLogo.group, xLogoCamera: xLogo.camera });
+
+    const findNavMeshes = createNavMeshFinder(scene);
+    devApplierRef.current = createDevValueApplier({
+        distortionPass: passes.distortionPass,
+        dofPass: passes.dofPass,
+        fluidSystem: effects.fluidSystem,
+        liquidSystem: effects.liquidSystem,
+    });
+
+    if (DEV_MODE) {
+        import('./dev-stats.js').then(({ initDevStats }) => {
+            initDevStats().catch((err) => {
+                console.warn('[dev-stats] init failed:', err.message);
+            });
+        });
+    }
+
+    const clock = new THREE.Clock();
+    attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
+
+    startRenderLoop({
+        clock,
+        camera,
+        scene,
+        renderer,
+        composer,
+        passes,
+        effects,
+        xLogo,
+        findNavMeshes,
+        updateMouseSmoothing,
+        updateControls,
+        updateScene: updateSceneWithConsciousness,
+        updateNavigation,
+        updateXLogo,
+        updateScrollUI,
+        getScrollProgress,
+        updateNavLabels,
+        updateXLogoLabel,
+        getOrbScreenData,
+        toggles,
+        breathConfig,
+        liquidParams,
+    });
+} catch (error) {
+    console.warn('[consciousness] Scene bootstrap failed; continuing without WebGL scene.', error);
+}
