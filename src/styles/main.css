@@ -190,11 +190,12 @@
       color: rgba(170, 192, 228, 0.42);
       margin-right: 0.45rem;
     }
+    /* CHANGED(2026-03-07): #116 — topbar最小文字サイズをmacOS基準(≥11px)に引き上げ */
     #kesson-topbar .topbar-meta {
       display: block;
       flex: 0 0 auto;
       padding: 0;
-      font-size: clamp(0.62rem, 0.88vw, 0.7rem);
+      font-size: clamp(0.68rem, 0.88vw, 0.76rem);
       line-height: 1;
       letter-spacing: 0.05em;
       color: rgba(186, 204, 234, 0.72);
@@ -205,10 +206,11 @@
       font-size: 0.68rem;
       color: rgba(184, 203, 234, 0.74);
     }
+    /* CHANGED(2026-03-07): #116 — 0.68rem → 0.80rem (macOSメニュー≈13px基準) */
     #kesson-topbar .topbar-link {
       color: rgba(205, 220, 244, 0.78);
       font-family: var(--kesson-font-mono-ui);
-      font-size: 0.68rem;
+      font-size: 0.80rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       padding: 0.4rem 0.72rem;
@@ -237,10 +239,11 @@
       padding-left: 0.55rem;
       border-left: 1px solid rgba(130, 170, 240, 0.2);
     }
+    /* CHANGED(2026-03-07): #116 — clamp min 0.58rem → 0.64rem */
     #kesson-topbar .topbar-collab-note {
       display: inline-block;
       font-family: var(--kesson-font-serif-ui);
-      font-size: clamp(0.58rem, 0.82vw, 0.66rem);
+      font-size: clamp(0.64rem, 0.82vw, 0.72rem);
       line-height: 1;
       letter-spacing: 0.06em;
       color: rgba(165, 214, 255, 0.74);
@@ -300,10 +303,11 @@
       #kesson-topbar .topbar-main-title {
         font-size: 0.86rem;
       }
+      /* CHANGED(2026-03-07): #116 — mobile collab 最小サイズ引き上げ */
       #kesson-topbar .topbar-collab-note--brand {
         max-width: 10.5rem;
         padding-left: 0.38rem;
-        font-size: 0.58rem;
+        font-size: 0.64rem;
         letter-spacing: 0.04em;
       }
       #kesson-topbar .topbar-collab-item {
@@ -312,7 +316,7 @@
         border-left: 0;
       }
       #kesson-topbar .topbar-collab-note {
-        font-size: 0.62rem;
+        font-size: 0.66rem;
         letter-spacing: 0.05em;
       }
     }
@@ -1330,12 +1334,13 @@
     }
     /* CHANGED(2026-03-06): #105 — modal タイトル */
     /* CHANGED(2026-03-07): #114 — font-size-ctrl topbar ボタン */
+    /* CHANGED(2026-03-07): #116 — topbar-font-btn 0.6rem → 0.65rem */
     .topbar-font-size-ctrl {
       opacity: 0.75;
     }
     .topbar-font-btn {
       font-family: var(--kesson-font-mono-ui);
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       letter-spacing: 0.08em;
       padding: 0.2rem 0.5rem;
       background: transparent;
