@@ -4,6 +4,19 @@
     --consciousness-ink: #d7efff;
     --consciousness-aura: #5ec8ff;
     --consciousness-deep: #040711;
+    --ks-topbar-bg-start: rgba(3, 11, 24, 0.85);
+    --ks-topbar-bg-end: rgba(3, 11, 24, 0.46);
+    --ks-topbar-border-color: rgba(94, 200, 255, 0.25);
+    --ks-topbar-divider-color: rgba(158, 217, 255, 0.42);
+    --ks-topbar-title-color: var(--consciousness-ink);
+    --ks-topbar-title-hover-color: var(--consciousness-ink);
+    --ks-topbar-subtitle-color: var(--consciousness-ink);
+    --ks-topbar-meta-color: var(--consciousness-ink);
+    --ks-topbar-meta-author-color: var(--consciousness-ink);
+    --ks-topbar-note-divider-color: rgba(94, 200, 255, 0.25);
+    --ks-topbar-note-color: var(--consciousness-ink);
+    --ks-topbar-link-hover-color: #9ed9ff;
+    --ks-topbar-link-hover-bg: rgba(94, 200, 255, 0.14);
 }
 
 body {
@@ -14,20 +27,6 @@ body {
         var(--consciousness-deep);
 }
 
-#kesson-topbar {
-    border-bottom: 1px solid rgba(94, 200, 255, 0.25);
-    background: linear-gradient(180deg, rgba(3, 11, 24, 0.85), rgba(3, 11, 24, 0.46));
-}
-
-.topbar-main-title,
-.topbar-subtitle,
-#credit-collab,
-#credit-signature {
-    color: var(--consciousness-ink);
-}
-
-.topbar-link:hover,
-.topbar-link:focus-visible,
 .section-heading,
 .section-heading-link,
 #devlog-gallery-header h2 {
