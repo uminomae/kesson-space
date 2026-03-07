@@ -684,9 +684,10 @@
     #devlog-gallery-header.is-visible {
       opacity: 1;
     }
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     #devlog-gallery-header h2,
     .section-heading {
-      font-size: 0.75rem;
+      font-size: var(--ks-section-heading, 0.75rem);
       font-weight: 400;
       color: var(--kesson-action-text);
       letter-spacing: var(--kesson-letter-ui-heading);
@@ -784,21 +785,22 @@
       aspect-ratio: 16/9;
       object-fit: cover;
     }
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     .kesson-card .card-title {
       color: #fff;
-      font-size: 0.8rem;
+      font-size: var(--ks-card-title, 0.8rem);
     }
     .kesson-card .card-body small {
       color: rgba(var(--color-heading), 0.5);
-      font-size: 0.7rem;
+      font-size: var(--ks-card-text, 0.7rem);
     }
     .kesson-card .card-text {
       color: rgba(var(--color-heading), 0.5);
-      font-size: 0.7rem;
+      font-size: var(--ks-card-text, 0.7rem);
     }
     .kesson-card .kesson-card-summary {
       color: rgba(var(--color-sub-text), 0.76);
-      font-size: 0.68rem;
+      font-size: var(--ks-card-summary, 0.68rem);
       line-height: 1.45;
       display: -webkit-box;
       -webkit-box-orient: vertical;
@@ -1325,6 +1327,29 @@
       flex-shrink: 0;
     }
     /* CHANGED(2026-03-06): #105 — modal タイトル */
+    /* CHANGED(2026-03-07): #114 — font-size-ctrl topbar ボタン */
+    .topbar-font-size-ctrl {
+      opacity: 0.75;
+    }
+    .topbar-font-btn {
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.5rem;
+      background: transparent;
+      border: 1px solid rgba(130, 170, 240, 0.2);
+      color: rgba(205, 220, 244, 0.7);
+      line-height: 1.4;
+    }
+    .topbar-font-btn:hover:not(:disabled) {
+      background: rgba(120, 165, 240, 0.15);
+      color: rgba(236, 244, 255, 0.9);
+    }
+    .topbar-font-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
     .viewer-title {
       flex: 1;
       font-size: 0.82rem;
