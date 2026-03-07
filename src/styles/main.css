@@ -675,6 +675,7 @@
     #devlog-gallery-container > .container {
       margin-top: var(--kesson-section-grid-margin-top);
     }
+    #guides-feature-cards,
     #articles-grid {
       margin-top: var(--kesson-section-grid-margin-top);
     }
@@ -903,6 +904,8 @@
        ============================ */
 
     /* Section containers */
+    /* CHANGED(2026-03-07): #116 Bug #7 — guides-section を他セクションと統一 */
+    #guides-section,
     #articles-section,
     #creation-cards-section,
     #devlog-gallery-section {
