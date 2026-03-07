@@ -64,7 +64,7 @@ const STRINGS = {
         modalGenerated: '生成日',
         features: {
             general: {
-                title: '一般向け',
+                title: '概要版',
                 modalTitle: '欠損駆動思考 — 概要版',
                 description: '欠損駆動思考の全体像を短く把握するための解説。',
             },
