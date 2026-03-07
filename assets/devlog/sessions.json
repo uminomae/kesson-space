@@ -1,5 +1,105 @@
 [
   {
+    "id": "session-010",
+    "title_ja": "Part 10: Guides・Viewer・文字サイズ制御",
+    "title_en": "Part 10: Guides, Viewer, and Typography Controls",
+    "summary_ja": "GUIDES セクションと viewer 導線を整備し、font-size control を topbar と dev panel 全体へ拡張した。",
+    "summary_en": "Added the GUIDES section and refreshed viewer flows while extending shared font-size controls across the topbar and dev panel.",
+    "date_range_ja": "2026-03-01 〜 03-07",
+    "date_range_en": "Mar 1-7, 2026",
+    "date_range": "2026-03-01 〜 03-07",
+    "end": "2026-03-07T23:59:00+09:00",
+    "cover": "./assets/devlog/covers/session-010.png",
+    "content_by_lang": {
+      "ja": "./content/devlog/session-010.md",
+      "en": "./content/devlog/session-010.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-010.png",
+      "en": "./assets/devlog/covers/session-010-en.svg"
+    }
+  },
+  {
+    "id": "session-009",
+    "title_ja": "Part 9: Creation 導線とカード統合",
+    "title_en": "Part 9: Creation Backlinks and Card Integration",
+    "summary_ja": "creation-space への右側導線を整備し、カード群を prototype から統合して見た目と遷移を磨いた。",
+    "summary_en": "Added right-side creation-space links, integrated creation cards from the prototype, and refined placeholder and fade behavior.",
+    "date_range_ja": "2026-02-24 〜 02-28",
+    "date_range_en": "Feb 24-28, 2026",
+    "date_range": "2026-02-24 〜 02-28",
+    "end": "2026-02-28T23:59:00+09:00",
+    "cover": "./assets/devlog/covers/session-009.png",
+    "content_by_lang": {
+      "ja": "./content/devlog/session-009.md",
+      "en": "./content/devlog/session-009.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-009.png",
+      "en": "./assets/devlog/covers/session-009-en.svg"
+    }
+  },
+  {
+    "id": "session-008",
+    "title_ja": "Part 8: Xロゴ安定化と意識体プロトタイプ",
+    "title_en": "Part 8: X Logo Stabilization and Consciousness Prototype",
+    "summary_ja": "X ロゴの視点・配置・アクセシビリティを安定化しつつ、SDF 意識体プロトタイプと記事英語化ルーチンを導入した。",
+    "summary_en": "Stabilized the X-logo framing and accessibility, added the SDF consciousness prototype, and introduced the article EN startup routine.",
+    "date_range_ja": "2026-02-20 〜 02-21",
+    "date_range_en": "Feb 20-21, 2026",
+    "date_range": "2026-02-20 〜 02-21",
+    "end": "2026-02-21T23:59:00+09:00",
+    "cover": "./assets/devlog/covers/session-008.png",
+    "content_by_lang": {
+      "ja": "./content/devlog/session-008.md",
+      "en": "./content/devlog/session-008.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-008.png",
+      "en": "./assets/devlog/covers/session-008-en.svg"
+    }
+  },
+  {
+    "id": "session-007",
+    "title_ja": "Part 7: ナビゲーション品質改善と英語devlog",
+    "title_en": "Part 7: Navigation Quality and English Devlog",
+    "summary_ja": "ナビゲーションの応答性と品質を磨き込み、devlog の英語サマリー・英語カバー導線を整えた。",
+    "summary_en": "Improved navigation responsiveness and quality while adding English summaries and cover workflows for the Devlog.",
+    "date_range_ja": "2026-02-18 〜 02-19",
+    "date_range_en": "Feb 18-19, 2026",
+    "date_range": "2026-02-18 〜 02-19",
+    "end": "2026-02-19T23:59:00+09:00",
+    "cover": "./assets/devlog/covers/session-007.png",
+    "content_by_lang": {
+      "ja": "./content/devlog/session-007.md",
+      "en": "./content/devlog/session-007.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-007.png",
+      "en": "./assets/devlog/covers/session-007-en.svg"
+    }
+  },
+  {
+    "id": "session-006",
+    "title_ja": "Part 6: オフキャンバス拡張と X ロゴ導入",
+    "title_en": "Part 6: Offcanvas Expansion and X Logo Introduction",
+    "summary_ja": "articles/devlog 導線をオフキャンバス中心へ拡張し、X ロゴ 3D ナビゲーションと scroll coordinator 基盤を整備した。",
+    "summary_en": "Expanded the article/devlog flow around Offcanvas UI, added the X-logo 3D navigation object, and established the scroll-coordinator foundation.",
+    "date_range_ja": "2026-02-16 〜 02-17",
+    "date_range_en": "Feb 16-17, 2026",
+    "date_range": "2026-02-16 〜 02-17",
+    "end": "2026-02-17T23:59:00+09:00",
+    "cover": "./assets/devlog/covers/session-006.png",
+    "content_by_lang": {
+      "ja": "./content/devlog/session-006.md",
+      "en": "./content/devlog/session-006.en.md"
+    },
+    "cover_by_lang": {
+      "ja": "./assets/devlog/covers/session-006.png",
+      "en": "./assets/devlog/covers/session-006-en.svg"
+    }
+  },
+  {
     "id": "session-005",
     "title_ja": "Part 5: Read More UI",
     "title_en": "Part 5: Read More UI",

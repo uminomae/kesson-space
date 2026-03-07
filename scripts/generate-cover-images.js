@@ -10,9 +10,12 @@
  *   node scripts/generate-cover-images.js --session 002 # single session only
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PROMPTS_DIR = path.resolve(__dirname, '../content/devlog/prompts');
 const OUTPUT_DIR = path.resolve(__dirname, '../assets/devlog/covers');
 
@@ -51,7 +54,7 @@ async function main() {
 
   let puppeteer;
   try {
-    puppeteer = require('puppeteer');
+    puppeteer = await import('puppeteer');
   } catch {
     console.error('Puppeteer not found. Install with:\n  npm install --save-dev puppeteer');
     process.exit(1);
@@ -59,7 +62,10 @@ async function main() {
 
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.default.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
   let generated = 0;
   let skipped = 0;
 

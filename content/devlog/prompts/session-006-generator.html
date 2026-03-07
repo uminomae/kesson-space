@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devlog Cover - Part 6: オフキャンバス拡張と X ロゴ導入</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0a0e1a; font-family: sans-serif; }
+        #coverCanvas { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="coverCanvas" width="1920" height="1080"></canvas>
+
+    <script>
+        const canvas = document.getElementById('coverCanvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        const blue = '#4a90d9';
+        const cyan = '#00d4ff';
+        const amber = '#f59e0b';
+        const dimWhite = 'rgba(255,255,255,0.85)';
+        const dimGray = 'rgba(180,200,230,0.4)';
+
+        ctx.fillStyle = '#0a0e1a';
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = 'rgba(74,144,217,0.06)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+        ctx.font = 'bold 70px "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif';
+        ctx.fillStyle = cyan;
+        ctx.textAlign = 'center';
+        ctx.fillText('Part 6: オフキャンバス拡張と X ロゴ導入', W / 2, 125);
+
+        ctx.font = '32px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = blue;
+        ctx.fillText('2026-02-16 〜 02-17', W / 2, 180);
+
+        const tlY = 360;
+        const tlLeft = 150;
+        const tlRight = W - 150;
+        ctx.strokeStyle = blue;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(tlLeft, tlY);
+        ctx.lineTo(tlRight, tlY);
+        ctx.stroke();
+
+        const items = [
+            { text: 'Articles\nOffcanvas', sub: '3列化・重複整理' },
+            { text: 'Devlog 背景\nThree.js 化', sub: 'Bootstrap標準化' },
+            { text: 'X ロゴ\n固定シーン', sub: 'Blenderモデル導入' },
+            { text: 'scroll\ncoordinator', sub: 'return restore 整理' },
+            { text: 'self-host\nthree.js', sub: 'Pages配信安定化' },
+            { text: 'Issue-Centric\n運用移行', sub: 'worktree / rules' },
+        ];
+        const spacing = (tlRight - tlLeft) / (items.length - 1);
+
+        items.forEach((item, i) => {
+            const x = tlLeft + i * spacing;
+            const above = i % 2 === 0;
+            ctx.beginPath();
+            ctx.arc(x, tlY, 11, 0, Math.PI * 2);
+            ctx.fillStyle = amber;
+            ctx.fill();
+            ctx.strokeStyle = '#0a0e1a';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(74,144,217,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, tlY + (above ? -15 : 15));
+            ctx.lineTo(x, tlY + (above ? -75 : 75));
+            ctx.stroke();
+
+            const textY = above ? tlY - 98 : tlY + 105;
+            const lines = item.text.split('\n');
+            ctx.font = 'bold 24px "Noto Sans JP", sans-serif';
+            ctx.fillStyle = dimWhite;
+            lines.forEach((line, li) => ctx.fillText(line, x, textY + li * 30));
+            ctx.font = '18px "Noto Sans JP", sans-serif';
+            ctx.fillStyle = dimGray;
+            ctx.fillText(item.sub, x, textY + lines.length * 30 + 6);
+        });
+
+        const boxW = 780;
+        const boxGap = 40;
+        const boxStartX = (W - (boxW * 2 + boxGap)) / 2;
+        const boxY = 600;
+        const boxH = 320;
+
+        ctx.fillStyle = 'rgba(74,144,217,0.08)';
+        ctx.strokeStyle = 'rgba(74,144,217,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(boxStartX, boxY, boxW, boxH, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 24px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = cyan;
+        ctx.textAlign = 'left';
+        ctx.fillText('技術的判断', boxStartX + 30, boxY + 45);
+
+        const techItems = [
+            'scroll 状態を coordinator に集約',
+            'Offcanvas / detail の責務分離',
+            'three を vendoring して self-host 化',
+            'GitHub Issues を進捗の正本へ統一',
+        ];
+        ctx.font = '21px "Noto Sans JP", sans-serif';
+        techItems.forEach((d, i) => {
+            ctx.fillStyle = amber;
+            ctx.fillText('▸', boxStartX + 30, boxY + 90 + i * 48);
+            ctx.fillStyle = dimWhite;
+            ctx.fillText(d, boxStartX + 60, boxY + 90 + i * 48);
+        });
+
+        const rightX = boxStartX + boxW + boxGap;
+        ctx.fillStyle = 'rgba(74,144,217,0.08)';
+        ctx.strokeStyle = 'rgba(245,158,11,0.2)';
+        ctx.beginPath();
+        ctx.roundRect(rightX, boxY, boxW, boxH, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 24px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = amber;
+        ctx.fillText('品質 & 運用', rightX + 30, boxY + 45);
+
+        const qualityItems = [
+            '言語切替の no-reload 化',
+            'deeplink / return restore 整理',
+            'worktree ルールと release flow 更新',
+            'Issue-Centric への移行開始',
+        ];
+        ctx.font = '21px "Noto Sans JP", sans-serif';
+        qualityItems.forEach((d, i) => {
+            ctx.fillStyle = cyan;
+            ctx.fillText('▸', rightX + 30, boxY + 90 + i * 48);
+            ctx.fillStyle = dimWhite;
+            ctx.fillText(d, rightX + 60, boxY + 90 + i * 48);
+        });
+
+        ctx.font = '21px "Noto Sans JP", sans-serif';
+        ctx.fillStyle = dimGray;
+        ctx.textAlign = 'center';
+        ctx.fillText('kesson-space devlog — Offcanvas 拡張 / X ロゴ導入 / scroll coordinator 基盤', W / 2, H - 30);
+    </script>
+</body>
+</html>
