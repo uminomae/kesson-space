@@ -435,7 +435,7 @@
 
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tagline {
-      font-size: var(--ks-overlay-tagline, clamp(0.5rem, 2.4vmin, 0.85rem));
+      font-size: var(--ks-overlay-tagline, 0.85rem);
       color: rgba(var(--color-heading), 0.75);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
       letter-spacing: 0.05em;
@@ -444,7 +444,7 @@
     }
 
     .tagline-en {
-      font-size: var(--ks-overlay-tagline-en, clamp(0.4rem, 2.0vmin, 0.75rem));
+      font-size: var(--ks-overlay-tagline-en, 0.78rem);
       color: rgba(var(--color-heading), 0.55);
       font-family: var(--kesson-font-serif-ui);
       letter-spacing: 0.03em;
@@ -634,7 +634,7 @@
     }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     #control-guide .guide-key {
-      font-size: var(--ks-control-guide, clamp(0.35rem, 1.6vmin, 0.55rem));
+      font-size: var(--ks-control-guide, 0.75rem);
       color: rgba(var(--color-sub-text), 0.35);
       font-family: var(--kesson-font-mono-ui);
       letter-spacing: var(--kesson-letter-ui-tight);
@@ -645,7 +645,7 @@
       color: rgba(var(--color-sub-text), 0.2);
     }
     #control-guide .guide-action {
-      font-size: var(--ks-control-guide, clamp(0.35rem, 1.6vmin, 0.55rem));
+      font-size: var(--ks-control-guide, 0.75rem);
       color: rgba(var(--color-sub-text), 0.3);
       font-family: var(--kesson-font-serif-ui);
       letter-spacing: var(--kesson-letter-ui-normal);
@@ -694,7 +694,8 @@
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     #devlog-gallery-header h2,
     .section-heading {
-      font-size: var(--ks-section-heading, 0.75rem);
+      /* CHANGED(2026-03-07): #116 Bug #9 — デフォルト +3 step (0.75+0.3=1.05) */
+      font-size: var(--ks-section-heading, 1.05rem);
       font-weight: 400;
       color: var(--kesson-action-text);
       letter-spacing: var(--kesson-letter-ui-heading);
@@ -795,19 +796,19 @@
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     .kesson-card .card-title {
       color: #fff;
-      font-size: var(--ks-card-title, 0.8rem);
+      font-size: var(--ks-card-title, 1.1rem);
     }
     .kesson-card .card-body small {
       color: rgba(var(--color-heading), 0.5);
-      font-size: var(--ks-card-text, 0.7rem);
+      font-size: var(--ks-card-text, 1.0rem);
     }
     .kesson-card .card-text {
       color: rgba(var(--color-heading), 0.5);
-      font-size: var(--ks-card-text, 0.7rem);
+      font-size: var(--ks-card-text, 1.0rem);
     }
     .kesson-card .kesson-card-summary {
       color: rgba(var(--color-sub-text), 0.76);
-      font-size: var(--ks-card-summary, 0.68rem);
+      font-size: var(--ks-card-summary, 0.98rem);
       line-height: 1.45;
       display: -webkit-box;
       -webkit-box-orient: vertical;
@@ -834,7 +835,8 @@
       bottom: 24px;
       right: 24px;
       z-index: 20;
-      font-size: clamp(0.45rem, 2.0vmin, 0.7rem);
+      /* CHANGED(2026-03-07): #116 Bug #8 — font-size-ctrl 連動 */
+      font-size: var(--ks-surface-btn, 0.85rem);
       letter-spacing: var(--kesson-letter-ui-wide);
       padding: 10px 18px;
       opacity: 0;
@@ -1677,7 +1679,7 @@
     }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tech-footer-line {
-      font-size: var(--ks-footer-line, clamp(0.35rem, 1.5vmin, 0.55rem));
+      font-size: var(--ks-footer-line, 0.75rem);
       color: rgba(150, 175, 210, 0.25);
       font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.06em;

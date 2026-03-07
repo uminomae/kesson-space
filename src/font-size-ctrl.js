@@ -2,8 +2,10 @@
 // CHANGED(2026-03-07): #114 — フォントサイズステップ制御 (-1〜+4, 1step = +0.1rem)
 
 const STEP_REM = 0.1;
+// CHANGED(2026-03-07): #116 Bug #9 — デフォルト +3, レンジ拡張
+const DEFAULT_STEP = 3;
 const MIN_STEP = -1;
-const MAX_STEP = 4;
+const MAX_STEP = 7;
 const STORAGE_KEY = 'kesson-font-step';
 
 // 変更対象の CSS 変数と基底値のマップ
@@ -23,10 +25,11 @@ const CLASS_VARS = {
   '--ks-overlay-tagline-en': 0.48,
   '--ks-control-guide':      0.45,
   '--ks-footer-line':        0.45,
+  '--ks-surface-btn':        0.55,
 };
 
 export function initFontSizeCtrl() {
-  const step = parseInt(localStorage.getItem(STORAGE_KEY) ?? '0', 10);
+  const step = parseInt(localStorage.getItem(STORAGE_KEY) ?? String(DEFAULT_STEP), 10);
   applyStep(step);
 
   document.getElementById('font-size-down')?.addEventListener('click', () => {
@@ -38,12 +41,12 @@ export function initFontSizeCtrl() {
     if (cur < MAX_STEP) setStep(cur + 1);
   });
   document.getElementById('font-size-reset')?.addEventListener('click', () => {
-    setStep(0);
+    setStep(DEFAULT_STEP);
   });
 }
 
 function getCurrentStep() {
-  return parseInt(localStorage.getItem(STORAGE_KEY) ?? '0', 10);
+  return parseInt(localStorage.getItem(STORAGE_KEY) ?? String(DEFAULT_STEP), 10);
 }
 
 function setStep(step) {
@@ -66,5 +69,5 @@ function applyStep(step) {
   const reset = document.getElementById('font-size-reset');
   if (down)  down.disabled  = step <= MIN_STEP;
   if (up)    up.disabled    = step >= MAX_STEP;
-  if (reset) reset.disabled = step === 0;
+  if (reset) reset.disabled = step === DEFAULT_STEP;
 }
