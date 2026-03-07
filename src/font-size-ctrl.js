@@ -14,10 +14,15 @@ const FONT_VARS = {
 
 // 直接指定クラスの基底値 (rem)
 const CLASS_VARS = {
-  '--ks-section-heading': 0.75,
-  '--ks-card-title': 0.80,
-  '--ks-card-text': 0.70,
-  '--ks-card-summary': 0.68,
+  '--ks-section-heading':    0.75,
+  '--ks-card-title':         0.80,
+  '--ks-card-text':          0.70,
+  '--ks-card-summary':       0.68,
+  // navi 以外の追加対象
+  '--ks-overlay-tagline':    0.55,
+  '--ks-overlay-tagline-en': 0.48,
+  '--ks-control-guide':      0.45,
+  '--ks-footer-line':        0.45,
 };
 
 export function initFontSizeCtrl() {
@@ -31,6 +36,9 @@ export function initFontSizeCtrl() {
   document.getElementById('font-size-up')?.addEventListener('click', () => {
     const cur = getCurrentStep();
     if (cur < MAX_STEP) setStep(cur + 1);
+  });
+  document.getElementById('font-size-reset')?.addEventListener('click', () => {
+    setStep(0);
   });
 }
 
@@ -53,11 +61,10 @@ function applyStep(step) {
     root.style.setProperty(varName, `${(base + step * STEP_REM).toFixed(2)}rem`);
   }
 
-  const label = document.getElementById('font-size-label');
-  if (label) label.textContent = `文字: ${step >= 0 ? '+' : ''}${step}`;
-
-  const down = document.getElementById('font-size-down');
-  const up = document.getElementById('font-size-up');
-  if (down) down.disabled = step <= MIN_STEP;
-  if (up) up.disabled = step >= MAX_STEP;
+  const down  = document.getElementById('font-size-down');
+  const up    = document.getElementById('font-size-up');
+  const reset = document.getElementById('font-size-reset');
+  if (down)  down.disabled  = step <= MIN_STEP;
+  if (up)    up.disabled    = step >= MAX_STEP;
+  if (reset) reset.disabled = step === 0;
 }

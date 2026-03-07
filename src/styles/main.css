@@ -429,8 +429,9 @@
       margin-bottom: 1rem;
     }
 
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tagline {
-      font-size: clamp(0.5rem, 2.4vmin, 0.85rem);
+      font-size: var(--ks-overlay-tagline, clamp(0.5rem, 2.4vmin, 0.85rem));
       color: rgba(var(--color-heading), 0.75);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
       letter-spacing: 0.05em;
@@ -439,7 +440,7 @@
     }
 
     .tagline-en {
-      font-size: clamp(0.4rem, 2.0vmin, 0.75rem);
+      font-size: var(--ks-overlay-tagline-en, clamp(0.4rem, 2.0vmin, 0.75rem));
       color: rgba(var(--color-heading), 0.55);
       font-family: var(--kesson-font-serif-ui);
       letter-spacing: 0.03em;
@@ -596,7 +597,7 @@
       font-size: var(--kesson-font-size-ui-arrow);
       color: var(--kesson-ui-arrow-color);
       display: inline-block;
-      transform: rotate(-90deg); /* creation-spaceのスタイルに合わせる（右向き） */
+      transform: rotate(-90deg);
       margin-top: 0;
     }
     #right-creation-link:hover span,
@@ -627,8 +628,9 @@
       gap: 0.5em;
       margin-bottom: 3px;
     }
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     #control-guide .guide-key {
-      font-size: clamp(0.35rem, 1.6vmin, 0.55rem);
+      font-size: var(--ks-control-guide, clamp(0.35rem, 1.6vmin, 0.55rem));
       color: rgba(var(--color-sub-text), 0.35);
       font-family: var(--kesson-font-mono-ui);
       letter-spacing: var(--kesson-letter-ui-tight);
@@ -639,7 +641,7 @@
       color: rgba(var(--color-sub-text), 0.2);
     }
     #control-guide .guide-action {
-      font-size: clamp(0.35rem, 1.6vmin, 0.55rem);
+      font-size: var(--ks-control-guide, clamp(0.35rem, 1.6vmin, 0.55rem));
       color: rgba(var(--color-sub-text), 0.3);
       font-family: var(--kesson-font-serif-ui);
       letter-spacing: var(--kesson-letter-ui-normal);
@@ -1112,7 +1114,7 @@
       height: 100%;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      flex: 1; /* header第一式で追加（重複しても問題なし） */
+      flex: 1;
     }
     .viewer-content iframe {
       width: 100%;
@@ -1665,8 +1667,9 @@
       padding: 2rem 3% 1.5rem;
       pointer-events: none;
     }
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tech-footer-line {
-      font-size: clamp(0.35rem, 1.5vmin, 0.55rem);
+      font-size: var(--ks-footer-line, clamp(0.35rem, 1.5vmin, 0.55rem));
       color: rgba(150, 175, 210, 0.25);
       font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.06em;
