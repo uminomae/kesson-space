@@ -239,11 +239,11 @@
       padding-left: 0.55rem;
       border-left: 1px solid rgba(130, 170, 240, 0.2);
     }
-    /* CHANGED(2026-03-07): #116 — clamp min 0.58rem → 0.64rem */
+    /* CHANGED(2026-03-07): #116 Bug #10 — topbar-link と同サイズ (0.80rem) に統一 */
     #kesson-topbar .topbar-collab-note {
       display: inline-block;
       font-family: var(--kesson-font-serif-ui);
-      font-size: clamp(0.64rem, 0.82vw, 0.72rem);
+      font-size: 0.80rem;
       line-height: 1;
       letter-spacing: 0.06em;
       color: rgba(165, 214, 255, 0.74);

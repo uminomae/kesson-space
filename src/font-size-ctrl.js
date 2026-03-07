@@ -7,6 +7,7 @@ const DEFAULT_STEP = 3;
 const MIN_STEP = -1;
 const MAX_STEP = 7;
 const STORAGE_KEY = 'kesson-font-step';
+const MIGRATION_KEY = 'kesson-font-step-v2';
 
 // 変更対象の CSS 変数と基底値のマップ
 const FONT_VARS = {
@@ -29,6 +30,14 @@ const CLASS_VARS = {
 };
 
 export function initFontSizeCtrl() {
+  // CHANGED(2026-03-07): #116 Bug #11 — 旧デフォルト(0)→新デフォルト(3)の一度きり移行
+  if (!localStorage.getItem(MIGRATION_KEY)) {
+    const old = localStorage.getItem(STORAGE_KEY);
+    if (old === '0' || old === null) {
+      localStorage.setItem(STORAGE_KEY, String(DEFAULT_STEP));
+    }
+    localStorage.setItem(MIGRATION_KEY, '1');
+  }
   const step = parseInt(localStorage.getItem(STORAGE_KEY) ?? String(DEFAULT_STEP), 10);
   applyStep(step);
 
