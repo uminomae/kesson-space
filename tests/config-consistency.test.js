@@ -138,8 +138,10 @@ assert(/export\s+function\s+getCurrentStep/.test(fontSizeCtrlSrc), 'font-size-ct
 assert(/export\s+function\s+setStep/.test(fontSizeCtrlSrc), 'font-size-ctrl: setStep を export している');
 assert(/'--ks-overlay-tagline':\s*0\.85/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline 基底値が 0.85');
 assert(/'--ks-overlay-tagline-en':\s*0\.78/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline en 基底値が 0.78');
-assert(/'--ks-topbar-link-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar link サイズを制御する');
-assert(/'--ks-topbar-note-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar collab note サイズを制御する');
+assert(!/'--ks-topbar-link-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar link サイズは制御しない');
+assert(!/'--ks-topbar-note-size':\s*0\.80/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar collab note サイズは制御しない');
+assert(/--ks-topbar-link-size:\s*0\.80rem;/.test(read(resolve(SRC, 'styles', 'main.css'))), 'main.css: topbar link サイズの既定値を持つ');
+assert(/--ks-topbar-note-size:\s*0\.80rem;/.test(read(resolve(SRC, 'styles', 'main.css'))), 'main.css: topbar collab note サイズの既定値を持つ');
 
 section('2.6. dev bootstrap fallback');
 

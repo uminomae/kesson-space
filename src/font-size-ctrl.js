@@ -30,8 +30,7 @@ const CLASS_VARS = {
   '--ks-card-title':         0.80,
   '--ks-card-text':          0.70,
   '--ks-card-summary':       0.68,
-  '--ks-topbar-link-size':   0.80,
-  '--ks-topbar-note-size':   0.80,
+  // Keep topbar menu typography on static theme tokens; issue #122's +3 default made it too large.
   // navi 以外の追加対象
   '--ks-overlay-tagline':    0.85,
   '--ks-overlay-tagline-en': 0.78,
