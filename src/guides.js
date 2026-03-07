@@ -321,11 +321,12 @@ function renderFeatureCards() {
         body.className = 'card-body p-2 p-md-3 d-flex flex-column gap-1';
 
         const title = document.createElement('h3');
-        title.className = 'h6 mb-1 text-light';
+        // CHANGED(2026-03-07): #116 Bug #6 — ARTICLES カードと同じ card-title スタイルに統一
+        title.className = 'card-title mb-1';
         title.textContent = featureText.title;
 
         const desc = document.createElement('p');
-        desc.className = 'small mb-0 reports-feature-description';
+        desc.className = 'card-text mb-0';
         desc.textContent = featureText.description;
         body.appendChild(title);
         body.appendChild(desc);
