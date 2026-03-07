@@ -215,6 +215,10 @@ export const DEV_PARAM_REGISTRY = (() => {
                 entry.apply.push({ kind: 'liquidUniform', key: LIQUID_CONFIG_MAP[key] });
             }
 
+            if (key === 'fontStep') {
+                entry.apply.push({ kind: 'fontStep' });
+            }
+
             if (OVERLAY_KEYS.has(key)) {
                 entry.apply.push({ kind: 'overlay' });
             }
