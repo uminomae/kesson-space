@@ -23,6 +23,7 @@ assets/devlog/
 ├── covers/                 # カバー画像
 content/devlog/
 ├── session-XXX.md          # 記事Markdown
+├── img/                    # インフォグラフィック SVG（session-XXX.svg）
 ├── prompts/                # インフォグラフィック生成用HTML
 ```
 
@@ -152,6 +153,42 @@ date_range: "2026-02-14"
 
 ---
 
+## インフォグラフィック SVG 出力ルール
+
+**適用対象**: devlog生成指示書（_instructions-*.md）で新規セッションを生成するとき必須。
+
+### 出力先
+```
+content/devlog/img/session-XXX.svg
+```
+生成物（session-XXX.md）と同じ `content/devlog/` 配下の `img/` ディレクトリに配置する。
+
+### SVG 仕様
+- サイズ: `width="1280" height="720"` (16:9)
+- 背景: `#0a0e1a`
+- アクセントカラー: blue `#4a90d9` / cyan `#00d4ff` / amber `#f59e0b`
+- 構成要素: タイトル・日付・タイムライン・実施内容サマリー
+- 日本語テキストは `<text>` 要素で直接埋め込む（フォントは sans-serif）
+- 外部リソース（画像・フォントファイル）への依存禁止（スタンドアロン SVG）
+
+### 指示書への記述例
+
+```markdown
+## Step X: インフォグラフィック SVG 生成
+
+各 session に対応する `content/devlog/img/session-XXX.svg` を生成する。
+上記「インフォグラフィック SVG 出力ルール」（devlog-generation.md）に準拠すること。
+
+mkdir -p content/devlog/img/
+# session ごとに SVG ファイルを生成・配置
+```
+
+### チェックリスト追加項目
+- [ ] `content/devlog/img/session-XXX.svg` が session 数分生成されている
+- [ ] SVG が外部リソースなしで単体表示できる
+
+---
+
 ## 実行手順（手動）
 
 ### 今すぐできること
@@ -185,6 +222,7 @@ date_range: "2026-02-14"
 - [ ] 各セッションにcover, title_ja, title_en, date_range, end がある
 - [ ] カバー画像が存在する（./assets/devlog/covers/session-XXX.png）
 - [ ] content/devlog/session-XXX.md が存在する
+- [ ] content/devlog/img/session-XXX.svg が存在する（インフォグラフィック）
 - [ ] E2Eテスト: TC-E2E-12（整合性チェック）がパスする
 
 ### CI再有効化前
