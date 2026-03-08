@@ -908,6 +908,175 @@
     }
 
     // ============================
+    // TC-E2E-13: font-size-ctrl 回帰（Bug #8・#9・#10・#11 対応）
+    // ============================
+
+    async function tc13_fontSizeCtrl() {
+        const rootStyle = getComputedStyle(document.documentElement);
+        const surfaceBtnVar = rootStyle.getPropertyValue('--ks-surface-btn').trim();
+        assert('13-1', 'CSS変数 --ks-surface-btn が設定されている',
+            surfaceBtnVar !== '', `value: "${surfaceBtnVar}"`);
+
+        const surfaceBtn = qs('#surface-btn');
+        if (surfaceBtn) {
+            const fs = getComputedStyle(surfaceBtn).fontSize;
+            assert('13-2', '#surface-btn の font-size が設定済み',
+                !!fs && fs !== '0px', `font-size: ${fs}`);
+        } else {
+            warn('13-2', '#surface-btn が見つからない', '');
+        }
+
+        const fontStep = localStorage.getItem('kesson-font-step');
+        assert('13-3', 'localStorage に kesson-font-step が存在',
+            fontStep !== null, `value: ${fontStep}`);
+
+        const cardTitle = rootStyle.getPropertyValue('--ks-card-title').trim();
+        assert('13-4', '--ks-card-title が設定済み（デフォルト step=3 確認）',
+            cardTitle !== '', `value: "${cardTitle}"`);
+
+        const migrationFlag = localStorage.getItem('kesson-font-step-v2');
+        assert('13-5', 'localStorage に移行フラグ kesson-font-step-v2 が存在',
+            migrationFlag !== null, `value: ${migrationFlag}`);
+
+        const collabNote = qs('.topbar-collab-note');
+        const topbarLink = qs('.topbar-link');
+        if (collabNote && topbarLink) {
+            const collabFs = parseFloat(getComputedStyle(collabNote).fontSize);
+            const linkFs = parseFloat(getComputedStyle(topbarLink).fontSize);
+            assert('13-6', '.topbar-collab-note と .topbar-link の font-size が同等（±3px）',
+                Math.abs(collabFs - linkFs) <= 3,
+                `collab-note: ${collabFs}px, topbar-link: ${linkFs}px`);
+        } else {
+            warn('13-6', '.topbar-collab-note または .topbar-link が見つからない',
+                `collab-note: ${!!collabNote}, link: ${!!topbarLink}`);
+        }
+
+        const btnMinus = qs('#font-size-down');
+        const btnPlus = qs('#font-size-up');
+        const btnReset = qs('#font-size-reset');
+
+        if (btnMinus && btnPlus) {
+            const beforeStep = parseInt(localStorage.getItem('kesson-font-step') || '3', 10);
+
+            if (!btnMinus.disabled) {
+                btnMinus.click();
+                await wait(100);
+                const afterMinus = parseInt(localStorage.getItem('kesson-font-step') || '3', 10);
+                assert('13-7', 'A- クリックでステップが減少',
+                    afterMinus < beforeStep, `before: ${beforeStep}, after: ${afterMinus}`);
+
+                btnPlus.click();
+                await wait(100);
+                const afterPlus = parseInt(localStorage.getItem('kesson-font-step') || '3', 10);
+                assert('13-8', 'A+ クリックでステップが増加',
+                    afterPlus > afterMinus, `before: ${afterMinus}, after: ${afterPlus}`);
+            } else {
+                warn('13-7', 'A- が disabled（MIN状態）のためスキップ', '');
+                warn('13-8', '同上', '');
+            }
+
+            if (btnReset) {
+                btnReset.click();
+                await wait(100);
+                const afterReset = parseInt(localStorage.getItem('kesson-font-step') || '3', 10);
+                assert('13-9', '↺ クリックで DEFAULT_STEP(3) に戻る',
+                    afterReset === 3, `step: ${afterReset}`);
+            } else {
+                warn('13-9', '#font-size-reset が見つからない', '');
+            }
+
+            for (let i = 0; i < 10; i++) {
+                if (btnMinus.disabled) break;
+                btnMinus.click();
+                await wait(30);
+            }
+            assert('13-10', 'MIN ステップで A-(#font-size-down) が disabled',
+                btnMinus.disabled, `disabled: ${btnMinus.disabled}`);
+
+            for (let i = 0; i < 12; i++) {
+                if (btnPlus.disabled) break;
+                btnPlus.click();
+                await wait(30);
+            }
+            assert('13-11', 'MAX ステップで A+(#font-size-up) が disabled',
+                btnPlus.disabled, `disabled: ${btnPlus.disabled}`);
+
+            if (btnReset) {
+                btnReset.click();
+                await wait(100);
+            }
+        } else {
+            warn('13-7', '#font-size-down または #font-size-up が見つからない', '');
+            warn('13-8', '同上', '');
+            warn('13-9', '同上', '');
+            warn('13-10', '同上', '');
+            warn('13-11', '同上', '');
+        }
+    }
+
+    // ============================
+    // TC-E2E-14: GUIDES セクション UI 回帰（Bug #2・#6・#7 対応）
+    // ============================
+
+    async function tc14_guidesUi() {
+        const featureCards = qs('#guides-feature-cards');
+        assert('14-1', '#guides-feature-cards が DOM に存在',
+            !!featureCards, featureCards ? 'found' : 'not found');
+        if (!featureCards) return;
+
+        await wait(200);
+
+        const allCardTitles = Array.from(
+            featureCards.querySelectorAll('.card-title')
+        ).map((el) => el.textContent.trim());
+
+        assert('14-2', 'GUIDESカードに「概要版」表記がない（Bug #2）',
+            !allCardTitles.some((t) => t === '概要版'),
+            `titles: [${allCardTitles.join(', ')}]`);
+        assert('14-2b', 'GUIDESカードに「一般向け」表記がある（Bug #2修正確認）',
+            allCardTitles.some((t) => t === '一般向け'),
+            `titles: [${allCardTitles.join(', ')}]`);
+
+        const guideTitle = featureCards.querySelector('.card-title');
+        const articleTitle = qs('#articles-grid .card-title');
+        if (guideTitle && articleTitle) {
+            assert('14-3', 'GUIDESとARTICLESのタイトルクラスが一致（Bug #6）',
+                guideTitle.className === articleTitle.className,
+                `guides: "${guideTitle.className}", articles: "${articleTitle.className}"`);
+        } else {
+            warn('14-3', 'タイトル要素が見つからない',
+                `guide: ${!!guideTitle}, article: ${!!articleTitle}`);
+        }
+
+        const guideText = featureCards.querySelector('.card-text');
+        const articleText = qs('#articles-grid .card-text');
+        if (guideText && articleText) {
+            assert('14-4', 'GUIDESとARTICLESのテキストクラスが一致（Bug #6）',
+                guideText.className === articleText.className,
+                `guides: "${guideText.className}", articles: "${articleText.className}"`);
+        } else {
+            warn('14-4', 'テキスト要素が見つからない',
+                `guide: ${!!guideText}, article: ${!!articleText}`);
+        }
+
+        const guidesSection = document.getElementById('guides-section');
+        const articlesSection = document.getElementById('articles-section');
+        if (guidesSection && articlesSection) {
+            const guidesZ = parseInt(getComputedStyle(guidesSection).zIndex || '0', 10) || 0;
+            const articlesZ = parseInt(getComputedStyle(articlesSection).zIndex || '0', 10) || 0;
+            assert('14-5', 'GUIDES の z-index が ARTICLES 以上（Bug #7）',
+                guidesZ >= articlesZ,
+                `guides: ${guidesZ}, articles: ${articlesZ}`);
+        } else {
+            warn('14-5', 'セクション要素が見つからないため z-index 比較スキップ', '');
+        }
+
+        const mt = parseFloat(getComputedStyle(featureCards).marginTop);
+        assert('14-6', '#guides-feature-cards に margin-top が設定されている（Bug #7）',
+            mt > 0, `margin-top: ${mt}px`);
+    }
+
+    // ============================
     // 実行制御
     // ============================
 
@@ -924,6 +1093,8 @@
         'TC-E2E-10': tc10_keyboard,   // ISS-001
         'TC-E2E-11': tc11_webvitals,  // Google Core Web Vitals
         'TC-E2E-12': tc12_sessionFiles,  // sessions.json ↔ .md 整合性
+        'TC-E2E-13': tc13_fontSizeCtrl,   // Bug #8〜#11 回帰
+        'TC-E2E-14': tc14_guidesUi,       // Bug #2, #6, #7 回帰
     };
 
     async function run(tcId) {

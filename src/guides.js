@@ -64,8 +64,8 @@ const STRINGS = {
         modalGenerated: '生成日',
         features: {
             general: {
-                title: '概要版',
-                modalTitle: '欠損駆動思考 — 概要版',
+                title: '一般向け',
+                modalTitle: '欠損駆動思考 — 一般向け',
                 description: '欠損駆動思考の全体像を短く把握するための解説。',
             },
             designer: {
@@ -326,7 +326,7 @@ function renderFeatureCards() {
         title.textContent = featureText.title;
 
         const desc = document.createElement('p');
-        desc.className = 'card-text mb-0';
+        desc.className = 'card-text';
         desc.textContent = featureText.description;
         body.appendChild(title);
         body.appendChild(desc);
