@@ -51,9 +51,9 @@ const STRINGS = {
         rightCreationLinkLabel: 'Creation',
         rightCreationLinkAria: 'Go to creation-space',
         nav: [
-            { label: 'General', url: PDF_BASE_EN + 'kesson-general.pdf', pdfUrl: PDF_BASE_EN + 'kesson-general.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-general-en.md' },
-            { label: 'For Designers', url: PDF_BASE_EN + 'kesson-designer.pdf', pdfUrl: PDF_BASE_EN + 'kesson-designer.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-designer-en.md' },
-            { label: 'Academic', url: PDF_BASE_EN + 'kesson-academic.pdf', pdfUrl: PDF_BASE_EN + 'kesson-academic.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-academic-en.md' },
+            { label: 'General', url: PDF_BASE_EN + 'kesson-general.pdf', pdfUrl: PDF_BASE_EN + 'kesson-general.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-general.md' },
+            { label: 'For Designers', url: PDF_BASE_EN + 'kesson-designer.pdf', pdfUrl: PDF_BASE_EN + 'kesson-designer.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-designer.md' },
+            { label: 'Academic', url: PDF_BASE_EN + 'kesson-academic.pdf', pdfUrl: PDF_BASE_EN + 'kesson-academic.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-academic.md' },
         ],
         gem: {
             label: 'Gem',
