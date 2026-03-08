@@ -11,6 +11,7 @@ from mcp.server.fastmcp import FastMCP
 import google.generativeai as genai
 import os
 import json
+import base64
 from pathlib import Path
 from datetime import datetime
 
@@ -57,6 +58,7 @@ MODEL_COSTS = {
     "3-flash": 0.12,
     "3-pro": 1.5,
     "3.1-pro": 2.0,
+    "image": 0.5,
 }
 
 DEFAULT_MODEL = "flash"
@@ -407,15 +409,102 @@ def list_models() -> str:
     
     lines.extend([
         "",
+        f"画像生成:",
+        f"  image: {IMAGE_MODEL} — ¥{IMAGE_COST_PER_CALL}/回",
+        "",
         "使用例:",
         '  generate_threejs_code(task="...", model="pro")',
         '  generate_shader(shader_description="...", model="3-flash")',
+        '  generate_image(prompt="a cosmic space with floating lights")',
         "",
         "使用量確認:",
         "  get_usage() — 今月の使用状況を表示",
     ])
     
     return "\n".join(lines)
+
+
+# 画像出力ディレクトリ
+IMAGE_OUTPUT_DIR = Path(__file__).parent.parent / "generated_images"
+
+# 画像生成モデル
+IMAGE_MODEL = "gemini-2.0-flash-exp-image-generation"
+IMAGE_COST_PER_CALL = 0.5  # 円/回（推定）
+
+
+@mcp.tool()
+def generate_image(
+    prompt: str,
+    output_filename: str = "",
+    style_hint: str = "",
+) -> str:
+    """
+    Geminiで画像を生成してファイルに保存
+
+    Args:
+        prompt: 画像の説明（英語推奨、日本語も可）
+        output_filename: 出力ファイル名（拡張子なし）。省略時は自動生成
+        style_hint: スタイルのヒント（例: "photorealistic", "watercolor", "abstract", "3d render"）
+    """
+    IMAGE_OUTPUT_DIR.mkdir(exist_ok=True)
+
+    if not output_filename:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"gemini_{timestamp}"
+
+    full_prompt = prompt
+    if style_hint:
+        full_prompt = f"{prompt}. Style: {style_hint}"
+
+    try:
+        from google import genai as genai_new
+        from google.genai import types
+
+        client = genai_new.Client(api_key=GENAI_API_KEY)
+        response = client.models.generate_content(
+            model=IMAGE_MODEL,
+            contents=full_prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE", "TEXT"],
+            ),
+        )
+
+        # レスポンスから画像パートを探す
+        saved_paths = []
+        text_parts = []
+
+        for i, part in enumerate(response.candidates[0].content.parts):
+            if part.inline_data and part.inline_data.data:
+                mime = part.inline_data.mime_type
+                ext = "png" if "png" in mime else "jpg" if "jpeg" in mime or "jpg" in mime else "webp"
+                suffix = f"_{i}" if i > 0 else ""
+                filepath = IMAGE_OUTPUT_DIR / f"{output_filename}{suffix}.{ext}"
+                filepath.write_bytes(part.inline_data.data)
+                saved_paths.append(str(filepath))
+            elif part.text:
+                text_parts.append(part.text)
+
+        record_usage("image", "generate_image")
+
+        if not saved_paths:
+            return f"画像生成に失敗しました。テキスト応答:\n{''.join(text_parts)}"
+
+        result_lines = [
+            f"[Model: {IMAGE_MODEL}]",
+            "",
+            f"画像を保存しました:",
+        ]
+        for p in saved_paths:
+            result_lines.append(f"  {p}")
+        if text_parts:
+            result_lines.append("")
+            result_lines.append("Geminiのコメント:")
+            result_lines.extend(text_parts)
+
+        return "\n".join(result_lines)
+
+    except Exception as e:
+        return f"画像生成エラー: {type(e).__name__}: {str(e)}"
 
 
 if __name__ == "__main__":
