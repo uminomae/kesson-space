@@ -592,10 +592,9 @@
       50% { transform: translateX(-50%) translateY(-4px); }
     }
 
-    /* Lightweight directional UI (scroll hints + side backlink) */
+    /* Lightweight directional UI (scroll hints) */
     #scroll-hint span,
-    #scroll-hint-top span,
-    #right-creation-link-label {
+    #scroll-hint-top span {
       display: block;
       font-size: var(--kesson-font-size-ui-xs);
       color: var(--kesson-ui-label-color);
@@ -603,45 +602,9 @@
       letter-spacing: var(--kesson-letter-ui-wide);
     }
     #scroll-hint .arrow,
-    #scroll-hint-top .arrow,
-    #right-creation-link .arrow {
+    #scroll-hint-top .arrow {
       font-size: var(--kesson-font-size-ui-arrow);
       color: var(--kesson-ui-arrow-color);
-    }
-
-    /* --- 右中央 creation-space リンク（creation-space左導線のミラー） --- */
-    #right-creation-link {
-      position: fixed;
-      top: 50%;
-      right: 16px;
-      transform: translateY(-50%);
-      z-index: 15;
-      text-align: center;
-      text-decoration: none;
-      transition: opacity var(--kesson-transition-standard);
-    }
-    #right-creation-link span {
-      display: block;
-      font-size: var(--kesson-font-size-ui-xs);
-      color: var(--kesson-ui-label-color);
-      font-family: var(--kesson-font-serif-ui);
-      letter-spacing: var(--kesson-letter-ui-wide);
-      margin-bottom: 4px;
-    }
-    #right-creation-link .arrow {
-      font-size: var(--kesson-font-size-ui-arrow);
-      color: var(--kesson-ui-arrow-color);
-      display: inline-block;
-      transform: rotate(-90deg);
-      margin-top: 0;
-    }
-    #right-creation-link:hover span,
-    #right-creation-link:hover .arrow {
-      color: var(--kesson-ui-label-hover-color);
-    }
-    #right-creation-link:focus-visible {
-      outline: 2px solid var(--kesson-focus-ring-soft);
-      outline-offset: 4px;
     }
 
     /* ============================
