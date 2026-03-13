@@ -20,21 +20,21 @@ export const FONT_STEP_CHANGE_EVENT = 'kesson:font-step-change';
 
 // 変更対象の CSS 変数と基底値のマップ
 const FONT_VARS = {
-  '--kesson-font-size-ui-xs': 0.65,
-  '--kesson-font-size-ui-sm': 0.70,
+  '--kesson-font-size-ui-xs': 0.95,
+  '--kesson-font-size-ui-sm': 1.00,
 };
 
 // 直接指定クラスの基底値 (rem)
 const CLASS_VARS = {
-  '--ks-section-heading':    0.75,
-  '--ks-card-title':         0.80,
-  '--ks-card-text':          0.70,
-  '--ks-card-summary':       0.68,
+  '--ks-section-heading':    1.05,
+  '--ks-card-title':         1.10,
+  '--ks-card-text':          1.00,
+  '--ks-card-summary':       0.98,
   // Keep topbar menu typography on static theme tokens; issue #122's +3 default made it too large.
   // navi 以外の追加対象
   '--ks-overlay-tagline':    0.85,
   '--ks-overlay-tagline-en': 0.78,
-  '--ks-control-guide':      0.45,
+  '--ks-control-guide':      0.75,
   '--ks-footer-line':        0.45,
   '--ks-surface-btn':        0.55,
 };
