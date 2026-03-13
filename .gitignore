@@ -33,3 +33,6 @@ __pycache__/
 .gemini_usage.json
 
 old/
+
+# Cache
+.cache/
