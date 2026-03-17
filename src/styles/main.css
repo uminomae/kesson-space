@@ -669,8 +669,8 @@
        ============================ */
     #control-guide {
       position: fixed;
-      top: calc(var(--kesson-topbar-height) + 2.1rem);
-      right: 3%;
+      top: calc(var(--kesson-topbar-height) + 0.7rem);
+      right: 1rem;
       z-index: 10;
       pointer-events: none;
       text-align: right;
