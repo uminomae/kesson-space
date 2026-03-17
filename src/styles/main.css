@@ -25,8 +25,8 @@
       --kesson-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
       --kesson-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
       --kesson-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      --kesson-font-size-ui-xs: 0.80rem;
-      --kesson-font-size-ui-sm: 0.80rem;
+      --kesson-font-size-ui-xs: 0.85rem;
+      --kesson-font-size-ui-sm: 0.88rem;
       --kesson-font-size-ui-arrow: clamp(0.7rem, 3.5vmin, 1.2rem);
       --kesson-letter-ui-tight: 0.03em;
       --kesson-letter-ui-normal: 0.06em;
@@ -110,15 +110,15 @@
       /* === Topbar tokens === */
       --kesson-topbar-main-title-size: clamp(0.96rem, 1.85vw, 1.38rem);
       --kesson-topbar-main-title-size-sm: 0.86rem;
-      --kesson-topbar-title-size: clamp(0.80rem, 1.0vw, 0.88rem);
+      --kesson-topbar-title-size: clamp(0.88rem, 1.1vw, 0.96rem);
       --kesson-topbar-subtitle-size: var(--kesson-topbar-title-size);
-      --kesson-topbar-subtitle-size-md: 0.80rem;
-      --kesson-topbar-link-size: 0.80rem;
-      --kesson-topbar-note-size: 0.80rem;
+      --kesson-topbar-subtitle-size-md: 0.88rem;
+      --kesson-topbar-link-size: 0.88rem;
+      --kesson-topbar-note-size: 0.88rem;
       --kesson-topbar-note-size-sm: var(--kesson-topbar-note-size);
-      --kesson-topbar-credit-size: 0.80rem;
-      --kesson-topbar-meta-size: 0.80rem;
-      --kesson-topbar-meta-author-size: 0.80rem;
+      --kesson-topbar-credit-size: 0.84rem;
+      --kesson-topbar-meta-size: 0.86rem;
+      --kesson-topbar-meta-author-size: 0.84rem;
       --kesson-topbar-bg-start: rgba(10, 14, 24, var(--kesson-topbar-alpha-strong));
       --kesson-topbar-bg-end: rgba(10, 14, 24, var(--kesson-topbar-alpha-soft));
       --kesson-topbar-border-color: rgba(130, 170, 240, var(--kesson-topbar-border-alpha));
@@ -172,17 +172,19 @@
       --kesson-dev-hud-input-text: rgba(220, 235, 255, 0.95);
 
       /* === Component font sizes (static fallbacks) === */
-      --kesson-section-heading: 0.80rem;
-      --kesson-card-title: 0.8rem;
-      --kesson-card-text: 0.8rem;
-      --kesson-card-summary: 0.80rem;
-      --kesson-overlay-tagline: 0.80rem;
-      --kesson-overlay-tagline-en: 0.80rem;
-      --kesson-control-guide: 0.80rem;
-      --kesson-footer-line: 0.80rem;
-      --kesson-surface-btn: 0.80rem;
+      --kesson-section-heading: 0.88rem;
+      --kesson-card-title: 1.0rem;
+      --kesson-card-text: 0.92rem;
+      --kesson-card-summary: 0.92rem;
+      --kesson-overlay-tagline: 0.92rem;
+      --kesson-overlay-tagline-en: 0.88rem;
+      --kesson-control-guide: 0.82rem;
+      --kesson-footer-line: 0.82rem;
+      --kesson-surface-btn: 0.88rem;
       --kesson-dev-hud-font-size: 0.80rem;
-      --kesson-footer-signature-size: 0.80rem;
+      --kesson-footer-signature-size: 0.88rem;
+      --kesson-graphic-switcher-label: 0.88rem;
+      --kesson-graphic-switcher-btn: 0.88rem;
 
       --kesson-topbar-height: 3.25rem;
       --kesson-topbar-alpha-strong: 0.10;
