@@ -25,8 +25,8 @@
       --kesson-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
       --kesson-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
       --kesson-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      --kesson-font-size-ui-xs: clamp(0.4rem, 1.8vmin, 0.65rem);
-      --kesson-font-size-ui-sm: clamp(0.5rem, 2.2vmin, 0.7rem);
+      --kesson-font-size-ui-xs: 0.80rem;
+      --kesson-font-size-ui-sm: 0.80rem;
       --kesson-font-size-ui-arrow: clamp(0.7rem, 3.5vmin, 1.2rem);
       --kesson-letter-ui-tight: 0.03em;
       --kesson-letter-ui-normal: 0.06em;
@@ -83,6 +83,17 @@
       --kesson-md-table-head-bg: rgba(40, 60, 100, 0.2);
       --kesson-md-table-head-text: rgba(220, 230, 250, 0.9);
       --kesson-md-table-cell-text: rgba(200, 215, 240, 0.75);
+      --kesson-md-strong: rgba(240, 245, 255, 0.95);
+      --kesson-md-em: rgba(200, 215, 240, 0.8);
+      --kesson-md-pre-bg: rgba(8, 12, 24, 0.6);
+      --kesson-md-pdf-link: rgba(160, 185, 240, 0.7);
+      --kesson-md-pdf-link-hover: rgba(200, 220, 255, 0.9);
+      --kesson-md-pdf-link-hover-bg: rgba(60, 90, 150, 0.1);
+      --kesson-viewer-glass-shadow:
+        0 0 60px rgba(0, 0, 0, 0.4),
+        0 0 120px rgba(30, 60, 120, 0.1),
+        inset 0 0 60px rgba(20, 40, 80, 0.05);
+      --kesson-viewer-x-handle: rgba(200, 215, 245, 0.7);
 
       /* === Dev panel tokens === */
       --kesson-dev-toggle-bg: rgba(20, 30, 50, 0.7);
@@ -97,38 +108,81 @@
       --kesson-offcanvas-bg: rgba(10, 14, 26, 0.98);
 
       /* === Topbar tokens === */
-      --ks-topbar-main-title-size: clamp(0.96rem, 1.85vw, 1.38rem);
-      --ks-topbar-main-title-size-sm: 0.86rem;
-      --ks-topbar-title-size: clamp(0.75rem, 1.0vw, 0.88rem);
-      --ks-topbar-subtitle-size: var(--ks-topbar-title-size);
-      --ks-topbar-subtitle-size-md: 0.66rem;
-      --ks-topbar-link-size: 0.80rem;
-      --ks-topbar-note-size: 0.80rem;
-      --ks-topbar-note-size-sm: var(--ks-topbar-note-size);
-      --ks-topbar-credit-size: 0.64rem;
-      --ks-topbar-meta-size: clamp(0.68rem, 0.88vw, 0.76rem);
-      --ks-topbar-meta-author-size: 0.68rem;
-      --ks-topbar-bg-start: rgba(10, 14, 24, var(--kesson-topbar-alpha-strong));
-      --ks-topbar-bg-end: rgba(10, 14, 24, var(--kesson-topbar-alpha-soft));
-      --ks-topbar-border-color: rgba(130, 170, 240, var(--kesson-topbar-border-alpha));
-      --ks-topbar-divider-color: rgba(170, 192, 228, 0.42);
-      --ks-topbar-title-color: rgba(228, 238, 255, 0.92);
-      --ks-topbar-title-hover-color: rgba(242, 248, 255, 1);
-      --ks-topbar-subtitle-color: rgba(205, 220, 244, 0.76);
-      --ks-topbar-meta-color: rgba(186, 204, 234, 0.72);
-      --ks-topbar-meta-author-color: rgba(184, 203, 234, 0.74);
-      --ks-topbar-link-color: rgba(205, 220, 244, 0.78);
-      --ks-topbar-link-hover-color: rgba(236, 244, 255, 0.98);
-      --ks-topbar-link-hover-bg: rgba(120, 165, 240, 0.2);
-      --ks-topbar-note-divider-color: rgba(130, 170, 240, 0.2);
-      --ks-topbar-note-color: rgba(165, 214, 255, 0.74);
-      --ks-topbar-lang-color: rgba(218, 232, 255, 0.9);
-      --ks-topbar-lang-border: rgba(130, 170, 240, 0.25);
-      --ks-topbar-lang-bg: rgba(70, 102, 160, 0.16);
-      --ks-topbar-nav-bg: rgba(9, 13, 24, 0.82);
-      --ks-topbar-nav-border: rgba(130, 170, 240, 0.2);
-      --ks-topbar-toggler-border: rgba(145, 178, 242, 0.55);
-      --ks-topbar-toggler-focus: rgba(140, 180, 252, 0.35);
+      --kesson-topbar-main-title-size: clamp(0.96rem, 1.85vw, 1.38rem);
+      --kesson-topbar-main-title-size-sm: 0.86rem;
+      --kesson-topbar-title-size: clamp(0.80rem, 1.0vw, 0.88rem);
+      --kesson-topbar-subtitle-size: var(--kesson-topbar-title-size);
+      --kesson-topbar-subtitle-size-md: 0.80rem;
+      --kesson-topbar-link-size: 0.80rem;
+      --kesson-topbar-note-size: 0.80rem;
+      --kesson-topbar-note-size-sm: var(--kesson-topbar-note-size);
+      --kesson-topbar-credit-size: 0.80rem;
+      --kesson-topbar-meta-size: 0.80rem;
+      --kesson-topbar-meta-author-size: 0.80rem;
+      --kesson-topbar-bg-start: rgba(10, 14, 24, var(--kesson-topbar-alpha-strong));
+      --kesson-topbar-bg-end: rgba(10, 14, 24, var(--kesson-topbar-alpha-soft));
+      --kesson-topbar-border-color: rgba(130, 170, 240, var(--kesson-topbar-border-alpha));
+      --kesson-topbar-divider-color: rgba(170, 192, 228, 0.42);
+      --kesson-topbar-title-color: rgba(228, 238, 255, 0.92);
+      --kesson-topbar-title-hover-color: rgba(242, 248, 255, 1);
+      --kesson-topbar-subtitle-color: rgba(205, 220, 244, 0.76);
+      --kesson-topbar-meta-color: rgba(186, 204, 234, 0.72);
+      --kesson-topbar-meta-author-color: rgba(184, 203, 234, 0.74);
+      --kesson-topbar-link-color: rgba(205, 220, 244, 0.78);
+      --kesson-topbar-link-hover-color: rgba(236, 244, 255, 0.98);
+      --kesson-topbar-link-hover-bg: rgba(120, 165, 240, 0.2);
+      --kesson-topbar-note-divider-color: rgba(130, 170, 240, 0.2);
+      --kesson-topbar-note-color: rgba(165, 214, 255, 0.74);
+      --kesson-topbar-lang-color: rgba(218, 232, 255, 0.9);
+      --kesson-topbar-lang-border: rgba(130, 170, 240, 0.25);
+      --kesson-topbar-lang-bg: rgba(70, 102, 160, 0.16);
+      --kesson-topbar-nav-bg: rgba(9, 13, 24, 0.82);
+      --kesson-topbar-nav-border: rgba(130, 170, 240, 0.2);
+      --kesson-topbar-toggler-border: rgba(145, 178, 242, 0.55);
+      --kesson-topbar-toggler-focus: rgba(140, 180, 252, 0.35);
+
+      /* === Dev panel extended tokens === */
+      --kesson-dev-toggle-text: rgba(180, 200, 255, 0.75);
+      --kesson-dev-toggle-text-hover: rgba(210, 225, 255, 0.95);
+      --kesson-dev-panel-bg: rgba(7, 12, 24, 0.96);
+      --kesson-dev-panel-border: rgba(140, 178, 255, 0.3);
+      --kesson-dev-panel-header-border: rgba(140, 178, 255, 0.25);
+      --kesson-dev-panel-title-color: rgba(223, 236, 255, 0.95);
+      --kesson-dev-panel-accordion-bg: rgba(26, 40, 70, 0.5);
+      --kesson-dev-panel-accordion-text: rgba(222, 235, 255, 0.92);
+      --kesson-dev-panel-accordion-active-bg: rgba(46, 72, 116, 0.7);
+      --kesson-dev-panel-body-bg: rgba(11, 20, 38, 0.75);
+      --kesson-dev-panel-label-color: rgba(188, 211, 245, 0.95);
+      --kesson-dev-panel-help-color: rgba(176, 201, 238, 0.82);
+      --kesson-dev-panel-help-sub-color: rgba(162, 188, 228, 0.72);
+      --kesson-dev-panel-value-color: rgba(201, 221, 255, 0.86);
+      --kesson-dev-panel-status-color: rgba(201, 221, 255, 0.8);
+      --kesson-dev-panel-empty-bg: rgba(11, 20, 38, 0.6);
+      --kesson-dev-panel-empty-border: rgba(140, 178, 255, 0.25);
+      --kesson-dev-panel-empty-text: rgba(201, 221, 255, 0.85);
+      --kesson-dev-hud-border: rgba(120, 164, 235, 0.42);
+      --kesson-dev-hud-bg: rgba(8, 14, 26, 0.84);
+      --kesson-dev-hud-text: rgba(205, 224, 255, 0.92);
+      --kesson-dev-hud-btn-border: rgba(130, 170, 240, 0.45);
+      --kesson-dev-hud-btn-bg: rgba(100, 152, 246, 0.2);
+      --kesson-dev-hud-btn-text: rgba(238, 246, 255, 0.96);
+      --kesson-dev-hud-btn-bg-hover: rgba(116, 165, 244, 0.32);
+      --kesson-dev-hud-input-border: rgba(130, 170, 240, 0.35);
+      --kesson-dev-hud-input-bg: rgba(10, 18, 32, 0.88);
+      --kesson-dev-hud-input-text: rgba(220, 235, 255, 0.95);
+
+      /* === Component font sizes (static fallbacks) === */
+      --kesson-section-heading: 0.80rem;
+      --kesson-card-title: 0.8rem;
+      --kesson-card-text: 0.8rem;
+      --kesson-card-summary: 0.80rem;
+      --kesson-overlay-tagline: 0.80rem;
+      --kesson-overlay-tagline-en: 0.80rem;
+      --kesson-control-guide: 0.80rem;
+      --kesson-footer-line: 0.80rem;
+      --kesson-surface-btn: 0.80rem;
+      --kesson-dev-hud-font-size: 0.80rem;
+      --kesson-footer-signature-size: 0.80rem;
 
       --kesson-topbar-height: 3.25rem;
       --kesson-topbar-alpha-strong: 0.10;
@@ -137,6 +191,7 @@
       --kesson-topbar-shadow-alpha: 0.26;
       --kesson-topbar-blur: 14px;
       --kesson-topbar-saturate: 145%;
+      --kesson-h1-size: clamp(1.0rem, 5.5vmin, 2.0rem);
     }
     
     #canvas-container {
@@ -160,10 +215,10 @@
       z-index: 60;
       background: linear-gradient(
         to bottom,
-        var(--ks-topbar-bg-start) 0%,
-        var(--ks-topbar-bg-end) 100%
+        var(--kesson-topbar-bg-start) 0%,
+        var(--kesson-topbar-bg-end) 100%
       );
-      border-bottom: 1px solid var(--ks-topbar-border-color);
+      border-bottom: 1px solid var(--kesson-topbar-border-color);
       box-shadow: 0 10px 24px rgba(0, 0, 0, var(--kesson-topbar-shadow-alpha));
       backdrop-filter: blur(var(--kesson-topbar-blur)) saturate(var(--kesson-topbar-saturate));
       -webkit-backdrop-filter: blur(var(--kesson-topbar-blur)) saturate(var(--kesson-topbar-saturate));
@@ -184,9 +239,9 @@
       padding: 0.24rem 0;
     }
     #kesson-topbar .topbar-main-title {
-      color: var(--ks-topbar-title-color);
+      color: var(--kesson-topbar-title-color);
       font-family: var(--kesson-font-serif-display);
-      font-size: var(--ks-topbar-main-title-size);
+      font-size: var(--kesson-topbar-main-title-size);
       letter-spacing: 0.04em;
       line-height: 1;
       text-transform: none;
@@ -197,13 +252,13 @@
     }
     #kesson-topbar .topbar-main-title:hover,
     #kesson-topbar .topbar-main-title:focus-visible {
-      color: var(--ks-topbar-title-hover-color);
+      color: var(--kesson-topbar-title-hover-color);
     }
     #kesson-topbar .topbar-collab-note--brand {
       display: inline-block;
       margin-left: 0.1rem;
       padding-left: 0.5rem;
-      border-left: 1px solid var(--ks-topbar-note-divider-color);
+      border-left: 1px solid var(--kesson-topbar-note-divider-color);
       max-width: 24rem;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -211,8 +266,8 @@
       flex: 0 1 auto;
     }
     #kesson-topbar .topbar-subtitle {
-      font-size: var(--ks-topbar-subtitle-size);
-      color: var(--ks-topbar-subtitle-color);
+      font-size: var(--kesson-topbar-subtitle-size);
+      color: var(--kesson-topbar-subtitle-color);
       letter-spacing: 0.1em;
       line-height: 1;
       text-transform: none;
@@ -222,28 +277,28 @@
     #kesson-topbar .topbar-subtitle::before,
     #kesson-topbar .topbar-meta::before {
       content: '·';
-      color: var(--ks-topbar-divider-color);
+      color: var(--kesson-topbar-divider-color);
       margin-right: 0.45rem;
     }
     #kesson-topbar .topbar-meta {
       display: block;
       flex: 0 0 auto;
       padding: 0;
-      font-size: var(--ks-topbar-meta-size);
+      font-size: var(--kesson-topbar-meta-size);
       line-height: 1;
       letter-spacing: 0.05em;
-      color: var(--ks-topbar-meta-color);
+      color: var(--kesson-topbar-meta-color);
       font-family: var(--kesson-font-serif-ui);
       pointer-events: none;
     }
     #kesson-topbar .topbar-meta--author {
-      font-size: var(--ks-topbar-meta-author-size);
-      color: var(--ks-topbar-meta-author-color);
+      font-size: var(--kesson-topbar-meta-author-size);
+      color: var(--kesson-topbar-meta-author-color);
     }
     #kesson-topbar .topbar-link {
-      color: var(--ks-topbar-link-color);
+      color: var(--kesson-topbar-link-color);
       font-family: var(--kesson-font-mono-ui);
-      font-size: var(--ks-topbar-link-size);
+      font-size: var(--kesson-topbar-link-size);
       letter-spacing: 0.14em;
       text-transform: uppercase;
       padding: 0.4rem 0.72rem;
@@ -252,8 +307,8 @@
     }
     #kesson-topbar .topbar-link:hover,
     #kesson-topbar .topbar-link:focus-visible {
-      color: var(--ks-topbar-link-hover-color);
-      background: var(--ks-topbar-link-hover-bg);
+      color: var(--kesson-topbar-link-hover-color);
+      background: var(--kesson-topbar-link-hover-bg);
     }
     #kesson-topbar .topbar-link-btn {
       border: 0;
@@ -263,39 +318,39 @@
       text-align: left;
     }
     #kesson-topbar .topbar-lang-btn {
-      color: var(--ks-topbar-lang-color);
-      border: 1px solid var(--ks-topbar-lang-border);
-      background: var(--ks-topbar-lang-bg);
+      color: var(--kesson-topbar-lang-color);
+      border: 1px solid var(--kesson-topbar-lang-border);
+      background: var(--kesson-topbar-lang-bg);
     }
     #kesson-topbar .topbar-collab-item {
       margin-left: 0.45rem;
       padding-left: 0.55rem;
-      border-left: 1px solid var(--ks-topbar-note-divider-color);
+      border-left: 1px solid var(--kesson-topbar-note-divider-color);
     }
     #kesson-topbar .topbar-collab-note {
       display: inline-block;
       font-family: var(--kesson-font-serif-ui);
-      font-size: var(--ks-topbar-note-size);
+      font-size: var(--kesson-topbar-note-size);
       line-height: 1;
       letter-spacing: 0.06em;
-      color: var(--ks-topbar-note-color);
+      color: var(--kesson-topbar-note-color);
       white-space: nowrap;
       pointer-events: none;
       user-select: none;
     }
     #kesson-topbar .topbar-toggler {
-      border-color: var(--ks-topbar-toggler-border);
+      border-color: var(--kesson-topbar-toggler-border);
       padding: 0.18rem 0.44rem;
     }
     #kesson-topbar .topbar-toggler:focus {
-      box-shadow: 0 0 0 0.14rem var(--ks-topbar-toggler-focus);
+      box-shadow: 0 0 0 0.14rem var(--kesson-topbar-toggler-focus);
     }
     #kessonTopbarNav {
       margin-top: 0.35rem;
       padding: 0.35rem 0.2rem 0.5rem;
       border-radius: 0.6rem;
-      background: var(--ks-topbar-nav-bg);
-      border: 1px solid var(--ks-topbar-nav-border);
+      background: var(--kesson-topbar-nav-bg);
+      border: 1px solid var(--kesson-topbar-nav-border);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -321,7 +376,7 @@
         display: none;
       }
       #kesson-topbar .topbar-subtitle {
-        font-size: var(--ks-topbar-subtitle-size-md);
+        font-size: var(--kesson-topbar-subtitle-size-md);
       }
       #kesson-topbar .topbar-collab-item {
         margin-left: 0.3rem;
@@ -333,12 +388,12 @@
         display: none;
       }
       #kesson-topbar .topbar-main-title {
-        font-size: var(--ks-topbar-main-title-size-sm);
+        font-size: var(--kesson-topbar-main-title-size-sm);
       }
       #kesson-topbar .topbar-collab-note--brand {
         max-width: 10.5rem;
         padding-left: 0.38rem;
-        font-size: var(--ks-topbar-credit-size);
+        font-size: var(--kesson-topbar-credit-size);
         letter-spacing: 0.04em;
       }
       #kesson-topbar .topbar-collab-item {
@@ -347,7 +402,7 @@
         border-left: 0;
       }
       #kesson-topbar .topbar-collab-note {
-        font-size: var(--ks-topbar-note-size-sm);
+        font-size: var(--kesson-topbar-note-size-sm);
         letter-spacing: 0.05em;
       }
     }
@@ -365,7 +420,7 @@
       padding: 0;
       color: rgba(var(--color-heading), 0.9);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
-      font-size: clamp(0.45rem, 2.8vmin, 1.1rem);
+      font-size: clamp(0.80rem, 2.8vmin, 1.1rem);
       letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
       text-shadow: 0 0 12px rgba(var(--color-accent), 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
       transform: translate(-50%, -100%);
@@ -437,7 +492,7 @@
       color: rgba(var(--color-heading), 0.95);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
       font-weight: 400;
-      font-size: clamp(1.0rem, 5.5vmin, 2.0rem);
+      font-size: var(--kesson-h1-size);
       letter-spacing: clamp(0.15em, 1.2vmin, 0.5em);
       line-height: 1.6;
       margin-bottom: 0.6rem;
@@ -466,16 +521,16 @@
 
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tagline {
-      font-size: var(--ks-overlay-tagline, 0.85rem);
+      font-size: var(--kesson-overlay-tagline, 0.80rem);
       color: rgba(var(--color-heading), 0.75);
-      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      font-family: var(--kesson-font-serif-display);
       letter-spacing: 0.05em;
       line-height: 1.8;
       text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
     }
 
     .tagline-en {
-      font-size: var(--ks-overlay-tagline-en, 0.78rem);
+      font-size: var(--kesson-overlay-tagline-en, 0.80rem);
       color: rgba(var(--color-heading), 0.55);
       font-family: var(--kesson-font-serif-ui);
       letter-spacing: 0.03em;
@@ -628,18 +683,18 @@
     }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     #control-guide .guide-key {
-      font-size: var(--ks-control-guide, 0.75rem);
+      font-size: var(--kesson-control-guide, 0.80rem);
       color: rgba(var(--color-sub-text), 0.35);
       font-family: var(--kesson-font-mono-ui);
       letter-spacing: var(--kesson-letter-ui-tight);
       white-space: nowrap;
     }
     #control-guide .guide-sep {
-      font-size: clamp(0.3rem, 1.4vmin, 0.5rem);
+      font-size: 0.80rem;
       color: rgba(var(--color-sub-text), 0.2);
     }
     #control-guide .guide-action {
-      font-size: var(--ks-control-guide, 0.75rem);
+      font-size: var(--kesson-control-guide, 0.80rem);
       color: rgba(var(--color-sub-text), 0.3);
       font-family: var(--kesson-font-serif-ui);
       letter-spacing: var(--kesson-letter-ui-normal);
@@ -688,10 +743,9 @@
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     #devlog-gallery-header h2,
     .section-heading {
-      /* CHANGED(2026-03-07): #116 Bug #9 — デフォルト +3 step (0.75+0.3=1.05) */
-      font-size: var(--ks-section-heading, 1.05rem);
+      font-size: var(--kesson-section-heading, 0.80rem);
       font-weight: 400;
-      color: var(--kesson-action-text);
+      color: rgba(var(--color-sub-text), 0.5);
       letter-spacing: var(--kesson-letter-ui-heading);
       text-transform: uppercase;
       margin: 0;
@@ -790,19 +844,16 @@
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     .kesson-card .card-title {
       color: #fff;
-      font-size: var(--ks-card-title, 1.1rem);
+      font-size: var(--kesson-card-title, 0.8rem);
     }
-    .kesson-card .card-body small {
-      color: rgba(var(--color-heading), 0.5);
-      font-size: var(--ks-card-text, 1.0rem);
-    }
+    .kesson-card .card-body small,
     .kesson-card .card-text {
       color: rgba(var(--color-heading), 0.5);
-      font-size: var(--ks-card-text, 1.0rem);
+      font-size: var(--kesson-card-text, 0.8rem);
     }
     .kesson-card .kesson-card-summary {
       color: rgba(var(--color-sub-text), 0.76);
-      font-size: var(--ks-card-summary, 0.98rem);
+      font-size: var(--kesson-card-summary, 0.80rem);
       line-height: 1.45;
       display: -webkit-box;
       -webkit-box-orient: vertical;
@@ -829,8 +880,7 @@
       bottom: 24px;
       right: 24px;
       z-index: 20;
-      /* CHANGED(2026-03-07): #116 Bug #8 — font-size-ctrl 連動 */
-      font-size: var(--ks-surface-btn, 0.85rem);
+      font-size: var(--kesson-surface-btn, 0.80rem);
       letter-spacing: var(--kesson-letter-ui-wide);
       padding: 10px 18px;
       opacity: 0;
@@ -1235,11 +1285,11 @@
       color: var(--kesson-md-link-hover);
     }
     .md-body strong {
-      color: rgba(240, 245, 255, 0.95);
+      color: var(--kesson-md-strong);
       font-weight: 600;
     }
     .md-body em {
-      color: var(--kesson-md-quote);
+      color: var(--kesson-md-em);
     }
 
     /* --- code blocks (marked.js output) --- */
@@ -1339,17 +1389,17 @@
     }
     .topbar-font-btn {
       font-family: var(--kesson-font-mono-ui);
-      font-size: 0.65rem;
+      font-size: var(--kesson-topbar-credit-size, 0.80rem);
       letter-spacing: 0.08em;
       padding: 0.2rem 0.5rem;
       background: transparent;
-      border: 1px solid rgba(130, 170, 240, 0.2);
-      color: rgba(205, 220, 244, 0.7);
+      border: 1px solid var(--kesson-topbar-nav-border);
+      color: var(--kesson-topbar-link-color);
       line-height: 1.4;
     }
     .topbar-font-btn:hover:not(:disabled) {
-      background: rgba(120, 165, 240, 0.15);
-      color: rgba(236, 244, 255, 0.9);
+      background: var(--kesson-topbar-link-hover-bg);
+      color: var(--kesson-topbar-link-hover-color);
     }
     .topbar-font-btn:disabled {
       opacity: 0.3;
@@ -1673,14 +1723,17 @@
     }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tech-footer-line {
-      font-size: var(--ks-footer-line, 0.75rem);
+      font-size: var(--kesson-footer-line, 0.80rem);
       color: rgba(150, 175, 210, 0.25);
       font-family: var(--kesson-font-mono-ui);
       letter-spacing: 0.06em;
       line-height: 1.8;
     }
-    #footer-signature {
-      margin-top: 0.28rem;
-      color: rgba(178, 198, 228, 0.44);
-      letter-spacing: 0.08em;
+    .footer-signature {
+      margin-top: 0.55rem;
+      font-size: var(--kesson-footer-signature-size, 0.80rem);
+      color: rgba(195, 214, 241, 0.68);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
     }
