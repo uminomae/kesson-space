@@ -4,19 +4,19 @@
     --consciousness-ink: #d7efff;
     --consciousness-aura: #5ec8ff;
     --consciousness-deep: #040711;
-    --ks-topbar-bg-start: rgba(3, 11, 24, 0.85);
-    --ks-topbar-bg-end: rgba(3, 11, 24, 0.46);
-    --ks-topbar-border-color: rgba(94, 200, 255, 0.25);
-    --ks-topbar-divider-color: rgba(158, 217, 255, 0.42);
-    --ks-topbar-title-color: var(--consciousness-ink);
-    --ks-topbar-title-hover-color: var(--consciousness-ink);
-    --ks-topbar-subtitle-color: var(--consciousness-ink);
-    --ks-topbar-meta-color: var(--consciousness-ink);
-    --ks-topbar-meta-author-color: var(--consciousness-ink);
-    --ks-topbar-note-divider-color: rgba(94, 200, 255, 0.25);
-    --ks-topbar-note-color: var(--consciousness-ink);
-    --ks-topbar-link-hover-color: #9ed9ff;
-    --ks-topbar-link-hover-bg: rgba(94, 200, 255, 0.14);
+    --kesson-topbar-bg-start: rgba(3, 11, 24, 0.85);
+    --kesson-topbar-bg-end: rgba(3, 11, 24, 0.46);
+    --kesson-topbar-border-color: rgba(94, 200, 255, 0.25);
+    --kesson-topbar-divider-color: rgba(158, 217, 255, 0.42);
+    --kesson-topbar-title-color: var(--consciousness-ink);
+    --kesson-topbar-title-hover-color: var(--consciousness-ink);
+    --kesson-topbar-subtitle-color: var(--consciousness-ink);
+    --kesson-topbar-meta-color: var(--consciousness-ink);
+    --kesson-topbar-meta-author-color: var(--consciousness-ink);
+    --kesson-topbar-note-divider-color: rgba(94, 200, 255, 0.25);
+    --kesson-topbar-note-color: var(--consciousness-ink);
+    --kesson-topbar-link-hover-color: #9ed9ff;
+    --kesson-topbar-link-hover-bg: rgba(94, 200, 255, 0.14);
 }
 
 body {

@@ -2,12 +2,11 @@
 // CHANGED(2026-03-07): #114 — フォントサイズステップ制御 (-1〜+4, 1step = +0.1rem)
 
 const STEP_REM = 0.1;
-// CHANGED(2026-03-07): #116 Bug #9 — デフォルト +3, レンジ拡張
-const DEFAULT_STEP = 3;
+const DEFAULT_STEP = 0;
 const MIN_STEP = -1;
 const MAX_STEP = 7;
 const STORAGE_KEY = 'kesson-font-step';
-const MIGRATION_KEY = 'kesson-font-step-v2';
+const MIGRATION_KEY = 'kesson-font-step-v5';
 
 export const FONT_STEP_RANGE = {
   stepRem: STEP_REM,
@@ -18,25 +17,50 @@ export const FONT_STEP_RANGE = {
 
 export const FONT_STEP_CHANGE_EVENT = 'kesson:font-step-change';
 
-// 変更対象の CSS 変数と基底値のマップ
+// Global UI font sizes
 const FONT_VARS = {
-  '--kesson-font-size-ui-xs': 0.65,
-  '--kesson-font-size-ui-sm': 0.70,
+  '--kesson-font-size-ui-xs': 0.85,
+  '--kesson-font-size-ui-sm': 0.88,
 };
 
-// 直接指定クラスの基底値 (rem)
+// Component base values (rem)
 const CLASS_VARS = {
-  '--ks-section-heading':    0.75,
-  '--ks-card-title':         0.80,
-  '--ks-card-text':          0.70,
-  '--ks-card-summary':       0.68,
-  // Keep topbar menu typography on static theme tokens; issue #122's +3 default made it too large.
-  // navi 以外の追加対象
-  '--ks-overlay-tagline':    0.85,
-  '--ks-overlay-tagline-en': 0.78,
-  '--ks-control-guide':      0.45,
-  '--ks-footer-line':        0.45,
-  '--ks-surface-btn':        0.55,
+  // -- Card & section --
+  '--kesson-section-heading': 0.88,
+  '--kesson-card-title': 1.00,
+  '--kesson-card-text': 0.92,
+  '--kesson-card-summary': 0.92,
+
+  // -- Overlay & guide --
+  '--kesson-overlay-tagline': 0.92,
+  '--kesson-overlay-tagline-en': 0.88,
+  '--kesson-control-guide': 0.82,
+  '--kesson-surface-btn': 0.88,
+
+  // -- Footer --
+  '--kesson-footer-line': 0.82,
+  '--kesson-footer-signature-size': 0.88,
+
+  // -- Dev HUD --
+  '--kesson-dev-hud-font-size': 0.80,
+
+  // -- Topbar --
+  '--kesson-topbar-link-size': 0.88,
+  '--kesson-topbar-credit-size': 0.84,
+  '--kesson-topbar-note-size': 0.88,
+  '--kesson-topbar-meta-size': 0.86,
+  '--kesson-topbar-meta-author-size': 0.84,
+  '--kesson-topbar-subtitle-size-md': 0.88,
+  '--kesson-topbar-title-size': 0.88,
+  '--kesson-topbar-main-title-size': 1.04,
+  '--kesson-topbar-main-title-size-sm': 0.92,
+
+  // -- Graphic switcher --
+  '--kesson-graphic-switcher-label': 0.88,
+  '--kesson-graphic-switcher-btn': 0.88,
+
+  // -- Hero h1 --
+  '--kesson-h1-size': 1.10,
 };
 
 function normalizeStep(step) {

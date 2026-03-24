@@ -428,7 +428,7 @@ def list_models() -> str:
 IMAGE_OUTPUT_DIR = Path(__file__).parent.parent / "generated_images"
 
 # 画像生成モデル
-IMAGE_MODEL = "gemini-2.0-flash-exp-image-generation"
+IMAGE_MODEL = "gemini-2.5-flash-image"
 IMAGE_COST_PER_CALL = 0.5  # 円/回（推定）
 
 

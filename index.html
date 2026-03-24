@@ -23,6 +23,7 @@
   <!-- Bootstrap CSS (for devlog offcanvas + lightbox) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/slides.css">
 
   <!-- FIX: Google Fonts — Noto Serif JP (高品質明朝体) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,7 +50,7 @@
   <div id="canvas-container"></div>
 
   <!-- Top menu bar (Bootstrap navbar) -->
-  <header id="kesson-topbar" class="navbar navbar-expand-md navbar-dark" aria-label="Main menu">
+  <header id="kesson-topbar" class="navbar navbar-expand-xl navbar-dark" aria-label="Main menu">
     <div class="container-fluid px-3 px-md-4">
       <div class="topbar-brand-wrap">
         <a id="topbar-main-title"
@@ -71,24 +72,25 @@
       <div class="collapse navbar-collapse justify-content-end" id="kessonTopbarNav">
         <ul class="navbar-nav align-items-md-center gap-md-1">
           <li class="nav-item">
-            <a class="nav-link topbar-link" href="../creation-space/">Creation</a>
+            <a class="nav-link topbar-link" href="../creation-space/">CREATION</a>
           </li>
           <li class="nav-item">
-            <button type="button"
-                    class="nav-link topbar-link topbar-link-btn"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#articlesOffcanvas"
-                    aria-controls="articlesOffcanvas">
-              ARTICLES
-            </button>
+            <a id="topbar-awareness-link"
+               class="nav-link topbar-link"
+               href="../awareness-space/"
+               aria-label="AWARENESS — 欠損駆動思考の気づき空間">
+              AWARENESS
+            </a>
           </li>
           <li class="nav-item">
-            <button type="button"
-                    id="topbar-devlog-btn"
-                    class="nav-link topbar-link topbar-link-btn"
-                    aria-controls="devlogOffcanvas">
-              DEVLOG
-            </button>
+            <a id="topbar-blog-link"
+               class="nav-link topbar-link"
+               href="https://uminomae.github.io/pjdhiro/dialogueCreation/"
+               target="_blank"
+               rel="noopener"
+               aria-label="BLOG: 創造とは？">
+              BLOG
+            </a>
           </li>
           <li class="nav-item">
             <div class="btn-group btn-group-sm topbar-font-size-ctrl" role="group" aria-label="文字サイズ調整">
@@ -152,12 +154,6 @@
     <span>scroll</span>
   </div>
 
-  <!-- creation-space導線（右中央固定） -->
-  <a id="right-creation-link" href="/creation-space/" aria-label="creation-spaceへ移動">
-    <span id="right-creation-link-label">創造とは</span>
-    <span class="arrow" aria-hidden="true">▾</span>
-  </a>
-
   <!-- 潜水スペーサー（カメラ下降のスクロール余白） -->
   <div id="hero-spacer"></div>
   <!-- Articles出現タイミング調整スペーサー -->
@@ -168,7 +164,26 @@
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">GUIDES</h2>
-        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3"></div>
+        <!-- CHANGED(2026-03-24): #160 — Overview card (same size as guide cards) -->
+        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3">
+          <div class="col">
+            <article class="card kesson-card h-100 overview-slide-card"
+                     id="slide-test-btn"
+                     role="button" tabindex="0"
+                     aria-label="Overview スライドを表示">
+              <div class="overview-card-thumb">
+                <span class="overview-card-thumb-text">Overview</span>
+              </div>
+              <div class="card-body p-2 p-md-3 d-flex flex-column gap-1">
+                <h3 class="card-title mb-1">
+                  全体像
+                  <span class="overview-card-badge">test</span>
+                </h3>
+                <p class="card-text">欠損駆動思考の全体像をスライドで概観する。</p>
+              </div>
+            </article>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -211,19 +226,6 @@
     </div>
   </section>
 
-  <!-- Creation Cards Section -->
-  <section id="creation-cards-section">
-    <div class="section-content-wrap">
-      <div class="container">
-        <h2 class="section-heading">
-          <span id="creation-cards-heading">Three.js</span>
-        </h2>
-        <div id="creation-cards-error" class="d-none"></div>
-        <div id="creation-cards-grid" class="row g-3"></div>
-      </div>
-    </div>
-  </section>
-
   <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
   <section id="devlog-gallery-section">
     <div class="section-content-wrap">
@@ -241,8 +243,8 @@
   <footer id="tech-footer">
     <div class="tech-footer-line">GitHub Pages</div>
     <div class="tech-footer-line">Vanilla JS · ES Modules</div>
-    <div class="tech-footer-line">Three.js · Bootstrap</div>
-    <div class="tech-footer-line" id="footer-signature">Project Designer: pjdhiro</div>
+    <div class="tech-footer-line">Bootstrap</div>
+    <div id="footer-signature" class="footer-signature">Project Designer: pjdhiro</div>
   </footer>
 
   <!-- Bootstrap Offcanvas（右からスライドイン） -->
@@ -304,23 +306,6 @@
     </div>
   </div>
 
-  <!-- Three.js Offcanvas -->
-  <div class="offcanvas offcanvas-end offcanvas-kesson"
-       tabindex="-1"
-       id="creationOffcanvas"
-       data-bs-backdrop="true">
-    <div class="offcanvas-header border-bottom border-secondary">
-      <div>
-        <h5 class="text-light mb-0 offcanvas-title-spaced text-uppercase">Three.js</h5>
-      </div>
-      <button type="button" class="btn-close btn-close-white"
-              data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body p-3">
-      <div id="offcanvas-creation-grid" class="row g-3"></div>
-    </div>
-  </div>
-
   <!-- Image Lightbox Modal -->
   <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -335,6 +320,20 @@
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
 
   <script type="module" src="./src/pages/e2e-auto-run.js"></script>
+
+  <!-- Slide viewer launcher — CHANGED(2026-03-24) switched to rich-slides (iframe of pre-generated HTML) -->
+  <script type="module">
+    const btn = document.getElementById('slide-test-btn');
+    if (btn) {
+      btn.addEventListener('click', async () => {
+        const { openRichSlideViewer } = await import('./src/slide-viewer.js');
+        openRichSlideViewer({
+          htmlUrl: './content/guides/meta-overview.html',
+          title: '欠損駆動思考 — 全体像'
+        });
+      });
+    }
+  </script>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

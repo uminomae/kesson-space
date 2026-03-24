@@ -12,7 +12,8 @@ import { bootstrapMainScene } from './main/bootstrap.js';
 import { applyPageLanguage, initLanguageListeners } from './main/page-language.js';
 import { attachResizeHandler, createNavMeshFinder, startRenderLoop } from './main/render-loop.js';
 import { getOrbScreenData, refreshNavLanguage, updateNavLabels, updateXLogo, updateXLogoLabel } from './nav-objects.js';
-import { refreshDevlogLanguage } from './devlog/devlog.js';
+// CHANGED(2026-03-24): #151 — Devlog feature hidden; skip initialization to avoid unnecessary resource loading
+// import { refreshDevlogLanguage } from './devlog/devlog.js';
 import { initLangToggle } from './lang-toggle.js';
 import { initMobileNavAutoCollapse } from './main/mobile-nav.js';
 import { initTopbarConsole } from './topbar-console.js';
@@ -22,7 +23,6 @@ import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
-import { refreshCreationCardsLanguage } from './pages/creation-cards-section.js';
 import { initGuides, setGuidesLanguage } from './guides.js';
 import { createSdfEntity } from './sdf-entity.js';
 
@@ -67,9 +67,10 @@ if (DEV_MODE) {
 initLanguageListeners({
     refreshGuideLang,
     refreshNavLanguage,
-    refreshDevlogLanguage,
+    // CHANGED(2026-03-24): #151 — Devlog hidden; skip language refresh
+    // refreshDevlogLanguage,
+    refreshDevlogLanguage: () => {},
     refreshArticlesLanguage,
-    refreshCreationCardsLanguage,
     refreshGuidesLanguage: () => setGuidesLanguage(detectLang()),
 });
 
