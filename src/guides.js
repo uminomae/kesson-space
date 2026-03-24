@@ -300,6 +300,40 @@ function renderFeatureCards() {
     const strings = getStrings(state.lang);
     state.dom.featureCards.innerHTML = '';
 
+    // CHANGED(2026-03-25): #161 — Overview slide card (separate row above guide cards)
+    const overviewRow = document.getElementById('guides-overview-row');
+    if (overviewRow) {
+        overviewRow.innerHTML = '';
+        const overviewCard = document.createElement('article');
+        overviewCard.className = 'card kesson-card overview-slide-card';
+        overviewCard.id = 'slide-test-btn';
+        overviewCard.setAttribute('role', 'button');
+        overviewCard.setAttribute('tabindex', '0');
+        overviewCard.setAttribute('aria-label', 'Overview スライドを表示');
+
+        const overviewThumb = document.createElement('div');
+        overviewThumb.className = 'overview-card-thumb';
+        const overviewThumbText = document.createElement('span');
+        overviewThumbText.className = 'overview-card-thumb-text';
+        overviewThumbText.textContent = 'Overview';
+        overviewThumb.appendChild(overviewThumbText);
+
+        const overviewBody = document.createElement('div');
+        overviewBody.className = 'card-body p-2 p-md-3 d-flex flex-column gap-1';
+        const overviewTitle = document.createElement('h3');
+        overviewTitle.className = 'card-title mb-1';
+        overviewTitle.innerHTML = '全体像 <span class="overview-card-badge">test</span>';
+        const overviewDesc = document.createElement('p');
+        overviewDesc.className = 'card-text';
+        overviewDesc.textContent = '欠損駆動思考の全体像をスライドで概観する。';
+        overviewBody.appendChild(overviewTitle);
+        overviewBody.appendChild(overviewDesc);
+
+        overviewCard.appendChild(overviewThumb);
+        overviewCard.appendChild(overviewBody);
+        overviewRow.appendChild(overviewCard);
+    }
+
     const fragment = document.createDocumentFragment();
     GUIDE_LINKS.forEach((guide) => {
         const featureText = strings.features[guide.key];

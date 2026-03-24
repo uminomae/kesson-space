@@ -211,16 +211,24 @@ export function openRichSlideViewer({ htmlUrl, title = '' }) {
         iframe.setAttribute('loading', 'lazy');
         stage.appendChild(iframe);
 
-        // Focus iframe once loaded so keyboard nav works inside it
+        // Focus iframe once loaded; inject Esc listener into iframe
         iframe.addEventListener('load', () => {
-            try { iframe.contentWindow.focus(); } catch (_) { /* cross-origin */ }
+            try {
+                iframe.contentWindow.focus();
+                // Inject Escape key handler into iframe so it works even when iframe has focus
+                iframe.contentWindow.document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        window.parent.postMessage({ type: 'slide-viewer-close' }, '*');
+                    }
+                });
+            } catch (_) { /* cross-origin — fallback to blur detection below */ }
         });
 
         overlayNode.classList.add('visible');
         overlayNode.setAttribute('aria-label', title || 'Rich Slides');
         setBodyScrollLock(true);
 
-        // Only handle Escape at the parent level
+        // Handle Escape at the parent level (works when parent has focus)
         const richKeyHandler = (event) => {
             if (event.key === 'Escape') {
                 window.removeEventListener('keydown', richKeyHandler);
@@ -228,6 +236,16 @@ export function openRichSlideViewer({ htmlUrl, title = '' }) {
             }
         };
         window.addEventListener('keydown', richKeyHandler);
+
+        // Handle postMessage from iframe Escape key
+        const messageHandler = (event) => {
+            if (event.data && event.data.type === 'slide-viewer-close') {
+                window.removeEventListener('message', messageHandler);
+                window.removeEventListener('keydown', richKeyHandler);
+                closeSlideViewer();
+            }
+        };
+        window.addEventListener('message', messageHandler);
     } catch (err) {
         console.error('[slide-viewer] rich slide ERROR:', err);
     }
