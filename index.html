@@ -164,14 +164,26 @@
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">GUIDES</h2>
-        <!-- Slide test button -->
-        <div class="text-center mb-4">
-          <button type="button" id="slide-test-btn" class="slide-launch-btn">
-            <span class="slide-launch-label">Overview</span>
-            <span class="slide-launch-badge">test</span>
-          </button>
+        <!-- CHANGED(2026-03-24): #160 — Overview card (same size as guide cards) -->
+        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3">
+          <div class="col">
+            <article class="card kesson-card h-100 overview-slide-card"
+                     id="slide-test-btn"
+                     role="button" tabindex="0"
+                     aria-label="Overview スライドを表示">
+              <div class="overview-card-thumb">
+                <span class="overview-card-thumb-text">Overview</span>
+              </div>
+              <div class="card-body p-2 p-md-3 d-flex flex-column gap-1">
+                <h3 class="card-title mb-1">
+                  全体像
+                  <span class="overview-card-badge">test</span>
+                </h3>
+                <p class="card-text">欠損駆動思考の全体像をスライドで概観する。</p>
+              </div>
+            </article>
+          </div>
         </div>
-        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3"></div>
       </div>
     </div>
   </section>
