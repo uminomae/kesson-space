@@ -164,26 +164,8 @@
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">GUIDES</h2>
-        <!-- CHANGED(2026-03-24): #160 — Overview card (same size as guide cards) -->
-        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3">
-          <div class="col">
-            <article class="card kesson-card h-100 overview-slide-card"
-                     id="slide-test-btn"
-                     role="button" tabindex="0"
-                     aria-label="Overview スライドを表示">
-              <div class="overview-card-thumb">
-                <span class="overview-card-thumb-text">Overview</span>
-              </div>
-              <div class="card-body p-2 p-md-3 d-flex flex-column gap-1">
-                <h3 class="card-title mb-1">
-                  全体像
-                  <span class="overview-card-badge">test</span>
-                </h3>
-                <p class="card-text">欠損駆動思考の全体像をスライドで概観する。</p>
-              </div>
-            </article>
-          </div>
-        </div>
+        <!-- CHANGED(2026-03-25): #161 — Overview card is now rendered dynamically by guides.js -->
+        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3"></div>
       </div>
     </div>
   </section>
@@ -321,18 +303,17 @@
 
   <script type="module" src="./src/pages/e2e-auto-run.js"></script>
 
-  <!-- Slide viewer launcher — CHANGED(2026-03-24) switched to rich-slides (iframe of pre-generated HTML) -->
+  <!-- Slide viewer launcher — CHANGED(2026-03-25): #161 — use event delegation (card is dynamically created by guides.js) -->
   <script type="module">
-    const btn = document.getElementById('slide-test-btn');
-    if (btn) {
-      btn.addEventListener('click', async () => {
-        const { openRichSlideViewer } = await import('./src/slide-viewer.js');
-        openRichSlideViewer({
-          htmlUrl: './content/guides/meta-overview.html',
-          title: '欠損駆動思考 — 全体像'
-        });
+    document.addEventListener('click', async (e) => {
+      const card = e.target.closest('#slide-test-btn');
+      if (!card) return;
+      const { openRichSlideViewer } = await import('./src/slide-viewer.js');
+      openRichSlideViewer({
+        htmlUrl: './content/guides/meta-overview.html',
+        title: '欠損駆動思考 — 全体像'
       });
-    }
+    });
   </script>
 
   <!-- Bootstrap JS -->
