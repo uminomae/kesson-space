@@ -135,8 +135,6 @@ status: draft
 - **設計者向け** — 設計判断と運用視点で読む
 - **専門家向け** — 理論比較と検証観点を含む
 
-> ガイド: [pjdhiro/kesson](https://uminomae.github.io/pjdhiro/assets/kesson/)
-
 ---
 
 <!-- layout: conclusion -->
