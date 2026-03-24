@@ -124,7 +124,61 @@ GUIDES
 
 ---
 
-## 4. 禁止事項
+## 4. コンテンツ制作ワークフロー
+
+### 4.1 パイプライン全体像
+
+```
+構想・探索（本セクション）
+    ↓
+ドラフト（Markdown, layout ヒント付き）
+    ↓
+生成（generate-rich-slides.py）
+    ↓
+自己完結 HTML（16:9, CSS/JS インライン）
+    ↓
+表示（openRichSlideViewer → iframe）
+```
+
+### 4.2 構想から生成までの軌跡
+
+| ステップ | 成果物 | 参照先 |
+|---|---|---|
+| **構想**: 論の構造を設計 | 本憲章 §1-3 | `docs/CHARTER-guides.md` |
+| **探索**: 理論的裏付けを調査 | 探索メモ | `docs/exploration-trust-hypothesis.md` (#147) |
+| **ドラフト**: スライド原稿を執筆 | presentation MD | `content/guides/meta-overview.md` |
+| **生成ルール**: デザインスペック | HTML シェル + CSS | `docs/rich-slides-design-spec.md` |
+| **生成**: Python スクリプト | 自己完結 HTML | `scripts/generate-rich-slides.py` |
+| **スキル**: LLM 向けスライド生成手順 | SKILL.md | `skills/rich-slides/SKILL.md` |
+
+### 4.3 ドラフト作成の原則
+
+- 憲章 §1-3 の論の構造に従う（問い → D1+D2 → 創造的構え → 外部参照 → 帰結）
+- `---` で区切った Markdown がそのまま1スライド
+- `<!-- layout: TYPE -->` で配置ヒントを付与（title, data, split, quote, conclusion）
+- 外部参照は URL を記載（コンテンツ複製禁止）
+- 探索メモ（#147 等）の確定事項のみドラフトに反映、未確定は含めない
+
+### 4.4 生成コマンド
+
+```bash
+python3 scripts/generate-rich-slides.py content/guides/meta-overview.md
+# → content/guides/meta-overview.html (自己完結 HTML)
+```
+
+### 4.5 Issue との関係
+
+| Issue | 役割 | 依存 |
+|---|---|---|
+| #143 (epic) | GUIDES 再構成の全体管理 | — |
+| #144 | rich-slides 基盤移植 | — |
+| #145 | メタスライド初版（ドラフト内容の精緻化） | #144 |
+| #146 | GUIDES UI 導線 | #145 |
+| #147 | 信頼仮説の探索（ドラフトの理論的裏付け） | 独立 |
+
+---
+
+## 5. 禁止事項
 
 - D1-D4 を「4つの仮説」として提示すること（出発点であって仮説ではない）
 - creation-space の調査結果を kesson-space 内に丸コピーすること
@@ -133,7 +187,7 @@ GUIDES
 
 ---
 
-## 5. 参照リポジトリ
+## 6. 参照リポジトリ
 
 | リポジトリ | 役割 | 参照する内容 |
 |---|---|---|

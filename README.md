@@ -298,6 +298,25 @@ main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→
 
 → [docs/README.md](docs/README.md)
 
+### GUIDES コンテンツ制作
+
+GUIDES スライドの構想からデプロイまでのワークフロー。
+
+| 工程 | ファイル | 説明 |
+|---|---|---|
+| **憲章** | [docs/CHARTER-guides.md](docs/CHARTER-guides.md) | 論の構造・外部参照方針・ワークフロー全体 |
+| **探索メモ** | [docs/exploration-trust-hypothesis.md](docs/exploration-trust-hypothesis.md) | 理論的裏付けの調査記録 (#147) |
+| **ドラフト** | `content/guides/*.md` | スライド原稿（Markdown + layout ヒント） |
+| **デザインスペック** | [docs/rich-slides-design-spec.md](docs/rich-slides-design-spec.md) | HTML シェル・CSS トークン |
+| **生成スクリプト** | `scripts/generate-rich-slides.py` | MD → 自己完結 HTML |
+| **生成スキル** | [skills/rich-slides/SKILL.md](skills/rich-slides/SKILL.md) | LLM 向けスライド生成手順 |
+| **Issue 管理** | [#143](https://github.com/uminomae/kesson-space/issues/143) | epic: GUIDES 再構成 |
+
+```bash
+# スライド生成
+python3 scripts/generate-rich-slides.py content/guides/meta-overview.md
+```
+
 ---
 
 ## 開発
