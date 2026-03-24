@@ -955,18 +955,10 @@
     /* CHANGED(2026-03-07): #116 Bug #7 — guides-section を他セクションと統一 */
     #guides-section,
     #articles-section,
-    #creation-cards-section,
     #devlog-gallery-section {
       position: relative;
       z-index: 5;
     }
-    #creation-cards-section {
-      padding-bottom: 2.2rem;
-    }
-    #creation-cards-grid {
-      margin-top: var(--kesson-section-grid-margin-top);
-    }
-
     /* Section content wrapper (shared by articles + devlog heading areas) */
     .section-content-wrap {
       position: relative;
@@ -1003,66 +995,9 @@
       outline-offset: 4px;
     }
 
-    #articles-error,
-    #creation-cards-error {
+    #articles-error {
       color: var(--kesson-error-color);
       font-size: var(--kesson-error-size);
-    }
-
-    .creation-link-card {
-      overflow: hidden;
-      background-color: rgba(20, 25, 40, 0.9) !important;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-    .creation-link-card:hover {
-      box-shadow: var(--kesson-card-shadow-rich);
-      border-color: var(--kesson-card-border-strong);
-    }
-    .creation-link-card.is-coming-soon {
-      cursor: default;
-      border-style: dashed;
-    }
-    .creation-link-card.is-coming-soon:hover {
-      transform: none;
-      box-shadow: var(--kesson-card-shadow-soft);
-      border-color: var(--kesson-card-border);
-    }
-    .creation-link-card.is-coming-soon small {
-      color: rgba(var(--color-sub-text), 0.42);
-    }
-    .creation-card-thumb {
-      aspect-ratio: 16 / 9;
-      border-bottom: 1px solid rgba(var(--color-accent), 0.05);
-      overflow: hidden;
-      background: rgba(10, 15, 30, 0.6);
-    }
-    .creation-card-thumb-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .creation-card-placeholder-thumb {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .creation-card-placeholder-thumb::after {
-      content: attr(data-label);
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      color: rgba(var(--color-sub-text), 0.24);
-      font-family: var(--kesson-font-mono-ui);
-    }
-    .creation-link-card .card-title {
-      color: rgba(var(--color-highlight), 0.92);
-      font-family: var(--kesson-font-serif-display);
-      letter-spacing: 0.04em;
-    }
-    .creation-link-card .card-text {
-      color: rgba(var(--color-sub-text), 0.64);
-      line-height: 1.6;
     }
 
     /* Offcanvas panel — kesson dark theme */

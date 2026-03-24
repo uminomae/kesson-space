@@ -16,10 +16,6 @@ export function applyPageLanguage(lang) {
     if (creditCollab) creditCollab.textContent = strings.credit;
     const creditSig = document.getElementById('footer-signature');
     if (creditSig) creditSig.textContent = strings.creditSignature;
-    const creationCardsHeading = document.getElementById('creation-cards-heading');
-    if (creationCardsHeading && strings.creationCardsHeading) {
-        creationCardsHeading.textContent = strings.creationCardsHeading;
-    }
 
     const taglineContainer = document.getElementById('taglines');
     if (taglineContainer && strings.taglines) {
@@ -43,7 +39,6 @@ export function initLanguageListeners({
     refreshNavLanguage = () => {},
     refreshDevlogLanguage = () => {},
     refreshArticlesLanguage = () => {},
-    refreshCreationCardsLanguage = () => {},
     refreshGuidesLanguage = () => {},
 } = {}) {
     window.addEventListener(LANG_CHANGE_EVENT, (event) => {
@@ -53,7 +48,6 @@ export function initLanguageListeners({
         refreshNavLanguage();
         refreshDevlogLanguage();
         refreshArticlesLanguage();
-        refreshCreationCardsLanguage();
         refreshGuidesLanguage();
     });
 }
