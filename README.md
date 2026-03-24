@@ -304,13 +304,24 @@ GUIDES スライドの構想からデプロイまでのワークフロー。
 
 | 工程 | ファイル | 説明 |
 |---|---|---|
-| **憲章** | [docs/CHARTER-guides.md](docs/CHARTER-guides.md) | 論の構造・外部参照方針・ワークフロー全体 |
+| **憲章** | [docs/CHARTER-guides.md](docs/CHARTER-guides.md) | 論の構造・外部参照方針 |
+| **生成ルール** | [transform/rules/slide-content-rules.md](transform/rules/slide-content-rules.md) | コンテンツの書き方・禁止事項・レビューチェックリスト |
+| **変換層 README** | [transform/README.md](transform/README.md) | パイプライン全体 + エージェントチーム構成 |
 | **探索メモ** | [docs/exploration-trust-hypothesis.md](docs/exploration-trust-hypothesis.md) | 理論的裏付けの調査記録 (#147) |
 | **ドラフト** | `content/guides/*.md` | スライド原稿（Markdown + layout ヒント） |
 | **デザインスペック** | [docs/rich-slides-design-spec.md](docs/rich-slides-design-spec.md) | HTML シェル・CSS トークン |
 | **生成スクリプト** | `scripts/generate-rich-slides.py` | MD → 自己完結 HTML |
 | **生成スキル** | [skills/rich-slides/SKILL.md](skills/rich-slides/SKILL.md) | LLM 向けスライド生成手順 |
 | **Issue 管理** | [#143](https://github.com/uminomae/kesson-space/issues/143) | epic: GUIDES 再構成 |
+
+### スキル実行の原則
+
+**重要なスキルはサブエージェントまたはエージェントチームで実行する。**
+
+スライド生成のエージェントチーム構成:
+1. **ドラフトエージェント**: `transform/rules/slide-content-rules.md` に従い Markdown を執筆
+2. **生成エージェント**: `scripts/generate-rich-slides.py` で HTML 化
+3. **レビューエージェント**: 内部記号・自己啓発調・過大主張がないかチェック
 
 ```bash
 # スライド生成
