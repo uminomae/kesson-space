@@ -8,6 +8,39 @@
 
 ---
 
+## 🔴🔴🔴 自己完結原則（Self-Containment Principle）
+
+**本リポジトリはルール・ガード・品質基準をすべて自リポジトリ内に持ち、外部リポジトリに依存しない。**
+
+### 不足時のフォールバックチェーン
+
+```
+kesson-space に不足がある場合:
+  1. creation-space を参照し、模倣・移植する
+  2. creation-space にもなければ kesson-driven-thinking を参照する
+  3. 見つけた場合、kesson-space 用に適応して移植する
+```
+
+### 対象となるルール資産
+
+| カテゴリ | パス | 参照元（優先順） |
+|---|---|---|
+| Claude ルール | `.claude/rules/` | creation-space → kesson-driven-thinking |
+| フック（自動ガード） | `.claude/hooks/` + `hooks.json` | creation-space → kesson-driven-thinking |
+| カスタムエージェント | `.claude/agents/` | creation-space |
+| LLM ナビゲーション | `llms.txt` | creation-space → kesson-driven-thinking |
+| 品質管理基準 | `docs/quality-management.md` | creation-space → kesson-driven-thinking |
+| ガーディアンマトリクス | `docs/guardian-matrix.md` | creation-space → kesson-driven-thinking |
+| 学習記録 | `docs/lessons/` | creation-space |
+
+### 移植ルール
+
+- 丸コピーではなく、kesson-space の技術スタック（Three.js, ES Modules, GitHub Pages）に適応する
+- 既に CLAUDE.md / AGENTS.md / docs/ に同等の記述がある場合は重複させず、既存を優先する
+- 移植したファイルには冒頭に `<!-- Ported from: {source-repo} ({date}) -->` を付与する
+
+---
+
 ## 🔴🔴🔴 最重要ルール: 委譲完了後フロー（絶対遵守）
 
 **Code / Codex / Gemini 等の委譲先エージェントから実装完了の報告があったら、DTは以下のフローを必ず実行する。例外なし。**
