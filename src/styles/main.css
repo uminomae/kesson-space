@@ -1773,3 +1773,14 @@
       font-size: 0.68rem;
       letter-spacing: 0.08em;
     }
+
+    /* ============================
+       CHANGED(2026-03-24): #151 — Devlog feature hidden via CSS
+       HTML is preserved for future restoration.
+       ============================ */
+    #devlog-gallery-section {
+      display: none !important;
+    }
+    #devlogOffcanvas {
+      display: none !important;
+    }

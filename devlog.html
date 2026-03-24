@@ -15,6 +15,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&amp;display=swap" rel="stylesheet">
 
   <style>
+    /* CHANGED(2026-03-24): #151 — Devlog feature hidden */
+    #content-overlay,
+    #bg-container { display: none !important; }
+    body::after {
+      content: 'This page is currently unavailable.';
+      display: block;
+      text-align: center;
+      padding: 4rem 1rem;
+      color: rgba(180, 200, 230, 0.6);
+      font-size: 1rem;
+    }
+
     :root {
       --overlay-bg-rgb: 5, 5, 8;
       --overlay-opacity-top: 0.3;
@@ -223,11 +235,11 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Three.js背景 -->
-  <script type="module" src="./src/pages/devlog-bg.js"></script>
+  <!-- CHANGED(2026-03-24): #151 — Devlog feature hidden; scripts disabled to prevent resource loading -->
+  <!-- <script type="module" src="./src/pages/devlog-bg.js"></script> -->
 
-  <!-- Devlogコンテンツローダー -->
-  <script type="module">
+  <!-- Devlogコンテンツローダー (disabled: #151) -->
+  <!-- <script type="module">
     import { marked } from 'marked';
     import DOMPurify from 'dompurify';
 
@@ -471,6 +483,6 @@
     }
 
     loadSession();
-  </script>
+  </script> -->
 </body>
 </html>
