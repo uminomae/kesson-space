@@ -339,16 +339,16 @@
 
   <script type="module" src="./src/pages/e2e-auto-run.js"></script>
 
-  <!-- Slide viewer launcher -->
+  <!-- Slide viewer launcher — CHANGED(2026-03-24) switched to rich-slides (iframe of pre-generated HTML) -->
   <script type="module">
     const btn = document.getElementById('slide-test-btn');
     if (btn) {
       btn.addEventListener('click', async () => {
-        const { openSlideViewer } = await import('./src/slide-viewer.js');
-        const res = await fetch('./content/guides/meta-overview.md');
-        if (!res.ok) return;
-        const markdownText = await res.text();
-        openSlideViewer({ markdownText, title: '欠損駆動思考 — 全体像 [TEST]' });
+        const { openRichSlideViewer } = await import('./src/slide-viewer.js');
+        openRichSlideViewer({
+          htmlUrl: './content/guides/meta-overview.html',
+          title: '欠損駆動思考 — 全体像'
+        });
       });
     }
   </script>

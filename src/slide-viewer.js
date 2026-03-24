@@ -174,6 +174,65 @@ export async function openSlideViewer({ markdownText, title = '', mdBaseUrl }) {
     }
 }
 
+// CHANGED(2026-03-24) — ported openRichSlideViewer from creation-space
+/**
+ * Open a pre-generated rich HTML slide deck inside the overlay via iframe.
+ * The rich HTML file has its own navigation, so we hide the parent toolbar.
+ *
+ * @param {Object} options
+ * @param {string} options.htmlUrl - URL of the rich HTML slide file
+ * @param {string} [options.title] - Title for the overlay aria-label
+ */
+export function openRichSlideViewer({ htmlUrl, title = '' }) {
+    if (!htmlUrl) return;
+
+    try {
+        if (!overlayNode) {
+            overlayNode = createOverlay();
+        }
+
+        const stage = getOverlayPart('.slide-viewer-stage');
+        if (!stage) return;
+
+        stage.innerHTML = '';
+        slidesState = [];
+
+        // Hide parent toolbar — the rich HTML has its own nav
+        const toolbar = getOverlayPart('.slide-viewer-toolbar');
+        if (toolbar) {
+            toolbar.style.display = 'none';
+        }
+
+        // Create iframe that fills the frame
+        const iframe = document.createElement('iframe');
+        iframe.src = htmlUrl;
+        iframe.style.cssText = 'width:100%;height:100%;border:none;border-radius:inherit;';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('loading', 'lazy');
+        stage.appendChild(iframe);
+
+        // Focus iframe once loaded so keyboard nav works inside it
+        iframe.addEventListener('load', () => {
+            try { iframe.contentWindow.focus(); } catch (_) { /* cross-origin */ }
+        });
+
+        overlayNode.classList.add('visible');
+        overlayNode.setAttribute('aria-label', title || 'Rich Slides');
+        setBodyScrollLock(true);
+
+        // Only handle Escape at the parent level
+        const richKeyHandler = (event) => {
+            if (event.key === 'Escape') {
+                window.removeEventListener('keydown', richKeyHandler);
+                closeSlideViewer();
+            }
+        };
+        window.addEventListener('keydown', richKeyHandler);
+    } catch (err) {
+        console.error('[slide-viewer] rich slide ERROR:', err);
+    }
+}
+
 export function closeSlideViewer() {
     window.removeEventListener('keydown', onKeyDown);
     setBodyScrollLock(false);
