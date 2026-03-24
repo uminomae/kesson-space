@@ -20,7 +20,6 @@ const STRINGS = {
         ],
         credit: 'AIとの協働で探索中',
         creditSignature: 'Project Designer: pjdhiro',
-        creationCardsHeading: 'Three.js',
         nav: [
             { label: '一般向け', url: PDF_BASE_JA + 'kesson-general.pdf', pdfUrl: PDF_BASE_JA + 'kesson-general.pdf', draftUrl: DRAFT_BASE_JA + 'kesson-general.md' },
             { label: '設計者向け', url: PDF_BASE_JA + 'kesson-designer.pdf', pdfUrl: PDF_BASE_JA + 'kesson-designer.pdf', draftUrl: DRAFT_BASE_JA + 'kesson-designer.md' },
@@ -45,7 +44,6 @@ const STRINGS = {
         ],
         credit: 'Exploring with AI collaboration',
         creditSignature: 'Project Designer: pjdhiro',
-        creationCardsHeading: 'Three.js',
         nav: [
             { label: 'General', url: PDF_BASE_EN + 'kesson-general.pdf', pdfUrl: PDF_BASE_EN + 'kesson-general.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-general.md' },
             { label: 'For Designers', url: PDF_BASE_EN + 'kesson-designer.pdf', pdfUrl: PDF_BASE_EN + 'kesson-designer.pdf', draftUrl: DRAFT_BASE_EN + 'kesson-designer.md' },

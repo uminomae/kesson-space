@@ -23,7 +23,6 @@ import { breathConfig, liquidParams, toggles } from './config.js';
 import { initScrollUI, refreshGuideLang, updateScrollUI } from './scroll-ui.js';
 import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
-import { refreshCreationCardsLanguage } from './pages/creation-cards-section.js';
 import { initGuides, setGuidesLanguage } from './guides.js';
 import { createSdfEntity } from './sdf-entity.js';
 
@@ -72,7 +71,6 @@ initLanguageListeners({
     // refreshDevlogLanguage,
     refreshDevlogLanguage: () => {},
     refreshArticlesLanguage,
-    refreshCreationCardsLanguage,
     refreshGuidesLanguage: () => setGuidesLanguage(detectLang()),
 });
 
