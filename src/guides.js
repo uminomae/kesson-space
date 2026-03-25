@@ -53,6 +53,18 @@ const GUIDE_LINKS = [
     },
 ];
 
+// CHANGED(2026-03-25): #146 — External project links
+const EXTERNAL_LINKS = [
+    {
+        key: 'creation',
+        url: 'https://uminomae.github.io/creation-space/',
+    },
+    {
+        key: 'awareness',
+        url: 'https://uminomae.github.io/awareness-space/',
+    },
+];
+
 const STRINGS = {
     ja: {
         modalLoading: 'Markdown を読み込み中...',
@@ -81,6 +93,18 @@ const STRINGS = {
         },
         featureRead: '解説を表示',
         featurePdf: 'PDF',
+        // CHANGED(2026-03-25): #146 — External link card strings
+        externalLinks: {
+            creation: {
+                title: '30領域の調査',
+                description: '30の学問領域から欠損駆動思考を検証した調査記録です。',
+            },
+            awareness: {
+                title: '意識の構造分析',
+                description: '意識と無意識の関係を構造的に分析した記録です。',
+            },
+        },
+        externalOpen: '開く',
     },
     en: {
         modalLoading: 'Loading markdown...',
@@ -109,6 +133,18 @@ const STRINGS = {
         },
         featureRead: 'Open Guide',
         featurePdf: 'PDF',
+        // CHANGED(2026-03-25): #146 — External link card strings
+        externalLinks: {
+            creation: {
+                title: 'Survey Across 30 Domains',
+                description: 'Investigation records verifying kesson-driven thinking across 30 academic fields.',
+            },
+            awareness: {
+                title: 'Structural Analysis of Consciousness',
+                description: 'Records of structural analysis on the relationship between consciousness and the unconscious.',
+            },
+        },
+        externalOpen: 'Open',
     },
 };
 
@@ -126,6 +162,7 @@ const state = {
         mdModalContent: null,
         mdOpenPdf: null,
         mdCloseBtn: null,
+        externalLinks: null, // CHANGED(2026-03-25): #146
     },
 };
 
@@ -189,6 +226,7 @@ function cacheDom() {
     state.dom.mdModalContent = document.getElementById('guides-md-content');
     state.dom.mdOpenPdf = document.getElementById('guides-md-open-pdf');
     state.dom.mdCloseBtn = document.getElementById('guides-md-close-btn');
+    state.dom.externalLinks = document.getElementById('guides-external-links'); // CHANGED(2026-03-25): #146
 }
 
 function ensureMdModalInstance() {
@@ -388,8 +426,57 @@ function renderFeatureCards() {
     state.dom.featureCards.appendChild(fragment);
 }
 
+// CHANGED(2026-03-25): #146 — Render external project link cards
+function renderExternalLinks() {
+    if (!state.dom.externalLinks) return;
+
+    const strings = getStrings(state.lang);
+    state.dom.externalLinks.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    EXTERNAL_LINKS.forEach((link) => {
+        const text = strings.externalLinks[link.key];
+        if (!text) return;
+
+        const col = document.createElement('div');
+        col.className = 'col';
+
+        const card = document.createElement('a');
+        card.className = 'card kesson-card h-100 guides-external-card';
+        card.href = link.url;
+        card.target = '_blank';
+        card.rel = 'noopener';
+        card.setAttribute('aria-label', `${text.title} — ${strings.externalOpen}`);
+
+        const body = document.createElement('div');
+        body.className = 'card-body p-2 p-md-3 d-flex flex-column gap-1';
+
+        const title = document.createElement('h3');
+        title.className = 'card-title mb-1';
+        title.textContent = text.title;
+
+        const desc = document.createElement('p');
+        desc.className = 'card-text';
+        desc.textContent = text.description;
+
+        const openLabel = document.createElement('span');
+        openLabel.className = 'guides-external-open-label';
+        openLabel.textContent = strings.externalOpen + ' \u2197';
+
+        body.appendChild(title);
+        body.appendChild(desc);
+        body.appendChild(openLabel);
+        card.appendChild(body);
+        col.appendChild(card);
+        fragment.appendChild(col);
+    });
+
+    state.dom.externalLinks.appendChild(fragment);
+}
+
 function render() {
     renderFeatureCards();
+    renderExternalLinks(); // CHANGED(2026-03-25): #146
     if (state.dom.mdCloseBtn) {
         state.dom.mdCloseBtn.textContent = getStrings(state.lang).modalClose;
     }

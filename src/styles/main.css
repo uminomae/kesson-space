@@ -1715,6 +1715,35 @@
       font-weight: 400;
     }
 
+    /* CHANGED(2026-03-25): #146 — Question prompt in GUIDES section */
+    .guides-question-prompt {
+      color: rgba(var(--color-highlight), 0.72);
+      font-family: 'Noto Serif JP', serif;
+      font-size: clamp(0.92rem, 2vw, 1.15rem);
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      margin: 0.6rem 0 1rem;
+      text-align: center;
+    }
+
+    /* CHANGED(2026-03-25): #146 — External project link cards */
+    .guides-external-card {
+      text-decoration: none !important;
+    }
+    .guides-external-card:hover {
+      text-decoration: none !important;
+    }
+    .guides-external-open-label {
+      color: rgba(var(--color-sub-text), 0.55);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      margin-top: auto;
+      align-self: flex-end;
+    }
+    .guides-external-card:hover .guides-external-open-label {
+      color: rgba(var(--color-sub-text), 0.85);
+    }
+
     /* ============================
        CHANGED(2026-03-24): #151 — Devlog feature hidden via CSS
        HTML is preserved for future restoration.
