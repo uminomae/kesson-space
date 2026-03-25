@@ -62,6 +62,10 @@ if (DEV_MODE) {
     import('./dev-links-panel.js').then(({ initDevLinksPanel }) => {
         initDevLinksPanel();
     });
+    // CHANGED(2026-03-25): #169 — Dev hub panel (footer link + modal shortcuts)
+    import('./dev-hub-panel.js').then(({ initDevHubPanel }) => {
+        initDevHubPanel();
+    });
 }
 
 initLanguageListeners({
