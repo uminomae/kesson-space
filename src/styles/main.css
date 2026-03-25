@@ -755,11 +755,12 @@
     }
 
 
-    /* CHANGED(2026-03-25): #163 — AI disclaimer notice for GUIDES section */
+    /* CHANGED(2026-03-25): #163 — AI disclaimer notice for GUIDES section
+       Style matches creation-space .reports-ai-notice (except color) */
     .guides-ai-notice {
-      margin: 0.2rem 0 0.85rem;
+      margin: 0 0 .85rem;
       color: rgba(var(--color-sub-text), 0.6);
-      font-size: var(--kesson-font-size-ui-sm);
+      font-size: .8rem;
       letter-spacing: var(--kesson-letter-ui-tight);
       line-height: 1.45;
       font-family: var(--kesson-font-serif-ui);
