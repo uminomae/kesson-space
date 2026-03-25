@@ -102,6 +102,10 @@ function createPanel() {
 
     html += `
         </div>
+        <div class="dev-hub-section-label mt-3">Page Links</div>
+        <div class="dev-hub-link-list" id="dev-hub-page-links">
+          <span class="dev-hub-link-desc">Loading...</span>
+        </div>
         <div class="dev-hub-section-label mt-3">Dev Tools</div>
         <div class="dev-hub-link-list">
           <button type="button" class="dev-hub-link-btn" id="dev-hub-open-params" data-action="open-params">
@@ -134,6 +138,31 @@ function createPanel() {
         const action = btn.dataset.action;
         handleAction(action);
     });
+}
+
+// CHANGED(2026-03-25): #170 — Fetch page-links.json and render preset links in dev panel
+async function fetchPageLinks() {
+    const container = document.getElementById('dev-hub-page-links');
+    if (\!container) return;
+    try {
+        const res = await fetch('./assets/page-links.json');
+        if (\!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        const presets = data.presets || [];
+        container.innerHTML = '';
+        presets.forEach((preset) => {
+            const url = new URL(window.location.href);
+            url.search = preset.query;
+            const a = document.createElement('a');
+            a.className = 'dev-hub-link-btn';
+            a.href = url.toString();
+            a.innerHTML = `<span class="dev-hub-link-label">${preset.label}</span><span class="dev-hub-link-desc">?${preset.query}</span>`;
+            container.appendChild(a);
+        });
+    } catch (err) {
+        container.innerHTML = '<span class="dev-hub-link-desc">Failed to load page-links.json</span>';
+        console.warn('[dev-hub] page-links.json load error:', err);
+    }
 }
 
 async function handleAction(action) {
@@ -222,4 +251,5 @@ export function initDevHubPanel() {
     }
 
     createPanel();
+    fetchPageLinks();
 }

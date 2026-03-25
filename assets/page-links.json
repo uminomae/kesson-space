@@ -1,0 +1,9 @@
+{
+    "basePath": "",
+    "presets": [
+        { "label": "Guide: General", "path": "", "query": "guide=general" },
+        { "label": "Guide: Designer", "path": "", "query": "guide=designer" },
+        { "label": "Guide: Academic", "path": "", "query": "guide=academic" },
+        { "label": "Slide: Overview", "path": "", "query": "slide=overview" }
+    ]
+}
