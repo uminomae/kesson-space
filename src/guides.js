@@ -93,11 +93,11 @@ const STRINGS = {
         },
         featureRead: '解説を表示',
         featurePdf: 'PDF',
-        // CHANGED(2026-03-25): #146 — External link card strings
+        // CHANGED(2026-03-25): #168 — External link card strings
         externalLinks: {
             creation: {
-                title: '30領域の調査',
-                description: '30の学問領域から欠損駆動思考を検証した調査記録です。',
+                title: '創造とは', // CHANGED(2026-03-25)
+                description: '創造のモデルに対する調査の記録です。', // CHANGED(2026-03-25)
             },
             awareness: {
                 title: '意識の構造分析',
@@ -133,11 +133,11 @@ const STRINGS = {
         },
         featureRead: 'Open Guide',
         featurePdf: 'PDF',
-        // CHANGED(2026-03-25): #146 — External link card strings
+        // CHANGED(2026-03-25): #168 — External link card strings
         externalLinks: {
             creation: {
-                title: 'Survey Across 30 Domains',
-                description: 'Investigation records verifying kesson-driven thinking across 30 academic fields.',
+                title: 'What Is Creation', // CHANGED(2026-03-25)
+                description: 'Records of research into models of creation.', // CHANGED(2026-03-25)
             },
             awareness: {
                 title: 'Structural Analysis of Consciousness',
