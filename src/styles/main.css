@@ -754,6 +754,16 @@
       font-family: var(--kesson-font-mono-ui);
     }
 
+
+    /* CHANGED(2026-03-25): #163 — AI disclaimer notice for GUIDES section */
+    .guides-ai-notice {
+      margin: 0.2rem 0 0.85rem;
+      color: rgba(var(--color-sub-text), 0.6);
+      font-size: var(--kesson-font-size-ui-sm);
+      letter-spacing: var(--kesson-letter-ui-tight);
+      line-height: 1.45;
+      font-family: var(--kesson-font-serif-ui);
+    }
     /* Action controls */
     .btn-read-more,
     .articles-filter-btn,
