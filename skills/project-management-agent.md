@@ -138,7 +138,7 @@ Open Issues を次の順に分類する。
 | `WAIT_VISUAL` | `dev` 反映済み | 目視確認手順提示、停止待機 | `FIX_REQUIRED` or `READY_TO_MERGE_MAIN` |
 | `FIX_REQUIRED` | 目視NG | 同一Issueで修正指示書を発行 | `IN_PROGRESS` |
 | `READY_TO_MERGE_MAIN` | 目視OK | PR作成（`Closes #<issue>`） | `DONE` |
-| `DONE` | main取り込み完了 | Issueクローズ確認 | - |
+| `DONE` | main取り込み完了 | Issueクローズ確認、ワークツリー削除、featureブランチ削除 | - |
 
 `WAIT_VISUAL` 中は、同Issueの新規分析・新規指示書作成を禁止。
 

@@ -57,8 +57,11 @@ Agent 完了報告を受けたら、Main は以下を同一ターンで実行す
 1. 完了条件を Read / Grep / diff で検証する
 2. Issue コメントが投稿済みか確認する
 3. DONE ファイルの内容を確認する
-4. 必要なら `.cache/session/state.md` と `.cache/backlog.md` を更新する
-5. 必要なら Issue の追加処理を行う
+4. develop にマージし、push する
+5. Agent-WT のワークツリーを `git worktree remove` で削除する
+6. 不要になった feature ブランチを削除する（`git branch -d`）
+7. 必要なら `.cache/session/state.md` と `.cache/backlog.md` を更新する
+8. 必要なら Issue の追加処理を行う
 
 ## 怠った場合のリスク
 
