@@ -755,15 +755,21 @@
     }
 
 
-    /* CHANGED(2026-03-25): #166 — AI disclaimer notice for GUIDES section
-       Style matches creation-space .reports-ai-notice exactly */
-    .guides-ai-notice {
-      margin: 0 0 .85rem;
-      color: rgba(var(--color-sub-text), .78); /* CHANGED(2026-03-25) #166: 0.6 → .78 to match creation-space */
-      font-size: .8rem;
-      letter-spacing: var(--kesson-letter-ui-tight);
-      line-height: 1.45;
-      font-family: var(--kesson-font-serif-ui);
+    /* CHANGED(2026-03-25): #165 — AI notice as section-level heading outside container
+       Modeled on .section-heading (RESEARCH pattern from awareness-space) */
+    .guides-ai-notice-wrap {
+      position: relative;
+      z-index: 20;
+      padding: 1rem 1.5rem 0;
+    }
+    .guides-ai-notice-heading {
+      font-size: var(--kesson-section-heading, 0.80rem);
+      font-weight: 400;
+      color: rgba(var(--color-sub-text), 0.5);
+      letter-spacing: var(--kesson-letter-ui-heading);
+      text-transform: none;
+      margin: 0;
+      font-family: var(--kesson-font-mono-ui);
     }
     /* Action controls */
     .btn-read-more,
