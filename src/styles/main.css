@@ -1692,6 +1692,134 @@
       line-height: 1.5;
     }
 
+    /* CHANGED(2026-03-25): #169 — Footer dev link */
+    .footer-dev-link {
+      color: rgba(130, 170, 240, 0.45);
+      text-decoration: none;
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      pointer-events: auto;
+      transition: color 0.2s ease;
+    }
+    .footer-dev-link:hover {
+      color: rgba(170, 200, 255, 0.85);
+      text-decoration: none;
+    }
+
+    /* CHANGED(2026-03-25): #169 — Dev hub panel (slide-in from left) */
+    .dev-hub-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .dev-hub-backdrop.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dev-hub-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: min(360px, 88vw);
+      height: 100vh;
+      z-index: 1150;
+      background: rgba(7, 12, 24, 0.97);
+      border-right: 1px solid rgba(140, 178, 255, 0.2);
+      backdrop-filter: blur(14px);
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow-y: auto;
+      color: #d9e5ff;
+    }
+    .dev-hub-panel.is-open {
+      transform: translateX(0);
+    }
+    .dev-hub-panel::-webkit-scrollbar { width: 4px; }
+    .dev-hub-panel::-webkit-scrollbar-thumb {
+      background: rgba(140, 178, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .dev-hub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(140, 178, 255, 0.18);
+    }
+    .dev-hub-title {
+      font-size: 0.82rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.12em;
+      color: rgba(223, 236, 255, 0.95);
+    }
+    .dev-hub-close-btn {
+      background: none;
+      border: none;
+      color: rgba(180, 200, 255, 0.7);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .dev-hub-close-btn:hover {
+      color: rgba(220, 235, 255, 0.95);
+    }
+
+    .dev-hub-body {
+      padding: 12px 16px;
+    }
+    .dev-hub-section-label {
+      font-size: 0.65rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.1em;
+      color: rgba(150, 180, 220, 0.6);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .dev-hub-link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .dev-hub-link-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: rgba(14, 20, 38, 0.7);
+      border: 1px solid rgba(100, 140, 210, 0.18);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .dev-hub-link-btn:hover {
+      background: rgba(26, 40, 70, 0.7);
+      border-color: rgba(130, 170, 240, 0.35);
+      color: inherit;
+      text-decoration: none;
+    }
+    .dev-hub-link-label {
+      display: block;
+      font-size: 0.78rem;
+      font-family: var(--kesson-font-mono-ui);
+      color: rgba(200, 220, 255, 0.92);
+    }
+    .dev-hub-link-desc {
+      display: block;
+      font-size: 0.66rem;
+      color: rgba(160, 185, 220, 0.6);
+      margin-top: 2px;
+    }
+
     /* CHANGED(2026-03-24): #160 — Overview slide card (replaces pill button) */
     .overview-card-thumb {
       display: flex;

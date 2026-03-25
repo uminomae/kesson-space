@@ -501,3 +501,21 @@ export function setGuidesLanguage(lang) {
     state.lang = normalizeLang(lang);
     render();
 }
+
+// CHANGED(2026-03-25): #169 — Public API to open a guide modal by key (general/designer/academic)
+export function openGuideModal(key) {
+    const guide = GUIDE_LINKS.find((g) => g.key === key);
+    if (!guide) {
+        console.warn('[guides] Unknown guide key:', key);
+        return;
+    }
+    const lang = normalizeLang(state.lang);
+    const langLinks = guide.links[lang] || guide.links.ja;
+    const strings = getStrings(state.lang);
+    const featureText = strings.features[key];
+    openMarkdownModal({
+        mdUrl: langLinks.mdUrl,
+        title: featureText?.modalTitle || featureText?.title || key,
+        pdfUrl: langLinks.pdfUrl,
+    });
+}
