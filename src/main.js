@@ -55,6 +55,24 @@ initFontSizeCtrl();
 initScrollUI();
 initGuides({ lang: detectLang() });
 
+// CHANGED(2026-03-25): #170 — Query parameter direct access to modals
+(function handleQueryParams() {
+    const params = new URLSearchParams(window.location.search);
+    const guideKey = params.get('guide');
+    const slideKey = params.get('slide');
+    if (guideKey) {
+        import('./guides.js').then(({ openGuideModal }) => openGuideModal(guideKey));
+    }
+    if (slideKey === 'overview') {
+        import('./slide-viewer.js').then(({ openRichSlideViewer }) => {
+            openRichSlideViewer({
+                htmlUrl: './content/guides/meta-overview.html',
+                title: '欠損駆動思考 — 全体像',
+            });
+        });
+    }
+})();
+
 if (DEV_MODE) {
     import('./dev-panel.js').then(({ initDevPanel }) => {
         initDevPanel(applyDevValue);
