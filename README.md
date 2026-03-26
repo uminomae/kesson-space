@@ -4,6 +4,27 @@
 
 ---
 
+## Overview (English)
+
+**Kesson-Driven Thinking** is a thinking framework that treats discarded errors as questions worth holding. While Design Thinking starts from empathy, Kesson-Driven Thinking starts from noticing what is missing -- meaninglessness, discomfort, and gaps between expectation and reality become the raw material for inquiry.
+
+"Kesson" (欠損) is not a defect but a clue to possibilities not yet articulated. It is the subjective experience of perceiving a gap between what was expected and what is real.
+
+### Key Concepts
+- **Kesson-Driven Thinking (D1)** (欠損駆動思考): The attitude of picking up errors that would otherwise be discarded, and holding them as questions.
+- **Kesson (D2)** (欠損): The subjective experience of perceiving the gap between expectation and reality as a felt sense of "something missing."
+- **Holding (D3)** (抱持): The function of holding errors as questions without reflexively processing them -- not suppressing action, but maintaining and re-evaluating.
+- **Emotional Constitution (D4)** (情動の構成): The process by which kesson is evaluated along the F-axis (survival/threat) and O-axis (love/attachment), and constituted as emotion.
+
+### Related Projects
+- [project-design](https://github.com/uminomae/project-design): Project Design Theory -- the overarching framework
+- [creation-space](https://github.com/uminomae/creation-space): Exploring creative processes across 30 academic domains
+- [awareness-space](https://github.com/uminomae/awareness-space): Exploring consciousness through the Four-Layer Model
+
+> For the full theoretical framework, see [Project Design](https://uminomae.github.io/pjdhiro/project-design/).
+
+---
+
 ## 概要 / Overview
 
 デザイン思考が共感（Empathy）から始まるのに対し、欠損駆動思考は「欠けているものへの気づき」から始まる。意味の不在、違和感、空白——それらを入力として受け取り、そこから問いと構造を立ち上げる思考フレームワーク。
