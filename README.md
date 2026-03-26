@@ -1,427 +1,52 @@
-# kesson-space
+# 欠損駆動思考 — kesson-space
 
-> 欠損駆動思考の3D体験空間
-
-**⚠️ 本READMEはClaude DT（Claude.ai Desktop / Web チャット）用の運用ルールです。**
-**ただし運用体系そのものはLLM非依存であり、Codex向け記述は不足分の補足であって別体系ではありません。**
-他のエージェント（Claude Code CLI, OpenAI Codex, Gemini等）は [AGENTS.md §0](AGENTS.md) の読み替えガイドに従い、自環境に適用してください。全エージェント共通のルールは [AGENTS.md](AGENTS.md) の §3, §5, §6 を参照。
+**Kesson-Driven Thinking -- A framework that takes meaninglessness as input.**
 
 ---
 
-## 🔴🔴🔴 自己完結原則（Self-Containment Principle）
+## 概要 / Overview
 
-**本リポジトリはルール・ガード・品質基準をすべて自リポジトリ内に持ち、外部リポジトリに依存しない。**
+デザイン思考が共感（Empathy）から始まるのに対し、欠損駆動思考は「欠けているものへの気づき」から始まる。意味の不在、違和感、空白——それらを入力として受け取り、そこから問いと構造を立ち上げる思考フレームワーク。
 
-### 不足時のフォールバックチェーン
+While Design Thinking starts from empathy, Kesson-Driven Thinking starts from noticing what is missing. Meaninglessness, discomfort, and emptiness are taken as input, and from there, questions and structures emerge.
 
-```
-kesson-space に不足がある場合:
-  1. creation-space を参照し、模倣・移植する
-  2. creation-space にもなければ kesson-driven-thinking を参照する
-  3. 見つけた場合、kesson-space 用に適応して移植する
-```
+「欠損」とは欠陥ではなく、まだ言語化されていない可能性の手がかりである。
 
-### 対象となるルール資産
+## デザイン思考との比較 / Comparison with Design Thinking
 
-| カテゴリ | パス | 参照元（優先順） |
+| 観点 / Aspect | デザイン思考 / Design Thinking | 欠損駆動思考 / Kesson-Driven Thinking |
 |---|---|---|
-| Claude ルール | `.claude/rules/` | creation-space → kesson-driven-thinking |
-| フック（自動ガード） | `.claude/hooks/` + `hooks.json` | creation-space → kesson-driven-thinking |
-| カスタムエージェント | `.claude/agents/` | creation-space |
-| LLM ナビゲーション | `llms.txt` | creation-space → kesson-driven-thinking |
-| 品質管理基準 | `docs/quality-management.md` | creation-space → kesson-driven-thinking |
-| ガーディアンマトリクス | `docs/guardian-matrix.md` | creation-space → kesson-driven-thinking |
-| 学習記録 | `docs/lessons/` | creation-space |
+| 起点 / Starting point | 共感（Empathy） | 欠損への気づき（Noticing absence） |
+| 入力 / Input | ユーザーの声・行動観察 | 意味の不在・違和感・空白 |
+| 問いの性質 / Nature of inquiry | 「誰が何に困っているか」 | 「何が欠けているか、なぜ気づいたか」 |
+| 対象 / Target | 課題解決・プロダクト改善 | 問いの構造化・意味の生成 |
+| プロセス / Process | 発散→収束の反復 | 保留→浮上→構造化 |
+| 強み / Strength | 既知の課題への迅速な対応 | 未知の問いの発見と言語化 |
 
-### 移植ルール
+## 3D体験空間 / 3D Experience
 
-- 丸コピーではなく、kesson-space の技術スタック（Three.js, ES Modules, GitHub Pages）に適応する
-- 既に CLAUDE.md / AGENTS.md / docs/ に同等の記述がある場合は重複させず、既存を優先する
-- 移植したファイルには冒頭に `<!-- Ported from: {source-repo} ({date}) -->` を付与する
+Three.js による欠損駆動思考の視覚的・体験的表現。概念を読むだけでなく、空間の中で感じ取ることを目指す。
 
----
+## Live Site
 
-## 🔴🔴🔴 最重要ルール: 委譲完了後フロー（絶対遵守）
+[https://uminomae.github.io/kesson-space/](https://uminomae.github.io/kesson-space/)
 
-**Code / Codex / Gemini 等の委譲先エージェントから実装完了の報告があったら、DTは以下のフローを必ず実行する。例外なし。**
+## 技術スタック / Tech Stack
 
-```
-┌─────────────────────────────────────────────────┐
-│  1. 実装ブランチを dev にマージ                  │
-│  2. ユーザーに pull + サーバー起動コマンド提示    │
-│  3. ⛔ 停止 — ユーザーの目視確認を待つ           │
-│  4. OK → PR作成（Closes #XX）→ mainマージ       │
-│     NG → fix指示書作成                           │
-└─────────────────────────────────────────────────┘
-```
+- 静的サイト: HTML + ES Modules
+- 描画: Three.js + GLSL シェーダー
+- UI: Bootstrap 5
+- デプロイ: GitHub Pages
 
-### 🚫 絶対禁止
+## 関連プロジェクト / Related Projects
 
-- **目視確認前に次タスクに着手すること**
-- **目視確認前に新しい指示書を作成すること**
-- **「ドキュメントだけだから」と例外扱いすること**
-- **目視確認待ちの間に dev へ追加コミットすること**
-
-### マージ → 目視確認 → main の具体手順
-
-```bash
-# 1. 目視チェック（DT確認用ワークツリー）
-cd /Users/uminomae/dev/kesson-space
-git fetch origin
-git checkout dev
-git pull origin dev
-python3 -m http.server 3001
-# → http://localhost:3001/
-
-# 2. ユーザーが OK と言ったら → PR作成 → mainマージ
-# GitHub API経由で PR (dev → main) を作成
-# PR body に Closes #XX を含めて Issue 自動クローズ
-```
-
----
-
-## 🔴🔴 指示書作成ルール: DTはコード解析しない（絶対遵守）
-
-**DTが指示書を書くとき、コードを読んで修正方針や具体的な変更行を特定してはならない。**
-**コード解析・修正方針の策定は委譲先エージェント（Codex / Code）の責務である。**
-
-### DTが指示書に書くべきこと（What）
-
-- **何を実現したいか**（期待動作の記述）
-- **何が問題か**（ユーザーから報告された事象）
-- **完了条件**（目に見える振る舞いの基準）
-- **禁止事項**（スコープ外変更の防止）
-
-### DTが指示書に書いてはいけないこと（How）
-
-- ❌ 具体的な変更行（「L273を修正」「この関数のここを変える」）
-- ❌ 修正コードの提示（before/after のコードブロック）
-- ❌ 内部実装の分析結果（「ソルバーが打ち消している」等の推測）
-- ❌ 関数の呼び出し関係やデータフローの解釈
-
-### 理由
-
-DTのコード解析は不完全であり、誤った修正方針を指示書に書くと委譲先が盲目的に従い、何度もやり直しが発生する。
-実際に #54 では DTが「ソルバー入力に yOffset を渡す」→「ソルバー出力後に加算」と2回誤った方針を出し、3回の指示書作成が必要になった。
-委譲先エージェントは実際にコードを実行・テストできるため、How の判断は委譲先に任せるべき。
-
-### 指示書テンプレート（改訂版）
-
-```markdown
-# 指示書: {タスク名}
-
-## Issue
-{URL}
-
-## 作業ブランチ
-- 作業: `feature/xxx`
-
-## 事象
-{ユーザーから報告された問題、または実現したい機能}
-
-## 期待動作
-{完成後にどう見えるべきか・どう動くべきか}
-
-## ヒント（任意）
-{関連しそうなファイル名やキーワード。ただし修正方針ではない}
-
-## 完了条件
-1. ...
-2. ...
-
-## 禁止事項
-- main への直接 push 禁止
-- dev への直接マージ禁止
-- {スコープ外ファイル}への変更禁止
-```
-
----
-
-## 🔴 DT 実装禁止ルール
-
-**DT（Claude.ai Desktop / Web チャット）はコード実装を行ってはならない。**
-
-DTの役割は以下に限定する:
-- プロジェクト管理・タスク分析・指示書作成
-- ドキュメント（README等）の更新
-- GitHub API経由のマージ・PR操作
-- バグ分析・CSS比較等のレビュー作業
-
-コード実装が必要な場合は、必ず委譲先エージェントに指示書を渡すこと。
-
----
-
-## 🔴 目視確認ゲート（最重要）
-
-**dev に実装ブランチをマージしたら、ユーザーの目視確認OKが出るまで次の作業に進んではならない。**
-
-### ゲートルール
-
-1. 実装ブランチ → dev マージ **直後に停止**
-2. ユーザーにpull + サーバー起動コマンドを提示
-3. **ユーザーが「OK」または「問題あり」を回答するまで待機**
-4. OK → PR作成（`Closes #XX`）→ mainマージ / 問題あり → fix指示書を作成
-
-### 禁止事項
-
-- 目視確認待ちの間に dev へ追加コミットすること
-- 目視確認をスキップして次タスクに着手すること
-- 「ドキュメント更新だけだから」と例外扱いすること
-
-### ワークツリー使い分け
-
-| 操作 | ワークツリー | パス |
-|---|---|---|
-| 目視確認 | **claudeDT** | `/Users/uminomae/dev/kesson-space` |
-| mainマージ | **GitHub API** | PR経由 |
-
----
-
-## セッション開始
-
-**このセクションを読んだ時点で以下を実行する。**
-
-### Step 0: プロジェクト管理エージェント読み込み（必須）
-
-**対話開始時に必ず [skills/project-management-agent.md](skills/project-management-agent.md) を読み込むこと。**
-読み込み完了後、常駐エージェントが起動する。
-
-| エージェント | 役割 | 詳細 |
-|---|---|---|
-| 📋 プロジェクト管理 | タスク委譲・指示書生成 | [skills/project-management-agent.md](skills/project-management-agent.md) |
-| 📝 Issue進捗記録 | 作業中Issueにコメント記録 | [AGENTS.md §5.2](AGENTS.md) |
-| 🩺 セッションヘルス | コンテキスト監視 | [docs/AGENT-RULES.md §8](docs/AGENT-RULES.md) |
-| 🔎 PKガード | ドキュメント参照最適化 | [docs/AGENT-RULES.md §7](docs/AGENT-RULES.md) |
-
-### Step 1: キャッシュ読み込み（状態復元）
-
-→ `~/Library/Caches/kesson-agent/session/state.md` を読む（存在すれば）
-→ 前セッションからの引き継ぎ事項を確認
-
-### Step 2: 状態確認
-
-→ [GitHub Issues](https://github.com/uminomae/kesson-space/issues) の open 一覧を確認
-→ P0/P1 ラベルの Issue を優先把握
-
-### Step 2.5: ARTICLES英語化ルーチン（全LLM共通）
-
-対話開始時に以下を実行する（non-blocking）。
-
-```bash
-./scripts/articles-en-routine.sh
-```
-
-（npm経由でも可: `npm run articles:en:routine`）
-
-意図:
-- `pjdhiro` API と `assets/articles/articles.json` の差分検知
-- ローカル記事JSONの同期（必要時のみ）
-- 英語未整備キューの可視化
-- API差分がある場合のみ Issue `#107` へ通知
-
-### Step 3: ワークツリー確認
-
-DTが見ているディレクトリは？
-→ 📋エージェントが出力先を決定
-
-#### filesystem MCP による .git ワークツリー状態の確認
-
-DTは filesystem MCP で `/Users/uminomae/dev/` 配下にアクセスできる。
-**ワークツリー操作やブランチ切り替え指示を出す前に、必ず以下を読んで現状を把握すること。**
-
-1. **メインリポジトリの HEAD**: `kesson-space/.git/HEAD` を読む
-2. **ワークツリー一覧**: `kesson-space/.git/worktrees/` をリストする
-3. **各ワークツリーのブランチ**: `kesson-space/.git/worktrees/{名前}/HEAD` を読む
-   - `ref: refs/heads/...` → そのブランチをチェックアウト中
-   - SHA ハッシュのみ → detached HEAD 状態
-4. **ワークツリーのパス**: `kesson-space/.git/worktrees/{名前}/gitdir` を読むとパスが確認できる
-
-これにより「どのワークツリーがどのブランチを使用中か」を事前に把握でき、
-ブランチ競合（`already checked out at ...`）を防げる。
-
-### Step 4: タスク着手
-
-ユーザーがタスクを指示 → 📋エージェントが委譲判断
-
----
-
-## セッションキャッシュ
-
-DTセッション中のコンテキスト消費を抑制するための一時ファイル置き場。
-
-| 項目 | 内容 |
+| リポジトリ / Repository | 概要 / Description |
 |---|---|
-| **場所** | `~/Library/Caches/kesson-agent/` |
-| **運用ルール** | `CACHE-RULES.md`（キャッシュ内） |
-| **セッション状態** | `session/state.md`（必須・常時更新） |
-| **分析退避** | `session/*.md`（重いデータはここに退避） |
+| [pjdhiro](https://github.com/uminomae/pjdhiro) | GitHub Pages ホスティング、ブログ（[欠損駆動思考の記事](https://uminomae.github.io/pjdhiro/thinking-kesson/)） |
+| [creation-space](https://github.com/uminomae/creation-space) | 「創造とは」の探索 — 30領域の学術横断調査 |
+| [awareness-space](https://github.com/uminomae/awareness-space) | 「意識とは」の探索 — 間主観性の4層モデル |
+| [project-design](https://github.com/uminomae/project-design) | プロジェクトデザイン論 — Doing と Being を包含する構想・設計・実行 |
 
----
+## Author
 
-## 実装エージェント区別（重要）
-
-本プロジェクトでは以下の **3つの実装エージェントを厳密に区別** する。混同しないこと。
-
-| 名称 | 正式名 | 実体 | 特徴 |
-|---|---|---|---|
-| **DT App Code** | Claude.ai Desktop App のコード実行機能 | `bash_tool`, `create_file`, `str_replace`, `view` 等 | DTチャット内から直接ファイル操作。ボトルネックなし |
-| **Claude Code CLI** | Claude Code（ターミナル） | `claude` コマンド（CLI） | ターミナルで実行。ワークツリー指定が必要 |
-| **OpenAI Codex** | OpenAI Codex | `codex` コマンド（CLI） | 並列・定型作業向き |
-
-### コード実装の第一選択肢
-
-**コード実装が必要な場合、第一選択肢は DT App Code である。**
-
-委譲が必要になるのは以下の場合のみ:
-- **Claude Code CLI**: 複数ファイルにまたがる設計判断が必要、またはDTのコンテキストが逼迫
-- **OpenAI Codex**: 定型作業の並列実行
-- **Gemini MCP**: シェーダー/GLSL実装
-
----
-
-## ブランチ戦略
-
-```
-main（起点）→ 実装ブランチ → dev（🔴目視確認ゲート）→ PR（Closes #XX）→ main
-```
-
-- `main` への直接コミット禁止
-- 実装ブランチは `main` から作成する
-- `dev` は目視確認用のステージング
-- **dev マージ後、目視確認OKまで追加コミット禁止**
-- 目視確認OK後、PR を作成して main にマージ
-- 実装ブランチは `claude/*` または `feature/*` 命名
-
----
-
-## ドキュメント
-
-→ [docs/README.md](docs/README.md)
-
-### GUIDES コンテンツ制作
-
-GUIDES スライドの構想からデプロイまでのワークフロー。
-
-| 工程 | ファイル | 説明 |
-|---|---|---|
-| **憲章** | [docs/CHARTER-guides.md](docs/CHARTER-guides.md) | 論の構造・外部参照方針 |
-| **生成ルール** | [transform/rules/slide-content-rules.md](transform/rules/slide-content-rules.md) | コンテンツの書き方・禁止事項・レビューチェックリスト |
-| **変換層 README** | [transform/README.md](transform/README.md) | パイプライン全体 + エージェントチーム構成 |
-| **探索メモ** | [docs/exploration-trust-hypothesis.md](docs/exploration-trust-hypothesis.md) | 理論的裏付けの調査記録 (#147) |
-| **ドラフト** | `content/guides/*.md` | スライド原稿（Markdown + layout ヒント） |
-| **デザインスペック** | [docs/rich-slides-design-spec.md](docs/rich-slides-design-spec.md) | HTML シェル・CSS トークン |
-| **生成スクリプト** | `scripts/generate-rich-slides.py` | MD → 自己完結 HTML |
-| **生成スキル** | [skills/rich-slides/SKILL.md](skills/rich-slides/SKILL.md) | LLM 向けスライド生成手順 |
-| **Issue 管理** | [#143](https://github.com/uminomae/kesson-space/issues/143) | epic: GUIDES 再構成 |
-
-### スキル実行の原則
-
-**重要なスキルはサブエージェントまたはエージェントチームで実行する。**
-
-スライド生成のエージェントチーム構成:
-1. **ドラフトエージェント**: `transform/rules/slide-content-rules.md` に従い Markdown を執筆
-2. **生成エージェント**: `scripts/generate-rich-slides.py` で HTML 化
-3. **レビューエージェント**: 内部記号・自己啓発調・過大主張がないかチェック
-
-```bash
-# スライド生成
-python3 scripts/generate-rich-slides.py content/guides/meta-overview.md
-```
-
----
-
-## 開発
-
-```bash
-./serve.sh  # → http://localhost:3001/
-```
-
-## Devlog English Flow
-
-新規 devlog セッションを JA/EN で追加する場合は以下を揃える。
-
-1. `content/devlog/session-XXX.md`（日本語本文）
-2. `content/devlog/session-XXX.en.md`（英語本文）
-3. `assets/devlog/sessions.json` に以下を追加
-
-```json
-{
-  "id": "session-XXX",
-  "title_ja": "Part X: ...",
-  "title_en": "Part X: ...",
-  "summary_ja": "日本語カード用の1行サマリー。",
-  "summary_en": "One-line English summary for devlog cards.",
-  "date_range_ja": "2026-02-19",
-  "date_range_en": "Feb 19, 2026",
-  "cover_by_lang": {
-    "ja": "./assets/devlog/covers/session-XXX.png",
-    "en": "./assets/devlog/covers/session-XXX-en.png"
-  },
-  "content_by_lang": {
-    "ja": "./content/devlog/session-XXX.md",
-    "en": "./content/devlog/session-XXX.en.md"
-  }
-}
-```
-
-フォールバック方針:
-- `lang=en` で `*.en.md` が無い場合は `*.md` を表示
-- `title_en` / `date_range_en` が無い場合は `*_ja` を表示
-- `summary_ja` / `summary_en` があれば対応言語の devlog カードに表示（未設定時はサマリー非表示）
-- `cover_en` / `cover_by_lang.en` が無い場合は中立カバー (`default.svg`) を表示
-
-外部 blog サマリー（ARTICLES）も同様に `title_en` / `excerpt_en` を付与すると英語表示される。
-
-ARTICLES の英語化半自動運用（差分検知・同期・Issue通知）は以下を参照:
-
-- `docs/articles/articles-en-semi-auto.md`
-
-検証コマンド:
-
-```bash
-npm run devlog:covers:en
-npm run devlog:validate
-npm run test:devlog-nav
-```
-
-推奨画像生成フロー:
-- SVG-first で `assets/devlog/covers/` に保存
-- Gemini 2.5 Pro で `session-XXX-en.svg` を生成し `cover_by_lang.en` に紐付け
-- 初期プレースホルダーを自動生成する場合は `npm run devlog:covers:en`
-- 既存 `cover_by_lang.en` を `session-XXX-en.svg` に正規化する場合は `npm run devlog:covers:en -- --sync-paths`
-
-## Deep Link Presets
-
-Deep link URL presets are managed in:
-
-- `assets/deeplinks.json`
-
-Print all preset URLs:
-
-```bash
-npm run deeplinks
-```
-
-Print one preset URL (copy ready):
-
-```bash
-node scripts/print-deeplinks.mjs articles_readmore_open
-```
-
-Use local server origin:
-
-```bash
-node scripts/print-deeplinks.mjs articles_readmore_open --base http://localhost:5173
-```
-
-In browser dev mode (`?dev`), a separate `LINKS` offcanvas hub is available (independent from the parameter tuning panel).
-
----
-
-## 関連プロジェクト
-
-| 場所 | 役割 |
-|---|---|
-| [kesson-space](https://uminomae.github.io/kesson-space/) | 体験する（本リポジトリ） |
-| [pjdhiro ブログ](https://uminomae.github.io/pjdhiro/thinking-kesson/) | 読む |
-| kesson-driven-thinking | 理論の正本（Private） |
+**pjdhiro** — [https://github.com/uminomae](https://github.com/uminomae)
