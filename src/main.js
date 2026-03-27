@@ -25,6 +25,8 @@ import { initMouseTracking, updateMouseSmoothing } from './mouse-state.js';
 import { refreshArticlesLanguage } from './pages/articles-section.js';
 import { initGuides, setGuidesLanguage } from './guides.js';
 import { createSdfEntity } from './sdf-entity.js';
+// CHANGED(2026-03-27): #172 — About modal
+import { initAbout } from './about.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 const devApplierRef = {
@@ -54,6 +56,7 @@ initTopbarConsole();
 initFontSizeCtrl();
 initScrollUI();
 initGuides({ lang: detectLang() });
+initAbout();
 
 // CHANGED(2026-03-25): #170 — Query parameter direct access to modals
 (function handleQueryParams() {
