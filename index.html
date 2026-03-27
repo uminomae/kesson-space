@@ -190,9 +190,25 @@
       </div>
     </div>
   </header>
-  
+
+  <!-- About modal -->
+  <div id="about-modal" class="about-modal" aria-hidden="true">
+    <div class="about-modal__backdrop" data-about-close></div>
+    <div class="about-modal__panel">
+      <button class="about-modal__close" type="button" data-about-close aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div id="about-body" class="about-modal__body"></div>
+    </div>
+  </div>
+
   <div id="overlay" role="presentation">
     <div id="taglines"></div>
+    <button class="about-trigger" type="button" data-about-open aria-label="About this site">
+        <span class="about-trigger__letter">i</span>
+    </button>
   </div>
 
   <!-- 右上: 操作ガイド -->
