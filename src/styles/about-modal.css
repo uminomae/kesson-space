@@ -45,6 +45,7 @@
   font-size: 1.2rem;
   font-style: italic;
   line-height: 1;
+  color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 0 10px rgba(180, 208, 255, 0.25);
   transform: translateY(-1px);
 }
