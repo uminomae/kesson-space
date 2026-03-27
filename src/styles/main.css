@@ -1904,8 +1904,12 @@
        CHANGED(2026-03-27): #172 — About trigger + modal (dark theme)
        ============================ */
 
-    /* ── About trigger ── */
+    /* ── About trigger (常時表示・overlay 外に独立配置) ── */
     .about-trigger {
+      position: fixed;
+      bottom: 8%;
+      left: 5%;
+      z-index: 11;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1918,9 +1922,8 @@
       -webkit-backdrop-filter: blur(8px);
       color: rgba(255, 255, 255, 0.85);
       cursor: pointer;
-      margin-top: 1.5rem;
       pointer-events: auto;
-      transition: all 0.3s ease;
+      transition: background 0.3s ease;
     }
 
     .about-trigger__letter {
