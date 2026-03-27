@@ -1,0 +1,157 @@
+/* about-modal.css — About trigger + overlay
+   CHANGED(2026-03-27): #172 — cs repo 方式 */
+
+/* ── Trigger button (as repo 準拠) ── */
+.about-trigger {
+  margin-top: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.18),
+    0 0 20px rgba(120, 155, 220, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: rgba(var(--color-heading, 255, 255, 255), 0.96);
+  cursor: pointer;
+  pointer-events: auto;
+  padding: 0;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.about-trigger:hover,
+.about-trigger:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.22),
+    0 0 26px rgba(132, 168, 232, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.about-trigger:focus-visible {
+  outline: 2px solid var(--kesson-focus-ring, rgba(100, 150, 255, 0.86));
+  outline-offset: 2px;
+}
+
+.about-trigger__letter {
+  font-family: var(--kesson-font-serif-display, 'Noto Serif JP', serif);
+  font-size: 1.2rem;
+  font-style: italic;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 10px rgba(180, 208, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ── Overlay ── */
+#about-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 10, 20, 0);
+  transition: background 0.4s ease;
+  cursor: pointer;
+}
+
+#about-overlay.visible {
+  display: flex;
+}
+
+#about-overlay.open {
+  background: rgba(5, 10, 20, 0.5);
+}
+
+/* ── Glass panel ── */
+.about-glass {
+  position: relative;
+  width: 90vw;
+  max-width: 560px;
+  max-height: 80vh;
+  cursor: default;
+  overflow-y: auto;
+  background: var(--kesson-viewer-glass-bg, rgba(12, 18, 30, 0.88));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(100, 150, 255, 0.06);
+  border-radius: 3px;
+  box-shadow: var(--kesson-viewer-glass-shadow,
+    0 0 60px rgba(0, 0, 0, 0.4),
+    0 0 120px rgba(30, 60, 120, 0.1),
+    inset 0 0 60px rgba(20, 40, 80, 0.05));
+  padding: 2.5rem 2rem 2rem;
+  opacity: 0;
+  transform: scale(0.92) translateY(20px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#about-overlay.open .about-glass {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ── Close button ── */
+.about-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(var(--color-heading, 255, 255, 255), 0.25);
+  font-size: 1.4rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s;
+  z-index: 10;
+  padding: 0;
+}
+
+.about-close:hover {
+  color: rgba(var(--color-heading, 255, 255, 255), 0.6);
+}
+
+.about-close:focus-visible {
+  outline: 2px solid var(--kesson-focus-ring, rgba(100, 150, 255, 0.86));
+  outline-offset: 2px;
+}
+
+/* ── Title ── */
+.about-title {
+  font-family: var(--kesson-font-serif-display, serif);
+  font-size: 1.15rem;
+  color: rgba(var(--color-heading, 255, 255, 255), 0.92);
+  letter-spacing: 0.08em;
+  margin: 0 0 1.5rem;
+  line-height: 1.4;
+}
+
+/* ── Body ── */
+.about-body {
+  font-family: var(--kesson-font-serif-display, serif);
+  font-size: 0.9rem;
+  color: rgba(var(--color-highlight, 220, 230, 245), 0.82);
+  line-height: 1.9;
+  letter-spacing: 0.02em;
+}
+
+.about-body p {
+  margin: 0 0 1.2em;
+}
+
+.about-body p:last-child {
+  margin-bottom: 0;
+}
