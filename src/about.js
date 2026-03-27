@@ -1,81 +1,171 @@
-// about.js — About モーダルの開閉 + Markdown コンテンツ読み込み
-// CHANGED(2026-03-27)
+// about.js — About モーダル（cs repo 方式: DOM 動的生成）
+// CHANGED(2026-03-27): #172
 
 import { detectLang, LANG_CHANGE_EVENT } from './i18n.js';
 
-let _modal;
-let _body;
-let _currentLang;
+let overlayEl;
+let titleEl;
+let bodyEl;
+let triggerBtnEl;
+let closeBtnEl;
 
-const CONTENT_PATH = {
-    ja: 'content/about/about.md',
-    en: 'content/about/about.en.md',
+const STRINGS = {
+    ja: {
+        title: 'このサイトについて',
+        triggerAria: 'このサイトについて',
+        closeAria: '閉じる',
+        body: [
+            '人と AI の協働から生まれる、実験的なデジタル空間です。',
+            'Three.js によるインタラクティブな 3D シーンと、制作プロセスを記録した devlog で構成されています。',
+            '「間（けっそん）」—— 欠けているからこそ生まれる余白と可能性を探求します。',
+        ],
+    },
+    en: {
+        title: 'About This Site',
+        triggerAria: 'About this site',
+        closeAria: 'Close',
+        body: [
+            'An experimental digital space born from human–AI collaboration.',
+            'Built with interactive 3D scenes powered by Three.js and a devlog documenting the creative process.',
+            '"Kesson" (間) — exploring the space and possibility that emerges from what is absent.',
+        ],
+    },
 };
 
-function parseMd(md) {
-    return md
-        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/^(?!<[h|p])(.+)/gm, '<p>$1</p>')
-        .replace(/<p><\/p>/g, '');
+function t(lang) {
+    return STRINGS[lang] || STRINGS.ja;
 }
 
-async function loadContent(lang) {
-    const url = CONTENT_PATH[lang] || CONTENT_PATH.ja;
-    try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(res.status);
-        const md = await res.text();
-        return parseMd(md);
-    } catch {
-        return '<p>Content not available.</p>';
+function getCurrentLang() {
+    return detectLang();
+}
+
+function createAboutButton() {
+    const overlay = document.getElementById('overlay');
+    if (!overlay) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'about-trigger';
+    btn.innerHTML = [
+        '<svg viewBox="0 0 24 24" aria-hidden="true">',
+        '<circle cx="12" cy="12" r="10"/>',
+        '<line x1="12" y1="16" x2="12" y2="12"/>',
+        '<line x1="12" y1="8" x2="12.01" y2="8"/>',
+        '</svg>',
+    ].join('');
+
+    btn.style.marginTop = '0.8rem';
+    btn.addEventListener('click', () => openAbout());
+    overlay.appendChild(btn);
+    triggerBtnEl = btn;
+    setAboutLanguage(getCurrentLang());
+}
+
+function createAboutOverlay() {
+    const el = document.createElement('div');
+    el.id = 'about-overlay';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.tabIndex = -1;
+
+    const glass = document.createElement('div');
+    glass.className = 'about-glass';
+
+    closeBtnEl = document.createElement('button');
+    closeBtnEl.type = 'button';
+    closeBtnEl.className = 'about-close';
+    closeBtnEl.textContent = '✕';
+
+    titleEl = document.createElement('h2');
+    titleEl.className = 'about-title';
+
+    bodyEl = document.createElement('div');
+    bodyEl.className = 'about-body';
+
+    glass.appendChild(closeBtnEl);
+    glass.appendChild(titleEl);
+    glass.appendChild(bodyEl);
+    el.appendChild(glass);
+    document.body.appendChild(el);
+
+    closeBtnEl.addEventListener('click', () => closeAbout());
+    el.addEventListener('click', (e) => {
+        if (e.target === el) closeAbout();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlayEl?.classList.contains('visible')) closeAbout();
+    });
+
+    overlayEl = el;
+}
+
+function renderContent(lang) {
+    const d = t(lang);
+    titleEl.textContent = d.title;
+    bodyEl.innerHTML = '';
+    for (const text of d.body) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        bodyEl.appendChild(p);
     }
 }
 
-function open() {
-    if (!_modal) return;
-    _modal.classList.add('open');
-    _modal.setAttribute('aria-hidden', 'false');
-}
+function openAbout() {
+    if (!overlayEl) return;
+    const lang = getCurrentLang();
+    renderContent(lang);
 
-function close() {
-    if (!_modal) return;
-    _modal.classList.remove('open');
-    _modal.setAttribute('aria-hidden', 'true');
-}
+    overlayEl.classList.add('visible');
+    overlayEl.setAttribute('aria-label', t(lang).title);
+    document.body.style.overflow = 'hidden';
 
-async function refreshContent(lang) {
-    if (!_body || lang === _currentLang) return;
-    _currentLang = lang;
-    _body.innerHTML = await loadContent(lang);
-}
-
-export async function initAbout() {
-    _modal = document.getElementById('about-modal');
-    _body = document.getElementById('about-body');
-    if (!_modal || !_body) return;
-
-    const lang = detectLang();
-    await refreshContent(lang);
-
-    // Open trigger
-    document.querySelectorAll('[data-about-open]').forEach((el) => {
-        el.addEventListener('click', open);
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            overlayEl.classList.add('open');
+        });
     });
 
-    // Close triggers (backdrop + close button)
-    document.querySelectorAll('[data-about-close]').forEach((el) => {
-        el.addEventListener('click', close);
-    });
+    overlayEl.focus();
+}
 
-    // Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && _modal.classList.contains('open')) close();
-    });
+function closeAbout() {
+    if (!overlayEl) return;
+    overlayEl.classList.remove('open');
 
-    // Language change
+    const onEnd = () => {
+        overlayEl.classList.remove('visible');
+        document.body.style.overflow = '';
+        overlayEl.removeEventListener('transitionend', onEnd);
+    };
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        onEnd();
+    } else {
+        overlayEl.addEventListener('transitionend', onEnd, { once: true });
+        setTimeout(onEnd, 600);
+    }
+}
+
+export function setAboutLanguage(lang) {
+    const aboutStrings = t(lang);
+    if (triggerBtnEl) {
+        triggerBtnEl.setAttribute('aria-label', aboutStrings.triggerAria);
+    }
+    if (closeBtnEl) {
+        closeBtnEl.setAttribute('aria-label', aboutStrings.closeAria);
+    }
+    if (overlayEl?.classList.contains('visible')) {
+        renderContent(lang);
+        overlayEl.setAttribute('aria-label', aboutStrings.title);
+    }
+}
+
+export function initAbout() {
+    createAboutButton();
+    createAboutOverlay();
+
     window.addEventListener(LANG_CHANGE_EVENT, (e) => {
-        refreshContent(e.detail?.lang || detectLang());
+        setAboutLanguage(e.detail?.lang || getCurrentLang());
     });
 }
