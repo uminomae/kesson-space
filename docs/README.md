@@ -57,13 +57,18 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 | [CONCEPT.md](./CONCEPT.md) | 理論↔視覚の対応 |
 | [articles/articles-en-semi-auto.md](./articles/articles-en-semi-auto.md) | ARTICLES英語化の半自動運用（差分検知・同期・Issue通知） |
 
-### スキル（skills/）
+### ルール・スキル（.claude/rules/）
 
 | ファイル | 内容 |
 |----------|------|
-| [project-management-agent.md](../skills/project-management-agent.md) | タスク委譲判断、ワークツリー構成（正本） |
-| [devlog-generation.md](../skills/devlog-generation.md) | devlog生成ワークフロー |
-| [orchestrator.md](../skills/orchestrator.md) | エージェント協調 |
+| [project-management-agent.md](../.claude/rules/project-management-agent.md) | タスク委譲判断、ワークツリー構成（正本） |
+| [orchestrator.md](../.claude/rules/orchestrator.md) | エージェント協調 |
+
+### コンテンツ変換（transform/）
+
+| ファイル | 内容 |
+|----------|------|
+| [devlog-generation.md](../transform/devlog-generation.md) | devlog生成ワークフロー |
 
 ### その他
 
@@ -77,7 +82,7 @@ kesson-spaceは欠損駆動思考プロジェクトの**3D体験空間**。
 ## 監督構造・ワークツリー
 
 → [AGENT-RULES.md](./AGENT-RULES.md) §0〜§1 を参照
-→ [skills/project-management-agent.md](../skills/project-management-agent.md) §2, §5 を参照（自律判断/ワークツリー運用）
+→ [.claude/rules/project-management-agent.md](../.claude/rules/project-management-agent.md) §2, §5 を参照（自律判断/ワークツリー運用）
 
 ---
 

@@ -49,12 +49,19 @@ kesson-space/
 │   │   └── covers/           ← カバー画像（.svg/.png）
 │   └── blender/              ← 3Dモデル素材
 │
-├── skills/                   ← マルチエージェント運用スキル（AGENT-RULES.md参照）
-│   ├── shared-quality.md
-│   ├── shader-impl.md
-│   ├── review-gates.md
-│   ├── orchestrator.md
+├── knowledge/                ← 理論・概念・スキーマ（旧 docs/theory/）
+│   ├── schema/
+│   ├── concepts/
+│   ├── expressions/
+│   ├── evidence/
+│   ├── text/
 │   └── LEARNINGS.md
+│
+├── transform/                ← コンテンツ変換（devlog生成、スライド等）
+│   ├── devlog-generation.md
+│   ├── devlog-writing.md
+│   ├── infographic-generation.md
+│   └── rich-slides/
 │
 ├── context-pack/             ← タスク定義テンプレート
 │   └── SINGLE.md.template

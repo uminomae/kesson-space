@@ -124,7 +124,7 @@ docs/prompts/TEMPLATE-instruction-v2.md ← 指示書テンプレート
 
 ### 環境判別
 
-指示書を受け取ったエージェントは `skills/env-adaptive.md` §2 に従い環境を自己判定する。
+指示書を受け取ったエージェントは `.claude/rules/env-adaptive.md` §2 に従い環境を自己判定する。
 CLI / DT App Code で操作コマンドが異なるため、テンプレートに環境判別セクションを含める。
 
 ---

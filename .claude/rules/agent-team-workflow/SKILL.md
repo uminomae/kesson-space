@@ -6,7 +6,7 @@ description: |
 triggers: |
   「エージェントチームで」「マルチエージェントで」「チームレビューして」
   「agent-team-workflow で」
-applyTo: "skills/, .cache/"
+applyTo: ".claude/rules/, .cache/"
 agent: "CLI"
 ---
 

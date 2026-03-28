@@ -188,7 +188,7 @@ kesson-academic は専門家向けであるため、以下の例外を認める:
 | **ドラフト**: スライド原稿を執筆 | presentation MD | `content/guides/meta-overview.md` |
 | **生成ルール**: デザインスペック | HTML シェル + CSS | `docs/rich-slides-design-spec.md` |
 | **生成**: Python スクリプト | 自己完結 HTML | `scripts/generate-rich-slides.py` |
-| **スキル**: LLM 向けスライド生成手順 | SKILL.md | `skills/rich-slides/SKILL.md` |
+| **スキル**: LLM 向けスライド生成手順 | SKILL.md | `transform/rich-slides/SKILL.md` |
 
 ### 4.3 ドラフト作成の原則
 

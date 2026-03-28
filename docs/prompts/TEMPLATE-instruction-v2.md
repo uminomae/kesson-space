@@ -22,7 +22,7 @@
 3. bash_tool 自体がない → 【API Only 環境】
 ```
 
-環境別の操作は `skills/env-adaptive.md` §2 に従う。
+環境別の操作は `.claude/rules/env-adaptive.md` §2 に従う。
 
 ---
 
@@ -120,4 +120,4 @@ github:create_or_update_file で各ファイルをコミット
 ## 参照
 
 - {関連ドキュメントへのリンク}
-- `skills/env-adaptive.md` — 環境適応スキル
+- `.claude/rules/env-adaptive.md` — 環境適応スキル

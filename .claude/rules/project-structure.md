@@ -17,7 +17,8 @@ kesson-space/
 ├── tests/             # テスト（Node.js static + E2E）
 ├── scripts/           # ユーティリティスクリプト
 ├── docs/              # 管理ドキュメント
-├── skills/            # エージェント向けプレイブック
+├── knowledge/         # 理論・概念・スキーマ（docs/theory/ から移設）
+├── transform/         # コンテンツ変換（devlog生成、スライド等）
 ├── content/           # Devlog Markdown コンテンツ
 ├── mcp_servers/       # Gemini MCP サーバー
 └── .github/workflows/ # CI/CD

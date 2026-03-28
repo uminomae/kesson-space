@@ -69,7 +69,7 @@ scripts/
 docs/
   rich-slides-design-spec.md        <- Detailed CSS patterns and layout templates
 
-skills/rich-slides/
+transform/rich-slides/
   SKILL.md                          <- This file (skill definition)
 
 src/
