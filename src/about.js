@@ -1,5 +1,5 @@
 // about.js — About モーダル（cs repo 方式: DOM 動的生成）
-// CHANGED(2026-03-27): #172
+// CHANGED(2026-03-28): #172 About文章を「サイトの楽しみ方ガイド」に書き換え
 
 import { detectLang, LANG_CHANGE_EVENT } from './i18n.js';
 
@@ -14,20 +14,26 @@ const STRINGS = {
         title: 'このサイトについて',
         triggerAria: 'このサイトについて',
         closeAria: '閉じる',
+        // CHANGED(2026-03-28): #172 About文章を「サイトの楽しみ方ガイド」に書き換え
         body: [
-            '人と AI の協働から生まれる、実験的なデジタル空間です。',
-            'Three.js によるインタラクティブな 3D シーンと、制作プロセスを記録した devlog で構成されています。',
-            '「間（けっそん）」—— 欠けているからこそ生まれる余白と可能性を探求します。',
+            '「欠損駆動思考」とは、ふだん見過ごしてしまう"ずれ"や"違和感"を、問いとして拾い上げる考え方です。',
+            '予想と現実のあいだに感じる小さなギャップ――それを私たちは「欠損」と呼んでいます。',
+            'すぐに答えを出さず、その問いをしばらく手元に置いておくこと。この「抱える」プロセスから、新しい気づきが生まれます。',
+            '現在、デザイン思考など既存の発想法との比較調査を進めながら、欠損駆動思考の特徴を整理しています。',
+            '下にスクロールすると、くわしい内容をご覧いただけます。',
         ],
     },
     en: {
         title: 'About This Site',
         triggerAria: 'About this site',
         closeAria: 'Close',
+        // CHANGED(2026-03-28): #172 Rewrite About text as visitor guide
         body: [
-            'An experimental digital space born from human–AI collaboration.',
-            'Built with interactive 3D scenes powered by Three.js and a devlog documenting the creative process.',
-            '"Kesson" (間) — exploring the space and possibility that emerges from what is absent.',
+            '"Kesson-driven thinking" is a way of picking up the small mismatches and oddities we usually overlook, and treating them as questions worth asking.',
+            'We call the gap you feel between what you expected and what actually happened a "kesson" (literally, a felt absence).',
+            'Instead of rushing to an answer, you hold that question for a while. New insights emerge from this process of holding.',
+            'We are currently comparing kesson-driven thinking with established creative methods such as design thinking to clarify what makes it distinctive.',
+            'Scroll down to explore the details.',
         ],
     },
 };
