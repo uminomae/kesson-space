@@ -40,6 +40,13 @@
       --kesson-transition-standard: 0.3s ease;
       --kesson-transition-snappy: 0.2s ease;
 
+      /* === Extended color tokens (#181) === */
+      --color-accent-soft: 150, 190, 245; /* CHANGED(2026-03-28) #181 — card cover-note */
+      --color-focus-ring: 150, 190, 255; /* CHANGED(2026-03-28) #181 — section heading focus ring */
+      --color-nav-gem: 180, 195, 240; /* CHANGED(2026-03-28) #181 — nav-label--gem base */
+      --color-nav-gem-hover: 200, 215, 255; /* CHANGED(2026-03-28) #181 — nav-label--gem hover */
+      --color-embed-handle: 200, 215, 245; /* CHANGED(2026-03-28) #181 — x-embed-handle */
+
       /* === Component surface tokens === */
       --kesson-focus-ring: rgba(var(--color-accent), 0.86);
       --kesson-focus-ring-soft: rgba(var(--color-accent), 0.8);
@@ -93,7 +100,7 @@
         0 0 60px rgba(0, 0, 0, 0.4),
         0 0 120px rgba(30, 60, 120, 0.1),
         inset 0 0 60px rgba(20, 40, 80, 0.05);
-      --kesson-viewer-x-handle: rgba(200, 215, 245, 0.7);
+      --kesson-viewer-x-handle: rgba(var(--color-embed-handle), 0.7); /* CHANGED(2026-03-28) #181 — token化 */
 
       /* === Dev panel tokens === */
       --kesson-dev-toggle-bg: rgba(20, 30, 50, 0.7);
@@ -442,13 +449,13 @@
       text-shadow: 0 0 18px rgba(110, 160, 255, 0.72), 0 0 6px rgba(0, 0, 0, 0.85);
     }
     .nav-label--gem {
-      color: rgba(180, 195, 240, 0.85);
+      color: rgba(var(--color-nav-gem), 0.85); /* CHANGED(2026-03-28) #181 — token化 */
       text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
     }
     .nav-label--gem:hover,
     .nav-label--gem:focus-visible,
     .nav-label--gem.is-nav-focused {
-      color: rgba(200, 215, 255, 1.0);
+      color: rgba(var(--color-nav-gem-hover), 1.0); /* CHANGED(2026-03-28) #181 — token化 */
     }
     .nav-label--x {
       color: rgba(220, 225, 240, 0.85);
@@ -881,7 +888,7 @@
       overflow: hidden;
     }
     .kesson-card .kesson-card-cover-note {
-      color: rgba(150, 190, 245, 0.72);
+      color: rgba(var(--color-accent-soft), 0.72); /* CHANGED(2026-03-28) #181 — token化 */
       font-size: 0.62rem;
       letter-spacing: 0.04em;
     }
@@ -1009,8 +1016,29 @@
     }
 
     .section-heading-link:focus-visible {
-      outline: 1px solid rgba(150, 190, 255, 0.7);
+      outline: 1px solid rgba(var(--color-focus-ring), 0.7); /* CHANGED(2026-03-28) #181 -- token化 */
       outline-offset: 4px;
+    }
+
+    /* ── Section narration bridges (#181) ── */
+    .room-narration {
+      position: relative;
+      z-index: 21;
+      padding: 8rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+    .room-narration-text {
+      font-family: 'Noto Serif JP', Georgia, serif;
+      font-size: clamp(0.95rem, 2.8vmin, 1.35rem);
+      font-weight: 300;
+      color: rgba(var(--color-sub-text), 0.9);
+      letter-spacing: 0.08em;
+      line-height: 2.2;
+      max-width: 580px;
+      margin: 0 auto;
+      text-shadow:
+        0 0 12px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(0, 0, 0, 0.4);
     }
 
     #articles-error {
@@ -1149,7 +1177,7 @@
       font-size: 0.78rem;
     }
     .x-embed-handle {
-      color: rgba(200, 215, 245, 0.7);
+      color: rgba(var(--color-embed-handle), 0.7); /* CHANGED(2026-03-28) #181 — token化 */
       font-size: 0.72rem;
       margin-bottom: 0.25rem;
       letter-spacing: 0.04em;
