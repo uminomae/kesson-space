@@ -861,6 +861,8 @@
     }
     .card.kesson-card .card-body {
       background-color: transparent;
+      padding: 1rem;
+      gap: 0.5rem;
     }
     .kesson-card .card-img-top {
       aspect-ratio: 16/9;
@@ -869,12 +871,13 @@
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     .kesson-card .card-title {
       color: #fff;
-      font-size: var(--kesson-card-title, 0.8rem);
+      font-size: 1.125rem;
     }
     .kesson-card .card-body small,
     .kesson-card .card-text {
       color: rgba(var(--color-heading), 0.5);
-      font-size: var(--kesson-card-text, 0.8rem);
+      font-size: 0.875rem;
+      line-height: 1.6;
     }
     .kesson-card .kesson-card-summary {
       color: rgba(var(--color-sub-text), 0.76);
@@ -1930,8 +1933,8 @@
     .research-eyebrow {
       color: rgba(156, 193, 255, 0.76);
       font-family: var(--kesson-font-mono-ui);
-      font-size: 0.7rem;
-      letter-spacing: 0.14em;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       margin: 0;
     }
