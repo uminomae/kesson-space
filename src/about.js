@@ -14,26 +14,24 @@ const STRINGS = {
         title: 'このサイトについて',
         triggerAria: 'このサイトについて',
         closeAria: '閉じる',
-        // CHANGED(2026-03-28): #172 About文章を「サイトの楽しみ方ガイド」に書き換え
+        // CHANGED(2026-03-28): #193 サイトガイドとして書き換え
         body: [
-            '「欠損駆動思考」とは、ふだん見過ごしてしまう"ずれ"や"違和感"を、問いとして拾い上げる考え方です。',
-            '予想と現実のあいだに感じる小さなギャップ――それを私たちは「欠損」と呼んでいます。',
-            'すぐに答えを出さず、その問いをしばらく手元に置いておくこと。この「抱える」プロセスから、新しい気づきが生まれます。',
-            '現在、デザイン思考など既存の発想法との比較調査を進めながら、欠損駆動思考の特徴を整理しています。',
-            '下にスクロールすると、くわしい内容をご覧いただけます。',
+            '「欠損駆動思考」とは、予想と現実のあいだに感じるズレや違和感を、すぐに片づけず、問いとして持ち続ける考え方です。',
+            'このサイトでは、欠損駆動思考の構造を探索しています。',
+            'GUIDES では、欠損駆動思考の基本的な考え方を解説しています。RESEARCH では、デザイン思考やプロジェクトデザインなど関連する概念との比較調査を公開しています。ARTICLES では、調査の途中経過を記事として記録しています。',
+            '下にスクロールして、気になるところからご覧ください。',
         ],
     },
     en: {
         title: 'About This Site',
         triggerAria: 'About this site',
         closeAria: 'Close',
-        // CHANGED(2026-03-28): #172 Rewrite About text as visitor guide
+        // CHANGED(2026-03-28): #193 Rewrite as site guide
         body: [
-            '"Kesson-driven thinking" is a way of picking up the small mismatches and oddities we usually overlook, and treating them as questions worth asking.',
-            'We call the gap you feel between what you expected and what actually happened a "kesson" (literally, a felt absence).',
-            'Instead of rushing to an answer, you hold that question for a while. New insights emerge from this process of holding.',
-            'We are currently comparing kesson-driven thinking with established creative methods such as design thinking to clarify what makes it distinctive.',
-            'Scroll down to explore the details.',
+            '"Kesson-driven thinking" is a way of holding the gaps and discomfort you feel between expectation and reality, instead of rushing to resolve them.',
+            'This site explores the structure of kesson-driven thinking.',
+            'GUIDES introduces the basic ideas. RESEARCH shares comparative studies with design thinking, project design, and related concepts. ARTICLES documents the work in progress.',
+            'Scroll down and start wherever catches your eye.',
         ],
     },
 };

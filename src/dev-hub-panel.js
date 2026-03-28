@@ -50,6 +50,11 @@ const SECTION_LINKS = [
         label: 'DEVLOG section',
         href: '#devlog-gallery-section',
     },
+    {
+        id: 'dev-hub-design-system',
+        label: 'Design System',
+        href: './design-system.html',
+    },
 ];
 
 function createPanel() {
