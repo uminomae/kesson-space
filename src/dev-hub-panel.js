@@ -143,10 +143,10 @@ function createPanel() {
 // CHANGED(2026-03-25): #170 — Fetch page-links.json and render preset links in dev panel
 async function fetchPageLinks() {
     const container = document.getElementById('dev-hub-page-links');
-    if (\!container) return;
+    if (!container) return;
     try {
         const res = await fetch('./assets/page-links.json');
-        if (\!res.ok) throw new Error(res.statusText);
+        if (!res.ok) throw new Error(res.statusText);
         const data = await res.json();
         const presets = data.presets || [];
         container.innerHTML = '';

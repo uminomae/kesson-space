@@ -105,7 +105,7 @@ function renderContent(lang) {
 }
 
 function openModal() {
-    if (\!overlayEl) return;
+    if (!overlayEl) return;
     const lang = getCurrentLang();
     renderContent(lang);
 
@@ -123,7 +123,7 @@ function openModal() {
 }
 
 function closeModal() {
-    if (\!overlayEl) return;
+    if (!overlayEl) return;
     overlayEl.classList.remove('open');
 
     const onEnd = () => {

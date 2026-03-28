@@ -302,88 +302,93 @@
   <!-- Articles出現タイミング調整スペーサー -->
   <div id="articles-spacer"></div>
 
+  <div class="container">
+    <p id="guides-ai-notice" class="guides-ai-notice" data-ja="AIが執筆しているため間違いがある場合があります。" data-en="Written with AI assistance — may contain errors.">AIが執筆しているため間違いがある場合があります。</p>
+  </div>
+
   <!-- CHANGED(2026-03-28) #181 — Section narration: HERO → GUIDES -->
   <div class="room-narration">
-    <p class="room-narration-text" data-ja="予想どおりにいかなかったとき、そのズレをどう扱いますか。" data-en="When things don't go as expected, what do you do with that gap?">予想どおりにいかなかったとき、そのズレをどう扱いますか。</p>
+    <p class="room-narration-text" data-ja="無意味さは無意味なのでしょうか？" data-en="Is meaninglessness truly meaningless?">無意味さは無意味なのでしょうか？</p>
   </div>
-
-  <!-- Guides Section -->
   <section id="guides-section">
-    <!-- CHANGED(2026-03-25): #165 — AI notice moved outside container as section-level heading -->
-    <div class="guides-ai-notice-wrap">
-      <div class="container">
-        <h3 id="guides-ai-notice" class="guides-ai-notice-heading">AIが執筆しているため間違いがある場合があります。</h3>
-      </div>
-    </div>
     <div class="section-content-wrap">
       <div class="container">
-        <h2 class="section-heading">GUIDES</h2>
-        <!-- CHANGED(2026-03-25): #146 — Question prompt above guides -->
-        <p class="guides-question-prompt">無意味さは無意味なのか？</p>
-        <!-- CHANGED(2026-03-25): #161 — Overview card (separate row, full width) -->
-        <div id="guides-overview-row" class="mb-3"></div>
-        <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3"></div>
-        <!-- CHANGED(2026-03-25): #146 — External project link cards -->
-        <div id="guides-external-links" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mt-2"></div>
+        <h2 class="section-heading">
+          <a
+            href="#guides-section"
+            class="section-heading-link"
+            aria-label="GUIDES セクションへジャンプ">
+            GUIDES
+          </a>
+        </h2>
+        <div class="kesson-panel">
+          <!-- CHANGED(2026-03-25): #161 — Overview card (separate row, full width) -->
+          <div id="guides-overview-row" class="mb-3"></div>
+          <div id="guides-feature-cards" class="row row-cols-1 row-cols-md-3 g-3"></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Guides MD Modal -->
-  <div class="modal fade" id="guides-md-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content bg-dark text-light">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title" id="guides-md-modal-title"></h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p class="text-body-secondary small mb-3" id="guides-md-meta"></p>
-          <div id="guides-md-content"></div>
-        </div>
-        <div class="modal-footer border-secondary">
-          <a id="guides-md-open-pdf" href="#" target="_blank" rel="noopener" class="btn btn-outline-light btn-sm">PDF</a>
-          <button type="button" id="guides-md-close-btn" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
+  <!-- CHANGED(2026-03-28): Section narration: GUIDES → RESEARCH -->
+  <div class="room-narration">
+    <p class="room-narration-text" data-ja="デザイン思考の先にある問いを、ここで扱っています。" data-en="Here we explore the questions that lie beyond design thinking.">デザイン思考の先にある問いを、ここで扱っています。</p>
   </div>
 
-  <!-- CHANGED(2026-03-28): SEO audience expansion for design thinking + project management -->
-  <section id="seo-entry-section" aria-labelledby="seo-entry-title">
+  <!-- CHANGED(2026-03-28): RESEARCH section (formerly research-section) -->
+  <section id="research-section" aria-labelledby="research-section-heading">
     <div class="section-content-wrap">
       <div class="container">
-        <p class="seo-entry-kicker" data-ja="Design Thinking × Project Design" data-en="Design Thinking × Project Design">Design Thinking × Project Design</p>
-        <h2 id="seo-entry-title" class="seo-entry-title" data-ja="デザイン思考とプロジェクトマネジメントのあいだで、まだ言語化されていない課題を扱う" data-en="Working with what is not yet articulated between design thinking and project management">デザイン思考とプロジェクトマネジメントのあいだで、まだ言語化されていない課題を扱う</h2>
-        <p class="seo-entry-lead" data-ja="欠損駆動思考は、共感の先で残る違和感、要件化される前のズレ、進行中のプロジェクトで説明しきれない停滞を、すぐに解決せず問いとして保持するための枠組みです。新規事業、プロダクト設計、研究開発、組織変革のように、正解がまだ見えていない場面で機能します。" data-en="Kesson-Driven Thinking helps teams hold the discomfort that remains after empathy work, the mismatch before requirements are defined, and the drag that appears inside ongoing projects. It is useful when product design, research and development, or organizational change still lack a clear problem statement.">欠損駆動思考は、共感の先で残る違和感、要件化される前のズレ、進行中のプロジェクトで説明しきれない停滞を、すぐに解決せず問いとして保持するための枠組みです。新規事業、プロダクト設計、研究開発、組織変革のように、正解がまだ見えていない場面で機能します。</p>
-
-        <div class="row row-cols-1 row-cols-lg-2 g-3 seo-topic-grid">
-          <div class="col">
-            <article class="card kesson-card h-100 seo-topic-card seo-topic-card--clickable" data-open-dt-modal role="button" tabindex="0">
-              <div class="card-body p-3 d-flex flex-column gap-2">
-                <p class="seo-topic-eyebrow" data-ja="Design Thinking" data-en="Design Thinking">Design Thinking</p>
-                <h3 class="card-title mb-0" data-ja="共感の後に残る違和感を扱う" data-en="Handle the discomfort that remains after empathy">共感の後に残る違和感を扱う</h3>
-                <p class="card-text" data-ja="ユーザー理解や課題定義を進めても、なぜか言葉にならない違和感が残ることがあります。欠損駆動思考は、その違和感をノイズではなく、まだ見えていない価値や問いの入口として扱います。" data-en="Even after user research and problem framing, some discomfort remains hard to explain. Kesson-Driven Thinking treats that residue not as noise but as an entry point to unseen value and unexplored questions.">ユーザー理解や課題定義を進めても、なぜか言葉にならない違和感が残ることがあります。欠損駆動思考は、その違和感をノイズではなく、まだ見えていない価値や問いの入口として扱います。</p>
-              </div>
-            </article>
+        <h2 id="research-section-heading" class="section-heading">
+          <a href="#research-section" class="section-heading-link" aria-label="RESEARCH セクションへジャンプ">RESEARCH</a>
+        </h2>
+        <div class="kesson-panel">
+          <div class="row row-cols-1 row-cols-md-2 g-3 mb-3">
+            <div class="col">
+              <article class="card kesson-card h-100 research-card research-card--clickable" data-open-dt-modal role="button" tabindex="0">
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                  <p class="research-eyebrow" data-ja="調査ノート" data-en="Research Note">調査ノート</p>
+                  <h3 class="card-title mb-0" data-ja="デザイン思考" data-en="Design Thinking">デザイン思考</h3>
+                  <p class="card-text" data-ja="デザイン思考は、ユーザーへの共感を起点に、課題の定義、アイデアの創出、プロトタイプの検証を繰り返す問題解決のアプローチです。" data-en="Design thinking is a problem-solving approach that starts from empathy with users, then iterates through problem definition, ideation, and prototype testing.">デザイン思考は、ユーザーへの共感を起点に、課題の定義、アイデアの創出、プロトタイプの検証を繰り返す問題解決のアプローチです。</p>
+                </div>
+              </article>
+            </div>
           </div>
-          <div class="col">
-            <a class="card kesson-card h-100 seo-topic-card seo-topic-card--link" href="https://uminomae.github.io/project-design/" target="_blank" rel="noopener">
-              <div class="card-body p-3 d-flex flex-column gap-2">
-                <p class="seo-topic-eyebrow" data-ja="Project Design" data-en="Project Design">Project Design</p>
-                <h3 class="card-title mb-0" data-ja="構想・意思決定・実行をつなぐ" data-en="Connect framing, decision-making, and execution">構想・意思決定・実行をつなぐ</h3>
-                <p class="card-text" data-ja="欠損駆動思考は、単なる発想法ではなく、構想段階で生まれた問いを、意思決定と実行のフェーズへ橋渡しするための視点です。デザイン思考と運用管理を分断せず、一つのプロジェクトの流れとして扱います。" data-en="Kesson-Driven Thinking is not only an ideation method. It is a way to carry questions born in framing work into decision-making and execution, treating design work and operational management as one project flow.">欠損駆動思考は、単なる発想法ではなく、構想段階で生まれた問いを、意思決定と実行のフェーズへ橋渡しするための視点です。デザイン思考と運用管理を分断せず、一つのプロジェクトの流れとして扱います。</p>
-              </div>
-            </a>
+          <div class="row row-cols-1 row-cols-md-3 g-3">
+            <div class="col">
+              <a class="card kesson-card h-100 research-card research-card--link" href="https://uminomae.github.io/project-design/" target="_blank" rel="noopener">
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                  <p class="research-eyebrow" data-ja="関連概念" data-en="Related">関連概念</p>
+                  <h3 class="card-title mb-0" data-ja="プロジェクトデザイン" data-en="Project Design">プロジェクトデザイン</h3>
+                  <p class="card-text" data-ja="プロジェクトデザインとは、プロジェクトの構想・設計・実行だけでなく、実行・管理の方法そのものを対象化し、構想・設計する営みです。" data-en="Project Design is the practice of not only planning, designing, and executing projects, but also examining and redesigning the methods of execution and management themselves.">プロジェクトデザインとは、プロジェクトの構想・設計・実行だけでなく、実行・管理の方法そのものを対象化し、構想・設計する営みです。</p>
+                </div>
+              </a>
+            </div>
+            <div class="col">
+              <a class="card kesson-card h-100 research-card research-card--link" href="https://uminomae.github.io/creation-space/" target="_blank" rel="noopener">
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                  <p class="research-eyebrow" data-ja="関連概念" data-en="Related">関連概念</p>
+                  <h3 class="card-title mb-0" data-ja="創造とは" data-en="What Is Creation">創造とは</h3>
+                  <p class="card-text" data-ja="創造がどのような構造を持ち、どのような過程をたどるかを探索した調査の記録です。" data-en="Records of exploring what structures creation holds and what processes it follows.">創造がどのような構造を持ち、どのような過程をたどるかを探索した調査の記録です。</p>
+                </div>
+              </a>
+            </div>
+            <div class="col">
+              <a class="card kesson-card h-100 research-card research-card--link" href="https://uminomae.github.io/awareness-space/" target="_blank" rel="noopener">
+                <div class="card-body p-3 d-flex flex-column gap-2">
+                  <p class="research-eyebrow" data-ja="関連概念" data-en="Related">関連概念</p>
+                  <h3 class="card-title mb-0" data-ja="意識とは" data-en="What Is Consciousness">意識とは</h3>
+                  <p class="card-text" data-ja="意識の構造を間主観性を重視して探索した調査の記録です。" data-en="Records of exploring the structure of consciousness with emphasis on intersubjectivity.">意識の構造を間主観性を重視して探索した調査の記録です。</p>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
-
-
       </div>
     </div>
   </section>
 
-  <!-- CHANGED(2026-03-28) #181 — Section narration: SEO → ARTICLES -->
+  <!-- CHANGED(2026-03-28): Section narration: RESEARCH → ARTICLES -->
   <div class="room-narration">
     <p class="room-narration-text" data-ja="思考の途中を、記事にしています。" data-en="We write down our thinking while it's still in progress.">思考の途中を、記事にしています。</p>
   </div>
@@ -400,22 +405,25 @@
             ARTICLES
           </a>
         </h2>
-        <div id="articles-error" class="d-none"></div>
-        <div id="articles-grid" class="row g-3"></div>
+        <div class="kesson-panel">
+          <div id="articles-error" class="d-none"></div>
+          <div id="articles-grid" class="row g-3"></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Devlog Gallery Section（テキストログ削除、すぐギャラリー） -->
+  <!-- Devlog Gallery Section（CSS display:none で非表示中）
+       TODO: 復活時は narration → section > section-content-wrap > container > section-heading > kesson-panel 構造に統一すること -->
   <section id="devlog-gallery-section">
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">DEVLOG</h2>
+        <div id="devlog-gallery-container"></div>
+        <div id="devlog-gallery-header">
+          <h2>TRACES</h2>
+        </div>
       </div>
-    </div>
-    <div id="devlog-gallery-container"></div>
-    <div id="devlog-gallery-header">
-      <h2>TRACES</h2>
     </div>
   </section>
 
@@ -488,17 +496,6 @@
     </div>
   </div>
 
-  <!-- Image Lightbox Modal -->
-  <div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-      <div class="modal-content bg-transparent border-0">
-        <div class="modal-body p-0 text-center">
-          <img id="lightbox-image" class="img-fluid" alt="Enlarged cover">
-        </div>
-      </div>
-    </div>
-  </div>
-
   <button id="surface-btn" aria-label="ページ上部に戻る">↑ surface</button>
 
   <script type="module" src="./src/pages/e2e-auto-run.js"></script>
@@ -544,5 +541,35 @@
     <p>Related: <a href="https://uminomae.github.io/project-design/">Project Design</a> | <a href="https://uminomae.github.io/creation-space/">Creation Space</a> | <a href="https://uminomae.github.io/awareness-space/">Awareness Space</a></p>
   </section>
 </noscript>
+
+<!-- Modals (moved to end of body for clean section flow) -->
+<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body p-0 text-center">
+        <img id="lightbox-image" class="img-fluid" alt="Enlarged cover">
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Guides MD Modal -->
+<div class="modal fade" id="guides-md-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title" id="guides-md-modal-title"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-body-secondary small mb-3" id="guides-md-meta"></p>
+        <div id="guides-md-content"></div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <a id="guides-md-open-pdf" href="#" target="_blank" rel="noopener" class="btn btn-outline-light btn-sm">PDF</a>
+        <button type="button" id="guides-md-close-btn" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

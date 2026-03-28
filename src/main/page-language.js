@@ -1,5 +1,7 @@
 import { detectLang, LANG_CHANGE_EVENT, t } from '../i18n.js';
 
+// NOTE: textContent 代入は子要素を破壊する。data-ja/data-en は子要素を持たない葉要素にのみ付与すること。
+// 子要素を含む場合は <span data-ja="..." data-en="..."> で分離する。
 function applyDatasetLanguage(lang) {
     const textAttr = lang === 'en' ? 'data-en' : 'data-ja';
     const ariaAttr = lang === 'en' ? 'data-en-aria-label' : 'data-ja-aria-label';

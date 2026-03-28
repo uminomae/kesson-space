@@ -14,7 +14,7 @@
  * 5. 不要ファイルが残っていないこと
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -187,6 +187,16 @@ for (const key of topKeys) {
 }
 
 section('5. 不要ファイルチェック');
+
+// CHANGED(2026-03-28): エスケープ済み感嘆符の検出（Agent WT が \! を出力するバグ対策）
+const jsFiles = readdirSync(SRC).filter(f => f.endsWith('.js'));
+for (const file of jsFiles) {
+    const src = read(resolve(SRC, file));
+    const escaped = src.match(/\\\!/g);
+    assert(!escaped, `${file}: エスケープ済み感嘆符 (\\!) が ${escaped ? escaped.length : 0} 箇所`);
+}
+
+section('6. 不要ファイルチェック');
 
 assert(!existsSync(resolve(SRC, 'versions')), 'src/versions/ が存在しない');
 assert(!existsSync(resolve(SRC, 'dom-utils.js')), '未使用の src/dom-utils.js が削除済み');

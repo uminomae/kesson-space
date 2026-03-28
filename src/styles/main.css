@@ -757,26 +757,25 @@
       color: rgba(var(--color-sub-text), 0.5);
       letter-spacing: var(--kesson-letter-ui-heading);
       text-transform: uppercase;
-      margin: 0;
+      margin: 0 0 0.85rem;
       font-family: var(--kesson-font-mono-ui);
     }
 
 
-    /* CHANGED(2026-03-25): #165 — AI notice as section-level heading outside container
-       Modeled on .section-heading (RESEARCH pattern from awareness-space) */
-    .guides-ai-notice-wrap {
+    /* CHANGED(2026-03-28): AI notice — cs repo 方式に統一 */
+    #guides-ai-notice {
       position: relative;
-      z-index: 20;
-      padding: 1rem 1.5rem 0;
+      z-index: 6;
+      text-align: center;
+      margin: 1.5rem 0 1rem;
     }
-    .guides-ai-notice-heading {
-      font-size: var(--kesson-section-heading, 0.80rem);
-      font-weight: 400;
-      color: rgba(var(--color-sub-text), 0.5);
-      letter-spacing: var(--kesson-letter-ui-heading);
-      text-transform: none;
-      margin: 0;
-      font-family: var(--kesson-font-mono-ui);
+    .guides-ai-notice {
+      margin: 0 0 .85rem;
+      color: rgba(var(--color-sub-text), .78);
+      font-size: 0.8rem;
+      letter-spacing: var(--kesson-letter-ui-tight);
+      line-height: 1.45;
+      font-family: 'Noto Serif JP', Georgia, serif;
     }
     /* Action controls */
     .btn-read-more,
@@ -978,11 +977,12 @@
     /* Section containers */
     /* CHANGED(2026-03-07): #116 Bug #7 — guides-section を他セクションと統一 */
     #guides-section,
-    #seo-entry-section,
+    #research-section,
     #articles-section,
     #devlog-gallery-section {
       position: relative;
       z-index: 5;
+      padding-bottom: .9rem;
     }
     /* Section content wrapper (shared by articles + devlog heading areas) */
     .section-content-wrap {
@@ -1012,7 +1012,7 @@
     }
 
     .section-heading-link:hover {
-      color: rgba(200, 220, 250, 0.72);
+      color: rgba(var(--color-highlight), 0.72);
     }
 
     .section-heading-link:focus-visible {
@@ -1031,14 +1031,14 @@
       font-family: 'Noto Serif JP', Georgia, serif;
       font-size: clamp(0.95rem, 2.8vmin, 1.35rem);
       font-weight: 300;
-      color: rgba(var(--color-sub-text), 0.9);
+      color: rgba(210, 225, 250, 0.9);
       letter-spacing: 0.08em;
       line-height: 2.2;
       max-width: 580px;
       margin: 0 auto;
       text-shadow:
-        0 0 12px rgba(0, 0, 0, 0.6),
-        0 0 30px rgba(0, 0, 0, 0.4);
+        0 0 10px rgba(0, 0, 0, 1.0),
+        0 0 20px rgba(0, 0, 0, 0.67);
     }
 
     #articles-error {
@@ -1393,7 +1393,7 @@
       flex: 1;
       font-size: 0.82rem;
       font-family: var(--kesson-font-mono-ui);
-      color: rgba(200, 220, 255, 0.85);
+      color: rgba(var(--color-highlight), 0.85);
       letter-spacing: 0.03em;
       white-space: nowrap;
       overflow: hidden;
@@ -1889,17 +1889,6 @@
       font-weight: 400;
     }
 
-    /* CHANGED(2026-03-25): #146 — Question prompt in GUIDES section */
-    .guides-question-prompt {
-      color: rgba(var(--color-highlight), 0.72);
-      font-family: 'Noto Serif JP', serif;
-      font-size: clamp(0.92rem, 2vw, 1.15rem);
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      margin: 0.6rem 0 1rem;
-      text-align: center;
-    }
-
     /* CHANGED(2026-03-25): #146 — External project link cards */
     .guides-external-card {
       text-decoration: none !important;
@@ -1918,45 +1907,27 @@
       color: rgba(var(--color-sub-text), 0.85);
     }
 
-    /* CHANGED(2026-03-28): SEO audience expansion for design thinking + project management */
-    .seo-entry-kicker {
-      color: rgba(165, 202, 255, 0.82);
-      font-family: var(--kesson-font-mono-ui);
-      font-size: 0.72rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      margin: 0 0 0.85rem;
+    /* CHANGED(2026-03-28): Panel container (cs reports-tab-content equivalent) */
+    .kesson-panel {
+      border: 1px solid rgba(var(--color-accent), .12);
+      border-radius: .5rem;
+      background: rgba(20, 25, 40, 0.6);
+      padding: .9rem;
+      box-shadow: var(--kesson-card-shadow-soft);
     }
-    .seo-entry-title {
-      color: rgba(245, 248, 255, 0.96);
-      font-family: var(--kesson-font-serif-display);
-      font-size: clamp(1.18rem, 3.2vw, 2rem);
-      line-height: 1.55;
-      letter-spacing: 0.05em;
-      margin: 0;
-      max-width: 18em;
-    }
-    .seo-entry-lead {
-      color: rgba(212, 224, 245, 0.84);
-      font-size: 0.96rem;
-      line-height: 1.95;
-      margin: 1rem 0 0;
-      max-width: 64rem;
-    }
-    .seo-topic-grid {
-      margin-top: 1.35rem;
-    }
-    .card.kesson-card.seo-topic-card {
+
+    /* CHANGED(2026-03-28): RESEARCH section card styles */
+    .card.kesson-card.research-card {
       cursor: default;
       background:
         linear-gradient(180deg, rgba(17, 24, 39, 0.94) 0%, rgba(12, 19, 31, 0.92) 100%);
       border-color: rgba(122, 169, 245, 0.18);
     }
-    .card.kesson-card.seo-topic-card:hover {
+    .card.kesson-card.research-card:hover {
       transform: none;
       box-shadow: none;
     }
-    .seo-topic-eyebrow {
+    .research-eyebrow {
       color: rgba(156, 193, 255, 0.76);
       font-family: var(--kesson-font-mono-ui);
       font-size: 0.7rem;
@@ -1964,20 +1935,20 @@
       text-transform: uppercase;
       margin: 0;
     }
-    /* CHANGED(2026-03-28): #180 — Clickable seo-topic-card variants */
-    .card.kesson-card.seo-topic-card--clickable {
+    /* CHANGED(2026-03-28): #180 — Clickable research-card variants */
+    .card.kesson-card.research-card--clickable {
       cursor: pointer;
     }
-    .card.kesson-card.seo-topic-card--clickable:hover {
+    .card.kesson-card.research-card--clickable:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 20px rgba(80, 130, 220, 0.18);
     }
-    .card.kesson-card.seo-topic-card--link {
+    .card.kesson-card.research-card--link {
       cursor: pointer;
       text-decoration: none;
       color: inherit;
     }
-    .card.kesson-card.seo-topic-card--link:hover {
+    .card.kesson-card.research-card--link:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 20px rgba(80, 130, 220, 0.18);
       text-decoration: none;
@@ -2009,16 +1980,6 @@
     #dt-modal-overlay.open .about-glass {
       opacity: 1;
       transform: scale(1) translateY(0);
-    }
-
-    @media (max-width: 767.98px) {
-      .seo-entry-title {
-        max-width: none;
-      }
-      .seo-entry-lead {
-        font-size: 0.92rem;
-        line-height: 1.85;
-      }
     }
 
     /* ============================
