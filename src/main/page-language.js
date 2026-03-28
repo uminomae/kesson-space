@@ -1,5 +1,24 @@
 import { detectLang, LANG_CHANGE_EVENT, t } from '../i18n.js';
 
+function applyDatasetLanguage(lang) {
+    const textAttr = lang === 'en' ? 'data-en' : 'data-ja';
+    const ariaAttr = lang === 'en' ? 'data-en-aria-label' : 'data-ja-aria-label';
+
+    document.querySelectorAll('[data-ja][data-en]').forEach((el) => {
+        const nextText = el.getAttribute(textAttr);
+        if (typeof nextText === 'string') {
+            el.textContent = nextText;
+        }
+    });
+
+    document.querySelectorAll('[data-ja-aria-label][data-en-aria-label]').forEach((el) => {
+        const nextLabel = el.getAttribute(ariaAttr);
+        if (typeof nextLabel === 'string') {
+            el.setAttribute('aria-label', nextLabel);
+        }
+    });
+}
+
 // DECISION: page text rewrite is a pure DOM concern, so we isolate it from main.js orchestration.
 // This keeps main.js focused on scene/bootstrap flow and avoids mixing UI mutation with startup wiring.
 // (Phase A-1 / 2026-02-19)
@@ -29,6 +48,8 @@ export function applyPageLanguage(lang) {
         });
     }
 
+    // CHANGED(2026-03-28): allow static SEO copy and other plain-text nodes to follow lang toggle.
+    applyDatasetLanguage(resolvedLang);
     document.documentElement.lang = resolvedLang;
 }
 

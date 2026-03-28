@@ -4,11 +4,11 @@
 
 ## Site Overview
 
-This is the research and experience site of pjdhiro exploring **Kesson-Driven Thinking** — a thinking framework that takes meaninglessness, absence, and discomfort as input. An extension of design thinking.
+This is the research and experience site of pjdhiro exploring **Kesson-Driven Thinking** — a thinking framework that takes meaninglessness, absence, discomfort, and weak signals as input. It extends design thinking and connects exploratory work to project management and project design.
 
 - **Primary Language**: Japanese (日本語), with English summaries
 - **Site URL**: https://uminomae.github.io/kesson-space/
-- **Topics**: Kesson-Driven Thinking, Meaninglessness as Input, Design Thinking Extension, 3D Visualization
+- **Topics**: Kesson-Driven Thinking, Design Thinking, Project Management, Project Design, Problem Framing, Uncertainty Management, 3D Visualization
 
 ## Core Concepts
 
@@ -23,6 +23,10 @@ Traditional design processes begin with user needs or empathy. Kesson-Driven Thi
 ### Design Thinking Extension
 
 While design thinking asks "What do people need?", Kesson-Driven Thinking asks "What is missing that nobody has noticed?" It extends the design thinking paradigm by incorporating absence and deficiency as first-class inputs.
+
+### Project Management Relevance
+
+Kesson-Driven Thinking is also useful for project management under uncertainty. It helps teams hold undefined requirements, weak signals, and hard-to-explain stalls before they are prematurely flattened into tasks, deadlines, or KPIs.
 
 ## Site Structure
 
@@ -44,6 +48,7 @@ While design thinking asks "What do people need?", Kesson-Driven Thinking asks "
 | Project | URL | Focus |
 |---------|-----|-------|
 | pjdhiro | https://uminomae.github.io/pjdhiro/ | Project Design Hub (parent site) |
+| project-design | https://uminomae.github.io/project-design/ | Project Design theory linking design thinking, management, and execution |
 | creation-space | https://uminomae.github.io/creation-space/ | Creativity research across 30 academic domains |
 | awareness-space | https://uminomae.github.io/awareness-space/ | Consciousness structure through intersubjectivity |
 
