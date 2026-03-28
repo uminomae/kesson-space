@@ -5,7 +5,7 @@
 
 | タスク | 読むべきファイル | 理由 |
 |---|---|---|
-| シェーダー実装 | `skills/shader-impl.md` | Gemini MCP 委譲ルール |
+| シェーダー実装 | `.claude/rules/shader-impl.md` | Gemini MCP 委譲ルール |
 | Three.js シーン変更 | `src/config.js`, `docs/ARCHITECTURE.md` | SSoT + データフロー |
 | CSS/UI 変更 | `index.html`, `src/styles/` | 構造 + スタイル |
 | config パラメータ変更 | `.claude/rules/breaking-change-checklist.md` | 下流影響チェック |
@@ -20,4 +20,4 @@
 
 - ファイル全文読みは避け、セクション指定で読む
 - CLAUDE.md の記述が他ドキュメントと矛盾する場合、CLAUDE.md を優先
-- 1プロンプトで skills/ は最大2ファイルまで（SH-1 ガード）
+- 1プロンプトで .claude/rules/ は最大2ファイルまで（SH-1 ガード）

@@ -4,7 +4,7 @@
 https://github.com/uminomae/kesson-space/issues/54
 
 ## 環境判別
-本指示書を受け取ったエージェントは `skills/env-adaptive.md` §2 に従い、
+本指示書を受け取ったエージェントは `.claude/rules/env-adaptive.md` §2 に従い、
 自身の環境を判定してから操作マッピングに従って実装すること。
 
 ## 作業ブランチ

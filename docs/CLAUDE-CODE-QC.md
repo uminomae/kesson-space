@@ -63,4 +63,4 @@
 
 ## 参照
 
-- [skills/shared-quality.md](../skills/shared-quality.md) — コーディング品質基準（パフォーマンス、コード規約、テスト等）
+- [.claude/rules/shared-quality.md](../.claude/rules/shared-quality.md) — コーディング品質基準（パフォーマンス、コード規約、テスト等）

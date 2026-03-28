@@ -19,7 +19,7 @@ transform/
     ↓
 生成ルール（transform/rules/slide-content-rules.md）
     ↓
-ドラフト執筆（content/guides/*.md）— skills/rich-slides で生成
+ドラフト執筆（content/guides/*.md）— transform/rich-slides で生成
     ↓
 HTML生成（scripts/generate-rich-slides.py）
     ↓
@@ -32,7 +32,7 @@ HTML生成（scripts/generate-rich-slides.py）
 
 | スキル | 実行方式 | 理由 |
 |---|---|---|
-| `skills/rich-slides/SKILL.md` | エージェントチーム | ドラフト執筆 + HTML生成 + 品質チェックを分離 |
+| `transform/rich-slides/SKILL.md` | エージェントチーム | ドラフト執筆 + HTML生成 + 品質チェックを分離 |
 | 品質レビュー | サブエージェント | 生成者と検証者を分離（3層QA） |
 
 エージェントチーム構成例:

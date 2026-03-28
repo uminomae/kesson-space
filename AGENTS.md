@@ -18,7 +18,7 @@ Adapt the rules to your own environment. Specifically:
 | Worktree paths (`/Users/uminomae/dev/...`) | Use your assigned worktree or working directory |
 | "目視確認ゲート" | This is the DT's responsibility. Implementation agents push and report; DT handles the gate |
 | "セッションキャッシュ" | DT-only. Other agents use Issue comments for state handoff |
-| `skills/project-management-agent.md` | Common governance rulebook. Apply it across LLMs and adapt only environment-specific command details |
+| `.claude/rules/project-management-agent.md` | Common governance rulebook. Apply it across LLMs and adapt only environment-specific command details |
 
 **Language policy**: Rules are written in mixed Japanese/English. Section headings and key terms are kept in English for cross-LLM readability. Examples may use Japanese.
 
@@ -163,7 +163,7 @@ Issue comments serve as the shared communication channel across all agents (DT /
 
 ### 5.5 Autonomous Decision Boundary
 
-To maximize autonomous operation, apply the rulebook in `skills/project-management-agent.md`.
+To maximize autonomous operation, apply the rulebook in `.claude/rules/project-management-agent.md`.
 
 - Auto-decide: issue prioritization, delegation target, branch naming, instruction path
 - Ask user first: `dev -> main` merge, scope expansion, dependency changes, label/priority changes
