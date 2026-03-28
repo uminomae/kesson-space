@@ -27,6 +27,8 @@ import { initGuides, setGuidesLanguage } from './guides.js';
 import { createSdfEntity } from './sdf-entity.js';
 // CHANGED(2026-03-27): #172 — About modal
 import { initAbout } from './about.js';
+// CHANGED(2026-03-28): #180 — Design Thinking modal
+import { initDesignThinkingModal } from './design-thinking-modal.js';
 
 const DEV_MODE = new URLSearchParams(window.location.search).has('dev');
 const devApplierRef = {
@@ -57,6 +59,7 @@ initFontSizeCtrl();
 initScrollUI();
 initGuides({ lang: detectLang() });
 initAbout();
+initDesignThinkingModal();
 
 // CHANGED(2026-03-25): #170 — Query parameter direct access to modals
 (function handleQueryParams() {

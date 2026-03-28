@@ -971,6 +971,7 @@
     /* Section containers */
     /* CHANGED(2026-03-07): #116 Bug #7 — guides-section を他セクションと統一 */
     #guides-section,
+    #seo-entry-section,
     #articles-section,
     #devlog-gallery-section {
       position: relative;
@@ -1889,6 +1890,109 @@
       color: rgba(var(--color-sub-text), 0.85);
     }
 
+    /* CHANGED(2026-03-28): SEO audience expansion for design thinking + project management */
+    .seo-entry-kicker {
+      color: rgba(165, 202, 255, 0.82);
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin: 0 0 0.85rem;
+    }
+    .seo-entry-title {
+      color: rgba(245, 248, 255, 0.96);
+      font-family: var(--kesson-font-serif-display);
+      font-size: clamp(1.18rem, 3.2vw, 2rem);
+      line-height: 1.55;
+      letter-spacing: 0.05em;
+      margin: 0;
+      max-width: 18em;
+    }
+    .seo-entry-lead {
+      color: rgba(212, 224, 245, 0.84);
+      font-size: 0.96rem;
+      line-height: 1.95;
+      margin: 1rem 0 0;
+      max-width: 64rem;
+    }
+    .seo-topic-grid {
+      margin-top: 1.35rem;
+    }
+    .card.kesson-card.seo-topic-card {
+      cursor: default;
+      background:
+        linear-gradient(180deg, rgba(17, 24, 39, 0.94) 0%, rgba(12, 19, 31, 0.92) 100%);
+      border-color: rgba(122, 169, 245, 0.18);
+    }
+    .card.kesson-card.seo-topic-card:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .seo-topic-eyebrow {
+      color: rgba(156, 193, 255, 0.76);
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    /* CHANGED(2026-03-28): #180 — Clickable seo-topic-card variants */
+    .card.kesson-card.seo-topic-card--clickable {
+      cursor: pointer;
+    }
+    .card.kesson-card.seo-topic-card--clickable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(80, 130, 220, 0.18);
+    }
+    .card.kesson-card.seo-topic-card--link {
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .card.kesson-card.seo-topic-card--link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(80, 130, 220, 0.18);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* CHANGED(2026-03-28): #180 — Design Thinking modal (reuses about-overlay pattern) */
+    #dt-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 10, 20, 0);
+      transition: background 0.4s ease;
+      cursor: pointer;
+    }
+    #dt-modal-overlay.visible {
+      display: flex;
+    }
+    #dt-modal-overlay.open {
+      background: rgba(5, 10, 20, 0.5);
+    }
+    #dt-modal-overlay .about-glass {
+      opacity: 0;
+      transform: scale(0.92) translateY(20px);
+    }
+    #dt-modal-overlay.open .about-glass {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    @media (max-width: 767.98px) {
+      .seo-entry-title {
+        max-width: none;
+      }
+      .seo-entry-lead {
+        font-size: 0.92rem;
+        line-height: 1.85;
+      }
+    }
+
     /* ============================
        CHANGED(2026-03-24): #151 — Devlog feature hidden via CSS
        HTML is preserved for future restoration.
@@ -1899,4 +2003,3 @@
     #devlogOffcanvas {
       display: none !important;
     }
-
