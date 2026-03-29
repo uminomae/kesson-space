@@ -12,7 +12,7 @@ function getOverlayPart(selector) {
 }
 
 function setBodyScrollLock(locked) {
-    if (\!document?.body) return;
+    if (!document?.body) return;
     if (locked) {
         previousBodyOverflow = document.body.style.overflow || '';
         document.body.style.overflow = 'hidden';
@@ -27,7 +27,7 @@ function getFullscreenElement() {
 }
 
 function requestElementFullscreen(element) {
-    if (\!element) return Promise.reject(new Error('missing fullscreen target'));
+    if (!element) return Promise.reject(new Error('missing fullscreen target'));
     if (typeof element.requestFullscreen === 'function') {
         return element.requestFullscreen();
     }
@@ -54,14 +54,14 @@ function isOverlayFullscreen() {
 
 function updateFullscreenUi() {
     const button = getOverlayPart('.slide-viewer-fullscreen');
-    if (\!button) return;
+    if (!button) return;
 
     const supported = Boolean(
         overlayNode
         && (typeof overlayNode.requestFullscreen === 'function'
             || typeof overlayNode.webkitRequestFullscreen === 'function')
     );
-    if (\!supported) {
+    if (!supported) {
         button.hidden = true;
         return;
     }
@@ -74,7 +74,7 @@ function updateFullscreenUi() {
 }
 
 async function toggleFullscreen() {
-    if (\!overlayNode) return;
+    if (!overlayNode) return;
 
     try {
         if (isOverlayFullscreen()) {
@@ -90,7 +90,7 @@ async function toggleFullscreen() {
 }
 
 function updateSlideUi(title = '') {
-    if (\!overlayNode || \!slidesState.length) return;
+    if (!overlayNode || !slidesState.length) return;
 
     const titleNode = getOverlayPart('.slide-viewer-title');
     const countNode = getOverlayPart('.slide-viewer-count');
@@ -118,7 +118,7 @@ function updateSlideUi(title = '') {
 }
 
 function moveSlide(step) {
-    if (\!slidesState.length) return;
+    if (!slidesState.length) return;
     const nextIndex = Math.min(slidesState.length - 1, Math.max(0, currentSlideIndex + step));
     if (nextIndex === currentSlideIndex) return;
     currentSlideIndex = nextIndex;
@@ -243,17 +243,17 @@ export function closeSlideViewer() {
  * @param {string} [options.title] - Title for the overlay aria-label
  */
 export function openRichSlideViewer({ htmlUrl, title = '', onClose = null }) {
-    if (\!htmlUrl) return;
+    if (!htmlUrl) return;
 
     try {
         onCloseCallback = typeof onClose === 'function' ? onClose : null;
 
-        if (\!overlayNode) {
+        if (!overlayNode) {
             overlayNode = createOverlay();
         }
 
         const stage = getOverlayPart('.slide-viewer-stage');
-        if (\!stage) return;
+        if (!stage) return;
 
         stage.innerHTML = '';
         slidesState = [];
