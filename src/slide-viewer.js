@@ -1,98 +1,11 @@
-// IMPORTANT: openSlideViewer() is DEPRECATED (legacy MD fallback only).
-// New code MUST use openRichSlideViewer() which displays pre-generated
-// rich HTML via iframe. Do NOT call openSlideViewer() for new features.
-
-import DOMPurify from 'dompurify';
+// Slide viewer — uses openRichSlideViewer() to display pre-generated
+// rich HTML via iframe. Legacy openSlideViewer() has been removed.
 
 let overlayNode = null;
 let slidesState = [];
 let currentSlideIndex = 0;
 let previousBodyOverflow = '';
 let onCloseCallback = null;
-function parseFrontmatter(text) {
-    const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-    if (\!match) return { meta: {}, body: text.trim() };
-
-    const meta = {};
-    match[1].split('\n').forEach((line) => {
-        const idx = line.indexOf(':');
-        if (idx <= 0) return;
-        const key = line.slice(0, idx).trim();
-        const val = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
-        meta[key] = val;
-    });
-
-    return { meta, body: match[2].trim() };
-}
-
-function resolveImageUrls(html, mdBaseUrl) {
-    if (\!mdBaseUrl) return html;
-    return html.replace(
-        /<img\s+([^>]*?)src="(?\!https?:\/\/)([^"]+)"/g,
-        (match, pre, relPath) => {
-            const absUrl = new URL(relPath, mdBaseUrl).href;
-            return `<img ${pre}src="${absUrl}"`;
-        }
-    );
-}
-
-async function inlineSvgImages(root) {
-    if (\!root) return;
-
-    const images = Array.from(root.querySelectorAll('img'));
-    await Promise.all(images.map(async (img) => {
-        const src = img.getAttribute('src') || '';
-        if (\!/\.svg(?:$|[?#])/i.test(src)) return;
-
-        try {
-            const response = await fetch(src, { cache: 'no-store' });
-            if (\!response.ok) return;
-            const svgText = await response.text();
-            if (\!svgText.trim().startsWith('<svg') && \!svgText.trim().startsWith('<?xml')) return;
-            const parsed = new DOMParser().parseFromString(svgText, 'image/svg+xml');
-            const svgNode = parsed.documentElement;
-            if (\!svgNode || svgNode.nodeName.toLowerCase() === 'parsererror') return;
-
-            const wrapper = document.createElement('figure');
-            wrapper.className = 'slide-inline-svg';
-            const alt = img.getAttribute('alt') || '';
-            if (alt) {
-                wrapper.setAttribute('aria-label', alt);
-                wrapper.setAttribute('role', 'img');
-            }
-
-            const imported = document.importNode(svgNode, true);
-            imported.removeAttribute('width');
-            imported.removeAttribute('height');
-            wrapper.appendChild(imported);
-            img.replaceWith(wrapper);
-        } catch (error) {
-            console.warn('[slide-viewer] svg inline failed:', src, error);
-        }
-    }));
-}
-
-function classifySlide(page, index, total) {
-    const text = page.textContent || '';
-    const hasTable = page.querySelector('table') \!== null;
-    const hasList = page.querySelector('ul, ol') \!== null;
-    const hasImage = page.querySelector('img') \!== null;
-    const paragraphs = page.querySelectorAll('p');
-    const h2 = page.querySelector('h2');
-    const heading = h2 ? h2.textContent : '';
-
-    if (index === 0) return 'slide-title';
-    if (index === total - 1) return 'slide-conclusion';
-    if (hasImage && text.length <= 80) return 'slide-visual';
-    if (/概要|overview/i.test(heading) && hasList) return 'slide-overview';
-    if (/結論|まとめ|conclusion/i.test(heading)) return 'slide-conclusion';
-    if (/横断|パターン|pattern|cross/i.test(heading)) return 'slide-patterns';
-    if (/未解決|open.*question|問い/i.test(heading)) return 'slide-questions';
-    if (hasTable) return 'slide-table';
-    if (paragraphs.length >= 3 || text.length > 400) return 'slide-entry';
-    if (hasList && paragraphs.length <= 1) return 'slide-overview';
-    return 'slide-default';
-}
 
 function getOverlayPart(selector) {
     return overlayNode ? overlayNode.querySelector(selector) : null;
@@ -247,7 +160,7 @@ function createOverlay() {
         }
     });
 
-    // ESC handler for non-iframe cases (MD legacy slides, future extensions).
+    // ESC handler for non-iframe cases (future extensions).
     // NOTE: This does NOT cover iframe-focused state — iframe has
     // its own ESC handler injected in openRichSlideViewer().
     // Do NOT remove during refactoring.
@@ -285,66 +198,6 @@ function onKeyDown(event) {
     if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
         event.preventDefault();
         moveSlide(1);
-    }
-}
-
-/**
- * @deprecated LEGACY fallback only. Do NOT use for new features.
- * Use openRichSlideViewer() instead. This function exists solely as a
- * fallback when rich HTML is unavailable (404 / network error).
- */
-export async function openSlideViewer({ markdownText, title = '', mdBaseUrl, onClose = null }) {
-    if (\!markdownText) return;
-
-    try {
-        onCloseCallback = typeof onClose === 'function' ? onClose : null;
-
-        if (\!overlayNode) {
-            overlayNode = createOverlay();
-        }
-
-        const { meta, body } = parseFrontmatter(markdownText);
-        const slideChunks = body.split(/\n---\n/).filter((chunk) => chunk.trim());
-        if (\!slideChunks.length) return;
-
-        const { marked } = await import('marked');
-        marked.setOptions({ breaks: true, gfm: true });
-
-        const stage = getOverlayPart('.slide-viewer-stage');
-        if (\!stage) return;
-
-        stage.innerHTML = '';
-        slidesState = [];
-
-        for (const [index, chunk] of slideChunks.entries()) {
-            const page = document.createElement('article');
-            page.className = 'slide-viewer-page';
-            page.setAttribute('aria-hidden', 'true');
-
-            let parsedHtml = marked.parse(chunk.trim());
-            parsedHtml = resolveImageUrls(parsedHtml, mdBaseUrl);
-
-            const content = document.createElement('div');
-            content.className = 'slide-content';
-            content.innerHTML = DOMPurify.sanitize(parsedHtml, { FORBID_TAGS: ['a'] });
-            await inlineSvgImages(content);
-
-            const slideType = classifySlide(content, index, slideChunks.length);
-            page.classList.add(slideType);
-            page.appendChild(content);
-            stage.appendChild(page);
-            slidesState.push(page);
-        }
-
-        currentSlideIndex = 0;
-        overlayNode.classList.add('visible');
-        overlayNode.setAttribute('aria-label', title || meta.title || 'Slides');
-        setBodyScrollLock(true);
-        updateSlideUi(title || meta.title || '');
-        updateFullscreenUi();
-        window.addEventListener('keydown', onKeyDown);
-    } catch (err) {
-        console.error('[slide-viewer] ERROR:', err);
     }
 }
 
