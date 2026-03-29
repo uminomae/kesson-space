@@ -1,15 +1,18 @@
-// Ported from: creation-space (2026-03-24)
-// Markdown slide viewer — splits on `---` and renders 16:9 pages
+// IMPORTANT: openSlideViewer() is DEPRECATED (legacy MD fallback only).
+// New code MUST use openRichSlideViewer() which displays pre-generated
+// rich HTML via iframe. Do NOT call openSlideViewer() for new features.
+
 import DOMPurify from 'dompurify';
 
 let overlayNode = null;
 let slidesState = [];
 let currentSlideIndex = 0;
 let previousBodyOverflow = '';
-
+let onCloseCallback = null;
 function parseFrontmatter(text) {
     const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-    if (!match) return { meta: {}, body: text.trim() };
+    if (\!match) return { meta: {}, body: text.trim() };
+
     const meta = {};
     match[1].split('\n').forEach((line) => {
         const idx = line.indexOf(':');
@@ -18,13 +21,14 @@ function parseFrontmatter(text) {
         const val = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
         meta[key] = val;
     });
+
     return { meta, body: match[2].trim() };
 }
 
 function resolveImageUrls(html, mdBaseUrl) {
-    if (!mdBaseUrl) return html;
+    if (\!mdBaseUrl) return html;
     return html.replace(
-        /<img\s+([^>]*?)src="(?!https?:\/\/)([^"]+)"/g,
+        /<img\s+([^>]*?)src="(?\!https?:\/\/)([^"]+)"/g,
         (match, pre, relPath) => {
             const absUrl = new URL(relPath, mdBaseUrl).href;
             return `<img ${pre}src="${absUrl}"`;
@@ -32,11 +36,47 @@ function resolveImageUrls(html, mdBaseUrl) {
     );
 }
 
+async function inlineSvgImages(root) {
+    if (\!root) return;
+
+    const images = Array.from(root.querySelectorAll('img'));
+    await Promise.all(images.map(async (img) => {
+        const src = img.getAttribute('src') || '';
+        if (\!/\.svg(?:$|[?#])/i.test(src)) return;
+
+        try {
+            const response = await fetch(src, { cache: 'no-store' });
+            if (\!response.ok) return;
+            const svgText = await response.text();
+            if (\!svgText.trim().startsWith('<svg') && \!svgText.trim().startsWith('<?xml')) return;
+            const parsed = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+            const svgNode = parsed.documentElement;
+            if (\!svgNode || svgNode.nodeName.toLowerCase() === 'parsererror') return;
+
+            const wrapper = document.createElement('figure');
+            wrapper.className = 'slide-inline-svg';
+            const alt = img.getAttribute('alt') || '';
+            if (alt) {
+                wrapper.setAttribute('aria-label', alt);
+                wrapper.setAttribute('role', 'img');
+            }
+
+            const imported = document.importNode(svgNode, true);
+            imported.removeAttribute('width');
+            imported.removeAttribute('height');
+            wrapper.appendChild(imported);
+            img.replaceWith(wrapper);
+        } catch (error) {
+            console.warn('[slide-viewer] svg inline failed:', src, error);
+        }
+    }));
+}
+
 function classifySlide(page, index, total) {
     const text = page.textContent || '';
-    const hasTable = page.querySelector('table') !== null;
-    const hasList = page.querySelector('ul, ol') !== null;
-    const hasImage = page.querySelector('img') !== null;
+    const hasTable = page.querySelector('table') \!== null;
+    const hasList = page.querySelector('ul, ol') \!== null;
+    const hasImage = page.querySelector('img') \!== null;
     const paragraphs = page.querySelectorAll('p');
     const h2 = page.querySelector('h2');
     const heading = h2 ? h2.textContent : '';
@@ -59,7 +99,7 @@ function getOverlayPart(selector) {
 }
 
 function setBodyScrollLock(locked) {
-    if (!document?.body) return;
+    if (\!document?.body) return;
     if (locked) {
         previousBodyOverflow = document.body.style.overflow || '';
         document.body.style.overflow = 'hidden';
@@ -69,8 +109,76 @@ function setBodyScrollLock(locked) {
     previousBodyOverflow = '';
 }
 
+function getFullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function requestElementFullscreen(element) {
+    if (\!element) return Promise.reject(new Error('missing fullscreen target'));
+    if (typeof element.requestFullscreen === 'function') {
+        return element.requestFullscreen();
+    }
+    if (typeof element.webkitRequestFullscreen === 'function') {
+        element.webkitRequestFullscreen();
+        return Promise.resolve();
+    }
+    return Promise.reject(new Error('fullscreen unsupported'));
+}
+
+function exitFullscreenMode() {
+    if (typeof document.exitFullscreen === 'function') {
+        return document.exitFullscreen();
+    }
+    if (typeof document.webkitExitFullscreen === 'function') {
+        document.webkitExitFullscreen();
+    }
+    return Promise.resolve();
+}
+
+function isOverlayFullscreen() {
+    return getFullscreenElement() === overlayNode;
+}
+
+function updateFullscreenUi() {
+    const button = getOverlayPart('.slide-viewer-fullscreen');
+    if (\!button) return;
+
+    const supported = Boolean(
+        overlayNode
+        && (typeof overlayNode.requestFullscreen === 'function'
+            || typeof overlayNode.webkitRequestFullscreen === 'function')
+    );
+    if (\!supported) {
+        button.hidden = true;
+        return;
+    }
+
+    button.hidden = false;
+    const active = isOverlayFullscreen();
+    button.textContent = active ? '\u2922' : '\u26F6';
+    button.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+}
+
+async function toggleFullscreen() {
+    if (\!overlayNode) return;
+
+    try {
+        if (isOverlayFullscreen()) {
+            await exitFullscreenMode();
+        } else {
+            await requestElementFullscreen(overlayNode);
+        }
+    } catch {
+        // Fullscreen is best-effort. Keep the viewer usable even if the API fails.
+    } finally {
+        updateFullscreenUi();
+    }
+}
+
 function updateSlideUi(title = '') {
-    if (!overlayNode || !slidesState.length) return;
+    if (\!overlayNode || \!slidesState.length) return;
+
     const titleNode = getOverlayPart('.slide-viewer-title');
     const countNode = getOverlayPart('.slide-viewer-count');
     const prevButton = getOverlayPart('.slide-viewer-nav-prev');
@@ -81,14 +189,23 @@ function updateSlideUi(title = '') {
         page.classList.toggle('is-active', active);
         page.setAttribute('aria-hidden', active ? 'false' : 'true');
     });
-    if (titleNode) titleNode.textContent = title;
-    if (countNode) countNode.textContent = `${currentSlideIndex + 1} / ${slidesState.length}`;
-    if (prevButton) prevButton.disabled = currentSlideIndex === 0;
-    if (nextButton) nextButton.disabled = currentSlideIndex === slidesState.length - 1;
+
+    if (titleNode) {
+        titleNode.textContent = title;
+    }
+    if (countNode) {
+        countNode.textContent = `${currentSlideIndex + 1} / ${slidesState.length}`;
+    }
+    if (prevButton) {
+        prevButton.disabled = currentSlideIndex === 0;
+    }
+    if (nextButton) {
+        nextButton.disabled = currentSlideIndex === slidesState.length - 1;
+    }
 }
 
 function moveSlide(step) {
-    if (!slidesState.length) return;
+    if (\!slidesState.length) return;
     const nextIndex = Math.min(slidesState.length - 1, Math.max(0, currentSlideIndex + step));
     if (nextIndex === currentSlideIndex) return;
     currentSlideIndex = nextIndex;
@@ -103,6 +220,7 @@ function createOverlay() {
     node.innerHTML = `
         <div class="slide-viewer-shell">
             <button class="slide-viewer-close" aria-label="Close slides">&times;</button>
+            <button class="slide-viewer-fullscreen" aria-label="Enter fullscreen" aria-pressed="false">\u26F6</button>
             <div class="slide-viewer-frame">
                 <div class="slide-viewer-stage"></div>
             </div>
@@ -116,35 +234,85 @@ function createOverlay() {
             </div>
         </div>
     `;
+
     node.querySelector('.slide-viewer-close').addEventListener('click', closeSlideViewer);
+    node.querySelector('.slide-viewer-fullscreen').addEventListener('click', () => {
+        toggleFullscreen();
+    });
     node.querySelector('.slide-viewer-nav-prev').addEventListener('click', () => moveSlide(-1));
     node.querySelector('.slide-viewer-nav-next').addEventListener('click', () => moveSlide(1));
     node.addEventListener('click', (event) => {
-        if (event.target === node) closeSlideViewer();
+        if (event.target === node) {
+            closeSlideViewer();
+        }
     });
+
+    // ESC handler for non-iframe cases (MD legacy slides, future extensions).
+    // NOTE: This does NOT cover iframe-focused state — iframe has
+    // its own ESC handler injected in openRichSlideViewer().
+    // Do NOT remove during refactoring.
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && node.classList.contains('visible')) {
+            event.stopPropagation();
+            closeSlideViewer();
+        }
+    }, true);
+
+    // Cross-origin ESC fallback: rich HTML slides post a message
+    // when ESC is pressed inside them. This covers file:// -> https:// cases
+    // where contentDocument is inaccessible.
+    // Do NOT remove during refactoring.
+    window.addEventListener('message', (event) => {
+        if (event.data?.type === 'slide-escape' && node.classList.contains('visible')) {
+            closeSlideViewer();
+        }
+    });
+    document.addEventListener('fullscreenchange', updateFullscreenUi);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenUi);
+
     document.body.appendChild(node);
+    updateFullscreenUi();
     return node;
 }
 
 function onKeyDown(event) {
-    if (event.key === 'Escape') { closeSlideViewer(); return; }
-    if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); moveSlide(-1); return; }
-    if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); moveSlide(1); }
+    // ESC is handled by the capture-phase handler in createOverlay().
+    if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+        event.preventDefault();
+        moveSlide(-1);
+        return;
+    }
+    if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
+        event.preventDefault();
+        moveSlide(1);
+    }
 }
 
-export async function openSlideViewer({ markdownText, title = '', mdBaseUrl }) {
-    if (!markdownText) return;
+/**
+ * @deprecated LEGACY fallback only. Do NOT use for new features.
+ * Use openRichSlideViewer() instead. This function exists solely as a
+ * fallback when rich HTML is unavailable (404 / network error).
+ */
+export async function openSlideViewer({ markdownText, title = '', mdBaseUrl, onClose = null }) {
+    if (\!markdownText) return;
+
     try {
-        if (!overlayNode) overlayNode = createOverlay();
+        onCloseCallback = typeof onClose === 'function' ? onClose : null;
+
+        if (\!overlayNode) {
+            overlayNode = createOverlay();
+        }
+
         const { meta, body } = parseFrontmatter(markdownText);
         const slideChunks = body.split(/\n---\n/).filter((chunk) => chunk.trim());
-        if (!slideChunks.length) return;
+        if (\!slideChunks.length) return;
 
         const { marked } = await import('marked');
         marked.setOptions({ breaks: true, gfm: true });
 
         const stage = getOverlayPart('.slide-viewer-stage');
-        if (!stage) return;
+        if (\!stage) return;
+
         stage.innerHTML = '';
         slidesState = [];
 
@@ -152,12 +320,17 @@ export async function openSlideViewer({ markdownText, title = '', mdBaseUrl }) {
             const page = document.createElement('article');
             page.className = 'slide-viewer-page';
             page.setAttribute('aria-hidden', 'true');
+
             let parsedHtml = marked.parse(chunk.trim());
             parsedHtml = resolveImageUrls(parsedHtml, mdBaseUrl);
+
             const content = document.createElement('div');
             content.className = 'slide-content';
             content.innerHTML = DOMPurify.sanitize(parsedHtml, { FORBID_TAGS: ['a'] });
-            page.classList.add(classifySlide(content, index, slideChunks.length));
+            await inlineSvgImages(content);
+
+            const slideType = classifySlide(content, index, slideChunks.length);
+            page.classList.add(slideType);
             page.appendChild(content);
             stage.appendChild(page);
             slidesState.push(page);
@@ -168,31 +341,66 @@ export async function openSlideViewer({ markdownText, title = '', mdBaseUrl }) {
         overlayNode.setAttribute('aria-label', title || meta.title || 'Slides');
         setBodyScrollLock(true);
         updateSlideUi(title || meta.title || '');
+        updateFullscreenUi();
         window.addEventListener('keydown', onKeyDown);
     } catch (err) {
         console.error('[slide-viewer] ERROR:', err);
     }
 }
 
-// CHANGED(2026-03-24) — ported openRichSlideViewer from creation-space
+export function closeSlideViewer() {
+    window.removeEventListener('keydown', onKeyDown);
+    if (isOverlayFullscreen()) {
+        void exitFullscreenMode();
+    }
+    setBodyScrollLock(false);
+
+    if (overlayNode) {
+        overlayNode.classList.remove('visible');
+        const stage = getOverlayPart('.slide-viewer-stage');
+        if (stage) {
+            stage.innerHTML = '';
+        }
+        // Restore toolbar visibility when closing rich mode
+        const toolbar = getOverlayPart('.slide-viewer-toolbar');
+        if (toolbar) {
+            toolbar.style.display = '';
+        }
+    }
+
+    slidesState = [];
+    currentSlideIndex = 0;
+    updateFullscreenUi();
+
+    if (onCloseCallback) {
+        const cb = onCloseCallback;
+        onCloseCallback = null;
+        cb();
+    }
+}
+
 /**
- * Open a pre-generated rich HTML slide deck inside the overlay via iframe.
- * The rich HTML file has its own navigation, so we hide the parent toolbar.
+ * Open a pre-generated rich HTML slide deck in the viewer modal.
+ *
+ * The rich HTML is self-contained (CSS + JS inlined) and has its own
+ * navigation, so we display it via iframe and hide the parent toolbar.
  *
  * @param {Object} options
  * @param {string} options.htmlUrl - URL of the rich HTML slide file
  * @param {string} [options.title] - Title for the overlay aria-label
  */
-export function openRichSlideViewer({ htmlUrl, title = '' }) {
-    if (!htmlUrl) return;
+export function openRichSlideViewer({ htmlUrl, title = '', onClose = null }) {
+    if (\!htmlUrl) return;
 
     try {
-        if (!overlayNode) {
+        onCloseCallback = typeof onClose === 'function' ? onClose : null;
+
+        if (\!overlayNode) {
             overlayNode = createOverlay();
         }
 
         const stage = getOverlayPart('.slide-viewer-stage');
-        if (!stage) return;
+        if (\!stage) return;
 
         stage.innerHTML = '';
         slidesState = [];
@@ -211,56 +419,33 @@ export function openRichSlideViewer({ htmlUrl, title = '' }) {
         iframe.setAttribute('loading', 'lazy');
         stage.appendChild(iframe);
 
-        // Focus iframe once loaded; inject Esc listener into iframe
+        // ESC handler: inject into iframe's contentDocument after load.
+        // IMPORTANT: iframe is a separate browsing context — keydown events
+        // inside iframe do NOT reach the parent document (not even in capture
+        // phase). We must register directly on iframe.contentDocument.
+        // Same-origin only; cross-origin silently falls back to close button.
+        // Do NOT remove this handler during refactoring.
         iframe.addEventListener('load', () => {
             try {
-                iframe.contentWindow.focus();
-                // Inject Escape key handler into iframe so it works even when iframe has focus
-                iframe.contentWindow.document.addEventListener('keydown', (e) => {
+                iframe.contentDocument.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
-                        window.parent.postMessage({ type: 'slide-viewer-close' }, '*');
+                        closeSlideViewer();
                     }
                 });
-            } catch (_) { /* cross-origin — fallback to blur detection below */ }
+            } catch (_) {
+                // Cross-origin (e.g. file:// opening https:// iframe):
+                // contentDocument is inaccessible. Use postMessage fallback.
+                // The rich HTML slides call parent.postMessage({type:'slide-escape'})
+                // when ESC is pressed inside them.
+                console.warn('[slide-viewer] cross-origin iframe — ESC uses postMessage fallback');
+            }
         });
 
         overlayNode.classList.add('visible');
         overlayNode.setAttribute('aria-label', title || 'Rich Slides');
         setBodyScrollLock(true);
-
-        // Handle Escape at the parent level (works when parent has focus)
-        const richKeyHandler = (event) => {
-            if (event.key === 'Escape') {
-                window.removeEventListener('keydown', richKeyHandler);
-                closeSlideViewer();
-            }
-        };
-        window.addEventListener('keydown', richKeyHandler);
-
-        // Handle postMessage from iframe Escape key
-        const messageHandler = (event) => {
-            if (event.data && event.data.type === 'slide-viewer-close') {
-                window.removeEventListener('message', messageHandler);
-                window.removeEventListener('keydown', richKeyHandler);
-                closeSlideViewer();
-            }
-        };
-        window.addEventListener('message', messageHandler);
+        updateFullscreenUi();
     } catch (err) {
         console.error('[slide-viewer] rich slide ERROR:', err);
     }
-}
-
-export function closeSlideViewer() {
-    window.removeEventListener('keydown', onKeyDown);
-    setBodyScrollLock(false);
-    if (overlayNode) {
-        overlayNode.classList.remove('visible');
-        const stage = getOverlayPart('.slide-viewer-stage');
-        if (stage) stage.innerHTML = '';
-        const toolbar = getOverlayPart('.slide-viewer-toolbar');
-        if (toolbar) toolbar.style.display = '';
-    }
-    slidesState = [];
-    currentSlideIndex = 0;
 }
