@@ -1,0 +1,298 @@
+    /* ============================
+       Tech Stack Footer（左下、控えめ）
+       ============================ */
+    #tech-footer {
+      position: relative;
+      z-index: 5;
+      text-align: left;
+      padding: 2rem 3% 1.5rem;
+      pointer-events: none;
+    }
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
+    .tech-footer-line {
+      font-size: var(--kesson-footer-line, 0.80rem);
+      color: rgba(150, 175, 210, 0.25);
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+    }
+    .footer-signature {
+      margin-top: 0.55rem;
+      font-size: var(--kesson-footer-signature-size, 0.80rem);
+      color: rgba(195, 214, 241, 0.68);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+    }
+
+    /* CHANGED(2026-03-25): #169 — Footer dev link */
+    .footer-dev-link {
+      color: rgba(130, 170, 240, 0.45);
+      text-decoration: none;
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      pointer-events: auto;
+      transition: color 0.2s ease;
+    }
+    .footer-dev-link:hover {
+      color: rgba(170, 200, 255, 0.85);
+      text-decoration: none;
+    }
+
+    /* CHANGED(2026-03-25): #169 — Dev hub panel (slide-in from left) */
+    .dev-hub-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .dev-hub-backdrop.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dev-hub-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: min(360px, 88vw);
+      height: 100vh;
+      z-index: 1150;
+      background: rgba(7, 12, 24, 0.97);
+      border-right: 1px solid rgba(140, 178, 255, 0.2);
+      backdrop-filter: blur(14px);
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow-y: auto;
+      color: #d9e5ff;
+    }
+    .dev-hub-panel.is-open {
+      transform: translateX(0);
+    }
+    .dev-hub-panel::-webkit-scrollbar { width: 4px; }
+    .dev-hub-panel::-webkit-scrollbar-thumb {
+      background: rgba(140, 178, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .dev-hub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(140, 178, 255, 0.18);
+    }
+    .dev-hub-title {
+      font-size: 0.82rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.12em;
+      color: rgba(223, 236, 255, 0.95);
+    }
+    .dev-hub-close-btn {
+      background: none;
+      border: none;
+      color: rgba(180, 200, 255, 0.7);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .dev-hub-close-btn:hover {
+      color: rgba(220, 235, 255, 0.95);
+    }
+
+    .dev-hub-body {
+      padding: 12px 16px;
+    }
+    .dev-hub-section-label {
+      font-size: 0.65rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.1em;
+      color: rgba(150, 180, 220, 0.6);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .dev-hub-link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .dev-hub-link-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: rgba(14, 20, 38, 0.7);
+      border: 1px solid rgba(100, 140, 210, 0.18);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .dev-hub-link-btn:hover {
+      background: rgba(26, 40, 70, 0.7);
+      border-color: rgba(130, 170, 240, 0.35);
+      color: inherit;
+      text-decoration: none;
+    }
+    .dev-hub-link-label {
+      display: block;
+      font-size: 0.78rem;
+      font-family: var(--kesson-font-mono-ui);
+      color: rgba(200, 220, 255, 0.92);
+    }
+    .dev-hub-link-desc {
+      display: block;
+      font-size: 0.66rem;
+      color: rgba(160, 185, 220, 0.6);
+      margin-top: 2px;
+    }
+
+    /* CHANGED(2026-03-24): #160 — Overview slide card (replaces pill button) */
+    .overview-card-thumb {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+      background: linear-gradient(135deg, rgba(14, 20, 40, 0.95) 0%, rgba(30, 42, 74, 0.85) 100%);
+      border-bottom: 1px solid rgba(96, 165, 250, 0.15);
+      border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .overview-card-thumb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 40%, rgba(96, 165, 250, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .overview-card-thumb-text {
+      color: rgba(180, 210, 255, 0.82);
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 1.1rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+    .overview-card-badge {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(167, 139, 250, 0.18);
+      color: rgba(167, 139, 250, 0.9);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      vertical-align: middle;
+      font-weight: 400;
+    }
+
+    /* CHANGED(2026-03-25): #146 — External project link cards */
+    .guides-external-card {
+      text-decoration: none !important;
+    }
+    .guides-external-card:hover {
+      text-decoration: none !important;
+    }
+    .guides-external-open-label {
+      color: rgba(var(--color-sub-text), 0.55);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      margin-top: auto;
+      align-self: flex-end;
+    }
+    .guides-external-card:hover .guides-external-open-label {
+      color: rgba(var(--color-sub-text), 0.85);
+    }
+
+    /* CHANGED(2026-03-28): Panel container (cs reports-tab-content equivalent) */
+    .kesson-panel {
+      border: 1px solid rgba(var(--color-accent), .12);
+      border-radius: .5rem;
+      background: rgba(20, 25, 40, 0.6);
+      padding: .9rem;
+      box-shadow: var(--kesson-card-shadow-soft);
+    }
+
+    /* CHANGED(2026-03-28): RESEARCH section card styles */
+    .card.kesson-card.research-card {
+      cursor: default;
+      background:
+        linear-gradient(180deg, rgba(17, 24, 39, 0.94) 0%, rgba(12, 19, 31, 0.92) 100%);
+      border-color: rgba(122, 169, 245, 0.18);
+    }
+    .card.kesson-card.research-card:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .research-eyebrow {
+      color: rgba(156, 193, 255, 0.76);
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    /* CHANGED(2026-03-28): #180 — Clickable research-card variants */
+    .card.kesson-card.research-card--clickable {
+      cursor: pointer;
+    }
+    .card.kesson-card.research-card--clickable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(80, 130, 220, 0.18);
+    }
+    .card.kesson-card.research-card--link {
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .card.kesson-card.research-card--link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(80, 130, 220, 0.18);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* CHANGED(2026-03-28): #180 — Design Thinking modal (reuses about-overlay pattern) */
+    #dt-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 10, 20, 0);
+      transition: background 0.4s ease;
+      cursor: pointer;
+    }
+    #dt-modal-overlay.visible {
+      display: flex;
+    }
+    #dt-modal-overlay.open {
+      background: rgba(5, 10, 20, 0.5);
+    }
+    #dt-modal-overlay .about-glass {
+      opacity: 0;
+      transform: scale(0.92) translateY(20px);
+    }
+    #dt-modal-overlay.open .about-glass {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* ============================
+       CHANGED(2026-03-24): #151 — Devlog feature hidden via CSS
+       HTML is preserved for future restoration.
+       ============================ */
+    #devlog-gallery-section {
+      display: none !important;
+    }
+    #devlogOffcanvas {
+      display: none !important;
+    }

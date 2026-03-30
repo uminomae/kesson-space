@@ -1,0 +1,126 @@
+    /* ============================
+       左下: オーバーレイ（taglines）
+       ============================ */
+    #overlay {
+      position: fixed;
+      bottom: 8%;
+      left: 5%;
+      z-index: 10;
+      pointer-events: none;
+      text-align: left;
+      opacity: 0.4;
+      filter: blur(1.5px);
+      transform: scale(0.95);
+      transform-origin: left bottom;
+      will-change: opacity, filter, transform;
+    }
+    
+    #overlay a {
+      pointer-events: auto;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* ============================
+       h1 / subtitle — 白くクッキリ
+       ============================ */
+    h1 {
+      color: rgba(var(--color-heading), 0.95);
+      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      font-weight: 400;
+      font-size: var(--kesson-h1-size);
+      letter-spacing: clamp(0.15em, 1.2vmin, 0.5em);
+      line-height: 1.6;
+      margin-bottom: 0.6rem;
+      text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
+      transition: color 0.4s ease;
+    }
+
+    .subtitle {
+      color: rgba(var(--color-heading), 0.85);
+      font-family: var(--kesson-font-serif-ui);
+      font-size: clamp(0.6rem, 3.5vmin, 1.3rem);
+      letter-spacing: clamp(0.1em, 0.8vmin, 0.3em);
+      line-height: 1.5;
+      margin-top: 0;
+      font-weight: normal;
+      text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
+    }
+
+    #overlay a:hover h1 {
+      color: rgba(var(--color-heading), 1.0);
+    }
+
+    #taglines {
+      margin-bottom: 1rem;
+    }
+
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
+    .tagline {
+      font-size: var(--kesson-overlay-tagline, 0.80rem);
+      color: rgba(var(--color-heading), 0.75);
+      font-family: var(--kesson-font-serif-display);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
+    }
+
+    .tagline-en {
+      font-size: var(--kesson-overlay-tagline-en, 0.80rem);
+      color: rgba(var(--color-heading), 0.55);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: 0.03em;
+      line-height: 1.6;
+      text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
+    }
+
+    /* ============================
+       英語オーバーライド
+       ============================ */
+    html[lang="en"] h1 {
+      font-size: clamp(0.85rem, 5.0vmin, 1.8rem);
+      letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
+      line-height: 1.3;
+      margin-bottom: 0.4rem;
+      font-family: var(--kesson-font-serif-ui);
+    }
+
+    html[lang="en"] .subtitle {
+      font-size: clamp(0.5rem, 3.0vmin, 1.1rem);
+      letter-spacing: clamp(0.06em, 0.3vmin, 0.1em);
+      line-height: 1.3;
+      font-family: var(--kesson-font-serif-ui);
+    }
+
+    html[lang="en"] #taglines {
+      margin-bottom: 0.8rem;
+    }
+
+    /* ============================
+       モバイル横 (landscape short)
+       — vmin で自動縮小されるが、追加微調整
+       ============================ */
+    @media (max-height: 500px) and (orientation: landscape) {
+      #taglines {
+        margin-bottom: 0.4rem;
+      }
+      #overlay {
+        bottom: 6%;
+      }
+    }
+
+    /* --- 潜水スペーサー（スクロール余白） --- */
+    #hero-spacer {
+      position: relative;
+      height: 125vh;
+      z-index: 5;
+      pointer-events: none;
+    }
+    /* --- Articles出現タイミング用スペーサー --- */
+    #articles-spacer {
+      position: relative;
+      height: 80vh;
+      z-index: 5;
+      pointer-events: none;
+    }
+

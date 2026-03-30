@@ -1,0 +1,120 @@
+    /* ============================
+       スクロール案内 — 共通パターン
+       デフォルト非表示、.visible で表示+アニメ開始
+       ============================ */
+
+    /* --- 下部 scroll hint --- */
+    #scroll-hint {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #scroll-hint.visible {
+      opacity: 1;
+      visibility: visible;
+      animation: scrollHintPulse 3s ease-in-out infinite;
+    }
+    #scroll-hint span {
+      margin-bottom: 4px;
+    }
+    @keyframes scrollHintPulse {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(4px); }
+    }
+
+    /* --- 上部 scroll hint --- */
+    #scroll-hint-top {
+      position: fixed;
+      top: calc(var(--kesson-topbar-height) + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #scroll-hint-top.visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      animation: scrollHintTopPulse 3s ease-in-out infinite;
+    }
+    #scroll-hint-top span {
+      margin-top: 4px;
+    }
+    @keyframes scrollHintTopPulse {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-4px); }
+    }
+
+    /* Lightweight directional UI (scroll hints) */
+    #scroll-hint span,
+    #scroll-hint-top span {
+      display: block;
+      font-size: var(--kesson-font-size-ui-xs);
+      color: var(--kesson-ui-label-color);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: var(--kesson-letter-ui-wide);
+    }
+    #scroll-hint .arrow,
+    #scroll-hint-top .arrow {
+      font-size: var(--kesson-font-size-ui-arrow);
+      color: var(--kesson-ui-arrow-color);
+    }
+
+    /* ============================
+       操作ガイド（右上、言語トグルの下）
+       ============================ */
+    #control-guide {
+      position: fixed;
+      top: calc(var(--kesson-topbar-height) + 0.7rem);
+      right: 1rem;
+      z-index: 10;
+      pointer-events: none;
+      text-align: right;
+      transition: opacity 0.6s ease;
+    }
+    #control-guide .guide-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 0.5em;
+      margin-bottom: 3px;
+    }
+    /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
+    #control-guide .guide-key {
+      font-size: var(--kesson-control-guide, 0.80rem);
+      color: rgba(var(--color-sub-text), 0.35);
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: var(--kesson-letter-ui-tight);
+      white-space: nowrap;
+    }
+    #control-guide .guide-sep {
+      font-size: 0.80rem;
+      color: rgba(var(--color-sub-text), 0.2);
+    }
+    #control-guide .guide-action {
+      font-size: var(--kesson-control-guide, 0.80rem);
+      color: rgba(var(--color-sub-text), 0.3);
+      font-family: var(--kesson-font-serif-ui);
+      letter-spacing: var(--kesson-letter-ui-normal);
+      white-space: nowrap;
+    }
+    /* タッチデバイス用: デスクトップ版を隠す */
+    #control-guide .guide-touch { display: none; }
+    #control-guide .guide-desktop { display: flex; }
+    @media (hover: none) and (pointer: coarse) {
+      #control-guide .guide-touch { display: flex; }
+      #control-guide .guide-desktop { display: none; }
+    }
+
