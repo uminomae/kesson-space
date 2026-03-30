@@ -174,10 +174,13 @@ function createCard(item, lang = getCurrentLang()) {
     link.className = 'text-decoration-none';
     link.setAttribute('aria-label', buildArticleAriaLabel(titleText, normalizedLang));
 
+    const hasImage = !!safeTeaserUrl;
     const card = document.createElement('div');
-    card.className = 'card kesson-card h-100';
+    card.className = hasImage
+        ? 'card kesson-card kesson-image-card h-100'
+        : 'card kesson-card h-100';
 
-    if (safeTeaserUrl) {
+    if (hasImage) {
         const teaserImg = document.createElement('img');
         teaserImg.src = safeTeaserUrl;
         teaserImg.className = 'card-img-top';
@@ -191,9 +194,17 @@ function createCard(item, lang = getCurrentLang()) {
     const cardBody = document.createElement('div');
     cardBody.className = 'card-body';
 
-    const badge = document.createElement('span');
-    badge.className = 'badge bg-secondary mb-2 badge-article-type';
-    badge.textContent = getTypeLabel(normalizedType, normalizedLang);
+    if (hasImage) {
+        const kicker = document.createElement('div');
+        kicker.className = 'kesson-image-card-kicker';
+        kicker.textContent = getTypeLabel(normalizedType, normalizedLang);
+        cardBody.appendChild(kicker);
+    } else {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-secondary mb-2 badge-article-type';
+        badge.textContent = getTypeLabel(normalizedType, normalizedLang);
+        cardBody.appendChild(badge);
+    }
 
     const title = document.createElement('h6');
     title.className = 'card-title mb-1';
@@ -202,7 +213,6 @@ function createCard(item, lang = getCurrentLang()) {
     const date = document.createElement('small');
     date.textContent = dateText;
 
-    cardBody.appendChild(badge);
     cardBody.appendChild(title);
 
     if (excerptText) {
