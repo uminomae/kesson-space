@@ -154,6 +154,7 @@ const state = {
     lang: 'ja',
     mdModalInstance: null,
     mdRequestId: 0,
+    markdownCache: new Map(),
     dom: {
         featureCards: null,
         mdModal: null,
@@ -218,6 +219,47 @@ function normalizePdfBrowserUrl(rawUrl) {
     }
 }
 
+function buildMarkdownFetchCandidates(rawUrl) {
+    if (typeof rawUrl !== 'string' || !rawUrl.trim()) return [];
+
+    const trimmed = rawUrl.trim();
+    const candidates = [trimmed];
+
+    if (!/\.md(?:$|[?#])/i.test(trimmed)) {
+        return candidates;
+    }
+
+    try {
+        const parsed = new URL(trimmed);
+        const pathParts = parsed.pathname.split('/').filter(Boolean);
+        const assetsIndex = pathParts.findIndex((part) => part === 'assets');
+        if (parsed.hostname !== 'raw.githubusercontent.com' && assetsIndex >= 0) {
+            const filePath = pathParts.slice(assetsIndex).join('/');
+            candidates.push(`${PJDHIRO_RAW_BASE}/${filePath}`);
+        }
+    } catch {
+        // Keep primary URL only when parsing fails.
+    }
+
+    return [...new Set(candidates)];
+}
+
+async function fetchMarkdownText(mdUrl) {
+    let lastError = null;
+
+    for (const candidateUrl of buildMarkdownFetchCandidates(mdUrl)) {
+        try {
+            const response = await fetch(candidateUrl, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.text();
+        } catch (error) {
+            lastError = error;
+        }
+    }
+
+    throw (lastError || new Error('No markdown source could be loaded'));
+}
+
 function cacheDom() {
     state.dom.featureCards = document.getElementById('guides-feature-cards');
     state.dom.mdModal = document.getElementById('guides-md-modal');
@@ -278,7 +320,7 @@ function setMarkdownModalLoading({ title, pdfUrl }) {
     }
 }
 
-async function openMarkdownModal({ mdUrl, title = '', pdfUrl = '' }) {
+async function openMarkdownModal({ mdUrl, title = '', pdfUrl = '', cacheKey = '' }) {
     if (!mdUrl) return;
 
     const modal = ensureMdModalInstance();
@@ -293,9 +335,13 @@ async function openMarkdownModal({ mdUrl, title = '', pdfUrl = '' }) {
 
     try {
         const marked = await getMarked();
-        const response = await fetch(mdUrl, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const raw = await response.text();
+        const resolvedCacheKey = cacheKey || mdUrl;
+        let raw = state.markdownCache.get(resolvedCacheKey);
+
+        if (raw === undefined) {
+            raw = await fetchMarkdownText(mdUrl);
+            state.markdownCache.set(resolvedCacheKey, raw);
+        }
 
         if (requestId !== state.mdRequestId) return;
 
@@ -409,6 +455,7 @@ function renderFeatureCards() {
                 mdUrl: langLinks.mdUrl,
                 title: featureText.modalTitle || featureText.title,
                 pdfUrl: langLinks.pdfUrl,
+                cacheKey: `${guide.key}:${lang}`,
             });
         };
         card.addEventListener('click', openCardModal);
@@ -517,5 +564,6 @@ export function openGuideModal(key) {
         mdUrl: langLinks.mdUrl,
         title: featureText?.modalTitle || featureText?.title || key,
         pdfUrl: langLinks.pdfUrl,
+        cacheKey: `${key}:${lang}`,
     });
 }
