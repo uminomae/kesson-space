@@ -177,7 +177,7 @@ function createCard(item, lang = getCurrentLang()) {
     const hasImage = !!safeTeaserUrl;
     const card = document.createElement('div');
     card.className = hasImage
-        ? 'card kesson-card awareness-card awareness-image-card h-100'
+        ? 'card kesson-img-card h-100'
         : 'card kesson-card h-100';
 
     if (hasImage) {
@@ -192,13 +192,11 @@ function createCard(item, lang = getCurrentLang()) {
     }
 
     const cardBody = document.createElement('div');
-    cardBody.className = hasImage
-        ? 'card-body d-flex flex-column gap-2'
-        : 'card-body';
+    cardBody.className = 'card-body';
 
     if (hasImage) {
         const kicker = document.createElement('div');
-        kicker.className = 'awareness-card-kicker';
+        kicker.className = 'card-kicker';
         kicker.textContent = getTypeLabel(normalizedType, normalizedLang);
         cardBody.appendChild(kicker);
     } else {
@@ -216,9 +214,7 @@ function createCard(item, lang = getCurrentLang()) {
 
     if (excerptText) {
         const excerpt = document.createElement('p');
-        excerpt.className = hasImage
-            ? 'card-text awareness-image-card-comment mb-0'
-            : 'card-text';
+        excerpt.className = 'card-text mb-0';
         excerpt.textContent = excerptText;
         cardBody.appendChild(excerpt);
     }
