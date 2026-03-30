@@ -1,0 +1,259 @@
+    /* ============================
+       Top menu bar (Bootstrap navbar)
+       ============================ */
+    #kesson-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      min-height: var(--kesson-topbar-height);
+      z-index: 60;
+      background: linear-gradient(
+        to bottom,
+        var(--kesson-topbar-bg-start) 0%,
+        var(--kesson-topbar-bg-end) 100%
+      );
+      border-bottom: 1px solid var(--kesson-topbar-border-color);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, var(--kesson-topbar-shadow-alpha));
+      backdrop-filter: blur(var(--kesson-topbar-blur)) saturate(var(--kesson-topbar-saturate));
+      -webkit-backdrop-filter: blur(var(--kesson-topbar-blur)) saturate(var(--kesson-topbar-saturate));
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    #kesson-topbar .container-fluid {
+      min-height: var(--kesson-topbar-height);
+    }
+    #kesson-topbar .topbar-brand-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 0.52rem;
+      min-width: 0;
+      max-width: calc(100% - 3rem);
+      white-space: nowrap;
+      overflow: hidden;
+      padding: 0.24rem 0;
+    }
+    #kesson-topbar .topbar-main-title {
+      color: var(--kesson-topbar-title-color);
+      font-family: var(--kesson-font-serif-display);
+      font-size: var(--kesson-topbar-main-title-size);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      text-transform: none;
+      margin: 0;
+      padding: 0;
+      text-decoration: none;
+      flex: 0 0 auto;
+    }
+    #kesson-topbar .topbar-main-title:hover,
+    #kesson-topbar .topbar-main-title:focus-visible {
+      color: var(--kesson-topbar-title-hover-color);
+    }
+    #kesson-topbar .topbar-collab-note--brand {
+      display: inline-block;
+      margin-left: 0.1rem;
+      padding-left: 0.5rem;
+      border-left: 1px solid var(--kesson-topbar-note-divider-color);
+      max-width: 24rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 0 1 auto;
+    }
+    #kesson-topbar .topbar-subtitle {
+      font-size: var(--kesson-topbar-subtitle-size);
+      color: var(--kesson-topbar-subtitle-color);
+      letter-spacing: 0.1em;
+      line-height: 1;
+      text-transform: none;
+      flex: 0 0 auto;
+      pointer-events: none;
+    }
+    #kesson-topbar .topbar-subtitle::before,
+    #kesson-topbar .topbar-meta::before {
+      content: '·';
+      color: var(--kesson-topbar-divider-color);
+      margin-right: 0.45rem;
+    }
+    #kesson-topbar .topbar-meta {
+      display: block;
+      flex: 0 0 auto;
+      padding: 0;
+      font-size: var(--kesson-topbar-meta-size);
+      line-height: 1;
+      letter-spacing: 0.05em;
+      color: var(--kesson-topbar-meta-color);
+      font-family: var(--kesson-font-serif-ui);
+      pointer-events: none;
+    }
+    #kesson-topbar .topbar-meta--author {
+      font-size: var(--kesson-topbar-meta-author-size);
+      color: var(--kesson-topbar-meta-author-color);
+    }
+    #kesson-topbar .topbar-link {
+      color: var(--kesson-topbar-link-color);
+      font-family: var(--kesson-font-mono-ui);
+      font-size: var(--kesson-topbar-link-size);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.72rem;
+      border-radius: 999px;
+      transition: color 0.25s ease, background-color 0.25s ease;
+    }
+    #kesson-topbar .topbar-link:hover,
+    #kesson-topbar .topbar-link:focus-visible {
+      color: var(--kesson-topbar-link-hover-color);
+      background: var(--kesson-topbar-link-hover-bg);
+    }
+    #kesson-topbar .topbar-link-btn {
+      border: 0;
+      background: transparent;
+      line-height: inherit;
+      width: 100%;
+      text-align: left;
+    }
+    #kesson-topbar .topbar-lang-btn {
+      color: var(--kesson-topbar-lang-color);
+      border: 1px solid var(--kesson-topbar-lang-border);
+      background: var(--kesson-topbar-lang-bg);
+    }
+    #kesson-topbar .topbar-collab-item {
+      margin-left: 0.45rem;
+      padding-left: 0.55rem;
+      border-left: 1px solid var(--kesson-topbar-note-divider-color);
+    }
+    #kesson-topbar .topbar-collab-note {
+      display: inline-block;
+      font-family: var(--kesson-font-serif-ui);
+      font-size: var(--kesson-topbar-note-size);
+      line-height: 1;
+      letter-spacing: 0.06em;
+      color: var(--kesson-topbar-note-color);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+    #kesson-topbar .topbar-toggler {
+      border-color: var(--kesson-topbar-toggler-border);
+      padding: 0.18rem 0.44rem;
+    }
+    #kesson-topbar .topbar-toggler:focus {
+      box-shadow: 0 0 0 0.14rem var(--kesson-topbar-toggler-focus);
+    }
+    #kessonTopbarNav {
+      margin-top: 0.35rem;
+      padding: 0.35rem 0.2rem 0.5rem;
+      border-radius: 0.6rem;
+      background: var(--kesson-topbar-nav-bg);
+      border: 1px solid var(--kesson-topbar-nav-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    @media (min-width: 1200px) {
+      #kessonTopbarNav {
+        margin-top: 0;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      #kesson-topbar .topbar-link-btn {
+        width: auto;
+        text-align: center;
+      }
+      #kesson-topbar .topbar-lang-item {
+        margin-left: 0.35rem;
+      }
+    }
+    @media (max-width: 991.98px) {
+      #kesson-topbar .topbar-meta--author {
+        display: none;
+      }
+      #kesson-topbar .topbar-subtitle {
+        font-size: var(--kesson-topbar-subtitle-size-md);
+      }
+      #kesson-topbar .topbar-collab-item {
+        margin-left: 0.3rem;
+        padding-left: 0.45rem;
+      }
+    }
+    @media (max-width: 767.98px) {
+      #kesson-topbar .topbar-subtitle {
+        display: none;
+      }
+      #kesson-topbar .topbar-main-title {
+        font-size: var(--kesson-topbar-main-title-size-sm);
+      }
+      #kesson-topbar .topbar-collab-note--brand {
+        max-width: 10.5rem;
+        padding-left: 0.38rem;
+        font-size: var(--kesson-topbar-credit-size);
+        letter-spacing: 0.04em;
+      }
+      #kesson-topbar .topbar-collab-item {
+        margin-left: 0;
+        padding: 0.28rem 0.76rem 0 0.76rem;
+        border-left: 0;
+      }
+      #kesson-topbar .topbar-collab-note {
+        font-size: var(--kesson-topbar-note-size-sm);
+        letter-spacing: 0.05em;
+      }
+    }
+
+    /* ============================
+       nav-label (3Dナビラベル)
+       ============================ */
+    .nav-label {
+      position: fixed;
+      z-index: 15;
+      pointer-events: auto;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      color: rgba(var(--color-heading), 0.9);
+      font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      font-size: clamp(0.80rem, 2.8vmin, 1.1rem);
+      letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
+      text-shadow: 0 0 12px rgba(var(--color-accent), 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+      transform: translate(-50%, -100%);
+      white-space: nowrap;
+      transition: filter 0.15s ease, opacity 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+      will-change: filter;
+    }
+    .nav-label:hover {
+      filter: blur(0px) !important;
+      color: rgba(var(--color-heading), 1.0);
+    }
+    .nav-label:focus-visible,
+    .nav-label.is-nav-focused {
+      outline: 2px solid var(--kesson-focus-ring);
+      outline-offset: 4px;
+      filter: blur(0px) !important;
+      text-shadow: 0 0 18px rgba(110, 160, 255, 0.72), 0 0 6px rgba(0, 0, 0, 0.85);
+    }
+    .nav-label--gem {
+      color: rgba(var(--color-nav-gem), 0.85); /* CHANGED(2026-03-28) #181 — token化 */
+      text-shadow: 0 0 12px rgba(123, 143, 232, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+    }
+    .nav-label--gem:hover,
+    .nav-label--gem:focus-visible,
+    .nav-label--gem.is-nav-focused {
+      color: rgba(var(--color-nav-gem-hover), 1.0); /* CHANGED(2026-03-28) #181 — token化 */
+    }
+    .nav-label--x {
+      color: rgba(220, 225, 240, 0.85);
+      text-shadow: 0 0 12px rgba(180, 190, 220, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
+      font-weight: bold;
+      font-size: clamp(0.58rem, 3.2vmin, 1.28rem);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .nav-label--x:hover,
+    .nav-label--x:focus-visible,
+    .nav-label--x.is-nav-focused {
+      color: rgba(240, 245, 255, 1.0);
+    }
+

@@ -1,0 +1,14 @@
+/* ============================
+   kesson-space main.css
+   extracted from index.html <style> tag
+   ============================ */
+    /* --- Bootstrapリセットの上書き: 本体UIを保護 --- */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: var(--color-bg-body);
+      font-family: var(--kesson-font-serif-display);
+    }
+
