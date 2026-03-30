@@ -1,0 +1,203 @@
+    /* ============================
+       T-018: Extracted from dev-panel.js
+       CHANGED(2026-02-16)
+       ============================ */
+
+    #dev-toggle,
+    #dev-links-toggle {
+      position: fixed;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 1001;
+      background: var(--kesson-dev-toggle-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--kesson-dev-toggle-border);
+      border-right: none;
+      border-radius: var(--kesson-radius-lg) 0 0 var(--kesson-radius-lg);
+      font-family: var(--kesson-font-mono-ui);
+      padding: 8px 5px;
+      cursor: pointer;
+      writing-mode: vertical-rl;
+      transition: all var(--kesson-transition-standard);
+    }
+    #dev-toggle {
+      top: 50%;
+      color: rgba(180, 200, 255, 0.6);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+    }
+    #dev-links-toggle {
+      top: calc(50% + 95px);
+      color: rgba(180, 200, 255, 0.75);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+    }
+    #dev-toggle:hover,
+    #dev-links-toggle:hover {
+      background: var(--kesson-dev-toggle-bg-hover);
+    }
+    #dev-toggle:hover {
+      color: rgba(200, 220, 255, 0.9);
+    }
+    #dev-links-toggle:hover {
+      color: rgba(210, 225, 255, 0.95);
+    }
+    #dev-toggle.open { right: 300px; }
+
+    #dev-panel {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      z-index: 1000;
+      overflow-y: auto;
+      transition: right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      background: rgba(13, 17, 23, 0.95);
+      backdrop-filter: blur(12px);
+      border-left: 1px solid rgba(var(--color-accent), 0.1);
+    }
+    #dev-panel.open { right: 0; }
+    #dev-panel::-webkit-scrollbar { width: 4px; }
+    #dev-panel::-webkit-scrollbar-thumb {
+      background: rgba(var(--color-accent), 0.2);
+      border-radius: var(--kesson-radius-sm);
+    }
+
+    #dev-panel .accordion-button {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.72rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.05em;
+      background: rgba(20, 28, 40, 0.9);
+      color: rgba(140, 170, 220, 0.8);
+      border: none;
+      box-shadow: none;
+    }
+    #dev-panel .accordion-button:not(.collapsed) {
+      background: rgba(30, 45, 70, 0.7);
+      color: rgba(160, 190, 255, 0.9);
+    }
+    #dev-panel .accordion-button::after {
+      filter: invert(0.6) sepia(1) saturate(2) hue-rotate(190deg);
+    }
+    #dev-panel .accordion-body {
+      padding: 0.5rem 0.75rem;
+      background: rgba(10, 15, 25, 0.8);
+    }
+    #dev-panel .accordion-item {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(var(--color-accent), 0.06);
+    }
+
+    /* ============================
+       Dev Links Hub (?dev)
+       ============================ */
+    .offcanvas-links {
+      --bs-offcanvas-width: min(520px, 92vw);
+      width: min(520px, 92vw);
+    }
+
+    #devLinksOffcanvas .nav-tabs {
+      border-bottom-color: rgba(110, 140, 200, 0.35);
+    }
+    #devLinksOffcanvas .nav-tabs .nav-link {
+      color: rgba(190, 210, 240, 0.75);
+      border: 1px solid transparent;
+      border-bottom: none;
+    }
+    #devLinksOffcanvas .nav-tabs .nav-link.active {
+      color: rgba(220, 232, 255, 0.96);
+      background: rgba(34, 44, 67, 0.78);
+      border-color: rgba(110, 140, 200, 0.35);
+    }
+
+    .dev-links-item {
+      background: rgba(14, 18, 30, 0.84);
+      border-color: rgba(100, 140, 210, 0.24) !important;
+    }
+    .dev-links-key {
+      font-size: 0.66rem;
+      color: rgba(170, 190, 220, 0.7);
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.05em;
+    }
+    .dev-links-url {
+      font-size: 0.68rem;
+      color: rgba(153, 202, 255, 0.95);
+      user-select: all;
+      white-space: normal;
+      word-break: break-all;
+    }
+    .dev-links-json-preview {
+      max-height: 40vh;
+      overflow: auto;
+      border: 1px solid rgba(100, 140, 210, 0.24);
+      border-radius: 0.35rem;
+      background: rgba(12, 16, 26, 0.92);
+      color: rgba(167, 214, 255, 0.9);
+      padding: 0.75rem;
+      font-size: 0.7rem;
+    }
+
+    #dev-panel .form-check {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.25rem 0;
+      margin: 0;
+    }
+    #dev-panel .form-check-label {
+      font-size: 0.68rem;
+      font-family: var(--kesson-font-mono-ui);
+      color: rgba(var(--color-sub-text), 0.7);
+      order: -1;
+      padding-left: 0;
+    }
+    #dev-panel .form-check-input {
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .dev-slider-row { margin-bottom: 0.4rem; }
+    .dev-slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+      font-family: var(--kesson-font-mono-ui);
+      color: rgba(var(--color-sub-text), 0.6);
+      margin-bottom: 0.15rem;
+    }
+    .dev-slider-val {
+      color: rgba(130, 200, 255, 0.9);
+      min-width: 36px;
+      text-align: right;
+    }
+    #dev-panel .form-range { height: 0.5rem; padding: 0; }
+    #dev-panel .form-range::-webkit-slider-thumb {
+      width: 12px; height: 12px;
+      background: rgba(100, 160, 255, 0.8);
+      border: 1px solid rgba(150, 200, 255, 0.3);
+    }
+
+    #dev-export-result {
+      font-size: 0.58rem;
+      max-height: 180px;
+      overflow-y: auto;
+      display: none;
+      user-select: all;
+    }
+
+    /* Dev panel header text */
+    .dev-panel-header-text {
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.1em;
+    }
+
+    /* Dev export button */
+    .dev-export-btn {
+      font-size: 0.68rem;
+    }
+

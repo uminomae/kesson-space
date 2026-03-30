@@ -1,0 +1,417 @@
+    /* ============================
+       T-018: Extracted from viewer.js injectViewerStyles()
+       CHANGED(2026-02-16)
+       ============================ */
+
+    #kesson-viewer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--kesson-viewer-overlay-closed);
+      transition: background 0.5s ease;
+      cursor: pointer;
+    }
+    #kesson-viewer.visible {
+      display: flex;
+    }
+    #kesson-viewer.open {
+      background: var(--kesson-viewer-overlay-open);
+    }
+
+    .viewer-glass {
+      position: relative;
+      width: 90vw;
+      max-width: 720px;
+      height: 85vh;
+      cursor: default;
+      overflow: hidden;
+      background: var(--kesson-viewer-glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--kesson-viewer-glass-border);
+      border-radius: var(--kesson-radius-md);
+      box-shadow:
+        0 0 60px rgba(0, 0, 0, 0.4),
+        0 0 120px rgba(30, 60, 120, 0.1),
+        inset 0 0 60px rgba(20, 40, 80, 0.05);
+      opacity: 0;
+      transform: scale(0.92) translateY(20px);
+      transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #kesson-viewer.open .viewer-glass {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .viewer-close {
+      position: static;
+      background: none;
+      border: none;
+      color: rgba(var(--color-heading), 0.3);
+      font-size: 1.3rem;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--kesson-transition-standard);
+      z-index: 10;
+    }
+    .viewer-close:hover {
+      color: rgba(var(--color-heading), 0.7);
+    }
+
+    .viewer-content {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+    }
+    .viewer-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: var(--kesson-radius-md);
+    }
+    .viewer-content--x {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .x-embed-wrap {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+    }
+    .x-embed-wrap .twitter-timeline {
+      width: 100%;
+    }
+    .x-embed-footer {
+      padding: 0.5rem 1rem 0.9rem;
+      text-align: center;
+      font-size: 0.78rem;
+    }
+    .x-embed-handle {
+      color: rgba(var(--color-embed-handle), 0.7); /* CHANGED(2026-03-28) #181 — token化 */
+      font-size: 0.72rem;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.04em;
+    }
+    .x-embed-footer a {
+      color: rgba(var(--color-link), 0.85);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* viewer scrollbar */
+    .viewer-content::-webkit-scrollbar { width: 3px; }
+    .viewer-content::-webkit-scrollbar-track { background: transparent; }
+    .viewer-content::-webkit-scrollbar-thumb {
+      background: rgba(var(--color-accent), 0.12);
+      border-radius: 2px;
+    }
+
+    /* --- markdown article --- */
+    .md-article {
+      padding: 2.5rem 2rem 3rem;
+      color: rgba(var(--color-highlight), 0.85);
+      line-height: 1.85;
+      font-size: 0.92rem;
+    }
+
+    /* provenance (generator info) */
+    .md-provenance {
+      font-size: 0.68rem;
+      color: var(--kesson-md-provenance);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.03em;
+    }
+
+    .md-body p {
+      margin: 0 0 1.2em;
+    }
+    .md-body h1 {
+      font-size: 1.2rem;
+      color: var(--kesson-md-h1);
+      margin: 2rem 0 0.8rem;
+      line-height: 1.4;
+      letter-spacing: normal;
+      text-shadow: none;
+      border: none;
+      page-break-before: unset;
+    }
+    .md-body h1:first-child {
+      font-size: 1.3rem;
+      color: var(--kesson-md-h1-strong);
+      margin-top: 0;
+      margin-bottom: 1.2rem;
+    }
+    .md-body h2 {
+      font-size: 1.05rem;
+      color: var(--kesson-md-h2);
+      margin: 1.8rem 0 0.7rem;
+      line-height: 1.4;
+    }
+    .md-body h3 {
+      font-size: 0.95rem;
+      color: var(--kesson-md-h3);
+      margin: 1.4rem 0 0.5rem;
+    }
+    .md-body h4 {
+      font-size: 0.9rem;
+      color: var(--kesson-md-h4);
+      margin: 1.2rem 0 0.4rem;
+    }
+    .md-body hr {
+      border: none;
+      border-top: 1px solid rgba(var(--color-accent), 0.08);
+      margin: 2rem 0;
+    }
+    .md-body blockquote {
+      border-left: 2px solid rgba(var(--color-accent), 0.15);
+      padding-left: 1em;
+      margin: 1em 0;
+      color: var(--kesson-md-quote);
+      font-style: italic;
+    }
+    .md-body a {
+      color: var(--kesson-md-link);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .md-body a:hover {
+      color: var(--kesson-md-link-hover);
+    }
+    .md-body strong {
+      color: var(--kesson-md-strong);
+      font-weight: 600;
+    }
+    .md-body em {
+      color: var(--kesson-md-em);
+    }
+
+    /* --- code blocks (marked.js output) --- */
+    .md-body pre {
+      background: rgba(8, 12, 24, 0.6);
+      border: 1px solid rgba(var(--color-accent), 0.08);
+      border-radius: var(--kesson-radius-md);
+      padding: 1em 1.2em;
+      margin: 1.2em 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.5;
+    }
+    .md-body pre code {
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.82rem;
+      color: rgba(var(--color-sub-text), 0.8);
+      background: none;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      white-space: pre;
+    }
+    .md-body code {
+      font-family: var(--kesson-font-mono-ui);
+      font-size: 0.85em;
+      color: var(--kesson-md-inline-code);
+      background: var(--kesson-md-inline-code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: var(--kesson-radius-sm);
+    }
+
+    /* --- lists (marked.js output) --- */
+    .md-body ul, .md-body ol {
+      padding-left: 1.5em;
+      margin: 0.8em 0;
+    }
+    .md-body li {
+      margin-bottom: 0.4em;
+      line-height: 1.7;
+    }
+    .md-body li > ul, .md-body li > ol {
+      margin: 0.3em 0;
+    }
+
+    /* --- table (marked.js GFM output) --- */
+    .md-body table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.82rem;
+      margin: 1.2em 0;
+      overflow-x: auto;
+      display: block;
+    }
+    .md-body thead {
+      border-bottom: 1px solid rgba(var(--color-accent), 0.15);
+    }
+    .md-body th, .md-body td {
+      padding: 0.5em 0.8em;
+      border: 1px solid rgba(var(--color-accent), 0.08);
+      text-align: left;
+    }
+    .md-body th {
+      background: var(--kesson-md-table-head-bg);
+      color: var(--kesson-md-table-head-text);
+      font-weight: 500;
+    }
+    .md-body td {
+      color: var(--kesson-md-table-cell-text);
+    }
+
+    /* --- images --- */
+    .md-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--kesson-radius-sm);
+      margin: 1em 0;
+    }
+
+    /* ============================
+       Viewer header bar（右上: PDF + MD + 閉じる）
+       ============================ */
+    .viewer-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem 0.6rem 1.2rem;
+      border-bottom: 1px solid rgba(var(--color-accent), 0.08);
+      flex-shrink: 0;
+    }
+    /* CHANGED(2026-03-06): #105 — modal タイトル */
+    /* CHANGED(2026-03-07): #114 — font-size-ctrl topbar ボタン */
+    /* CHANGED(2026-03-07): #116 — topbar-font-btn 0.6rem → 0.65rem */
+    .topbar-font-size-ctrl {
+      opacity: 0.75;
+    }
+    .topbar-font-btn {
+      font-family: var(--kesson-font-mono-ui);
+      font-size: var(--kesson-topbar-credit-size, 0.80rem);
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.5rem;
+      background: transparent;
+      border: 1px solid var(--kesson-topbar-nav-border);
+      color: var(--kesson-topbar-link-color);
+      line-height: 1.4;
+    }
+    .topbar-font-btn:hover:not(:disabled) {
+      background: var(--kesson-topbar-link-hover-bg);
+      color: var(--kesson-topbar-link-hover-color);
+    }
+    .topbar-font-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .viewer-title {
+      flex: 1;
+      font-size: 0.82rem;
+      font-family: var(--kesson-font-mono-ui);
+      color: rgba(var(--color-highlight), 0.85);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .viewer-header-links {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .viewer-header-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3em 0.85em;
+      font-size: 0.72rem;
+      font-family: var(--kesson-font-mono-ui);
+      letter-spacing: 0.04em;
+      color: rgba(160, 185, 240, 0.75);
+      border: 1px solid rgba(var(--color-accent), 0.15);
+      border-radius: var(--kesson-radius-sm);
+      text-decoration: none;
+      transition: all var(--kesson-transition-standard);
+      white-space: nowrap;
+    }
+    .viewer-header-link:hover {
+      color: rgba(210, 228, 255, 0.95);
+      border-color: rgba(var(--color-accent), 0.3);
+      background: rgba(60, 90, 150, 0.12);
+    }
+    .viewer-header-link--md {
+      color: rgba(140, 170, 220, 0.6);
+      border-color: rgba(var(--color-accent), 0.08);
+      font-size: 0.67rem;
+    }
+    .viewer-header-link--md:hover {
+      color: rgba(180, 210, 255, 0.85);
+      border-color: rgba(var(--color-accent), 0.2);
+    }
+    /* viewer-glass をフレックス縦並びに変更 */
+    .viewer-glass {
+      display: flex !important;
+      flex-direction: column;
+    }
+    .viewer-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+    /* 旧 md-footer / md-pdf-link は非表示（念のため残す） */
+    .md-footer { display: none; }
+    .md-pdf-link { display: none; }
+
+    /* loading */
+    .md-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    .md-loading-dot {
+      width: 6px;
+      height: 6px;
+      background: rgba(var(--color-link), 0.4);
+      border-radius: 50%;
+      animation: md-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes md-pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* viewer mobile */
+    @media (max-width: 600px) {
+      .viewer-glass {
+        width: 96vw;
+        height: 90vh;
+        border-radius: var(--kesson-radius-sm);
+      }
+      .md-article {
+        padding: 2rem 1.2rem 2.5rem;
+        font-size: 0.88rem;
+        line-height: 1.8;
+      }
+      .md-body h1:first-child { font-size: 1.1rem; }
+      .md-body h1 { font-size: 1.05rem; }
+      .md-body h2 { font-size: 0.95rem; }
+      .md-body table { font-size: 0.75rem; }
+      .md-body pre { padding: 0.8em; }
+      .md-body pre code { font-size: 0.75rem; }
+    }
+
+    /* Hidden state for nav labels (camera behind / scroll fade) */
+    .nav-label--hidden {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+

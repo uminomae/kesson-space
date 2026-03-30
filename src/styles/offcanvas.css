@@ -1,0 +1,53 @@
+    /* ============================
+       Offcanvas 詳細ビュー
+       ============================ */
+    .session-content {
+      color: var(--kesson-offcanvas-text);
+      font-family: var(--kesson-font-mono-ui);
+    }
+    .session-content h1,
+    .session-content h2,
+    .session-content h3 {
+      color: var(--kesson-offcanvas-heading);
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    .session-content h1 { font-size: 1.3rem; }
+    .session-content h2 { font-size: 1.1rem; }
+    .session-content h3 { font-size: 0.95rem; }
+    .session-content p {
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--kesson-offcanvas-text);
+      margin-bottom: 1em;
+      font-family: var(--kesson-font-serif-display);
+    }
+    .session-content ul,
+    .session-content ol {
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--kesson-offcanvas-text);
+      padding-left: 1.5em;
+    }
+    .session-content code {
+      background: rgba(var(--color-accent), 0.1);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      font-size: 0.8em;
+    }
+    .session-content pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1em;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .session-content a {
+      color: var(--kesson-offcanvas-link);
+    }
+    .offcanvas-body::-webkit-scrollbar { width: 6px; }
+    .offcanvas-body::-webkit-scrollbar-track { background: transparent; }
+    .offcanvas-body::-webkit-scrollbar-thumb {
+      background: var(--kesson-scrollbar-thumb);
+      border-radius: var(--kesson-radius-md);
+    }
+
