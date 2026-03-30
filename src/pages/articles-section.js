@@ -177,7 +177,7 @@ function createCard(item, lang = getCurrentLang()) {
     const hasImage = !!safeTeaserUrl;
     const card = document.createElement('div');
     card.className = hasImage
-        ? 'card kesson-card kesson-image-card h-100'
+        ? 'card kesson-card awareness-card awareness-image-card h-100'
         : 'card kesson-card h-100';
 
     if (hasImage) {
@@ -192,11 +192,13 @@ function createCard(item, lang = getCurrentLang()) {
     }
 
     const cardBody = document.createElement('div');
-    cardBody.className = 'card-body';
+    cardBody.className = hasImage
+        ? 'card-body d-flex flex-column gap-2'
+        : 'card-body';
 
     if (hasImage) {
         const kicker = document.createElement('div');
-        kicker.className = 'kesson-image-card-kicker';
+        kicker.className = 'awareness-card-kicker';
         kicker.textContent = getTypeLabel(normalizedType, normalizedLang);
         cardBody.appendChild(kicker);
     } else {
@@ -206,23 +208,27 @@ function createCard(item, lang = getCurrentLang()) {
         cardBody.appendChild(badge);
     }
 
-    const title = document.createElement('h6');
-    title.className = 'card-title mb-1';
+    const title = document.createElement('h3');
+    title.className = 'card-title h6';
     title.textContent = titleText;
-
-    const date = document.createElement('small');
-    date.textContent = dateText;
 
     cardBody.appendChild(title);
 
     if (excerptText) {
         const excerpt = document.createElement('p');
-        excerpt.className = 'card-text';
+        excerpt.className = hasImage
+            ? 'card-text awareness-image-card-comment mb-0'
+            : 'card-text';
         excerpt.textContent = excerptText;
         cardBody.appendChild(excerpt);
     }
 
-    cardBody.appendChild(date);
+    if (dateText) {
+        const date = document.createElement('small');
+        date.textContent = dateText;
+        cardBody.appendChild(date);
+    }
+
     card.appendChild(cardBody);
     link.appendChild(card);
     col.appendChild(link);
