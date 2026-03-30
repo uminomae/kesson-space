@@ -1,3 +1,4 @@
+// SYNCED FROM: awareness-space/src/scroll-coordinator.js (2026-03-31)
 // scroll-coordinator.js
 // IMPORTANT: window.scrollTo must be owned by this module only.
 // Other modules must request scrolling through requestScroll().
@@ -11,6 +12,7 @@ export const SCROLL_PRIORITY = Object.freeze({
   DEFAULT: 1,
 });
 const PAGE_EXIT_ARM_SOURCE = 'page-exit';
+const SCROLL_DEBUG = false;
 
 let lockDepth = 0;
 let activeRequestId = 0;
@@ -18,6 +20,11 @@ let pendingRequest = null;
 let isFlushing = false;
 let lifecycleInitialized = false;
 let initPhase = false;
+
+function logDebug(...args) {
+  if (!SCROLL_DEBUG) return;
+  console.log(...args);
+}
 
 function normalizeY(targetY) {
   if (!Number.isFinite(targetY)) return 0;
@@ -128,7 +135,7 @@ export function requestScroll(targetY, source = 'unknown', options = {}) {
 export function commitNavigationIntent(source = 'unknown') {
   if (!initPhase) return;
   initPhase = false;
-  console.log('[scroll] commitNavigationIntent:', source,
+  logDebug('[scroll] commitNavigationIntent:', source,
     pendingRequest ? `winner=${pendingRequest.source}(p=${pendingRequest.priority})` : 'no-pending');
   flushPendingRequest();
 }
@@ -187,7 +194,7 @@ export function initScrollCoordinator({ forceTopOnLoad = true } = {}) {
 
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
-      console.log('[scroll] bfcache pageshow - no forced scroll');
+      logDebug('[scroll] bfcache pageshow - no forced scroll');
     }
   });
 
