@@ -158,7 +158,7 @@ function buildArticleAriaLabel(titleText, lang) {
 function createCard(item, lang = getCurrentLang()) {
     const normalizedLang = normalizeLang(lang);
     const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4';
+    col.className = 'col card-column';
 
     const normalizedType = normalizeType(item);
     const dateText = formatDate(item.date, normalizedLang);
@@ -166,24 +166,24 @@ function createCard(item, lang = getCurrentLang()) {
     const safeTeaserUrl = sanitizeHttpUrl(item.teaser, '');
     const titleText = getLocalizedText(item, 'title', normalizedLang);
     const excerptText = getLocalizedText(item, 'excerpt', normalizedLang);
+    const hasImage = !!safeTeaserUrl;
 
     const link = document.createElement('a');
     link.href = safeUrl;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.className = 'text-decoration-none';
+    link.className = hasImage ? 'img-card-link' : 'text-decoration-none';
     link.setAttribute('aria-label', buildArticleAriaLabel(titleText, normalizedLang));
 
-    const hasImage = !!safeTeaserUrl;
     const card = document.createElement('div');
     card.className = hasImage
-        ? 'card kesson-img-card h-100'
+        ? 'img-card'
         : 'card kesson-card h-100';
 
     if (hasImage) {
         const teaserImg = document.createElement('img');
         teaserImg.src = safeTeaserUrl;
-        teaserImg.className = 'card-img-top';
+        teaserImg.className = 'img-card-media';
         teaserImg.alt = '';
         teaserImg.addEventListener('error', () => {
             teaserImg.style.display = 'none';
@@ -192,11 +192,11 @@ function createCard(item, lang = getCurrentLang()) {
     }
 
     const cardBody = document.createElement('div');
-    cardBody.className = 'card-body';
+    cardBody.className = hasImage ? 'img-card-body' : 'card-body';
 
     if (hasImage) {
         const kicker = document.createElement('div');
-        kicker.className = 'card-kicker';
+        kicker.className = 'img-card-kicker';
         kicker.textContent = getTypeLabel(normalizedType, normalizedLang);
         cardBody.appendChild(kicker);
     } else {
@@ -207,19 +207,19 @@ function createCard(item, lang = getCurrentLang()) {
     }
 
     const title = document.createElement('h3');
-    title.className = 'card-title h6';
+    title.className = hasImage ? 'img-card-title' : 'card-title h6';
     title.textContent = titleText;
 
     cardBody.appendChild(title);
 
     if (excerptText) {
         const excerpt = document.createElement('p');
-        excerpt.className = 'card-text mb-0';
+        excerpt.className = hasImage ? 'img-card-text' : 'card-text mb-0';
         excerpt.textContent = excerptText;
         cardBody.appendChild(excerpt);
     }
 
-    if (dateText) {
+    if (dateText && !hasImage) {
         const date = document.createElement('small');
         date.textContent = dateText;
         cardBody.appendChild(date);
@@ -235,12 +235,10 @@ function createCard(item, lang = getCurrentLang()) {
 function createReadMoreButton(totalCount, visibleCount, lang = getCurrentLang()) {
     const normalizedLang = normalizeLang(lang);
     const ui = getUi(normalizedLang);
-    const btnContainer = document.createElement('div');
-    btnContainer.className = 'text-center mt-3';
-    btnContainer.dataset.role = 'articles-readmore-wrap';
-
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'btn-read-more';
+    btn.dataset.role = 'articles-readmore-wrap';
     btn.setAttribute('data-bs-toggle', 'offcanvas');
     btn.setAttribute('data-bs-target', '#articlesOffcanvas');
     btn.setAttribute('aria-controls', 'articlesOffcanvas');
@@ -250,8 +248,7 @@ function createReadMoreButton(totalCount, visibleCount, lang = getCurrentLang())
         ? `${ui.readMore} (${remaining})`
         : `${ui.viewAll} (${totalCount})`;
 
-    btnContainer.appendChild(btn);
-    return btnContainer;
+    return btn;
 }
 
 function getFilteredArticles(articles, type) {

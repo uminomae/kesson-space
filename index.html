@@ -394,27 +394,28 @@
   </div>
 
   <!-- Articles Section -->
-  <section id="articles-section">
+  <section id="articles-section" aria-labelledby="articles-section-heading">
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">
           <a
+            id="articles-section-heading"
             href="#articles-section"
             class="section-heading-link"
             aria-label="ARTICLES セクションへジャンプ">
             ARTICLES
           </a>
         </h2>
-        <div class="kesson-panel">
+        <div class="card-section-container">
           <div id="articles-error" class="d-none"></div>
-          <div id="articles-grid" class="row g-3"></div>
+          <div id="articles-grid" class="row row-cols-1 row-cols-md-3 g-3 card-container"></div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Devlog Gallery Section（CSS display:none で非表示中）
-       TODO: 復活時は narration → section > section-content-wrap > container > section-heading > kesson-panel 構造に統一すること -->
+       TODO: 復活時は narration → section > section-content-wrap > container > section-heading > card container > read more 構造に統一すること -->
   <section id="devlog-gallery-section">
     <div class="section-content-wrap">
       <div class="container">
@@ -492,7 +493,7 @@
         <button type="button" class="articles-filter-btn" data-type="page" aria-pressed="false">Page</button>
         <button type="button" class="articles-filter-btn" data-type="post" aria-pressed="false">Post</button>
       </div>
-      <div id="offcanvas-articles-grid" class="row g-3"></div>
+      <div id="offcanvas-articles-grid" class="row row-cols-1 row-cols-md-3 g-3"></div>
     </div>
   </div>
 
