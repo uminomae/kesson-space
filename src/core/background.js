@@ -65,7 +65,12 @@ export function createBackground({ container, preset = 'full', options = {} }) {
   
   // アニメーションループ
   let animationId = null;
-  const clock = new THREE.Clock();
+  const clockStart = performance.now();
+  const clock = {
+    getElapsedTime() {
+      return (performance.now() - clockStart) / 1000;
+    }
+  };
   let lastFrameTime = 0;
   const frameInterval = config.targetFPS ? 1000 / config.targetFPS : 0;
   

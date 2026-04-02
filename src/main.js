@@ -137,7 +137,12 @@ try {
         });
     }
 
-    const clock = new THREE.Clock();
+    const clockStart = performance.now();
+    const clock = {
+        getElapsedTime() {
+            return (performance.now() - clockStart) / 1000;
+        },
+    };
     attachResizeHandler({ camera, xLogoCamera: xLogo.camera, renderer, composer });
 
     startRenderLoop({
