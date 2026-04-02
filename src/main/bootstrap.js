@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
@@ -80,7 +79,6 @@ export function bootstrapMainScene(container) {
     // 先に掛けると、その後段のオーブ屈折などがシャープに再描画されてボケ対象から外れて見える。
     const dofPass = new ShaderPass(CameraDofShader);
     composer.addPass(dofPass);
-    composer.addPass(new OutputPass());
 
     // DECISION: keep scene/camera/renderer/composer flat because they are cross-cutting core dependencies.
     // passes/effects/xLogo are grouped since their usage is local to render-loop and dev-control touchpoints.

@@ -9,7 +9,6 @@ export function createRenderer({ container, alpha = true, antialias = true, pixe
   }
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(pixelRatio || Math.min(window.devicePixelRatio, 2));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
   return renderer;
 }
