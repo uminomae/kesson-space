@@ -158,7 +158,7 @@ function buildArticleAriaLabel(titleText, lang) {
 function createCard(item, lang = getCurrentLang()) {
     const normalizedLang = normalizeLang(lang);
     const col = document.createElement('div');
-    col.className = 'col-12 col-md-6 col-lg-4';
+    col.className = 'col';
 
     const normalizedType = normalizeType(item);
     const dateText = formatDate(item.date, normalizedLang);
