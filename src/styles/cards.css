@@ -179,6 +179,11 @@
       color: #fff;
       font-size: 1.125rem;
       font-family: 'Noto Serif JP', Georgia, serif;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
     }
     .kesson-card .card-body small,
     .kesson-card .card-text {
@@ -186,6 +191,11 @@
       font-size: 0.875rem;
       line-height: 1.6;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
     }
     .kesson-card .kesson-card-summary {
       color: rgba(var(--color-sub-text), 0.76);
