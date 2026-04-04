@@ -21,7 +21,7 @@
 - [creation-space](https://github.com/uminomae/creation-space): Exploring creative processes across 30 academic domains
 - [awareness-space](https://github.com/uminomae/awareness-space): Exploring consciousness through the Four-Layer Model
 
-> For the full theoretical framework, see [Project Design](https://uminomae.github.io/pjdhiro/project-design/).
+> For the full theoretical framework, see [Project Design](https://uminomae.github.io/project-design/).
 
 ---
 
