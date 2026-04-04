@@ -73,7 +73,7 @@
 
 ---
 
-## D3: 抱持（Containment, 旧称: Withhold）
+## D3: 抱持（Containment）
 
 ### 定義
 反射的に処理せず、誤差を問いとして抱え保つ機能
