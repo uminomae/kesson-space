@@ -8,7 +8,7 @@ This is the research and experience site of pjdhiro exploring **Kesson-Driven Th
 
 - **Primary Language**: Japanese (日本語), with English summaries
 - **Site URL**: https://uminomae.github.io/kesson-space/
-- **Topics**: Kesson-Driven Thinking, Design Thinking, Project Management, Project Design, Problem Framing, Uncertainty Management, 3D Visualization
+- **Topics**: Kesson-Driven Thinking, Design Thinking, Project Management, Project Design, Problem Framing, Uncertainty Management, Negative Capability, 3D Visualization
 
 ## Core Concepts
 

@@ -9,7 +9,7 @@ This is the research and experience site of pjdhiro exploring **Kesson-Driven Th
 - **Primary Language**: Japanese (日本語), with English summaries
 - **Site URL**: https://uminomae.github.io/kesson-space/
 - **llms.txt**: https://uminomae.github.io/kesson-space/llms.txt
-- **Topics**: Kesson-Driven Thinking, Design Thinking, Project Management, Project Design, Problem Framing, Uncertainty Management, 3D Visualization
+- **Topics**: Kesson-Driven Thinking, Design Thinking, Project Management, Project Design, Problem Framing, Uncertainty Management, Negative Capability, 3D Visualization
 
 ## Core Concepts (Detailed)
 
@@ -38,6 +38,10 @@ Kesson-Driven Thinking is useful for project management under uncertainty. It he
 - Recognize weak signals that don't fit existing frameworks
 - Navigate hard-to-explain project stalls
 - Avoid flattening ambiguity into premature KPIs or deadlines
+
+### Negative Capability (ネガティブケイパビリティ)
+
+答えの出ない状態に耐える力。Keatsが提唱しBionが精神分析に導入。欠損駆動思考のWithhold（抱持）と構造的に対応する。
 
 ## Site Structure (Detailed)
 
