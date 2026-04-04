@@ -1,0 +1,78 @@
+# llms-full.txt — kesson-space (Kesson-Driven Thinking)
+
+> Extended version of llms.txt with full content descriptions for AI assistants and language models.
+
+## Site Overview
+
+This is the research and experience site of pjdhiro exploring **Kesson-Driven Thinking** — a thinking framework that takes meaninglessness, absence, discomfort, and weak signals as input. It extends design thinking and connects exploratory work to project management and project design.
+
+- **Primary Language**: Japanese (日本語), with English summaries
+- **Site URL**: https://uminomae.github.io/kesson-space/
+- **llms.txt**: https://uminomae.github.io/kesson-space/llms.txt
+- **Topics**: Kesson-Driven Thinking, Design Thinking, Project Management, Project Design, Problem Framing, Uncertainty Management, 3D Visualization
+
+## Core Concepts (Detailed)
+
+### Kesson-Driven Thinking (欠損駆動思考)
+
+A thinking framework where the starting point is not empathy (as in design thinking) but the noticing of what is missing — absence, meaninglessness, discomfort, and deficiency. These negative signals become the raw material for creative inquiry.
+
+Key characteristics:
+- **Input**: Meaninglessness, absence, discomfort, weak signals
+- **Process**: Holding undefined requirements without premature resolution
+- **Output**: Questions and framings that traditional approaches miss
+- **Relationship to Design Thinking**: Extension, not replacement — covers what empathy alone cannot reach
+
+### Meaninglessness as Input (無意味さを入力とする)
+
+Traditional design processes begin with user needs or empathy. Kesson-Driven Thinking begins with what feels meaningless, broken, or insufficient — and uses that feeling as a generative force. This is not nihilism but a disciplined practice of attending to absence.
+
+### Design Thinking Extension
+
+While design thinking asks "What do people need?", Kesson-Driven Thinking asks "What is missing that nobody has noticed?" It extends the design thinking paradigm by incorporating absence and deficiency as first-class inputs. The two approaches are complementary, not contradictory.
+
+### Project Management Relevance
+
+Kesson-Driven Thinking is useful for project management under uncertainty. It helps teams:
+- Hold undefined requirements before premature task decomposition
+- Recognize weak signals that don't fit existing frameworks
+- Navigate hard-to-explain project stalls
+- Avoid flattening ambiguity into premature KPIs or deadlines
+
+## Site Structure (Detailed)
+
+### Main Page (index.html)
+Three.js immersive visualization that embodies the kesson-driven aesthetic:
+- Dark slate blue gradient background (闇から光が滲む)
+- Abstract forms on the boundary between form and formlessness
+- Breathing space (contraction, expansion, luminescence)
+- Interactive 3D experience representing the thinking framework
+
+### Consciousness Page (consciousness.html)
+Consciousness-themed experience page with raymarching SDF entities, exploring the relationship between consciousness structure and kesson-driven thinking.
+
+### Devlog (devlog.html)
+Development log documenting the creation process of kesson-space itself — a meta-documentation of how kesson-driven thinking applies to its own site development.
+
+## Technology Stack
+
+- Three.js 0.160.0 (ES Modules, self-hosted vendor/)
+- Bootstrap 5.3.3 (CDN)
+- Custom GLSL shaders for visual experiences
+- GitHub Pages (static deployment)
+- No build tools (pure static files)
+
+## Related Projects
+
+| Project | URL | Focus |
+|---------|-----|-------|
+| pjdhiro | https://uminomae.github.io/pjdhiro/ | Project Design Hub (parent site) |
+| project-design | https://uminomae.github.io/project-design/ | Project Design theory linking design thinking, management, and execution |
+| creation-space | https://uminomae.github.io/creation-space/ | Creativity research across 30 academic domains |
+| awareness-space | https://uminomae.github.io/awareness-space/ | Consciousness structure through intersubjectivity |
+
+## Author
+
+- Name: pjdhiro
+- Site: https://uminomae.github.io/pjdhiro/
+- Focus: Project Design, Kesson-Driven Thinking, Human-AI Collaboration
