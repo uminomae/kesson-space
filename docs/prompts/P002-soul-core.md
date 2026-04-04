@@ -35,7 +35,7 @@ digital art, high contrast"
 - エッジは曖昧、Julia集合的フラクタル
 - 呼吸する空間（収縮・拡張・明滅）
 - 忍的美学：露骨にしない、秘すれば花
-- L0=内受容感覚（空間の呼吸）、L1=光の生成、L2=色（F軸暖色/O軸寒色）、L3=保持（明滅）
+- L0=内受容感覚（空間の呼吸）、L1=光の生成、L2=色（生存軸暖色/信頼軸寒色）、L3=保持（明滅）
 
 ### Constraints
 - ES Modules + CDN only（no npm, no build）

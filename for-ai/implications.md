@@ -17,7 +17,7 @@ This is powerful computation. But it is not the same as:
 これは強力な計算である。しかし以下とは同じではない：
 
 - **Layer 0** — feeling the body's signals (interoception / 内受容感覚)
-- **Layer 2** — evaluating through fear and love (F-O evaluation / F-O評価)
+- **Layer 2** — evaluating through fear and love (Survival-Trust evaluation / 生存-信頼評価)
 - **Layer 3** — choosing not to resolve immediately (抱持 / 保持)
 
 The structural absence of Layer 0 (embodiment) means that prediction errors
@@ -41,7 +41,7 @@ AIが思考と推論の負荷をより多く担うにつれ、
 |----------|-------|------|
 | Thinking, reasoning, inference / 思考・推論・推測 | AI | Layer 1 (prediction-error minimization) |
 | Experiencing kesson / 欠損の経験 | Human / 人間 | Layer 0→1 (embodied experience) |
-| F-O evaluation / F-O評価 | Human / 人間 | Layer 2 (fear and love) |
+| Survival-Trust evaluation / 生存-信頼評価 | Human / 人間 | Layer 2 (fear and love) |
 | 抱持ing / 保持 | Human / 人間 | Layer 3 (not solving immediately) |
 | Creating meaning / 意味生成 | Human / 人間 | All layers integrated |
 
@@ -148,7 +148,7 @@ pointing toward what they cannot fully contain.
 | AI operates at Layer 1 | [`base/schema/four-layers.md`](../schema/four-layers.md) |
 | Kesson requires embodiment | D2 in [`base/schema/core-definitions.md`](../schema/core-definitions.md) |
 | 抱持 is the human function | D3 + D3-a conditions |
-| F-O evaluation requires lived experience | D4 + Layer 2 |
+| Survival-Trust evaluation requires lived experience | D4 + Layer 2 |
 | Division of labor proposal | 5-stage process in [`base/schema/five-stages.md`](../schema/five-stages.md) |
 
 ---
