@@ -49,7 +49,12 @@ function applyCamera(camera) {
 }
 
 function startAnimationLoop(scene, camera, renderer) {
-  const clock = new THREE.Clock();
+  const clockStart = performance.now();
+  const clock = {
+    getElapsedTime() {
+      return (performance.now() - clockStart) / 1000;
+    }
+  };
   const animate = () => {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();

@@ -286,8 +286,8 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
       }
     }
   </script>
@@ -515,6 +515,7 @@
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
       document.getElementById('canvas-container').appendChild(renderer.domElement);
 
       // Attach OrbitControls to interaction-layer instead of renderer.domElement

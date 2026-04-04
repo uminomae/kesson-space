@@ -185,8 +185,8 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "./vendor/three@0.160.0/build/three.module.js",
-        "three/addons/": "./vendor/three@0.160.0/examples/jsm/",
+        "three": "./vendor/three@0.183.0/build/three.module.js",
+        "three/addons/": "./vendor/three@0.183.0/examples/jsm/",
         "marked": "https://cdn.jsdelivr.net/npm/marked@15.0.7/lib/marked.esm.js",
         "dompurify": "https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.es.mjs"
       }
@@ -406,18 +406,19 @@
   </div>
 
   <!-- Articles Section -->
-  <section id="articles-section">
+  <section id="articles-section" aria-labelledby="articles-section-heading">
     <div class="section-content-wrap">
       <div class="container">
         <h2 class="section-heading">
           <a
+            id="articles-section-heading"
             href="#articles-section"
             class="section-heading-link"
             aria-label="ARTICLES セクションへジャンプ">
             ARTICLES
           </a>
         </h2>
-        <div class="kesson-panel">
+        <div class="card-section-container">
           <div id="articles-error" class="d-none"></div>
           <div id="articles-grid" class="row row-cols-1 row-cols-md-3 g-3 card-container"></div>
         </div>
@@ -426,7 +427,7 @@
   </section>
 
   <!-- Devlog Gallery Section（CSS display:none で非表示中）
-       TODO: 復活時は narration → section > section-content-wrap > container > section-heading > kesson-panel 構造に統一すること -->
+       TODO: 復活時は narration → section > section-content-wrap > container > section-heading > card container > read more 構造に統一すること -->
   <section id="devlog-gallery-section">
     <div class="section-content-wrap">
       <div class="container">
@@ -446,6 +447,7 @@
     <div class="tech-footer-line">Bootstrap</div>
     <div class="tech-footer-line">MIT License</div>
     <div id="footer-signature" class="footer-signature">Project Designer: pjdhiro</div>
+    <div class="tech-footer-line">MIT License</div>
     <!-- CHANGED(2026-03-25): #169 — dev link in footer, always visible -->
     <div class="tech-footer-line"><a id="footer-dev-link" class="footer-dev-link" href="./?dev">dev</a></div>
   </footer>
