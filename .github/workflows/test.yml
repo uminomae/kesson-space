@@ -13,7 +13,7 @@ name: Static Tests + HTTP Smoke
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'src/**'
       - 'tests/**'
@@ -24,7 +24,7 @@ on:
       - 'scripts/validate-devlog-i18n.mjs'
       - '.github/workflows/test.yml'
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'src/**'
       - 'tests/**'
