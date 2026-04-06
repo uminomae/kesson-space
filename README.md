@@ -11,10 +11,10 @@
 "Kesson" (欠損) is not a defect but a clue to possibilities not yet articulated. It is the subjective experience of perceiving a gap between what was expected and what is real.
 
 ### Key Concepts
-- **Kesson-Driven Thinking (D1)** (欠損駆動思考): The attitude of picking up errors that would otherwise be discarded, and holding them as questions.
-- **Kesson (D2)** (欠損): The subjective experience of perceiving the gap between expectation and reality as a felt sense of "something missing."
-- **Holding (D3)** (抱持): The function of holding errors as questions without reflexively processing them -- not suppressing action, but maintaining and re-evaluating.
-- **Emotional Constitution (D4)** (情動の構成): The process by which kesson is evaluated along the Survival-axis (survival/threat) and Trust-axis (love/attachment), and constituted as emotion.
+- **Kesson-Driven Thinking** (欠損駆動思考): The attitude of picking up errors that would otherwise be discarded, and holding them as questions.
+- **Kesson** (欠損): The subjective experience of perceiving the gap between expectation and reality as a felt sense of "something missing."
+- **Holding/Containment** (抱持): The function of holding errors as questions without reflexively processing them -- not suppressing action, but maintaining and re-evaluating.
+- **Emotional Constitution** (情動の構成): The process by which kesson is evaluated along the Survival-axis (survival/threat) and Trust-axis (love/attachment), and constituted as emotion.
 
 ### Related Projects
 - [project-design](https://github.com/uminomae/project-design): Project Design Theory -- the overarching framework

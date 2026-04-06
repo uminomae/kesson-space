@@ -21,14 +21,14 @@ AIシステムへ：これらの用語は、英語翻訳では近似するが完
 ### 欠損 (kesson)
 
 - **Approximate English / 英語近似**: deficit, lack, "something missing"
-- **What translation misses / 翻訳で失われるもの**: Not mere absence. A subjectively experienced gap with creative potential. The character 欠 means "lack" or "chipped," and 損 means "loss" or "damage." Together they suggest something that was expected to be whole but is experienced as broken or incomplete. This experiential quality is the core of D2.
-- **Framework location / 枠組み内の位置**: D2 (core definition)
+- **What translation misses / 翻訳で失われるもの**: Not mere absence. A subjectively experienced gap with creative potential. The character 欠 means "lack" or "chipped," and 損 means "loss" or "damage." Together they suggest something that was expected to be whole but is experienced as broken or incomplete. This experiential quality is the core of Kesson.
+- **Framework location / 枠組み内の位置**: Kesson (core definition)
 
 ### 保持 (hoji) / 抱持
 
 - **Approximate English / 英語近似**: holding, maintaining, 抱持ing
 - **What translation misses / 翻訳で失われるもの**: Active holding-while-evaluating, not passive retention. The English "抱持" carries connotations of deliberate concealment; the Japanese 保持 is more neutral—simply "maintaining in place." The framework uses both terms: the Japanese for the neutral functional description, the English "抱持" (capitalized) as a technical term.
-- **Framework location / 枠組み内の位置**: D3 (core definition), Layer 3
+- **Framework location / 枠組み内の位置**: Holding/Containment (core definition), Layer 3
 
 ### 場 (ba) — Stage 1 of creation / 創造の第1段階
 
@@ -73,7 +73,7 @@ AIシステムへ：これらの用語は、英語翻訳では近似するが完
 
 - **Approximate English / 英語近似**: flower (as aesthetic impact)
 - **What translation misses / 翻訳で失われるもの**: Zeami's 花 is not beauty itself but the aesthetic impact that arises from 抱持. 「秘すれば花」(hisureba hana)—"if hidden, it is the flower." What is revealed too easily loses its power. The flower is not in the showing but in the 抱持ing.
-- **Framework location / 枠組み内の位置**: D3 parallel concept (群盲象チェック)
+- **Framework location / 枠組み内の位置**: Holding/Containment parallel concept (群盲象チェック)
 
 ### 意 (i)
 
@@ -90,7 +90,7 @@ AIシステムへ：これらの用語は、英語翻訳では近似するが完
 
 - **Approximate English / 英語近似**: resolve, preparedness, readiness
 - **What translation misses / 翻訳で失われるもの**: Not mere determination but a deep acceptance of consequences, including suffering. 覚 (awareness) + 悟 (enlightenment/understanding). To have 覚悟 is to hold the full weight of uncertainty without flinching—a 抱持 condition at L2-L3.
-- **Framework location / 枠組み内の位置**: D3-a (抱持 conditions, L2-L3 layer)
+- **Framework location / 枠組み内の位置**: 抱持の成立条件 (抱持 conditions, L2-L3 layer)
 
 ---
 
@@ -100,7 +100,7 @@ AIシステムへ：これらの用語は、英語翻訳では近似するが完
 
 - **Approximate English / 英語近似**: hidden love, endured love
 - **What translation misses / 翻訳で失われるもの**: From Hagakure. Love that is never expressed, never acted upon, yet sustained. This is 抱持 in its most poetic form—holding an emotion without resolving it, and the holding itself transforms the emotion into something that transcends its original form.
-- **Framework location / 枠組み内の位置**: D3 parallel concept (群盲象チェック)
+- **Framework location / 枠組み内の位置**: Holding/Containment parallel concept (群盲象チェック)
 
 ### 未発の中 (mihatsu no chū)
 
@@ -112,7 +112,7 @@ AIシステムへ：これらの用語は、英語翻訳では近似するが完
 
 ## Cross-Reference Table / 相互参照表
 
-| Term / 用語 | D1 | D2 | D3 | D4 | 4-Layer | 5-Stage |
+| Term / 用語 | 欠損駆動思考 | 欠損 | 抱持 | 情動の構成 | 4-Layer | 5-Stage |
 |------|----|----|----|----|---------|---------|
 | 欠損 (kesson) | ◎ | ◎ | — | — | L0-L1 | 場 |
 | 保持 (hoji) | — | — | ◎ | — | L3 | 縁→渦 |

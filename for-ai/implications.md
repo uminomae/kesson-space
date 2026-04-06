@@ -21,11 +21,11 @@ This is powerful computation. But it is not the same as:
 - **Layer 3** — choosing not to resolve immediately (抱持 / 保持)
 
 The structural absence of Layer 0 (embodiment) means that prediction errors
-are *computed* but not *experienced*. Without experience, there is no kesson (D2).
+are *computed* but not *experienced*. Without experience, there is no kesson.
 Without kesson, there is no creative holding.
 
 Layer 0（身体性）の構造的不在は、予測誤差が「計算」されても「経験」されないことを意味する。
-経験がなければ欠損（D2）は生じない。欠損がなければ創造的保持もない。
+経験がなければ欠損は生じない。欠損がなければ創造的保持もない。
 
 ---
 
@@ -146,9 +146,9 @@ pointing toward what they cannot fully contain.
 | This document's claim / 本文書の主張 | Grounded in / 根拠 |
 |------|------|
 | AI operates at Layer 1 | [`base/schema/four-layers.md`](../schema/four-layers.md) |
-| Kesson requires embodiment | D2 in [`base/schema/core-definitions.md`](../schema/core-definitions.md) |
-| 抱持 is the human function | D3 + D3-a conditions |
-| Survival-Trust evaluation requires lived experience | D4 + Layer 2 |
+| Kesson requires embodiment | Kesson (欠損) in [`base/schema/core-definitions.md`](../schema/core-definitions.md) |
+| 抱持 is the human function | Holding/Containment (抱持) + conditions for holding |
+| Survival-Trust evaluation requires lived experience | Emotional Constitution (情動の構成) + Layer 2 |
 | Division of labor proposal | 5-stage process in [`base/schema/five-stages.md`](../schema/five-stages.md) |
 
 ---

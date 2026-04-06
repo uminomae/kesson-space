@@ -12,7 +12,7 @@
 - `base/schema/evidence-metadata.md` -- フラグ体系・evidence保存ルールの正本（creation-space 固有公開 metadata は別正本）
 - `base/schema/academic-domains.md` -- 領域マスターリスト
 - `base/schema/five-stages.md` -- M2スキーマ
-- `base/schema/core-definitions.md` -- D1-D4
+- `base/schema/core-definitions.md` -- コア概念群（欠損駆動思考・欠損・抱持・情動の構成）
 
 creation-space 側の `evidence/` は、当面これらの schema を共有参照する。
 

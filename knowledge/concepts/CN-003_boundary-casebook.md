@@ -4,7 +4,7 @@ title: 境界ケースブック（抱持 3↔4 / 4↔5 / 5↔6）
 status: active
 created: 2026-02-08
 updated: 2026-02-08
-related_definitions: [D3, D3-a]
+related_definitions: [抱持, 抱持の成立条件]
 related_expressions: [E03]
 related_evidence: []
 related_statements: []
@@ -308,7 +308,7 @@ log_ref: null
 ## E.1 ケースブックの使い方の注意
 
 - ケースは“型”であり、現実の人を当てはめるためのラベルではない。
-- 判定に迷うときは、段階より先にLayer条件（安全/更新/評価/保持）を見る（D3-aの精神）。
+- 判定に迷うときは、段階より先にLayer条件（安全/更新/評価/保持）を見る（抱持の成立条件の精神）。
 
 ## E.2 `[UNCERTAIN]`残量レポート
 
