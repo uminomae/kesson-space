@@ -4,7 +4,7 @@ title: 集団抱持最小ルーブリック（ISS-34）
 status: active
 created: 2026-02-08
 updated: 2026-02-08
-related_definitions: [D3, D3-a]
+related_definitions: [抱持, 抱持の成立条件]
 related_expressions: []
 related_evidence: []
 related_statements: []

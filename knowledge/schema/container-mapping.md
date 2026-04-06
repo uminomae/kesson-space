@@ -15,7 +15,7 @@
 | 文化的Container | 公案、茶道の作法、学問のディシプリン | EV-PH-007, EV-PH-005 |
 
 補足:
-- `codex/archive/deepdive/REPORT-evidence-cross-analysis.md` は本リポジトリ内で確認できなかったため、上記6類型はブリーフィング記載＋D3-a（`base/schema/core-definitions.md`）＋各evidenceから再構成した。`[UNCERTAIN]`
+- `codex/archive/deepdive/REPORT-evidence-cross-analysis.md` は本リポジトリ内で確認できなかったため、上記6類型はブリーフィング記載＋抱持の成立条件（`base/schema/core-definitions.md`）＋各evidenceから再構成した。`[UNCERTAIN]`
 - TASK #10cの出力（`codex/archive/deepdive/REPORT-抱持-uncertain-resolution.md`）を参照し、特に「内在化判定（撤去）」の扱いを§Cに反映した。
 
 ## 段階×Container効果表
@@ -182,7 +182,7 @@
 
 #### D.1 効果表の使い方の注意
 
-- “いまの段階”を確定してから介入を選ぶのではなく、**欠けているLayer条件（D3-a）**を先に見る。
+- “いまの段階”を確定してから介入を選ぶのではなく、**欠けているLayer条件（抱持の成立条件）**を先に見る。
 - 同じ段階でも、文脈（関係の質/制度/身体余裕）で効果は変動する。`[CONTEXT_DEPENDENT]`
 
 #### D.2 `[UNCERTAIN]`残量レポート
