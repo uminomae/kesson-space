@@ -9,7 +9,7 @@
       bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 15;
+      z-index: var(--ks-z-ui-mid);
       text-align: center;
       pointer-events: none;
       opacity: 0;
@@ -35,7 +35,7 @@
       top: calc(var(--ks-topbar-height) + 6px);
       left: 50%;
       transform: translateX(-50%);
-      z-index: 20;
+      z-index: var(--ks-z-ui-mid-2);
       text-align: center;
       cursor: pointer;
       opacity: 0;
@@ -79,7 +79,7 @@
       position: fixed;
       top: calc(var(--ks-topbar-height) + 0.7rem);
       right: 1rem;
-      z-index: 10;
+      z-index: var(--ks-z-ui-low);
       pointer-events: none;
       text-align: right;
       transition: opacity 0.6s ease;

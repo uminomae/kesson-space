@@ -3,7 +3,7 @@
        ============================ */
     #tech-footer {
       position: relative;
-      z-index: 5;
+      z-index: var(--ks-z-raised);
       text-align: left;
       padding: 2rem 3% 1.5rem;
       pointer-events: none;
@@ -44,7 +44,7 @@
     .dev-hub-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 1100;
+      z-index: var(--ks-z-dev-hub-backdrop);
       background: rgba(0, 0, 0, 0.45);
       opacity: 0;
       pointer-events: none;
@@ -61,7 +61,7 @@
       left: 0;
       width: min(360px, 88vw);
       height: 100vh;
-      z-index: 1150;
+      z-index: var(--ks-z-dev-hub-panel);
       background: rgba(7, 12, 24, 0.97);
       border-right: 1px solid rgba(140, 178, 255, 0.2);
       backdrop-filter: blur(14px);
@@ -178,7 +178,7 @@
       font-size: 1.1rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      z-index: 1;
+      z-index: var(--ks-z-content);
     }
     .overview-card-badge {
       display: inline-block;
@@ -263,7 +263,7 @@
     #dt-modal-overlay {
       position: fixed;
       inset: 0;
-      z-index: 500;
+      z-index: var(--ks-z-modal-info);
       display: none;
       align-items: center;
       justify-content: center;

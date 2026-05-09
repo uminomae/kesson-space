@@ -24,7 +24,7 @@
       position: fixed;
       top: calc(var(--ks-topbar-height) + 8px);
       left: 24px;
-      z-index: 20;
+      z-index: var(--ks-z-ui-mid-2);
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.4s ease;
@@ -48,7 +48,7 @@
     /* CHANGED(2026-03-28): AI notice — cs repo 方式に統一 */
     #guides-ai-notice {
       position: relative;
-      z-index: 6;
+      z-index: var(--ks-z-raised-2);
       text-align: center;
       margin: 1.5rem 0 1rem;
     }
@@ -315,7 +315,7 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      z-index: 20;
+      z-index: var(--ks-z-ui-mid-2);
       font-size: var(--ds-surface-btn, 0.80rem);
       letter-spacing: var(--ds-letter-ui-wide);
       padding: 10px 18px;

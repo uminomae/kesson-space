@@ -5,7 +5,7 @@
       position: fixed;
       bottom: 8%;
       left: 5%;
-      z-index: 10;
+      z-index: var(--ks-z-ui-low);
       pointer-events: none;
       text-align: left;
       opacity: 0.4;
@@ -113,14 +113,14 @@
     #hero-spacer {
       position: relative;
       height: 125vh;
-      z-index: 5;
+      z-index: var(--ks-z-raised);
       pointer-events: none;
     }
     /* --- Articles出現タイミング用スペーサー --- */
     #articles-spacer {
       position: relative;
       height: 80vh;
-      z-index: 5;
+      z-index: var(--ks-z-raised);
       pointer-events: none;
     }
 

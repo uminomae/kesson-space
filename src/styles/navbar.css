@@ -7,7 +7,7 @@
       left: 0;
       width: 100%;
       min-height: var(--ks-topbar-height);
-      z-index: 60;
+      z-index: var(--ks-z-topbar);
       background: linear-gradient(
         to bottom,
         var(--ks-topbar-bg-start) 0%,
@@ -207,7 +207,7 @@
        ============================ */
     .nav-label {
       position: fixed;
-      z-index: 15;
+      z-index: var(--ks-z-ui-mid);
       pointer-events: auto;
       cursor: pointer;
       background: none;

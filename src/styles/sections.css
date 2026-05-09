@@ -10,13 +10,13 @@
     #articles-section,
     #devlog-gallery-section {
       position: relative;
-      z-index: 5;
+      z-index: var(--ks-z-raised);
       padding-bottom: .9rem;
     }
     /* Section content wrapper (shared by articles + devlog heading areas) */
     .section-content-wrap {
       position: relative;
-      z-index: 20;
+      z-index: var(--ks-z-ui-mid-2);
       padding: var(--ds-section-content-padding);
     }
 
@@ -52,7 +52,7 @@
     /* ── Section narration bridges (#181) ── */
     .room-narration {
       position: relative;
-      z-index: 21;
+      z-index: var(--ks-z-ui-mid-3);
       padding: 8rem 1.5rem 1.5rem;
       text-align: center;
     }
