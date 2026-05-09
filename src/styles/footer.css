@@ -10,17 +10,17 @@
     }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tech-footer-line {
-      font-size: var(--kesson-footer-line, 0.80rem);
+      font-size: var(--ds-footer-line, 0.80rem);
       color: rgba(150, 175, 210, 0.25);
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       letter-spacing: 0.06em;
       line-height: 1.8;
     }
     .footer-signature {
       margin-top: 0.55rem;
-      font-size: var(--kesson-footer-signature-size, 0.80rem);
+      font-size: var(--ds-footer-signature-size, 0.80rem);
       color: rgba(195, 214, 241, 0.68);
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
       letter-spacing: 0.06em;
       line-height: 1.5;
     }
@@ -29,7 +29,7 @@
     .footer-dev-link {
       color: rgba(130, 170, 240, 0.45);
       text-decoration: none;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.72rem;
       letter-spacing: 0.1em;
       pointer-events: auto;
@@ -88,7 +88,7 @@
     }
     .dev-hub-title {
       font-size: 0.82rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       letter-spacing: 0.12em;
       color: rgba(223, 236, 255, 0.95);
     }
@@ -110,7 +110,7 @@
     }
     .dev-hub-section-label {
       font-size: 0.65rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       letter-spacing: 0.1em;
       color: rgba(150, 180, 220, 0.6);
       text-transform: uppercase;
@@ -143,7 +143,7 @@
     .dev-hub-link-label {
       display: block;
       font-size: 0.78rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       color: rgba(200, 220, 255, 0.92);
     }
     .dev-hub-link-desc {
@@ -174,7 +174,7 @@
     }
     .overview-card-thumb-text {
       color: rgba(180, 210, 255, 0.82);
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 1.1rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -217,7 +217,7 @@
       border-radius: .5rem;
       background: rgba(20, 25, 40, 0.6);
       padding: .9rem;
-      box-shadow: var(--kesson-card-shadow-soft);
+      box-shadow: var(--ds-card-shadow-soft);
     }
 
     /* CHANGED(2026-03-28): RESEARCH section card styles */
@@ -233,7 +233,7 @@
     }
     .research-eyebrow {
       color: rgba(156, 193, 255, 0.76);
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.75rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;

@@ -136,12 +136,12 @@ assert(/key === 'fontStep'/.test(devRegistrySrc), 'dev-registry: fontStep エン
 assert(/kind:\s*'fontStep'/.test(devRegistrySrc), 'dev-registry: fontStep apply kind を持つ');
 assert(/export\s+function\s+getCurrentStep/.test(fontSizeCtrlSrc), 'font-size-ctrl: getCurrentStep を export している');
 assert(/export\s+function\s+setStep/.test(fontSizeCtrlSrc), 'font-size-ctrl: setStep を export している');
-assert(/'--kesson-overlay-tagline':\s*0\.92/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline 基底値が 0.92');
-assert(/'--kesson-overlay-tagline-en':\s*0\.88/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline en 基底値が 0.88');
-assert(/'--kesson-topbar-link-size':\s*0\.88/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar link サイズを制御する');
-assert(/'--kesson-topbar-note-size':\s*0\.88/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar collab note サイズを制御する');
-assert(/--kesson-topbar-link-size:\s*0\.88rem;/.test(read(resolve(SRC, 'styles', 'tokens.css'))), 'tokens.css: topbar link サイズの既定値を持つ');
-assert(/--kesson-topbar-note-size:\s*0\.88rem;/.test(read(resolve(SRC, 'styles', 'tokens.css'))), 'tokens.css: topbar collab note サイズの既定値を持つ');
+assert(/'--ds-overlay-tagline':\s*0\.92/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline 基底値が 0.92');
+assert(/'--ds-overlay-tagline-en':\s*0\.88/.test(fontSizeCtrlSrc), 'font-size-ctrl: overlay tagline en 基底値が 0.88');
+assert(/'--ks-topbar-link-size':\s*0\.88/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar link サイズを制御する');
+assert(/'--ks-topbar-note-size':\s*0\.88/.test(fontSizeCtrlSrc), 'font-size-ctrl: topbar collab note サイズを制御する');
+assert(/--ks-topbar-link-size:\s*0\.88rem;/.test(read(resolve(SRC, 'styles', 'tokens.css'))), 'tokens.css: topbar link サイズの既定値を持つ');
+assert(/--ks-topbar-note-size:\s*0\.88rem;/.test(read(resolve(SRC, 'styles', 'tokens.css'))), 'tokens.css: topbar collab note サイズの既定値を持つ');
 
 section('2.6. dev bootstrap fallback');
 

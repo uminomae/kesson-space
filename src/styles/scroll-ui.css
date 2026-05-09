@@ -32,7 +32,7 @@
     /* --- 上部 scroll hint --- */
     #scroll-hint-top {
       position: fixed;
-      top: calc(var(--kesson-topbar-height) + 6px);
+      top: calc(var(--ks-topbar-height) + 6px);
       left: 50%;
       transform: translateX(-50%);
       z-index: 20;
@@ -61,15 +61,15 @@
     #scroll-hint span,
     #scroll-hint-top span {
       display: block;
-      font-size: var(--kesson-font-size-ui-xs);
-      color: var(--kesson-ui-label-color);
-      font-family: var(--kesson-font-serif-ui);
-      letter-spacing: var(--kesson-letter-ui-wide);
+      font-size: var(--ds-font-size-ui-xs);
+      color: var(--ds-ui-label-color);
+      font-family: var(--ds-font-serif-ui);
+      letter-spacing: var(--ds-letter-ui-wide);
     }
     #scroll-hint .arrow,
     #scroll-hint-top .arrow {
-      font-size: var(--kesson-font-size-ui-arrow);
-      color: var(--kesson-ui-arrow-color);
+      font-size: var(--ds-font-size-ui-arrow);
+      color: var(--ds-ui-arrow-color);
     }
 
     /* ============================
@@ -77,7 +77,7 @@
        ============================ */
     #control-guide {
       position: fixed;
-      top: calc(var(--kesson-topbar-height) + 0.7rem);
+      top: calc(var(--ks-topbar-height) + 0.7rem);
       right: 1rem;
       z-index: 10;
       pointer-events: none;
@@ -93,10 +93,10 @@
     }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     #control-guide .guide-key {
-      font-size: var(--kesson-control-guide, 0.80rem);
+      font-size: var(--ds-control-guide, 0.80rem);
       color: rgba(var(--color-sub-text), 0.35);
-      font-family: var(--kesson-font-mono-ui);
-      letter-spacing: var(--kesson-letter-ui-tight);
+      font-family: var(--ds-font-mono-ui);
+      letter-spacing: var(--ds-letter-ui-tight);
       white-space: nowrap;
     }
     #control-guide .guide-sep {
@@ -104,10 +104,10 @@
       color: rgba(var(--color-sub-text), 0.2);
     }
     #control-guide .guide-action {
-      font-size: var(--kesson-control-guide, 0.80rem);
+      font-size: var(--ds-control-guide, 0.80rem);
       color: rgba(var(--color-sub-text), 0.3);
-      font-family: var(--kesson-font-serif-ui);
-      letter-spacing: var(--kesson-letter-ui-normal);
+      font-family: var(--ds-font-serif-ui);
+      letter-spacing: var(--ds-letter-ui-normal);
       white-space: nowrap;
     }
     /* タッチデバイス用: デスクトップ版を隠す */

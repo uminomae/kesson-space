@@ -19,7 +19,7 @@
       margin-bottom: 2.5rem;
     }
     .ds-page-title {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.9rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -27,7 +27,7 @@
       margin: 0 0 0.5rem;
     }
     .ds-page-desc {
-      font-family: var(--kesson-font-serif-display);
+      font-family: var(--ds-font-serif-display);
       font-size: 0.95rem;
       color: rgba(var(--color-sub-text), 0.5);
       line-height: 1.6;
@@ -44,7 +44,7 @@
       border-bottom: none;
     }
     .ds-section-title {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.78rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -52,7 +52,7 @@
       margin-bottom: 1.5rem;
     }
     .ds-subsection-title {
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
       font-size: 0.9rem;
       color: rgba(var(--color-heading), 0.7);
       margin: 1.5rem 0 0.75rem;
@@ -62,13 +62,13 @@
     .ds-code-block {
       background: rgba(8, 12, 24, 0.7);
       border: 1px solid rgba(var(--color-accent), 0.1);
-      border-radius: var(--kesson-radius-md);
+      border-radius: var(--ds-radius-md);
       padding: 1rem;
       margin: 0.75rem 0 1.5rem;
       overflow-x: auto;
     }
     .ds-code-block code {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.78rem;
       color: rgba(var(--color-sub-text), 0.75);
       line-height: 1.6;
@@ -82,7 +82,7 @@
       border-collapse: collapse;
     }
     .ds-token-table th {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.72rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -95,7 +95,7 @@
       color: rgba(var(--color-sub-text), 0.7);
       border-bottom: 1px solid rgba(var(--color-accent), 0.06);
       padding: 0.5rem 0.75rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       vertical-align: top;
     }
     .ds-token-table td:first-child {
@@ -107,7 +107,7 @@
       display: inline-block;
       width: 2rem;
       height: 2rem;
-      border-radius: var(--kesson-radius-sm);
+      border-radius: var(--ds-radius-sm);
       border: 1px solid rgba(var(--color-accent), 0.15);
       vertical-align: middle;
       margin-right: 0.5rem;
@@ -119,12 +119,12 @@
       margin-bottom: 0.5rem;
     }
     .ds-swatch-label {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.78rem;
       color: rgba(var(--color-sub-text), 0.6);
     }
     .ds-swatch-value {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.72rem;
       color: rgba(var(--color-sub-text), 0.45);
     }
@@ -132,13 +132,13 @@
     /* Live example wrapper */
     .ds-example {
       border: 1px solid rgba(var(--color-accent), 0.1);
-      border-radius: var(--kesson-radius-md);
+      border-radius: var(--ds-radius-md);
       padding: 1.5rem;
       margin: 0.75rem 0;
       background: rgba(10, 14, 24, 0.4);
     }
     .ds-example-label {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.68rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -153,7 +153,7 @@
       padding: 1rem 1.5rem;
     }
     .room-narration-text {
-      font-family: var(--kesson-font-serif-display);
+      font-family: var(--ds-font-serif-display);
       font-size: clamp(0.95rem, 2.8vmin, 1.35rem);
       font-weight: 300;
       letter-spacing: 0.08em;
@@ -167,7 +167,7 @@
     .kesson-panel {
       background: rgba(20, 25, 40, 0.6);
       border: 1px solid rgba(var(--color-accent), 0.1);
-      border-radius: var(--kesson-radius-md);
+      border-radius: var(--ds-radius-md);
       padding: 1rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
@@ -178,7 +178,7 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: rgba(var(--color-sub-text), 0.45);
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       margin: 0;
     }
 
@@ -309,17 +309,17 @@
         </thead>
         <tbody>
           <tr>
-            <td>--kesson-font-serif-display</td>
+            <td>--ds-font-serif-display</td>
             <td>"Noto Serif JP", "Yu Mincho", "MS PMincho", serif</td>
             <td>Body, narration, headings</td>
           </tr>
           <tr>
-            <td>--kesson-font-serif-ui</td>
+            <td>--ds-font-serif-ui</td>
             <td>'Georgia', "Noto Serif JP", serif</td>
             <td>UI elements, buttons</td>
           </tr>
           <tr>
-            <td>--kesson-font-mono-ui</td>
+            <td>--ds-font-mono-ui</td>
             <td>'SF Mono', 'Fira Code', 'Consolas', monospace</td>
             <td>Section headings, labels, code</td>
           </tr>
@@ -383,10 +383,10 @@
           <tr><th>Token</th><th>Value</th></tr>
         </thead>
         <tbody>
-          <tr><td>--kesson-letter-ui-tight</td><td>0.03em</td></tr>
-          <tr><td>--kesson-letter-ui-normal</td><td>0.06em</td></tr>
-          <tr><td>--kesson-letter-ui-wide</td><td>0.1em</td></tr>
-          <tr><td>--kesson-letter-ui-heading</td><td>0.15em</td></tr>
+          <tr><td>--ds-letter-ui-tight</td><td>0.03em</td></tr>
+          <tr><td>--ds-letter-ui-normal</td><td>0.06em</td></tr>
+          <tr><td>--ds-letter-ui-wide</td><td>0.1em</td></tr>
+          <tr><td>--ds-letter-ui-heading</td><td>0.15em</td></tr>
         </tbody>
       </table>
     </section>
@@ -436,7 +436,7 @@
       <h3 class="ds-subsection-title">Card Surface Tokens</h3>
       <div class="ds-swatch-row">
         <span class="ds-swatch" style="background: rgba(20, 25, 40, 0.9);"></span>
-        <span class="ds-swatch-label">--kesson-card-bg</span>
+        <span class="ds-swatch-label">--ks-card-bg</span>
         <span class="ds-swatch-value">rgba(20, 25, 40, 0.9)</span>
       </div>
       <div class="ds-swatch-row">
@@ -452,11 +452,11 @@
         </thead>
         <tbody>
           <tr>
-            <td>--kesson-card-shadow-soft</td>
+            <td>--ds-card-shadow-soft</td>
             <td>0 4px 12px rgba(var(--color-accent), 0.15)</td>
           </tr>
           <tr>
-            <td>--kesson-card-shadow-rich</td>
+            <td>--ds-card-shadow-rich</td>
             <td>0 8px 24px rgba(0,0,0,0.38), 0 0 12px rgba(var(--color-accent), 0.15)</td>
           </tr>
         </tbody>
@@ -478,7 +478,7 @@
         <tbody>
           <tr><td>background</td><td>rgba(20, 25, 40, 0.6)</td></tr>
           <tr><td>border</td><td>1px solid rgba(var(--color-accent), 0.1)</td></tr>
-          <tr><td>border-radius</td><td>var(--kesson-radius-md) = 3px</td></tr>
+          <tr><td>border-radius</td><td>var(--ds-radius-md) = 3px</td></tr>
           <tr><td>padding</td><td>1rem</td></tr>
           <tr><td>box-shadow</td><td>0 2px 8px rgba(0, 0, 0, 0.2)</td></tr>
         </tbody>
@@ -500,7 +500,7 @@
         </thead>
         <tbody>
           <tr><td>padding (.room-narration)</td><td>1rem 1.5rem</td></tr>
-          <tr><td>font-family</td><td>var(--kesson-font-serif-display)</td></tr>
+          <tr><td>font-family</td><td>var(--ds-font-serif-display)</td></tr>
           <tr><td>font-size</td><td>clamp(0.95rem, 2.8vmin, 1.35rem)</td></tr>
           <tr><td>font-weight</td><td>300</td></tr>
           <tr><td>letter-spacing</td><td>0.08em</td></tr>
@@ -522,12 +522,12 @@
           <tr><th>Property</th><th>Value</th></tr>
         </thead>
         <tbody>
-          <tr><td>font-size</td><td>var(--kesson-section-heading, 0.80rem)</td></tr>
+          <tr><td>font-size</td><td>var(--ds-section-heading, 0.80rem)</td></tr>
           <tr><td>font-weight</td><td>400</td></tr>
           <tr><td>color</td><td>rgba(var(--color-sub-text), 0.5)</td></tr>
-          <tr><td>letter-spacing</td><td>var(--kesson-letter-ui-heading) = 0.15em</td></tr>
+          <tr><td>letter-spacing</td><td>var(--ds-letter-ui-heading) = 0.15em</td></tr>
           <tr><td>text-transform</td><td>uppercase</td></tr>
-          <tr><td>font-family</td><td>var(--kesson-font-mono-ui)</td></tr>
+          <tr><td>font-family</td><td>var(--ds-font-mono-ui)</td></tr>
         </tbody>
       </table>
       <p class="ds-page-desc" style="margin:0.5rem 0;">
@@ -547,12 +547,12 @@
           <tr><th>Property</th><th>Value</th></tr>
         </thead>
         <tbody>
-          <tr><td>background</td><td>var(--kesson-card-bg) = rgba(20, 25, 40, 0.9)</td></tr>
-          <tr><td>border</td><td>1px solid var(--kesson-card-border) = rgba(var(--color-accent), 0.1)</td></tr>
+          <tr><td>background</td><td>var(--ks-card-bg) = rgba(20, 25, 40, 0.9)</td></tr>
+          <tr><td>border</td><td>1px solid var(--ds-card-border) = rgba(var(--color-accent), 0.1)</td></tr>
           <tr><td>cursor</td><td>pointer</td></tr>
           <tr><td>hover: transform</td><td>translateY(-2px)</td></tr>
-          <tr><td>hover: box-shadow</td><td>var(--kesson-card-shadow-soft)</td></tr>
-          <tr><td>focus-visible: outline</td><td>2px solid var(--kesson-focus-ring-soft)</td></tr>
+          <tr><td>hover: box-shadow</td><td>var(--ds-card-shadow-soft)</td></tr>
+          <tr><td>focus-visible: outline</td><td>2px solid var(--ds-focus-ring-soft)</td></tr>
           <tr><td>transition</td><td>transform/box-shadow/border-color 0.2s ease</td></tr>
         </tbody>
       </table>
@@ -600,7 +600,7 @@
           <tr><td>letter-spacing</td><td>0.1em</td></tr>
           <tr><td>text-transform</td><td>uppercase</td></tr>
           <tr><td>color</td><td>rgba(var(--color-sub-text), 0.45)</td></tr>
-          <tr><td>font-family</td><td>var(--kesson-font-mono-ui)</td></tr>
+          <tr><td>font-family</td><td>var(--ds-font-mono-ui)</td></tr>
         </tbody>
       </table>
     </section>
@@ -646,7 +646,7 @@
       <div class="ds-code-block"><code>.section-content-wrap {
   position: relative;
   z-index: 20;
-  padding: var(--kesson-section-content-padding);
+  padding: var(--ds-section-content-padding);
   /* default: 1rem 1.5rem 0 */
 }</code></div>
 
@@ -691,8 +691,8 @@
         </thead>
         <tbody>
           <tr><td>transform</td><td>translateY(-2px)</td></tr>
-          <tr><td>box-shadow</td><td>var(--kesson-card-shadow-soft)</td></tr>
-          <tr><td>transition</td><td>var(--kesson-transition-snappy) = 0.2s ease</td></tr>
+          <tr><td>box-shadow</td><td>var(--ds-card-shadow-soft)</td></tr>
+          <tr><td>transition</td><td>var(--ds-transition-snappy) = 0.2s ease</td></tr>
         </tbody>
       </table>
 
@@ -702,7 +702,7 @@
           <tr><th>Property</th><th>Value</th></tr>
         </thead>
         <tbody>
-          <tr><td>outline</td><td>2px solid var(--kesson-focus-ring-soft) = rgba(var(--color-accent), 0.8)</td></tr>
+          <tr><td>outline</td><td>2px solid var(--ds-focus-ring-soft) = rgba(var(--color-accent), 0.8)</td></tr>
           <tr><td>outline-offset</td><td>4px</td></tr>
         </tbody>
       </table>
@@ -713,8 +713,8 @@
           <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
         </thead>
         <tbody>
-          <tr><td>--kesson-transition-standard</td><td>0.3s ease</td><td>General transitions</td></tr>
-          <tr><td>--kesson-transition-snappy</td><td>0.2s ease</td><td>Card hover, quick feedback</td></tr>
+          <tr><td>--ds-transition-standard</td><td>0.3s ease</td><td>General transitions</td></tr>
+          <tr><td>--ds-transition-snappy</td><td>0.2s ease</td><td>Card hover, quick feedback</td></tr>
         </tbody>
       </table>
 
@@ -724,9 +724,9 @@
           <tr><th>Token</th><th>Value</th></tr>
         </thead>
         <tbody>
-          <tr><td>--kesson-radius-sm</td><td>2px</td></tr>
-          <tr><td>--kesson-radius-md</td><td>3px</td></tr>
-          <tr><td>--kesson-radius-lg</td><td>4px</td></tr>
+          <tr><td>--ds-radius-sm</td><td>2px</td></tr>
+          <tr><td>--ds-radius-md</td><td>3px</td></tr>
+          <tr><td>--ds-radius-lg</td><td>4px</td></tr>
         </tbody>
       </table>
 
@@ -739,10 +739,10 @@
           <tr><th>Property</th><th>Value</th></tr>
         </thead>
         <tbody>
-          <tr><td>background</td><td>var(--kesson-viewer-glass-bg) = rgba(12, 18, 30, 0.88)</td></tr>
+          <tr><td>background</td><td>var(--ks-viewer-glass-bg) = rgba(12, 18, 30, 0.88)</td></tr>
           <tr><td>backdrop-filter</td><td>blur(24px)</td></tr>
-          <tr><td>border</td><td>1px solid var(--kesson-viewer-glass-border)</td></tr>
-          <tr><td>border-radius</td><td>var(--kesson-radius-md)</td></tr>
+          <tr><td>border</td><td>1px solid var(--ks-viewer-glass-border)</td></tr>
+          <tr><td>border-radius</td><td>var(--ds-radius-md)</td></tr>
         </tbody>
       </table>
 

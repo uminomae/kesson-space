@@ -2,13 +2,13 @@
        Offcanvas 詳細ビュー
        ============================ */
     .session-content {
-      color: var(--kesson-offcanvas-text);
-      font-family: var(--kesson-font-mono-ui);
+      color: var(--ks-offcanvas-text);
+      font-family: var(--ds-font-mono-ui);
     }
     .session-content h1,
     .session-content h2,
     .session-content h3 {
-      color: var(--kesson-offcanvas-heading);
+      color: var(--ks-offcanvas-heading);
       margin-top: 1.5em;
       margin-bottom: 0.5em;
     }
@@ -18,15 +18,15 @@
     .session-content p {
       font-size: 0.85rem;
       line-height: 1.8;
-      color: var(--kesson-offcanvas-text);
+      color: var(--ks-offcanvas-text);
       margin-bottom: 1em;
-      font-family: var(--kesson-font-serif-display);
+      font-family: var(--ds-font-serif-display);
     }
     .session-content ul,
     .session-content ol {
       font-size: 0.85rem;
       line-height: 1.8;
-      color: var(--kesson-offcanvas-text);
+      color: var(--ks-offcanvas-text);
       padding-left: 1.5em;
     }
     .session-content code {
@@ -42,12 +42,12 @@
       overflow-x: auto;
     }
     .session-content a {
-      color: var(--kesson-offcanvas-link);
+      color: var(--ks-offcanvas-link);
     }
     .offcanvas-body::-webkit-scrollbar { width: 6px; }
     .offcanvas-body::-webkit-scrollbar-track { background: transparent; }
     .offcanvas-body::-webkit-scrollbar-thumb {
-      background: var(--kesson-scrollbar-thumb);
-      border-radius: var(--kesson-radius-md);
+      background: var(--ks-scrollbar-thumb);
+      border-radius: var(--ds-radius-md);
     }
 

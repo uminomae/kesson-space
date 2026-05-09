@@ -1,253 +1,211 @@
-    :root {
-      /* === Design tokens (--ds-*, self-contained for Claude Design ingestion) === */
-      /* Core color */
-      --ds-color-accent: 100, 150, 255;
-      --ds-color-sub-text: 180, 200, 230;
-      --ds-color-highlight: 220, 230, 245;
-      --ds-color-link: 130, 170, 255;
-      --ds-color-heading: 255, 255, 255;
-      --ds-color-bg-body: #050508;
-      /* Typography family */
-      --ds-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
-      --ds-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
-      --ds-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      /* Font size UI base */
-      --ds-font-size-ui-xs: 0.85rem;
-      --ds-font-size-ui-sm: 0.88rem;
-      --ds-font-size-ui-arrow: clamp(0.7rem, 3.5vmin, 1.2rem);
-      /* Letter spacing */
-      --ds-letter-ui-tight: 0.03em;
-      --ds-letter-ui-normal: 0.06em;
-      --ds-letter-ui-wide: 0.1em;
-      --ds-letter-ui-heading: 0.15em;
-      /* Radius */
-      --ds-radius-sm: 2px;
-      --ds-radius-md: 3px;
-      --ds-radius-lg: 4px;
-      /* Transition */
-      --ds-transition-standard: 0.3s ease;
-      --ds-transition-snappy: 0.2s ease;
-      /* Surface: focus / label / card */
-      --ds-focus-ring: rgba(var(--ds-color-accent), 0.86);
-      --ds-focus-ring-soft: rgba(var(--ds-color-accent), 0.8);
-      --ds-ui-label-color: rgba(var(--ds-color-sub-text), 0.3);
-      --ds-ui-arrow-color: rgba(var(--ds-color-sub-text), 0.25);
-      --ds-ui-label-hover-color: rgba(var(--ds-color-sub-text), 0.6);
-      --ds-card-border: rgba(var(--ds-color-accent), 0.1);
-      --ds-card-border-strong: rgba(var(--ds-color-accent), 0.28);
-      --ds-card-shadow-soft: 0 4px 12px rgba(var(--ds-color-accent), 0.15);
-      --ds-card-shadow-rich: 0 8px 24px rgba(0, 0, 0, 0.38), 0 0 12px rgba(var(--ds-color-accent), 0.15);
-      --ds-error-color: #f87171;
-      --ds-error-size: 0.8rem;
-      --ds-section-content-padding: 1rem 1.5rem 0;
-      /* Component font sizes */
-      --ds-section-heading: 0.88rem;
-      --ds-card-title: 1.0rem;
-      --ds-card-text: 0.92rem;
-      --ds-card-summary: 0.92rem;
-      --ds-overlay-tagline: 0.92rem;
-      --ds-overlay-tagline-en: 0.88rem;
-      --ds-control-guide: 0.82rem;
-      --ds-footer-line: 0.82rem;
-      --ds-surface-btn: 0.88rem;
-      --ds-footer-signature-size: 0.88rem;
-      --ds-h1-size: clamp(1.0rem, 5.5vmin, 2.0rem);
+:root {
+  /* Intentional difference vs cs/as:
+     kesson-space keeps a navy-blue accent palette and topbar with stronger nav presence. */
 
-      /* === Color tokens (ks alias for --ds-color-*) === */
-      --color-accent: var(--ds-color-accent);
-      --color-sub-text: var(--ds-color-sub-text);
-      --color-highlight: var(--ds-color-highlight);
-      --color-link: var(--ds-color-link);
-      --color-heading: var(--ds-color-heading);
-      --color-bg-body: var(--ds-color-bg-body);
+  /* === Design tokens (--ds-*, self-contained for Claude Design ingestion) === */
+  /* Core color */
+  --ds-color-accent: 100, 150, 255;
+  --ds-color-sub-text: 180, 200, 230;
+  --ds-color-highlight: 220, 230, 245;
+  --ds-color-link: 130, 170, 255;
+  --ds-color-heading: 255, 255, 255;
+  --ds-color-bg-body: #050508;
+  /* Typography family */
+  --ds-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+  --ds-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
+  --ds-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  /* Font size UI base */
+  --ds-font-size-ui-xs: 0.85rem;
+  --ds-font-size-ui-sm: 0.88rem;
+  --ds-font-size-ui-arrow: clamp(0.7rem, 3.5vmin, 1.2rem);
+  /* Letter spacing */
+  --ds-letter-ui-tight: 0.03em;
+  --ds-letter-ui-normal: 0.06em;
+  --ds-letter-ui-wide: 0.1em;
+  --ds-letter-ui-heading: 0.15em;
+  /* Radius */
+  --ds-radius-sm: 2px;
+  --ds-radius-md: 3px;
+  --ds-radius-lg: 4px;
+  /* Transition */
+  --ds-transition-standard: 0.3s ease;
+  --ds-transition-snappy: 0.2s ease;
+  /* Surface: focus / label / card */
+  --ds-focus-ring: rgba(var(--ds-color-accent), 0.86);
+  --ds-focus-ring-soft: rgba(var(--ds-color-accent), 0.8);
+  --ds-ui-label-color: rgba(var(--ds-color-sub-text), 0.3);
+  --ds-ui-arrow-color: rgba(var(--ds-color-sub-text), 0.25);
+  --ds-ui-label-hover-color: rgba(var(--ds-color-sub-text), 0.6);
+  --ds-card-border: rgba(var(--ds-color-accent), 0.1);
+  --ds-card-border-strong: rgba(var(--ds-color-accent), 0.28);
+  --ds-card-shadow-soft: 0 4px 12px rgba(var(--ds-color-accent), 0.15);
+  --ds-card-shadow-rich: 0 8px 24px rgba(0, 0, 0, 0.38), 0 0 12px rgba(var(--ds-color-accent), 0.15);
+  --ds-error-color: #f87171;
+  --ds-error-size: 0.8rem;
+  --ds-section-content-padding: 1rem 1.5rem 0;
+  /* Component font sizes */
+  --ds-section-heading: 0.88rem;
+  --ds-card-title: 1.0rem;
+  --ds-card-text: 0.92rem;
+  --ds-card-summary: 0.92rem;
+  --ds-overlay-tagline: 0.92rem;
+  --ds-overlay-tagline-en: 0.88rem;
+  --ds-control-guide: 0.82rem;
+  --ds-footer-line: 0.82rem;
+  --ds-surface-btn: 0.88rem;
+  --ds-footer-signature-size: 0.88rem;
+  --ds-h1-size: clamp(1.0rem, 5.5vmin, 2.0rem);
 
-      /* === Typography tokens (--ds-* alias) === */
-      --kesson-font-serif-display: var(--ds-font-serif-display, "Noto Serif JP", "Yu Mincho", "MS PMincho", serif);
-      --kesson-font-serif-ui: var(--ds-font-serif-ui, 'Georgia', "Noto Serif JP", serif);
-      --kesson-font-mono-ui: var(--ds-font-mono-ui, 'SF Mono', 'Fira Code', 'Consolas', monospace);
-      --kesson-font-size-ui-xs: var(--ds-font-size-ui-xs, 0.85rem);
-      --kesson-font-size-ui-sm: var(--ds-font-size-ui-sm, 0.88rem);
-      --kesson-font-size-ui-arrow: var(--ds-font-size-ui-arrow, clamp(0.7rem, 3.5vmin, 1.2rem));
-      --kesson-letter-ui-tight: var(--ds-letter-ui-tight, 0.03em);
-      --kesson-letter-ui-normal: var(--ds-letter-ui-normal, 0.06em);
-      --kesson-letter-ui-wide: var(--ds-letter-ui-wide, 0.1em);
-      --kesson-letter-ui-heading: var(--ds-letter-ui-heading, 0.15em);
+  /* === --color-* (ks alias for --ds-color-*) === */
+  --color-accent: var(--ds-color-accent);
+  --color-sub-text: var(--ds-color-sub-text);
+  --color-highlight: var(--ds-color-highlight);
+  --color-link: var(--ds-color-link);
+  --color-heading: var(--ds-color-heading);
+  --color-bg-body: var(--ds-color-bg-body);
 
-      /* === Motion/shape tokens (--ds-* alias) === */
-      --kesson-radius-sm: var(--ds-radius-sm, 2px);
-      --kesson-radius-md: var(--ds-radius-md, 3px);
-      --kesson-radius-lg: var(--ds-radius-lg, 4px);
-      --kesson-transition-standard: var(--ds-transition-standard, 0.3s ease);
-      --kesson-transition-snappy: var(--ds-transition-snappy, 0.2s ease);
+  /* === Extended color tokens (#181, ks 固有) === */
+  --color-accent-soft: 150, 190, 245; /* CHANGED(2026-03-28) #181 — card cover-note */
+  --color-focus-ring: 150, 190, 255;  /* CHANGED(2026-03-28) #181 — section heading focus ring */
+  --color-nav-gem: 180, 195, 240;     /* CHANGED(2026-03-28) #181 — nav-label--gem base */
+  --color-nav-gem-hover: 200, 215, 255; /* CHANGED(2026-03-28) #181 — nav-label--gem hover */
+  --color-embed-handle: 200, 215, 245; /* CHANGED(2026-03-28) #181 — x-embed-handle */
 
-      /* === Extended color tokens (#181) === */
-      --color-accent-soft: 150, 190, 245; /* CHANGED(2026-03-28) #181 — card cover-note */
-      --color-focus-ring: 150, 190, 255; /* CHANGED(2026-03-28) #181 — section heading focus ring */
-      --color-nav-gem: 180, 195, 240; /* CHANGED(2026-03-28) #181 — nav-label--gem base */
-      --color-nav-gem-hover: 200, 215, 255; /* CHANGED(2026-03-28) #181 — nav-label--gem hover */
-      --color-embed-handle: 200, 215, 245; /* CHANGED(2026-03-28) #181 — x-embed-handle */
+  /* === --ks-* (旧 --kesson-*、cs/as と命名対称化) === */
+  /* --- action-* --- */
+  --ks-action-bg: rgba(var(--color-accent), 0.1);
+  --ks-action-border: rgba(var(--color-accent), 0.2);
+  --ks-action-text: rgba(var(--color-sub-text), 0.5);
+  --ks-action-bg-hover: rgba(var(--color-accent), 0.2);
+  --ks-action-text-hover: rgba(var(--color-highlight), 0.7);
+  /* --- card-* --- */
+  --ks-card-bg: rgba(20, 25, 40, 0.9);
+  /* --- scrollbar-* --- */
+  --ks-scrollbar-thumb: #1e293b;
+  /* --- offcanvas-* --- */
+  --ks-offcanvas-text: #94a3b8;
+  --ks-offcanvas-heading: #e2e8f0;
+  --ks-offcanvas-link: #f59e0b;
+  --ks-offcanvas-width: 85%;
+  --ks-offcanvas-bg: rgba(10, 14, 26, 0.98);
+  /* --- viewer-* --- */
+  --ks-viewer-overlay-closed: rgba(5, 10, 20, 0);
+  --ks-viewer-overlay-open: rgba(5, 10, 20, 0.5);
+  --ks-viewer-glass-bg: rgba(12, 18, 30, 0.88);
+  --ks-viewer-glass-border: rgba(var(--color-accent), 0.06);
+  --ks-viewer-glass-shadow:
+    0 0 60px rgba(0, 0, 0, 0.4),
+    0 0 120px rgba(30, 60, 120, 0.1),
+    inset 0 0 60px rgba(20, 40, 80, 0.05);
+  --ks-viewer-x-handle: rgba(var(--color-embed-handle), 0.7); /* CHANGED(2026-03-28) #181 — token化 */
+  /* --- md-* --- */
+  --ks-md-provenance: rgba(140, 160, 200, 0.4);
+  --ks-md-h1: rgba(240, 245, 255, 0.92);
+  --ks-md-h1-strong: rgba(240, 245, 255, 0.95);
+  --ks-md-h2: rgba(230, 240, 255, 0.88);
+  --ks-md-h3: rgba(220, 230, 250, 0.85);
+  --ks-md-h4: rgba(210, 225, 245, 0.8);
+  --ks-md-link: rgba(var(--color-link), 0.85);
+  --ks-md-link-hover: rgba(160, 195, 255, 1);
+  --ks-md-quote: rgba(200, 215, 240, 0.7);
+  --ks-md-inline-code: rgba(180, 210, 255, 0.85);
+  --ks-md-inline-code-bg: rgba(60, 90, 150, 0.12);
+  --ks-md-table-head-bg: rgba(40, 60, 100, 0.2);
+  --ks-md-table-head-text: rgba(220, 230, 250, 0.9);
+  --ks-md-table-cell-text: rgba(200, 215, 240, 0.75);
+  --ks-md-strong: rgba(240, 245, 255, 0.95);
+  --ks-md-em: rgba(200, 215, 240, 0.8);
+  --ks-md-pre-bg: rgba(8, 12, 24, 0.6);
+  --ks-md-pdf-link: rgba(160, 185, 240, 0.7);
+  --ks-md-pdf-link-hover: rgba(200, 220, 255, 0.9);
+  --ks-md-pdf-link-hover-bg: rgba(60, 90, 150, 0.1);
+  /* --- dev-toggle-* --- */
+  --ks-dev-toggle-bg: rgba(20, 30, 50, 0.7);
+  --ks-dev-toggle-bg-hover: rgba(30, 45, 70, 0.82);
+  --ks-dev-toggle-border: rgba(var(--color-accent), 0.15);
+  --ks-dev-toggle-text: rgba(180, 200, 255, 0.75);
+  --ks-dev-toggle-text-hover: rgba(210, 225, 255, 0.95);
+  /* --- dev-panel-* --- */
+  --ks-dev-panel-bg: rgba(7, 12, 24, 0.96);
+  --ks-dev-panel-border: rgba(140, 178, 255, 0.3);
+  --ks-dev-panel-header-border: rgba(140, 178, 255, 0.25);
+  --ks-dev-panel-title-color: rgba(223, 236, 255, 0.95);
+  --ks-dev-panel-accordion-bg: rgba(26, 40, 70, 0.5);
+  --ks-dev-panel-accordion-text: rgba(222, 235, 255, 0.92);
+  --ks-dev-panel-accordion-active-bg: rgba(46, 72, 116, 0.7);
+  --ks-dev-panel-body-bg: rgba(11, 20, 38, 0.75);
+  --ks-dev-panel-label-color: rgba(188, 211, 245, 0.95);
+  --ks-dev-panel-help-color: rgba(176, 201, 238, 0.82);
+  --ks-dev-panel-help-sub-color: rgba(162, 188, 228, 0.72);
+  --ks-dev-panel-value-color: rgba(201, 221, 255, 0.86);
+  --ks-dev-panel-status-color: rgba(201, 221, 255, 0.8);
+  --ks-dev-panel-empty-bg: rgba(11, 20, 38, 0.6);
+  --ks-dev-panel-empty-border: rgba(140, 178, 255, 0.25);
+  --ks-dev-panel-empty-text: rgba(201, 221, 255, 0.85);
+  /* --- dev-hud-* --- */
+  --ks-dev-hud-border: rgba(120, 164, 235, 0.42);
+  --ks-dev-hud-bg: rgba(8, 14, 26, 0.84);
+  --ks-dev-hud-text: rgba(205, 224, 255, 0.92);
+  --ks-dev-hud-btn-border: rgba(130, 170, 240, 0.45);
+  --ks-dev-hud-btn-bg: rgba(100, 152, 246, 0.2);
+  --ks-dev-hud-btn-text: rgba(238, 246, 255, 0.96);
+  --ks-dev-hud-btn-bg-hover: rgba(116, 165, 244, 0.32);
+  --ks-dev-hud-input-border: rgba(130, 170, 240, 0.35);
+  --ks-dev-hud-input-bg: rgba(10, 18, 32, 0.88);
+  --ks-dev-hud-input-text: rgba(220, 235, 255, 0.95);
+  --ks-dev-hud-font-size: 0.80rem;
+  /* --- graphic-switcher-* --- */
+  --ks-graphic-switcher-label: 0.88rem;
+  --ks-graphic-switcher-btn: 0.88rem;
+  /* --- section-* --- */
+  --ks-section-grid-margin-top: 1.5rem;
+  /* --- topbar-* --- */
+  --ks-topbar-height: 3.25rem;
+  --ks-topbar-alpha-strong: 0.10;
+  --ks-topbar-alpha-soft: 0.10;
+  --ks-topbar-border-alpha: 0.22;
+  --ks-topbar-shadow-alpha: 0.26;
+  --ks-topbar-blur: 14px;
+  --ks-topbar-saturate: 145%;
+  --ks-topbar-bg-start: rgba(10, 14, 24, var(--ks-topbar-alpha-strong));
+  --ks-topbar-bg-end: rgba(10, 14, 24, var(--ks-topbar-alpha-soft));
+  --ks-topbar-border-color: rgba(130, 170, 240, var(--ks-topbar-border-alpha));
+  --ks-topbar-divider-color: rgba(170, 192, 228, 0.42);
+  --ks-topbar-title-color: rgba(228, 238, 255, 0.92);
+  --ks-topbar-title-hover-color: rgba(242, 248, 255, 1);
+  --ks-topbar-subtitle-color: rgba(205, 220, 244, 0.76);
+  --ks-topbar-meta-color: rgba(186, 204, 234, 0.72);
+  --ks-topbar-meta-author-color: rgba(184, 203, 234, 0.74);
+  --ks-topbar-link-color: rgba(205, 220, 244, 0.78);
+  --ks-topbar-link-hover-color: rgba(236, 244, 255, 0.98);
+  --ks-topbar-link-hover-bg: rgba(120, 165, 240, 0.2);
+  --ks-topbar-note-divider-color: rgba(130, 170, 240, 0.2);
+  --ks-topbar-note-color: rgba(165, 214, 255, 0.74);
+  --ks-topbar-lang-color: rgba(218, 232, 255, 0.9);
+  --ks-topbar-lang-border: rgba(130, 170, 240, 0.25);
+  --ks-topbar-lang-bg: rgba(70, 102, 160, 0.16);
+  --ks-topbar-nav-bg: rgba(9, 13, 24, 0.82);
+  --ks-topbar-nav-border: rgba(130, 170, 240, 0.2);
+  --ks-topbar-toggler-border: rgba(145, 178, 242, 0.55);
+  --ks-topbar-toggler-focus: rgba(140, 180, 252, 0.35);
+  --ks-topbar-main-title-size: clamp(0.96rem, 1.85vw, 1.38rem);
+  --ks-topbar-main-title-size-sm: 0.86rem;
+  --ks-topbar-title-size: clamp(0.88rem, 1.1vw, 0.96rem);
+  --ks-topbar-subtitle-size: var(--ks-topbar-title-size);
+  --ks-topbar-subtitle-size-md: 0.88rem;
+  --ks-topbar-link-size: 0.88rem;
+  --ks-topbar-note-size: 0.88rem;
+  --ks-topbar-note-size-sm: var(--ks-topbar-note-size);
+  --ks-topbar-credit-size: 0.84rem;
+  --ks-topbar-meta-size: 0.86rem;
+  --ks-topbar-meta-author-size: 0.84rem;
+}
 
-      /* === Component surface tokens (--ds-* alias for shared, kesson-local for action/intentional) === */
-      --kesson-focus-ring: var(--ds-focus-ring, rgba(var(--color-accent), 0.86));
-      --kesson-focus-ring-soft: var(--ds-focus-ring-soft, rgba(var(--color-accent), 0.8));
-      --kesson-ui-label-color: var(--ds-ui-label-color, rgba(var(--color-sub-text), 0.3));
-      --kesson-ui-arrow-color: var(--ds-ui-arrow-color, rgba(var(--color-sub-text), 0.25));
-      --kesson-ui-label-hover-color: var(--ds-ui-label-hover-color, rgba(var(--color-sub-text), 0.6));
-      --kesson-action-bg: rgba(var(--color-accent), 0.1);
-      --kesson-action-border: rgba(var(--color-accent), 0.2);
-      --kesson-action-text: rgba(var(--color-sub-text), 0.5);
-      --kesson-action-bg-hover: rgba(var(--color-accent), 0.2);
-      --kesson-action-text-hover: rgba(var(--color-highlight), 0.7);
-      --kesson-card-border: var(--ds-card-border, rgba(var(--color-accent), 0.1));
-      --kesson-card-border-strong: var(--ds-card-border-strong, rgba(var(--color-accent), 0.28));
-      --kesson-card-shadow-soft: var(--ds-card-shadow-soft, 0 4px 12px rgba(var(--color-accent), 0.15));
-      --kesson-card-shadow-rich: var(--ds-card-shadow-rich, 0 8px 24px rgba(0, 0, 0, 0.38), 0 0 12px rgba(var(--color-accent), 0.15));
-      --kesson-error-color: var(--ds-error-color, #f87171);
-      --kesson-error-size: var(--ds-error-size, 0.8rem);
-      --kesson-scrollbar-thumb: #1e293b;
-
-      /* === Viewer/offcanvas tokens === */
-      --kesson-offcanvas-text: #94a3b8;
-      --kesson-offcanvas-heading: #e2e8f0;
-      --kesson-offcanvas-link: #f59e0b;
-      --kesson-viewer-overlay-closed: rgba(5, 10, 20, 0);
-      --kesson-viewer-overlay-open: rgba(5, 10, 20, 0.5);
-      --kesson-viewer-glass-bg: rgba(12, 18, 30, 0.88);
-      --kesson-viewer-glass-border: rgba(var(--color-accent), 0.06);
-
-      /* === Markdown tokens === */
-      --kesson-md-provenance: rgba(140, 160, 200, 0.4);
-      --kesson-md-h1: rgba(240, 245, 255, 0.92);
-      --kesson-md-h1-strong: rgba(240, 245, 255, 0.95);
-      --kesson-md-h2: rgba(230, 240, 255, 0.88);
-      --kesson-md-h3: rgba(220, 230, 250, 0.85);
-      --kesson-md-h4: rgba(210, 225, 245, 0.8);
-      --kesson-md-link: rgba(var(--color-link), 0.85);
-      --kesson-md-link-hover: rgba(160, 195, 255, 1);
-      --kesson-md-quote: rgba(200, 215, 240, 0.7);
-      --kesson-md-inline-code: rgba(180, 210, 255, 0.85);
-      --kesson-md-inline-code-bg: rgba(60, 90, 150, 0.12);
-      --kesson-md-table-head-bg: rgba(40, 60, 100, 0.2);
-      --kesson-md-table-head-text: rgba(220, 230, 250, 0.9);
-      --kesson-md-table-cell-text: rgba(200, 215, 240, 0.75);
-      --kesson-md-strong: rgba(240, 245, 255, 0.95);
-      --kesson-md-em: rgba(200, 215, 240, 0.8);
-      --kesson-md-pre-bg: rgba(8, 12, 24, 0.6);
-      --kesson-md-pdf-link: rgba(160, 185, 240, 0.7);
-      --kesson-md-pdf-link-hover: rgba(200, 220, 255, 0.9);
-      --kesson-md-pdf-link-hover-bg: rgba(60, 90, 150, 0.1);
-      --kesson-viewer-glass-shadow:
-        0 0 60px rgba(0, 0, 0, 0.4),
-        0 0 120px rgba(30, 60, 120, 0.1),
-        inset 0 0 60px rgba(20, 40, 80, 0.05);
-      --kesson-viewer-x-handle: rgba(var(--color-embed-handle), 0.7); /* CHANGED(2026-03-28) #181 — token化 */
-
-      /* === Dev panel tokens === */
-      --kesson-dev-toggle-bg: rgba(20, 30, 50, 0.7);
-      --kesson-dev-toggle-bg-hover: rgba(30, 45, 70, 0.82);
-      --kesson-dev-toggle-border: rgba(var(--color-accent), 0.15);
-
-      /* === Layout tokens (--ds-* alias for content-padding, kesson-local for grid-margin-top) === */
-      --kesson-section-content-padding: var(--ds-section-content-padding, 1rem 1.5rem 0);
-      --kesson-section-grid-margin-top: 1.5rem;
-      --kesson-card-bg: rgba(20, 25, 40, 0.9);
-      --kesson-offcanvas-width: 85%;
-      --kesson-offcanvas-bg: rgba(10, 14, 26, 0.98);
-
-      /* === Topbar tokens === */
-      --kesson-topbar-main-title-size: clamp(0.96rem, 1.85vw, 1.38rem);
-      --kesson-topbar-main-title-size-sm: 0.86rem;
-      --kesson-topbar-title-size: clamp(0.88rem, 1.1vw, 0.96rem);
-      --kesson-topbar-subtitle-size: var(--kesson-topbar-title-size);
-      --kesson-topbar-subtitle-size-md: 0.88rem;
-      --kesson-topbar-link-size: 0.88rem;
-      --kesson-topbar-note-size: 0.88rem;
-      --kesson-topbar-note-size-sm: var(--kesson-topbar-note-size);
-      --kesson-topbar-credit-size: 0.84rem;
-      --kesson-topbar-meta-size: 0.86rem;
-      --kesson-topbar-meta-author-size: 0.84rem;
-      --kesson-topbar-bg-start: rgba(10, 14, 24, var(--kesson-topbar-alpha-strong));
-      --kesson-topbar-bg-end: rgba(10, 14, 24, var(--kesson-topbar-alpha-soft));
-      --kesson-topbar-border-color: rgba(130, 170, 240, var(--kesson-topbar-border-alpha));
-      --kesson-topbar-divider-color: rgba(170, 192, 228, 0.42);
-      --kesson-topbar-title-color: rgba(228, 238, 255, 0.92);
-      --kesson-topbar-title-hover-color: rgba(242, 248, 255, 1);
-      --kesson-topbar-subtitle-color: rgba(205, 220, 244, 0.76);
-      --kesson-topbar-meta-color: rgba(186, 204, 234, 0.72);
-      --kesson-topbar-meta-author-color: rgba(184, 203, 234, 0.74);
-      --kesson-topbar-link-color: rgba(205, 220, 244, 0.78);
-      --kesson-topbar-link-hover-color: rgba(236, 244, 255, 0.98);
-      --kesson-topbar-link-hover-bg: rgba(120, 165, 240, 0.2);
-      --kesson-topbar-note-divider-color: rgba(130, 170, 240, 0.2);
-      --kesson-topbar-note-color: rgba(165, 214, 255, 0.74);
-      --kesson-topbar-lang-color: rgba(218, 232, 255, 0.9);
-      --kesson-topbar-lang-border: rgba(130, 170, 240, 0.25);
-      --kesson-topbar-lang-bg: rgba(70, 102, 160, 0.16);
-      --kesson-topbar-nav-bg: rgba(9, 13, 24, 0.82);
-      --kesson-topbar-nav-border: rgba(130, 170, 240, 0.2);
-      --kesson-topbar-toggler-border: rgba(145, 178, 242, 0.55);
-      --kesson-topbar-toggler-focus: rgba(140, 180, 252, 0.35);
-
-      /* === Dev panel extended tokens === */
-      --kesson-dev-toggle-text: rgba(180, 200, 255, 0.75);
-      --kesson-dev-toggle-text-hover: rgba(210, 225, 255, 0.95);
-      --kesson-dev-panel-bg: rgba(7, 12, 24, 0.96);
-      --kesson-dev-panel-border: rgba(140, 178, 255, 0.3);
-      --kesson-dev-panel-header-border: rgba(140, 178, 255, 0.25);
-      --kesson-dev-panel-title-color: rgba(223, 236, 255, 0.95);
-      --kesson-dev-panel-accordion-bg: rgba(26, 40, 70, 0.5);
-      --kesson-dev-panel-accordion-text: rgba(222, 235, 255, 0.92);
-      --kesson-dev-panel-accordion-active-bg: rgba(46, 72, 116, 0.7);
-      --kesson-dev-panel-body-bg: rgba(11, 20, 38, 0.75);
-      --kesson-dev-panel-label-color: rgba(188, 211, 245, 0.95);
-      --kesson-dev-panel-help-color: rgba(176, 201, 238, 0.82);
-      --kesson-dev-panel-help-sub-color: rgba(162, 188, 228, 0.72);
-      --kesson-dev-panel-value-color: rgba(201, 221, 255, 0.86);
-      --kesson-dev-panel-status-color: rgba(201, 221, 255, 0.8);
-      --kesson-dev-panel-empty-bg: rgba(11, 20, 38, 0.6);
-      --kesson-dev-panel-empty-border: rgba(140, 178, 255, 0.25);
-      --kesson-dev-panel-empty-text: rgba(201, 221, 255, 0.85);
-      --kesson-dev-hud-border: rgba(120, 164, 235, 0.42);
-      --kesson-dev-hud-bg: rgba(8, 14, 26, 0.84);
-      --kesson-dev-hud-text: rgba(205, 224, 255, 0.92);
-      --kesson-dev-hud-btn-border: rgba(130, 170, 240, 0.45);
-      --kesson-dev-hud-btn-bg: rgba(100, 152, 246, 0.2);
-      --kesson-dev-hud-btn-text: rgba(238, 246, 255, 0.96);
-      --kesson-dev-hud-btn-bg-hover: rgba(116, 165, 244, 0.32);
-      --kesson-dev-hud-input-border: rgba(130, 170, 240, 0.35);
-      --kesson-dev-hud-input-bg: rgba(10, 18, 32, 0.88);
-      --kesson-dev-hud-input-text: rgba(220, 235, 255, 0.95);
-
-      /* === Component font sizes (--ds-* alias for shared, kesson-local for graphic-switcher/dev-hud) === */
-      --kesson-section-heading: var(--ds-section-heading, 0.88rem);
-      --kesson-card-title: var(--ds-card-title, 1.0rem);
-      --kesson-card-text: var(--ds-card-text, 0.92rem);
-      --kesson-card-summary: var(--ds-card-summary, 0.92rem);
-      --kesson-overlay-tagline: var(--ds-overlay-tagline, 0.92rem);
-      --kesson-overlay-tagline-en: var(--ds-overlay-tagline-en, 0.88rem);
-      --kesson-control-guide: var(--ds-control-guide, 0.82rem);
-      --kesson-footer-line: var(--ds-footer-line, 0.82rem);
-      --kesson-surface-btn: var(--ds-surface-btn, 0.88rem);
-      --kesson-dev-hud-font-size: 0.80rem;
-      --kesson-footer-signature-size: var(--ds-footer-signature-size, 0.88rem);
-      --kesson-graphic-switcher-label: 0.88rem;
-      --kesson-graphic-switcher-btn: 0.88rem;
-
-      --kesson-topbar-height: 3.25rem;
-      --kesson-topbar-alpha-strong: 0.10;
-      --kesson-topbar-alpha-soft: 0.10;
-      --kesson-topbar-border-alpha: 0.22;
-      --kesson-topbar-shadow-alpha: 0.26;
-      --kesson-topbar-blur: 14px;
-      --kesson-topbar-saturate: 145%;
-      --kesson-h1-size: var(--ds-h1-size, clamp(1.0rem, 5.5vmin, 2.0rem));
-    }
-    
-    #canvas-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
+#canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}

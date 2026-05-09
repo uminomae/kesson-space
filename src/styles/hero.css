@@ -28,7 +28,7 @@
       color: rgba(var(--color-heading), 0.95);
       font-family: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
       font-weight: 400;
-      font-size: var(--kesson-h1-size);
+      font-size: var(--ds-h1-size);
       letter-spacing: clamp(0.15em, 1.2vmin, 0.5em);
       line-height: 1.6;
       margin-bottom: 0.6rem;
@@ -38,7 +38,7 @@
 
     .subtitle {
       color: rgba(var(--color-heading), 0.85);
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
       font-size: clamp(0.6rem, 3.5vmin, 1.3rem);
       letter-spacing: clamp(0.1em, 0.8vmin, 0.3em);
       line-height: 1.5;
@@ -57,18 +57,18 @@
 
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変（clamp はフォールバック） */
     .tagline {
-      font-size: var(--kesson-overlay-tagline, 0.80rem);
+      font-size: var(--ds-overlay-tagline, 0.80rem);
       color: rgba(var(--color-heading), 0.75);
-      font-family: var(--kesson-font-serif-display);
+      font-family: var(--ds-font-serif-display);
       letter-spacing: 0.05em;
       line-height: 1.8;
       text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
     }
 
     .tagline-en {
-      font-size: var(--kesson-overlay-tagline-en, 0.80rem);
+      font-size: var(--ds-overlay-tagline-en, 0.80rem);
       color: rgba(var(--color-heading), 0.55);
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
       letter-spacing: 0.03em;
       line-height: 1.6;
       text-shadow: 0 0 30px rgba(var(--color-accent), 0.3);
@@ -82,14 +82,14 @@
       letter-spacing: clamp(0.05em, 0.4vmin, 0.15em);
       line-height: 1.3;
       margin-bottom: 0.4rem;
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
     }
 
     html[lang="en"] .subtitle {
       font-size: clamp(0.5rem, 3.0vmin, 1.1rem);
       letter-spacing: clamp(0.06em, 0.3vmin, 0.1em);
       line-height: 1.3;
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
     }
 
     html[lang="en"] #taglines {

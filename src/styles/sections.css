@@ -17,7 +17,7 @@
     .section-content-wrap {
       position: relative;
       z-index: 20;
-      padding: var(--kesson-section-content-padding);
+      padding: var(--ds-section-content-padding);
     }
 
     .section-heading-link {
@@ -71,15 +71,15 @@
     }
 
     #articles-error {
-      color: var(--kesson-error-color);
-      font-size: var(--kesson-error-size);
+      color: var(--ds-error-color);
+      font-size: var(--ds-error-size);
     }
 
     /* Offcanvas panel — kesson dark theme */
     .offcanvas-kesson {
-      --bs-offcanvas-width: var(--kesson-offcanvas-width);
-      width: var(--kesson-offcanvas-width);
-      background: var(--kesson-offcanvas-bg);
+      --bs-offcanvas-width: var(--ks-offcanvas-width);
+      width: var(--ks-offcanvas-width);
+      background: var(--ks-offcanvas-bg);
     }
 
     /* Offcanvas title letter spacing */

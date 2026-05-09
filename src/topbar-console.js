@@ -14,24 +14,24 @@ function clampNumber(value, min, max) {
 }
 
 function readVars(style) {
-    const strong = Number.parseFloat(style.getPropertyValue('--kesson-topbar-alpha-strong')) || DEFAULTS.strong;
-    const soft = Number.parseFloat(style.getPropertyValue('--kesson-topbar-alpha-soft')) || DEFAULTS.soft;
-    const border = Number.parseFloat(style.getPropertyValue('--kesson-topbar-border-alpha')) || DEFAULTS.border;
-    const shadow = Number.parseFloat(style.getPropertyValue('--kesson-topbar-shadow-alpha')) || DEFAULTS.shadow;
-    const blur = Number.parseFloat(style.getPropertyValue('--kesson-topbar-blur')) || DEFAULTS.blur;
-    const saturate = Number.parseFloat(style.getPropertyValue('--kesson-topbar-saturate')) || DEFAULTS.saturate;
+    const strong = Number.parseFloat(style.getPropertyValue('--ks-topbar-alpha-strong')) || DEFAULTS.strong;
+    const soft = Number.parseFloat(style.getPropertyValue('--ks-topbar-alpha-soft')) || DEFAULTS.soft;
+    const border = Number.parseFloat(style.getPropertyValue('--ks-topbar-border-alpha')) || DEFAULTS.border;
+    const shadow = Number.parseFloat(style.getPropertyValue('--ks-topbar-shadow-alpha')) || DEFAULTS.shadow;
+    const blur = Number.parseFloat(style.getPropertyValue('--ks-topbar-blur')) || DEFAULTS.blur;
+    const saturate = Number.parseFloat(style.getPropertyValue('--ks-topbar-saturate')) || DEFAULTS.saturate;
 
     return { strong, soft, border, shadow, blur, saturate };
 }
 
 function applyVars(next) {
     const rootStyle = document.documentElement.style;
-    rootStyle.setProperty('--kesson-topbar-alpha-strong', String(next.strong));
-    rootStyle.setProperty('--kesson-topbar-alpha-soft', String(next.soft));
-    rootStyle.setProperty('--kesson-topbar-border-alpha', String(next.border));
-    rootStyle.setProperty('--kesson-topbar-shadow-alpha', String(next.shadow));
-    rootStyle.setProperty('--kesson-topbar-blur', `${next.blur}px`);
-    rootStyle.setProperty('--kesson-topbar-saturate', `${next.saturate}%`);
+    rootStyle.setProperty('--ks-topbar-alpha-strong', String(next.strong));
+    rootStyle.setProperty('--ks-topbar-alpha-soft', String(next.soft));
+    rootStyle.setProperty('--ks-topbar-border-alpha', String(next.border));
+    rootStyle.setProperty('--ks-topbar-shadow-alpha', String(next.shadow));
+    rootStyle.setProperty('--ks-topbar-blur', `${next.blur}px`);
+    rootStyle.setProperty('--ks-topbar-saturate', `${next.saturate}%`);
 }
 
 export function initTopbarConsole() {

@@ -12,17 +12,17 @@
     }
     /* devlog gallery container — ナビバーとの間隔 */
     #devlog-gallery-container > .container {
-      margin-top: var(--kesson-section-grid-margin-top);
+      margin-top: var(--ks-section-grid-margin-top);
     }
     #guides-feature-cards {
-      margin-top: var(--kesson-section-grid-margin-top);
+      margin-top: var(--ks-section-grid-margin-top);
     }
     #articles-section #articles-grid {
       margin-top: 0;
     }
     #devlog-gallery-header {
       position: fixed;
-      top: calc(var(--kesson-topbar-height) + 8px);
+      top: calc(var(--ks-topbar-height) + 8px);
       left: 24px;
       z-index: 20;
       pointer-events: none;
@@ -35,13 +35,13 @@
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
     #devlog-gallery-header h2,
     .section-heading {
-      font-size: var(--kesson-section-heading, 0.80rem);
+      font-size: var(--ds-section-heading, 0.80rem);
       font-weight: 400;
       color: rgba(var(--color-sub-text), 0.5);
-      letter-spacing: var(--kesson-letter-ui-heading);
+      letter-spacing: var(--ds-letter-ui-heading);
       text-transform: uppercase;
       margin: 0 0 0.85rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
     }
 
 
@@ -56,7 +56,7 @@
       margin: 0 0 .85rem;
       color: rgba(var(--color-sub-text), .78);
       font-size: 0.8rem;
-      letter-spacing: var(--kesson-letter-ui-tight);
+      letter-spacing: var(--ds-letter-ui-tight);
       line-height: 1.45;
       font-family: 'Noto Serif JP', Georgia, serif;
     }
@@ -64,23 +64,23 @@
     .btn-read-more,
     .articles-filter-btn,
     #surface-btn {
-      background: var(--kesson-action-bg);
-      border: 1px solid var(--kesson-action-border);
-      color: var(--kesson-action-text);
-      font-family: var(--kesson-font-serif-ui);
+      background: var(--ks-action-bg);
+      border: 1px solid var(--ks-action-border);
+      color: var(--ks-action-text);
+      font-family: var(--ds-font-serif-ui);
       cursor: pointer;
-      border-radius: var(--kesson-radius-sm);
+      border-radius: var(--ds-radius-sm);
     }
     .btn-read-more:hover,
     .articles-filter-btn:hover,
     #surface-btn:hover {
-      background: var(--kesson-action-bg-hover);
-      color: var(--kesson-action-text-hover);
+      background: var(--ks-action-bg-hover);
+      color: var(--ks-action-text-hover);
     }
     .btn-read-more:focus-visible,
     .articles-filter-btn:focus-visible,
     #surface-btn:focus-visible {
-      outline: 2px solid var(--kesson-focus-ring-soft);
+      outline: 2px solid var(--ds-focus-ring-soft);
       outline-offset: 4px;
     }
 
@@ -88,10 +88,10 @@
     .btn-read-more {
       display: block;
       margin: 1rem auto 0;
-      font-size: var(--kesson-font-size-ui-sm);
-      letter-spacing: var(--kesson-letter-ui-wide);
+      font-size: var(--ds-font-size-ui-sm);
+      letter-spacing: var(--ds-letter-ui-wide);
       padding: 10px 24px;
-      transition: background var(--kesson-transition-standard), color var(--kesson-transition-standard);
+      transition: background var(--ds-transition-standard), color var(--ds-transition-standard);
     }
 
     .card-section-container {
@@ -127,9 +127,9 @@
       text-transform: uppercase;
       padding: 7px 14px;
       transition:
-        background var(--kesson-transition-standard),
-        color var(--kesson-transition-standard),
-        border-color var(--kesson-transition-standard);
+        background var(--ds-transition-standard),
+        color var(--ds-transition-standard),
+        border-color var(--ds-transition-standard);
     }
     .articles-filter-btn.is-active {
       background: rgba(var(--color-accent), 0.25);
@@ -141,12 +141,12 @@
        カードのスタイル（透過度、ぼかし等）はサイト全体で統一すること */
     .card.kesson-card,
     .creation-link-card {
-      --bs-card-bg: var(--kesson-card-bg);
-      border: 1px solid var(--kesson-card-border);
+      --bs-card-bg: var(--ks-card-bg);
+      border: 1px solid var(--ds-card-border);
       transition:
-        transform var(--kesson-transition-snappy),
-        box-shadow var(--kesson-transition-snappy),
-        border-color var(--kesson-transition-snappy);
+        transform var(--ds-transition-snappy),
+        box-shadow var(--ds-transition-snappy),
+        border-color var(--ds-transition-snappy);
     }
     .card.kesson-card {
       background-color: var(--bs-card-bg);
@@ -158,11 +158,11 @@
       transform: translateY(-2px);
     }
     .card.kesson-card:hover {
-      box-shadow: var(--kesson-card-shadow-soft);
+      box-shadow: var(--ds-card-shadow-soft);
     }
     .card.kesson-card:focus-visible,
     .creation-link-card:focus-visible {
-      outline: 2px solid var(--kesson-focus-ring-soft);
+      outline: 2px solid var(--ds-focus-ring-soft);
       outline-offset: 4px;
     }
     .card.kesson-card .card-body {
@@ -220,9 +220,9 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
       overflow: hidden;
       transition:
-        transform var(--kesson-transition-snappy),
-        box-shadow var(--kesson-transition-snappy),
-        border-color var(--kesson-transition-snappy);
+        transform var(--ds-transition-snappy),
+        box-shadow var(--ds-transition-snappy),
+        border-color var(--ds-transition-snappy);
     }
     .img-card-link > .img-card {
       width: 100%;
@@ -289,7 +289,7 @@
 
     .kesson-card .kesson-card-summary {
       color: rgba(var(--color-sub-text), 0.76);
-      font-size: var(--kesson-card-summary, 0.80rem);
+      font-size: var(--ds-card-summary, 0.80rem);
       line-height: 1.45;
       display: -webkit-box;
       -webkit-box-orient: vertical;
@@ -316,13 +316,13 @@
       bottom: 24px;
       right: 24px;
       z-index: 20;
-      font-size: var(--kesson-surface-btn, 0.80rem);
-      letter-spacing: var(--kesson-letter-ui-wide);
+      font-size: var(--ds-surface-btn, 0.80rem);
+      letter-spacing: var(--ds-letter-ui-wide);
       padding: 10px 18px;
       opacity: 0;
       pointer-events: none;
       transition:
         opacity 0.6s ease,
-        background var(--kesson-transition-standard),
-        color var(--kesson-transition-standard);
+        background var(--ds-transition-standard),
+        color var(--ds-transition-standard);
     }

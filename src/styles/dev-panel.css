@@ -9,16 +9,16 @@
       right: 0;
       transform: translateY(-50%);
       z-index: 1001;
-      background: var(--kesson-dev-toggle-bg);
+      background: var(--ks-dev-toggle-bg);
       backdrop-filter: blur(8px);
-      border: 1px solid var(--kesson-dev-toggle-border);
+      border: 1px solid var(--ks-dev-toggle-border);
       border-right: none;
-      border-radius: var(--kesson-radius-lg) 0 0 var(--kesson-radius-lg);
-      font-family: var(--kesson-font-mono-ui);
+      border-radius: var(--ds-radius-lg) 0 0 var(--ds-radius-lg);
+      font-family: var(--ds-font-mono-ui);
       padding: 8px 5px;
       cursor: pointer;
       writing-mode: vertical-rl;
-      transition: all var(--kesson-transition-standard);
+      transition: all var(--ds-transition-standard);
     }
     #dev-toggle {
       top: 50%;
@@ -34,7 +34,7 @@
     }
     #dev-toggle:hover,
     #dev-links-toggle:hover {
-      background: var(--kesson-dev-toggle-bg-hover);
+      background: var(--ks-dev-toggle-bg-hover);
     }
     #dev-toggle:hover {
       color: rgba(200, 220, 255, 0.9);
@@ -61,13 +61,13 @@
     #dev-panel::-webkit-scrollbar { width: 4px; }
     #dev-panel::-webkit-scrollbar-thumb {
       background: rgba(var(--color-accent), 0.2);
-      border-radius: var(--kesson-radius-sm);
+      border-radius: var(--ds-radius-sm);
     }
 
     #dev-panel .accordion-button {
       padding: 0.5rem 0.75rem;
       font-size: 0.72rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       letter-spacing: 0.05em;
       background: rgba(20, 28, 40, 0.9);
       color: rgba(140, 170, 220, 0.8);
@@ -120,7 +120,7 @@
     .dev-links-key {
       font-size: 0.66rem;
       color: rgba(170, 190, 220, 0.7);
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       letter-spacing: 0.05em;
     }
     .dev-links-url {
@@ -150,7 +150,7 @@
     }
     #dev-panel .form-check-label {
       font-size: 0.68rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       color: rgba(var(--color-sub-text), 0.7);
       order: -1;
       padding-left: 0;
@@ -166,7 +166,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 0.65rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       color: rgba(var(--color-sub-text), 0.6);
       margin-bottom: 0.15rem;
     }
@@ -192,7 +192,7 @@
 
     /* Dev panel header text */
     .dev-panel-header-text {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       letter-spacing: 0.1em;
     }
 

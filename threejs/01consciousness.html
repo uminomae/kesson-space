@@ -23,26 +23,26 @@
       --color-bg-body: #050508;
 
       /* === Typography tokens === */
-      --kesson-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
-      --kesson-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
-      --kesson-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      --kesson-letter-ui-wide: 0.1em;
-      --kesson-letter-ui-heading: 0.15em;
+      --ds-font-serif-display: "Noto Serif JP", "Yu Mincho", "MS PMincho", serif;
+      --ds-font-serif-ui: 'Georgia', "Noto Serif JP", serif;
+      --ds-font-mono-ui: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      --ds-letter-ui-wide: 0.1em;
+      --ds-letter-ui-heading: 0.15em;
 
       /* === Component tokens === */
-      --kesson-glass-bg: rgba(20, 25, 40, 0.9);
-      --kesson-glass-border: rgba(var(--color-accent), 0.1);
-      --kesson-action-bg: rgba(var(--color-accent), 0.1);
-      --kesson-action-border: rgba(var(--color-accent), 0.2);
-      --kesson-action-text: rgba(var(--color-sub-text), 0.5);
-      --kesson-action-bg-hover: rgba(var(--color-accent), 0.2);
-      --kesson-action-text-hover: rgba(var(--color-highlight), 0.7);
+      --ks-glass-bg: rgba(20, 25, 40, 0.9);
+      --ks-glass-border: rgba(var(--color-accent), 0.1);
+      --ks-action-bg: rgba(var(--color-accent), 0.1);
+      --ks-action-border: rgba(var(--color-accent), 0.2);
+      --ks-action-text: rgba(var(--color-sub-text), 0.5);
+      --ks-action-bg-hover: rgba(var(--color-accent), 0.2);
+      --ks-action-text-hover: rgba(var(--color-highlight), 0.7);
     }
 
     body {
       background-color: var(--color-bg-body);
       color: rgba(var(--color-highlight), 0.85);
-      font-family: var(--kesson-font-serif-display);
+      font-family: var(--ds-font-serif-display);
       margin: 0;
       overflow-x: hidden;
       line-height: 1.85;
@@ -109,9 +109,9 @@
 
     .section-accent-title {
       font-size: 0.75rem;
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       color: rgba(var(--color-sub-text), 0.6);
-      letter-spacing: var(--kesson-letter-ui-heading);
+      letter-spacing: var(--ds-letter-ui-heading);
       border-left: 2px solid rgba(var(--color-accent), 0.5);
       padding-left: 1.2rem;
       margin-bottom: 2.5rem;
@@ -135,7 +135,7 @@
     }
 
     .commentary-title {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.65rem;
       letter-spacing: 0.15em;
       color: rgba(var(--color-accent), 0.6);
@@ -163,7 +163,7 @@
 
     /* Meta Info Styles */
     .meta-label {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.7rem;
       color: rgba(var(--color-accent), 0.6);
       text-transform: uppercase;
@@ -212,7 +212,7 @@
     }
 
     .prompt-instruction-label {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.6rem;
       color: rgba(var(--color-accent), 0.4);
       letter-spacing: 0.1em;
@@ -221,7 +221,7 @@
     }
 
     .prompt-text {
-      font-family: var(--kesson-font-mono-ui);
+      font-family: var(--ds-font-mono-ui);
       font-size: 0.82rem;
       color: rgba(var(--color-highlight), 0.7);
       line-height: 1.7;
@@ -231,13 +231,13 @@
 
     /* Buttons / Links */
     .btn-kesson {
-      background: var(--kesson-action-bg);
-      border: 1px solid var(--kesson-action-border);
-      color: var(--kesson-action-text);
-      font-family: var(--kesson-font-serif-ui);
+      background: var(--ks-action-bg);
+      border: 1px solid var(--ks-action-border);
+      color: var(--ks-action-text);
+      font-family: var(--ds-font-serif-ui);
       padding: 10px 24px;
       text-decoration: none;
-      letter-spacing: var(--kesson-letter-ui-wide);
+      letter-spacing: var(--ds-letter-ui-wide);
       font-size: 0.7rem;
       transition: all 0.3s ease;
       display: inline-block;
@@ -245,8 +245,8 @@
     }
 
     .btn-kesson:hover {
-      background: var(--kesson-action-bg-hover);
-      color: var(--kesson-action-text-hover);
+      background: var(--ks-action-bg-hover);
+      color: var(--ks-action-text-hover);
       transform: translateY(-1px);
     }
 
@@ -265,7 +265,7 @@
       display: block;
       font-size: 0.65rem;
       color: rgba(var(--color-sub-text), 0.3);
-      font-family: var(--kesson-font-serif-ui);
+      font-family: var(--ds-font-serif-ui);
       letter-spacing: 0.1em;
       margin-bottom: 4px;
     }
