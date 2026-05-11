@@ -1,39 +1,10 @@
-    /* ============================
-       Devlog Gallery (3D cards) — 透明背景
-       ============================ */
-    #devlog-gallery-section {
-      width: 100%;
-      background: transparent;
-      padding-bottom: 2rem;
-    }
-    #devlog-gallery-container {
-      position: relative;
-      width: 100%;
-    }
-    /* devlog gallery container — ナビバーとの間隔 */
-    #devlog-gallery-container > .container {
-      margin-top: var(--ks-section-grid-margin-top);
-    }
     #guides-feature-cards {
       margin-top: var(--ks-section-grid-margin-top);
     }
     #articles-section #articles-grid {
       margin-top: 0;
     }
-    #devlog-gallery-header {
-      position: fixed;
-      top: calc(var(--ks-topbar-height) + 8px);
-      left: 24px;
-      z-index: var(--ks-z-ui-mid-2);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    #devlog-gallery-header.is-visible {
-      opacity: 1;
-    }
     /* CHANGED(2026-03-07): #114 — CSS変数化で font-size-ctrl から可変 */
-    #devlog-gallery-header h2,
     .section-heading {
       font-size: var(--ds-section-heading, 0.80rem);
       font-weight: 400;

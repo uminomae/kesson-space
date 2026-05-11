@@ -7,13 +7,12 @@
     /* CHANGED(2026-03-07): #116 Bug #7 — guides-section を他セクションと統一 */
     #guides-section,
     #research-section,
-    #articles-section,
-    #devlog-gallery-section {
+    #articles-section {
       position: relative;
       z-index: var(--ks-z-raised);
       padding-bottom: .9rem;
     }
-    /* Section content wrapper (shared by articles + devlog heading areas) */
+    /* Section content wrapper (shared by articles heading areas) */
     .section-content-wrap {
       position: relative;
       z-index: var(--ks-z-ui-mid-2);

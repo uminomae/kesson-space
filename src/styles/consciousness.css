@@ -28,8 +28,7 @@ body {
 }
 
 .section-heading,
-.section-heading-link,
-#devlog-gallery-header h2 {
+.section-heading-link {
     color: #9ed9ff;
 }
 
