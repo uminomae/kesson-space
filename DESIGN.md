@@ -106,6 +106,7 @@ Shadow:
 - ✅ **Do**: extended color tokens (`--color-accent-soft` / `--color-nav-gem` 等) は ks 個性として活用
 - ✅ **Do**: ナビゲーションを主役に、強い nav presence で構成
 - ✅ **Do**: 色は `rgb()` ではなく `r, g, b` の 3 値で定義 (`rgba()` で透明度を柔軟に変えるため)
+- ✅ **Do**: サイト全体の空気を変えるなら root token (`--ds-*` / `--ks-*` 基底層)、特定 UI だけなら component-local 変数を優先 (同じ値の直書きが複数 css に現れたら新規直書きせず token へ寄せる)
 - ❌ **Don't**: 生 `rgba(100, 150, 255, ...)` を書かない (token 化必須)
 - ❌ **Don't**: z-index を数値直書きしない (`--ks-z-*` を使用)
 - ❌ **Don't**: CDN / 多重 alias / 外部 design-system 参照 (self-contained 原則)
